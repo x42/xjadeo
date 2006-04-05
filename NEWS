@@ -1,0 +1,88 @@
+-------------------------------------------
+20051103
+-------------------------------------------
+
+Robin Gareus has jumped aboard and carried xjadeo from a quick hack for my 
+personal usage to the level of a distributable beta package, throwing in 
+some improvements on the way for good measure. Many kudos to him!
+
+The main problem people had so far to use xjadeo is to install the right 
+set of libraries to build it.
+
+Ffmpeg is especially problematic, since it is under heavy development and
+is thus very unstable. Using only a minimal part of ffmpeg API, we had to 
+make changes in xjadeo to accomodate three different changes in ffmpeg 
+interface that broke xjadeo. 
+
+WARNING! WARNING! WARNING! WARNING! WARNING! 
+
+It is likely that ffmpeg will continue evolving in a non backwards compatible
+way, so bear in mind that updating ffmpeg may break xjadeo.
+
+xjadeo has been tested with the following versions of ffmpeg:
+
+- ffmpeg-0.4.9-0.20041110.0.1.rhfc3.ccrma.i386.rpm
+- ffmpeg-0.4.9-0.20050427.1.1.fc3.rpm
+
+It has been tested in debian distros as well.
+
+NEW FUNCTIONALITY
+
+- Resizing the window will resize the movie as well. 
+
+(CAVEAT: resizing a video frame to make it fit the window is a cpu expensive 
+operation. If you are not comfortable with the screen size of your movie
+it is more cpu efficient that you resize the file before loading it in xjadeo,
+via, e.g., 'mencoder'.)
+
+- Pressing Mouse button 1 - will resize the monitor window to the original 
+movie size.
+
+- Mouse button 2 and 3 adjust the window to match the movie aspect ratio.
+
+- Scroll Wheel (button 4,5) stepwise decreases / increases the window size
+maintaining the original aspect ratio.
+
+Use your Window Manager kill button or CTRL-C  to quit xjadeo.
+
+NEW OPTIONS
+
+xjadeo accepts the following options:
+
+-q, --quiet, --silent
+	Inhibit usual output.
+
+-v, --verbose
+	Print more information.  
+
+-k, --keyframes 
+	Seek only to keyframes of the video. (improves performance but makes
+	playing jerky or simply static if keyframes are not frequent ).
+
+-t, --try-codec  
+	Check  if the  given  video  file  can be played by xjadeo.  No window
+	is opened in this mode.  The program exits with code 1 if the file
+	format is not supported.
+
+-f, --fps
+	How often xjadeo updates the screen. The default is 10 fps (not
+	the video file default)!
+
+-h, --help
+	Shows a summary of the options.
+
+-V, --version
+	Shows the version of the program.
+
+-o --offset
+	Time offset in video-frames. There is a machine-dependent time lag 
+	between jack transport and video display. This option allows to 
+	compensate for it.
+
+NEW PACKAGING OPTIONS
+
+Configuration files for building RPM and DEB packages have been added.
+
+AUTHORS
+Luis Garrido <luisgarrido@users.sourceforge.net>,
+Robin Gareus <robin@gareus.org>
