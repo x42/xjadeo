@@ -1,3 +1,6 @@
+2006-04-06  Luis Garrido  <luisgarrido@users.sourceforge.net>
+ - Reorganization of source tree.
+
 2005-11-07  Luis Garrido  <luisgarrido@users.sourceforge.net>
 Fixed avseekflags for compatibility with LIBAVFORMAT_BUILD <= 4622. Thanks to Geoff Beasley for his cooperation.
 

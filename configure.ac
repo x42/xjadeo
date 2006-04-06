@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(xjadeo.c)
-AC_CONFIG_SRCDIR(src/xjadeo.c)
+AC_CONFIG_SRCDIR(src/xjadeo/xjadeo.c)
 
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
@@ -202,4 +202,4 @@ AC_SUBST(FFMPEG_LIBS)
 # fi
 #fi
 
-AC_OUTPUT(Makefile src/Makefile xjadeo.lsm xjadeo.spec)
+AC_OUTPUT(Makefile src/Makefile src/xjadeo/Makefile xjadeo.lsm xjadeo.spec)
