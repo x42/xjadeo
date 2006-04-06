@@ -1,4 +1,7 @@
 2006-04-06  Luis Garrido  <luisgarrido@users.sourceforge.net>
+ - Implementation of the maintainer-clean target.
+
+2006-04-06  Luis Garrido  <luisgarrido@users.sourceforge.net>
  - Reorganization of source tree.
 
 2005-11-07  Luis Garrido  <luisgarrido@users.sourceforge.net>

@@ -8,3 +8,6 @@ xjadeo_CFLAGS = -Wall -g -O3 @FFMPEG_CFLAGS@ $(GTK_CFLAGS) $(SDL_CFLAGS) $(XV_CF
 
 #ctags:
 #	find . -type f -name "*.[ch]*" | xargs @CTAGS@
+
+MAINTAINERCLEANFILES = Makefile.in
+
