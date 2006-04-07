@@ -13,13 +13,13 @@ dnl create a config.h file (Automake will add -DHAVE_CONFIG_H)
 AM_CONFIG_HEADER(config.h)
 
 AC_ARG_ENABLE(gtk,     [  --enable-gtk            Enable use of gtk for display])
-AC_ARG_ENABLE(noxv,    [  --disable-xv            Disable use of XVideo extension for display])
-AC_ARG_ENABLE(noiml,   [  --disable-imlib         Disable use of imlib for display])
-AC_ARG_ENABLE(nosdl,   [  --disable-sdl           Disable use of SDL for display])
+AC_ARG_ENABLE(noxv,    [  --enable-noxv           Disable use of XVideo extension for display])
+AC_ARG_ENABLE(noiml,   [  --enable-noiml          Disable use of imlib for display])
+AC_ARG_ENABLE(nosdl,   [  --enable-nosdl          Disable use of SDL for display])
 AC_ARG_ENABLE(midi,    [  --enable-midi           Offer MTC sync as an alternative to jack (portmidi) ])
 # not supported by xjadeo-SDL yet
 #AC_ARG_ENABLE(ttf,    [  --enable-ttf            Enable TTF font support],,enable_ttf=no) 
-AC_ARG_ENABLE(noft,    [  --disable-freetype      Enable freetype OSD support]) 
+AC_ARG_ENABLE(noft,    [  --enable-noft           Disable freetype OSD support]) 
 AC_ARG_ENABLE(qtgui, AC_HELP_STRING([--disable-qtgui],[Don't build the Qt GUI controller]))
 
 
@@ -76,15 +76,16 @@ fi
 
 if ! test "$enable_nosdl" = "yes"; then
         AM_PATH_SDL(1.1.6, [ AC_DEFINE(HAVE_SDL) ])
+
+	# SDL TTF detect
+
+	AC_CHECK_LIB(SDL_ttf, TTF_Init, HAVESDLTTF=yes, HAVESDLTTF=no)
+	BACKUPCFLAGS="$CFLAGS"
+	CFLAGS="$CFLAGS $SDL_CFLAGS" # `sdl-config --cflags`
+	AC_CHECK_HEADER(SDL_ttf.h, HAVESDLTTF=yes, HAVESDLTTF=no)
+	CFLAGS="$BACKUPCFLAGS"
+
 fi
-
-# SDL TTF detect
-
-AC_CHECK_LIB(SDL_ttf, TTF_Init, HAVESDLTTF=yes, HAVESDLTTF=no)
-BACKUPCFLAGS="$CFLAGS"
-CFLAGS="$CFLAGS $SDL_CFLAGS" # `sdl-config --cflags`
-AC_CHECK_HEADER(SDL_ttf.h, HAVESDLTTF=yes, HAVESDLTTF=no)
-CFLAGS="$BACKUPCFLAGS"
 
 if test x$HAVESDLTTF = xyes; then
     if test x$enable_ttf = xyes; then
@@ -199,9 +200,9 @@ if test "x$enable_qtgui" != "xno"; then
 
  # Check for Qt qmake utility.
  AC_PATH_PROG(ac_qmake, qmake, [no], $QTDIR/bin:${PATH})
- if test "x$ac_qmake" = "xno"; then
-    AC_MSG_ERROR([qmake $ac_qtdir_errmsg])
- fi
+# if test "x$ac_qmake" = "xno"; then
+#    AC_MSG_ERROR([qmake $ac_qtdir_errmsg])
+# fi
  AC_SUBST(ac_qmake)
 
 fi

@@ -1,4 +1,7 @@
 2006-04-07  rgareus  <robin@gareus.org>
+ splitted the display.c into sdl, gtk and X11 source files
+ quick fixed configure.ac (qmake on debian)
+2006-04-07  rgareus  <robin@gareus.org>
  fixed HAVE_GTK and HAVE_SDL #defines in display.c
 2006-04-06  Luis Garrido  <luisgarrido@users.sourceforge.net>
  - Autotoolification of qjadeo for Qt3. Info taken from qjackctl and

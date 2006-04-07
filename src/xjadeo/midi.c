@@ -193,11 +193,18 @@ long midi_poll_frame (void) {
 			case 2: fps=29; break;
 			case 3: fps=30; break;
 		}
-
+// TODO: allow the user to choose the conversion
+// in either case there is no resampling code here yet, so 
+// the video file fps must match the MTC-fps !!
+// (unless you know what you're doing :)
+#if 1
+// calc frame from SMPTE and MTC-fps
 		frame = last_tc.frame + 
 			fps * ( last_tc.sec + 60*last_tc.min + 3600*last_tc.hour);
-
-	//	frame = floor(frames * videoFPS / midiFPS);
+#else
+// the video file fps is used for converting the SMPTE
+		frame = floor(frames * videoFPS / midiFPS);
+#endif
 	}
 	return(frame);
 }
