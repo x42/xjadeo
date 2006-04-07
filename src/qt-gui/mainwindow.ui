@@ -1,0 +1,358 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>MainWindow</class>
+<widget class="QMainWindow">
+    <property name="name">
+        <cstring>MainWindow</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>337</width>
+            <height>197</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>qjadeo</string>
+    </property>
+    <vbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <widget class="QLayoutWidget">
+            <property name="name">
+                <cstring>layout5</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QSpinBox">
+                    <property name="name">
+                        <cstring>fpsSpinBox</cstring>
+                    </property>
+                    <property name="maxValue">
+                        <number>50</number>
+                    </property>
+                    <property name="minValue">
+                        <number>1</number>
+                    </property>
+                    <property name="value">
+                        <number>10</number>
+                    </property>
+                </widget>
+                <widget class="QLabel">
+                    <property name="name">
+                        <cstring>textLabel2</cstring>
+                    </property>
+                    <property name="text">
+                        <string>FPS</string>
+                    </property>
+                </widget>
+                <spacer>
+                    <property name="name">
+                        <cstring>spacer2</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Expanding</enum>
+                    </property>
+                    <property name="sizeHint">
+                        <size>
+                            <width>61</width>
+                            <height>20</height>
+                        </size>
+                    </property>
+                </spacer>
+            </hbox>
+        </widget>
+        <widget class="QLayoutWidget">
+            <property name="name">
+                <cstring>layout4</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QSpinBox">
+                    <property name="name">
+                        <cstring>offsetSpinBox</cstring>
+                    </property>
+                    <property name="maxValue">
+                        <number>50</number>
+                    </property>
+                    <property name="minValue">
+                        <number>-50</number>
+                    </property>
+                </widget>
+                <widget class="QLabel">
+                    <property name="name">
+                        <cstring>textLabel1</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Frame offset</string>
+                    </property>
+                </widget>
+                <spacer>
+                    <property name="name">
+                        <cstring>spacer3</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Expanding</enum>
+                    </property>
+                    <property name="sizeHint">
+                        <size>
+                            <width>61</width>
+                            <height>20</height>
+                        </size>
+                    </property>
+                </spacer>
+            </hbox>
+        </widget>
+        <widget class="QProgressBar">
+            <property name="name">
+                <cstring>progressBar</cstring>
+            </property>
+            <property name="percentageVisible">
+                <bool>false</bool>
+            </property>
+        </widget>
+    </vbox>
+</widget>
+<menubar>
+    <property name="name">
+        <cstring>MenuBar</cstring>
+    </property>
+    <item text="&amp;File" name="fileMenu">
+        <action name="fileOpenAction"/>
+        <separator/>
+        <action name="fileExitAction"/>
+        <separator/>
+    </item>
+    <item text="Sync" name="Sync">
+        <action name="syncJackAction"/>
+        <action name="syncMTCAction"/>
+    </item>
+    <item text="Zoom" name="Zoom">
+        <action name="zoom50Action"/>
+        <action name="zoom100Action"/>
+        <action name="zoom200Action"/>
+        <action name="zoomFullScreenAction"/>
+    </item>
+    <separator/>
+    <item text="&amp;Help" name="helpMenu">
+        <action name="helpAboutAction"/>
+    </item>
+</menubar>
+<toolbars>
+</toolbars>
+<actions>
+    <action>
+        <property name="name">
+            <cstring>fileOpenAction</cstring>
+        </property>
+        <property name="iconSet">
+            <iconset>fileopen</iconset>
+        </property>
+        <property name="text">
+            <string>Open</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Open...</string>
+        </property>
+        <property name="accel">
+            <string>Ctrl+O</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>fileExitAction</cstring>
+        </property>
+        <property name="text">
+            <string>Exit</string>
+        </property>
+        <property name="menuText">
+            <string>E&amp;xit</string>
+        </property>
+        <property name="accel">
+            <string></string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>helpAboutAction</cstring>
+        </property>
+        <property name="text">
+            <string>About</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;About</string>
+        </property>
+        <property name="accel">
+            <string></string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>syncJackAction</cstring>
+        </property>
+        <property name="text">
+            <string>JACK Transport</string>
+        </property>
+        <property name="menuText">
+            <string>JACK Transport</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>syncMTCAction</cstring>
+        </property>
+        <property name="text">
+            <string>MTC</string>
+        </property>
+        <property name="menuText">
+            <string>MTC</string>
+        </property>
+    </action>
+    <actiongroup>
+        <property name="name">
+            <cstring>zoomAction</cstring>
+        </property>
+        <property name="text">
+            <string>ActionGroup</string>
+        </property>
+        <property name="toolTip">
+            <string>Zoom</string>
+        </property>
+        <property name="usesDropDown">
+            <bool>false</bool>
+        </property>
+        <action>
+            <property name="name">
+                <cstring>zoom50Action</cstring>
+            </property>
+            <property name="text">
+                <string>50%</string>
+            </property>
+            <property name="toolTip">
+                <string>50%</string>
+            </property>
+        </action>
+        <action>
+            <property name="name">
+                <cstring>zoom100Action</cstring>
+            </property>
+            <property name="text">
+                <string>100%</string>
+            </property>
+            <property name="toolTip">
+                <string>100%</string>
+            </property>
+        </action>
+        <action>
+            <property name="name">
+                <cstring>zoom200Action</cstring>
+            </property>
+            <property name="text">
+                <string>200%</string>
+            </property>
+            <property name="toolTip">
+                <string>200%</string>
+            </property>
+        </action>
+        <action>
+            <property name="name">
+                <cstring>zoomFullScreenAction</cstring>
+            </property>
+            <property name="text">
+                <string>Full Screen</string>
+            </property>
+            <property name="toolTip">
+                <string>Full Screen</string>
+            </property>
+        </action>
+    </actiongroup>
+</actions>
+<connections>
+    <connection>
+        <sender>fileOpenAction</sender>
+        <signal>activated()</signal>
+        <receiver>MainWindow</receiver>
+        <slot>fileOpen()</slot>
+    </connection>
+    <connection>
+        <sender>fileExitAction</sender>
+        <signal>activated()</signal>
+        <receiver>MainWindow</receiver>
+        <slot>fileExit()</slot>
+    </connection>
+    <connection>
+        <sender>helpAboutAction</sender>
+        <signal>activated()</signal>
+        <receiver>MainWindow</receiver>
+        <slot>helpAbout()</slot>
+    </connection>
+    <connection>
+        <sender>zoom50Action</sender>
+        <signal>activated()</signal>
+        <receiver>MainWindow</receiver>
+        <slot>zoom50()</slot>
+    </connection>
+    <connection>
+        <sender>zoom100Action</sender>
+        <signal>activated()</signal>
+        <receiver>MainWindow</receiver>
+        <slot>zoom100()</slot>
+    </connection>
+    <connection>
+        <sender>zoom200Action</sender>
+        <signal>activated()</signal>
+        <receiver>MainWindow</receiver>
+        <slot>zoom200()</slot>
+    </connection>
+    <connection>
+        <sender>zoomFullScreenAction</sender>
+        <signal>activated()</signal>
+        <receiver>MainWindow</receiver>
+        <slot>zoomFullScreen()</slot>
+    </connection>
+    <connection>
+        <sender>syncJackAction</sender>
+        <signal>activated()</signal>
+        <receiver>MainWindow</receiver>
+        <slot>syncJack()</slot>
+    </connection>
+    <connection>
+        <sender>offsetSpinBox</sender>
+        <signal>valueChanged(const QString&amp;)</signal>
+        <receiver>MainWindow</receiver>
+        <slot>setOffset(const QString&amp;)</slot>
+    </connection>
+    <connection>
+        <sender>fpsSpinBox</sender>
+        <signal>valueChanged(const QString&amp;)</signal>
+        <receiver>MainWindow</receiver>
+        <slot>setFPS(const QString&amp;)</slot>
+    </connection>
+</connections>
+<slots>
+    <slot>fileOpen()</slot>
+    <slot>setFPS( const QString &amp; )</slot>
+    <slot>helpAbout()</slot>
+    <slot>zoom50()</slot>
+    <slot>zoom100()</slot>
+    <slot>zoom200()</slot>
+    <slot>zoomFullScreen()</slot>
+    <slot>syncJack()</slot>
+    <slot>syncMTC()</slot>
+    <slot>setOffset( const QString &amp; )</slot>
+    <slot>fileExit()</slot>
+</slots>
+<pixmapinproject/>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

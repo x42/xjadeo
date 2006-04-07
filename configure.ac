@@ -12,14 +12,15 @@ AM_INIT_AUTOMAKE(xjadeo, 0.3.6)
 dnl create a config.h file (Automake will add -DHAVE_CONFIG_H)
 AM_CONFIG_HEADER(config.h)
 
-AC_ARG_ENABLE(gtk,   [  --enable-gtk            enable use of gtk for display])
-AC_ARG_ENABLE(noxv,  [  --disable-xv            disable use of XVideo extension for display])
-AC_ARG_ENABLE(noiml, [  --disable-imlib         disable use of imlib for display])
-AC_ARG_ENABLE(nosdl, [  --disable-sdl           disable use of SDL for display])
-AC_ARG_ENABLE(midi,  [  --enable-midi           offer MTC sync as an alternative to jack (portmidi) ])
+AC_ARG_ENABLE(gtk,     [  --enable-gtk            Enable use of gtk for display])
+AC_ARG_ENABLE(noxv,    [  --disable-xv            Disable use of XVideo extension for display])
+AC_ARG_ENABLE(noiml,   [  --disable-imlib         Disable use of imlib for display])
+AC_ARG_ENABLE(nosdl,   [  --disable-sdl           Disable use of SDL for display])
+AC_ARG_ENABLE(midi,    [  --enable-midi           Offer MTC sync as an alternative to jack (portmidi) ])
 # not supported by xjadeo-SDL yet
-#AC_ARG_ENABLE(ttf,   [  --enable-ttf            Enable TTF font support],,enable_ttf=no) 
-AC_ARG_ENABLE(noft,  [  --disable-freetype      Enable freetype OSD support]) 
+#AC_ARG_ENABLE(ttf,    [  --enable-ttf            Enable TTF font support],,enable_ttf=no) 
+AC_ARG_ENABLE(noft,    [  --disable-freetype      Enable freetype OSD support]) 
+AC_ARG_ENABLE(qtgui, AC_HELP_STRING([--disable-qtgui],[Don't build the Qt GUI controller]))
 
 
 AC_ARG_WITH(ffmpegprefix, AS_HELP_STRING([--with-ffmpegprefix], [prefix to ffmpeg source, if libavcodec and libavformat are not in . (default=.)]), ffmpegprefix="$withval", ffmpegprefix="ffmpeg")
@@ -187,6 +188,23 @@ fi
 AC_SUBST(FFMPEG_CFLAGS)
 AC_SUBST(FFMPEG_LIBS)
 
+dnl ----------------------------------------------
+dnl Qt GUI stuff
+dnl ----------------------------------------------
+if test "x$enable_qtgui" != "xno"; then
+
+ AC_CONFIG_MACRO_DIR(m4)
+ BNV_HAVE_QT 
+ AM_CONDITIONAL(HAVE_QT, test x$have_qt = xyes)
+
+ # Check for Qt qmake utility.
+ AC_PATH_PROG(ac_qmake, qmake, [no], $QTDIR/bin:${PATH})
+ if test "x$ac_qmake" = "xno"; then
+    AC_MSG_ERROR([qmake $ac_qtdir_errmsg])
+ fi
+ AC_SUBST(ac_qmake)
+
+fi
 
 
 #AC_CHECK_LIB([Imlib2], [Imlib_init], foundimlib=yes , foundimlib=no) 
@@ -202,4 +220,4 @@ AC_SUBST(FFMPEG_LIBS)
 # fi
 #fi
 
-AC_OUTPUT(Makefile src/Makefile src/xjadeo/Makefile xjadeo.lsm xjadeo.spec)
+AC_OUTPUT(Makefile src/Makefile src/xjadeo/Makefile src/qt-gui/Makefile src/qt-gui/qjadeo.pro xjadeo.lsm xjadeo.spec)

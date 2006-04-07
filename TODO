@@ -1,6 +1,10 @@
 TODO
 ----
 
+complete the qjadeo integration in the build system:
+
+ - add support for Qt4
+ - pass xjadeo binary path to qjadeo at build time via -D option.
 
 complete the xjadeo video modes:
 

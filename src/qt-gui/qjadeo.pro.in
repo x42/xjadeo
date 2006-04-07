@@ -1,0 +1,14 @@
+TEMPLATE	= app
+LANGUAGE	= C++
+
+CONFIG	+= qt warn_on release
+
+HEADERS	+= qjadeo.h
+
+SOURCES	+= qjadeo.cpp
+
+FORMS	= mainwindow.ui
+
+IMAGES	= images/fileopen
+
+DEFINES += BINDIR="$(bindir)"

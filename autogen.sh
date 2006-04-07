@@ -1,3 +1,3 @@
 #!/bin/sh
 
-aclocal && autoheader && autoconf && automake --gnu --add-missing --copy
+aclocal -I m4 && autoheader && autoconf && automake --gnu --add-missing --copy
