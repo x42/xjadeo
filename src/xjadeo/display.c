@@ -22,8 +22,9 @@
  * GTK
  */
 
+#define HAVE_MYGTK (HAVE_GTK && HAVE_GDK_PIXBUF )
 
-#if HAVE_GTK
+#if HAVE_MYGTK
 #include <gtk/gtk.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
@@ -32,26 +33,11 @@
 
 void render_gtk (uint8_t *mybuffer);
 
-void resize_gtk (unsigned int x, unsigned int y) { 
-	gdk_window_resize(gwindow->window,x,y);
-}
+void resize_gtk (unsigned int x, unsigned int y);
 
-void getsize_gtk (unsigned int *x, unsigned int *y) {
-//	gint d0,d1,d2;
-	gint d3,d4;
-	gdk_window_get_size(gwindow->window,&d3,&d4);
-//	gdk_window_get_geometry (gwindow->window, &d0,&d1,&d3,&d4,&d2);
-	if(x) *x=(unsigned int) d3;
-	if(y) *y=(unsigned int) d4;
-}
+void getsize_gtk (unsigned int *x, unsigned int *y);
 
-void position_gtk (int x, int y) { 
-//  gdk_window_get_origin()
-//  gdk_window_get_position(gwindow,&x,&y)
-//  gdk_window_set_geometry_hints (GdkWindow *window, GdkGeometry *geometry, GdkWindowHints geom_mask);
-	;
-}
-
+void position_gtk (int x, int y);
 
 
 /* gtk callback function */
@@ -112,14 +98,19 @@ static gint on_mygtk_clicked( GtkWidget      *widget, GdkEventButton *event )
 
 
 void resize_gtk (unsigned int x, unsigned int y) { 
-#if HAVE_GTK
+#if HAVE_MYGTK
 	gdk_window_resize(gwindow->window,x,y);
 #endif
 }
 
 void getsize_gtk (unsigned int *x, unsigned int *y) {
-#if HAVE_GTK
-	gdk_window_resize(gwindow->window,x,y);
+#if HAVE_MYGTK
+#if 0 // what was that ??
+	int sx,sy;
+	sx=(int) *x;
+	sy=(int) *y;
+	gdk_window_resize(gwindow->window,sx,sy);
+#endif
 //	gint d0,d1,d2;
 	gint d3,d4;
 	gdk_window_get_size(gwindow->window,&d3,&d4);
@@ -130,7 +121,7 @@ void getsize_gtk (unsigned int *x, unsigned int *y) {
 }
 
 void position_gtk (int x, int y) { 
-#if HAVE_GTK
+#if HAVE_MYGTK
 //  gdk_window_get_origin()
 //  gdk_window_get_position(gwindow,&x,&y)
 //  gdk_window_set_geometry_hints (GdkWindow *window, GdkGeometry *geometry, GdkWindowHints geom_mask);
@@ -142,7 +133,7 @@ void position_gtk (int x, int y) {
 
 
 int open_window_gtk(int *argc, char ***argv) {
-#if HAVE_GTK
+#if HAVE_MYGTK
 	gtk_init(argc, argv);
 	gdk_rgb_init();
 	gtk_widget_set_default_colormap(gdk_rgb_get_cmap());
@@ -162,6 +153,7 @@ int open_window_gtk(int *argc, char ***argv) {
 	gtk_widget_add_events (gimage,
 			GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK |
 			GDK_BUTTON_PRESS_MASK| GDK_BUTTON_RELEASE_MASK);
+
  	gtk_signal_connect ((gpointer) gimage, "button_release_event", on_mygtk_clicked, NULL);
 
 
@@ -173,12 +165,12 @@ int open_window_gtk(int *argc, char ***argv) {
 	gdk_flush();
 		
 	return 0;
-#endif /* HAVE_GTK */
+#endif /* HAVE_MYGTK */
 	return 1;
 }
 
 void close_window_gtk(void) {
-#if HAVE_GTK
+#if HAVE_MYGTK
 	if (gwindow) {
 		// needed if closing the window via remote.
 		gtk_widget_hide(gwindow);
@@ -188,11 +180,11 @@ void close_window_gtk(void) {
 	while(gtk_events_pending()) gtk_main_iteration();
 	gdk_flush();
 	gtk_main_quit();
-#endif /* HAVE_GTK */
+#endif /* HAVE_MYGTK */
 }
 
 void render_gtk (uint8_t *mybuffer) {
-#if HAVE_GTK
+#if HAVE_MYGTK
 	int width=movie_width;
 	int height=movie_height;
 	unsigned int dest_width,dest_height; //get gtk window size
@@ -230,16 +222,16 @@ void render_gtk (uint8_t *mybuffer) {
 	} 
 	gdk_flush();
 
-#endif /* HAVE_GTK */
+#endif /* HAVE_MYGTK */
 }
 
 void handle_X_events_gtk (void) {
-#if HAVE_GTK
+#if HAVE_MYGTK
 	while(gtk_events_pending()) {
 		gtk_main_iteration();
 	} 
 	gdk_flush();
-#endif /* HAVE_GTK */
+#endif /* HAVE_MYGTK */
 }
 
 
@@ -257,30 +249,7 @@ void handle_X_events_gtk (void) {
   SDL_Overlay *sdl_overlay;
   SDL_Rect sdl_rect;
 
-void position_sdl(int x, int y) {
-	SDL_SysWMinfo info;
-
-	SDL_VERSION(&info.version);
-	if ( SDL_GetWMInfo(&info) > 0 ) {
-	if ( info.subsystem == SDL_SYSWM_X11 ) {
-			info.info.x11.lock_func();
-	/* get root window size  - center window 
-			int x, y;
-			int w, h;
-			w = DisplayWidth(info.info.x11.display,
-			DefaultScreen(info.info.x11.display));
-
-			h = DisplayHeight(info.info.x11.display,
-			DefaultScreen(info.info.x11.display));
-			x = (w - screen->w)/2;
-			y = (h - screen->h)/2;
-	*/
-			XMoveWindow(info.info.x11.display, info.info.x11.wmwindow, x, y);
-			info.info.x11.unlock_func();
-		} 
-	} 
-} 
-
+void position_sdl(int x, int y);
 #define SUP_SDL 1
 #else
 #define SUP_SDL 0
@@ -427,6 +396,33 @@ void getsize_sdl (unsigned int *x, unsigned int *y) {
 	if(y) *y = sdl_rect.h;
 #endif /* HAVE_SDL */
 }
+
+void position_sdl(int x, int y) {
+#if HAVE_SDL
+	SDL_SysWMinfo info;
+
+	SDL_VERSION(&info.version);
+	if ( SDL_GetWMInfo(&info) > 0 ) {
+	if ( info.subsystem == SDL_SYSWM_X11 ) {
+			info.info.x11.lock_func();
+	/* get root window size  - center window 
+			int x, y;
+			int w, h;
+			w = DisplayWidth(info.info.x11.display,
+			DefaultScreen(info.info.x11.display));
+
+			h = DisplayHeight(info.info.x11.display,
+			DefaultScreen(info.info.x11.display));
+			x = (w - screen->w)/2;
+			y = (h - screen->h)/2;
+	*/
+			XMoveWindow(info.info.x11.display, info.info.x11.wmwindow, x, y);
+			info.info.x11.unlock_func();
+		} 
+	} 
+#endif /* HAVE_SDL */
+} 
+
 
 
 void render_sdl (uint8_t *mybuffer) {
