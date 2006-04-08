@@ -27,6 +27,10 @@ long jack_poll_frame (void);
 void open_jack(void );
 void close_jack(void);
 
+/* smpte.c prototypes */
+
+long int smptestring_to_frame (char *str);
+void frame_to_smptestring(char *smptestring, long int frame);
 
 /* midi.c function prototype */
 #ifdef HAVE_MIDI
@@ -41,6 +45,10 @@ void midi_close(void);
 enum { OSD_LEFT=0, OSD_CENTER, OSD_RIGHT };
 
 #define OSD_BOX (256)
+#define OSD_FRAME (1)
+#define OSD_SMPTE (2)
+#define OSD_TEXT (64)
+
 #define ST_PADDING (10)
 
 //#define FONT_FILE       "arial.ttf"

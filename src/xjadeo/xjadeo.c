@@ -81,9 +81,9 @@ uint8_t           *buffer = NULL;
 int               render_fmt = PIX_FMT_YUV420P;
 
 /* Video File Info */
-double 	duration;
-double 	framerate;
-long	frames;
+double 	duration = 1;
+double 	framerate = 1;
+long	frames = 1;
 
 /* Option flags and variables */
 long	ts_offset = 0;
@@ -119,11 +119,15 @@ int		videomode = 0; // autodect
 char OSD_fontfile[1024] = FONT_FILE;
 char OSD_text[128] = "xjadeo!";
 char OSD_frame[48] = "";
+char OSD_smpte[13] = "";
 int OSD_mode = 0 ;
-int OSD_fx = 1;
-int OSD_tx = 1;
-int OSD_fy = 95;
-int OSD_ty = 50;
+
+int OSD_fx = OSD_CENTER;
+int OSD_tx = OSD_CENTER;
+int OSD_sx = OSD_CENTER;
+int OSD_fy = 95; // percent
+int OSD_sy = 5; // percent
+int OSD_ty = 50; // percent
 
 
 // Jack
@@ -557,7 +561,8 @@ void display_frame(int64_t timestamp, int force_update)
 
   dispFrame = timestamp;
 
-  if (OSD_mode&1) snprintf(OSD_frame,48,"Frame: %li", dispFrame);
+  if (OSD_mode&OSD_FRAME) snprintf(OSD_frame,48,"Frame: %li", dispFrame);
+  if (OSD_mode&OSD_SMPTE) frame_to_smptestring(OSD_smpte,dispFrame);
 
   // First time we're called, set packet.data to NULL to indicate it
   // doesn't have to be freed
@@ -783,7 +788,8 @@ void xapi_pmheight(void *d) {
 	remote_printf(200,"movie_height=%i", movie_height);
 }
 void xapi_soffset(void *d) {
-	long int new = atol((char*)d);
+//	long int new = atol((char*)d);
+	long int new = smptestring_to_frame((char*)d);
 	ts_offset= (int64_t) new;
 	remote_printf(100,"offset=%li",(long int) ts_offset);
 }
@@ -792,8 +798,15 @@ void xapi_pposition(void *d) {
 	remote_printf(200,"position=%li",dispFrame);
 }
 
+void xapi_psmpte(void *d) {
+	char smptestr[13];
+	frame_to_smptestring(smptestr,dispFrame);
+	remote_printf(200,"smpte=%s",smptestr);
+}
+
 void xapi_seek(void *d) {
-	long int new = atol((char*)d);
+//	long int new = atol((char*)d);
+	long int new = smptestring_to_frame((char*)d);
 	userFrame= (int64_t) new;
 	remote_printf(100,"defaultseek=%li",userFrame);
 }
@@ -830,28 +843,42 @@ void xapi_close_jack(void *d) {
 }
 
 
+void xapi_osd_smpte(void *d) {
+	int y = atoi((char*)d);
+	if (y<0){
+		OSD_mode&=~OSD_SMPTE;
+		remote_printf(100,"hiding smpte OSD");
+	} else if (y<=100) {
+		OSD_mode|=OSD_SMPTE;
+		OSD_sy=y;
+		remote_printf(100,"rendering smpte on position y:%i%%",y);
+	} else 
+		remote_printf(422,"invalid argument (range -1..100)");
+	display_frame((int64_t)(dispFrame),1); // update OSD
+}
+
 void xapi_osd_frame(void *d) {
 	int y = atoi((char*)d);
 	if (y<0){
-		OSD_mode&=~1;
+		OSD_mode&=~OSD_FRAME;
 		remote_printf(100,"hiding frame OSD");
 	} else if (y<=100) {
-		OSD_mode|=1;
+		OSD_mode|=OSD_FRAME;
 		OSD_fy=y;
-		remote_printf(100,"rendering frame position on y:%i%%",y);
+		remote_printf(100,"rendering frame on position y:%i%%",y);
 	} else 
 		remote_printf(422,"invalid argument (range -1..100)");
 	display_frame((int64_t)(dispFrame),1); // update OSD
 }
 
 void xapi_osd_off(void *d) {
-	OSD_mode&=~2;
+	OSD_mode&=~OSD_TEXT;
 	remote_printf(100,"hiding OSD");
 	display_frame((int64_t)(dispFrame),1); // update OSD
 }
 
 void xapi_osd_on(void *d) {
-	OSD_mode|=2;
+	OSD_mode|=OSD_TEXT;
 	remote_printf(100,"rendering OSD");
 	display_frame((int64_t)(dispFrame),1); // update OSD
 }
@@ -987,6 +1014,7 @@ Dcommand cmd_root[] = {
 
 	{"seek ", "<int>: seek to this frame - if jack and midi are offline", NULL, xapi_seek , 0 },
 	{"get position", ": return current frame position", NULL, xapi_pposition , 0 },
+	{"get smpte", ": return current frame position", NULL, xapi_psmpte , 0 },
 	
 	{"get fps", ": display current update frequency", NULL, xapi_pfps , 0 },
 	{"set fps ", "<int>: set current update frequency", NULL, xapi_sfps , 0 },
@@ -1019,6 +1047,7 @@ Dcommand cmd_root[] = {
 	{"ask videomodes" , ": dump CSV list of possible video modes", NULL, xapi_null, 0 },
 
 	{"osd frame " , "<ypos>: render current framenumber. y=0..100 (<0 disable)", NULL, xapi_osd_frame, 0 },
+	{"osd smpte " , "<ypos>: render smpte. y=0..100 (<0 disable)", NULL, xapi_osd_smpte, 0 },
 	{"osd text " , "<text>: render <text> on screen", NULL, xapi_osd_text, 0 },
 	{"osd text" , ": display prev. OSD text", NULL, xapi_osd_on, 0 },
 	{"osd notext" , ": clear text OSD", NULL, xapi_osd_off, 0 },

@@ -132,7 +132,7 @@ const vidout VO[] = {
 		&render_null, &open_window_null, &close_window_null, &handle_X_events_null, &newsrc_null, &resize_null, &getsize_null, &position_null},
 #endif
 	{ PIX_FMT_YUV420P, SUP_LIBXV,	"x11 - XV",
-#if HAVE_XV
+#if HAVE_LIBXV
 		&render_xv, &open_window_xv, &close_window_xv, &handle_X_events_xv, &newsrc_xv, &resize_xv, &get_window_size_xv, &position_xv},
 #else
 		&render_null, &open_window_null, &close_window_null, &handle_X_events_null, &newsrc_null, &resize_null, &getsize_null, &position_null},
@@ -178,11 +178,14 @@ void render_buffer (uint8_t *mybuffer) {
 	if (!mybuffer) return;
 
 	// render OSD on buffer 
-	if (OSD_mode&1 && VO[VOutput].render_fmt == PIX_FMT_YUV420P) OSD_renderYUV (mybuffer, OSD_frame, OSD_fx, OSD_fy);
-	if (OSD_mode&1 && VO[VOutput].render_fmt == PIX_FMT_RGB24) OSD_renderRGB (mybuffer, OSD_frame, OSD_fx, OSD_fy);
+	if (OSD_mode&OSD_FRAME && VO[VOutput].render_fmt == PIX_FMT_YUV420P) OSD_renderYUV (mybuffer, OSD_frame, OSD_fx, OSD_fy);
+	if (OSD_mode&OSD_FRAME && VO[VOutput].render_fmt == PIX_FMT_RGB24) OSD_renderRGB (mybuffer, OSD_frame, OSD_fx, OSD_fy);
 
-	if (OSD_mode&2 && VO[VOutput].render_fmt == PIX_FMT_YUV420P) OSD_renderYUV (mybuffer, OSD_text, OSD_tx, OSD_ty);
-	if (OSD_mode&2 && VO[VOutput].render_fmt == PIX_FMT_RGB24) OSD_renderRGB (mybuffer, OSD_text, OSD_tx, OSD_ty);
+	if (OSD_mode&OSD_SMPTE && VO[VOutput].render_fmt == PIX_FMT_YUV420P) OSD_renderYUV (mybuffer, OSD_smpte, OSD_sx, OSD_sy);
+	if (OSD_mode&OSD_SMPTE && VO[VOutput].render_fmt == PIX_FMT_RGB24) OSD_renderRGB (mybuffer, OSD_smpte, OSD_sx, OSD_sy);
+
+	if (OSD_mode&OSD_TEXT && VO[VOutput].render_fmt == PIX_FMT_YUV420P) OSD_renderYUV (mybuffer, OSD_text, OSD_tx, OSD_ty);
+	if (OSD_mode&OSD_TEXT && VO[VOutput].render_fmt == PIX_FMT_RGB24) OSD_renderRGB (mybuffer, OSD_text, OSD_tx, OSD_ty);
 
 	VO[VOutput].render(buffer); // buffer = mybuffer (so far no share mem or sth)
 }

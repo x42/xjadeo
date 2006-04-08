@@ -1,8 +1,15 @@
 2006-04-07  rgareus  <robin@gareus.org>
+ fixed b0rken XV (typo in display.c)
+ added smpte parser and output (via remote and OSD)
+ added MTC-fps to video-fps conversion code.
+ 
+2006-04-07  rgareus  <robin@gareus.org>
  splitted the display.c into sdl, gtk and X11 source files
  quick fixed configure.ac (qmake on debian)
+
 2006-04-07  rgareus  <robin@gareus.org>
  fixed HAVE_GTK and HAVE_SDL #defines in display.c
+
 2006-04-06  Luis Garrido  <luisgarrido@users.sourceforge.net>
  - Autotoolification of qjadeo for Qt3. Info taken from qjackctl and
  http://www.8ung.at/leising/autoconf/qt_qmake_autoconf_automake2.html

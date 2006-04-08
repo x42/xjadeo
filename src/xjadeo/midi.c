@@ -2,6 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <math.h>
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -14,6 +15,10 @@
 
 extern int want_quiet;
 extern int want_verbose;
+extern double framerate;
+
+// TODO: make extern int.
+#define MIDI_clkconvert (0)
 
 // TODO: increase buffer size on a slow system or few --fps
 // better: spawn midi_event as thread.
@@ -182,29 +187,30 @@ void midi_event(void) {
 
 long midi_poll_frame (void) {
 	long frame =0 ;
+	int fps= 25; 
+	if (!midi) return (0);
 
-	if (midi)  {
-		int fps= 25; 
-		midi_event(); // process midi buffers - get most recent timecode
+	midi_event(); // process midi buffers - get most recent timecode
 
-		switch(last_tc.type) {
-			case 0: fps=24; break;
-			case 1: fps=25; break;
-			case 2: fps=29; break;
-			case 3: fps=30; break;
-		}
-// TODO: allow the user to choose the conversion
-// in either case there is no resampling code here yet, so 
-// the video file fps must match the MTC-fps !!
-// (unless you know what you're doing :)
-#if 1
-// calc frame from SMPTE and MTC-fps
-		frame = last_tc.frame + 
-			fps * ( last_tc.sec + 60*last_tc.min + 3600*last_tc.hour);
-#else
-// the video file fps is used for converting the SMPTE
-		frame = floor(frames * videoFPS / midiFPS);
-#endif
+	switch(last_tc.type) {
+		case 0: fps=24; break;
+		case 1: fps=25; break;
+		case 2: fps=29; break;
+		case 3: fps=30; break;
+	}
+	switch (MIDI_clkconvert) {
+		case 2: // force video fps
+			frame = last_tc.frame +  (int)
+				floor(framerate * ( last_tc.sec + 60*last_tc.min + 3600*last_tc.hour));
+		break;
+		case 3: // 'convert' FPS.
+			frame = last_tc.frame + 
+				fps * ( last_tc.sec + 60*last_tc.min + 3600*last_tc.hour);
+			frame = (int) rint(frame * framerate / fps);
+		break;
+		default: // use MTC fps info
+			frame = last_tc.frame + 
+				fps * ( last_tc.sec + 60*last_tc.min + 3600*last_tc.hour);
 	}
 	return(frame);
 }
