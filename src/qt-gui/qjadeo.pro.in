@@ -10,5 +10,3 @@ SOURCES	+= qjadeo.cpp
 FORMS	= mainwindow.ui
 
 IMAGES	= images/fileopen
-
-DEFINES += BINDIR="$(bindir)"

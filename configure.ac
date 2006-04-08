@@ -192,21 +192,83 @@ AC_SUBST(FFMPEG_LIBS)
 dnl ----------------------------------------------
 dnl Qt GUI stuff
 dnl ----------------------------------------------
-if test "x$enable_qtgui" != "xno"; then
 
- AC_CONFIG_MACRO_DIR(m4)
- BNV_HAVE_QT 
- AM_CONDITIONAL(HAVE_QT, test x$have_qt = xyes)
+if test "x$enable_qtgui" != "xno"; then
 
  # Check for Qt qmake utility.
  AC_PATH_PROG(ac_qmake, qmake, [no], $QTDIR/bin:${PATH})
-# if test "x$ac_qmake" = "xno"; then
-#    AC_MSG_ERROR([qmake $ac_qtdir_errmsg])
-# fi
+ if test "x$ac_qmake" = "xno"; then
+    AC_MSG_ERROR([qmake not found: install the Qt development package of your distribution])
+ fi
  AC_SUBST(ac_qmake)
 
-fi
+ # Check for Qt3
 
+ AC_MSG_NOTICE([Checking for Qt >= 3...])
+
+ cat > conftest.c << EOF
+#include <qglobal.h>
+#if QT_VERSION < 0x030000
+#error Qt library is older than 3.0.0
+#endif
+EOF
+
+ $ac_qmake -project -nopwd -t lib -o conftest.pro conftest.c &> /dev/null
+ if test $? -ne 0; then
+  AC_MSG_ERROR([TEST_QT3: could not create a project file])
+ fi
+
+ $ac_qmake -makefile -o conftest.mak conftest.pro &> /dev/null
+ if test $? -ne 0; then
+  AC_MSG_ERROR([TEST_QT3: could not create a Makefile])
+ fi
+
+ make -s -f conftest.mak &>/dev/null
+ if test $? -ne 0; then
+  AC_MSG_ERROR([TEST_QT3: version of Qt is too old])
+ else
+  make -s -f conftest.mak distclean &>/dev/null
+  AC_MSG_NOTICE([Found Qt >= 3])
+ fi
+
+ # AC removes conftest*
+
+ # Check for Qt4
+
+ AC_MSG_NOTICE([Checking for Qt4...])
+
+ cat > conftest.c << EOF
+#include <qglobal.h>
+#if QT_VERSION < 0x040000
+#error Qt library is older than 4.0.0
+#endif
+EOF
+
+ $ac_qmake -project -nopwd -t lib -o conftest.pro conftest.c &> /dev/null
+ if test $? -ne 0; then
+  AC_MSG_ERROR([TEST_QT4: could not create a project file])
+ fi
+
+ $ac_qmake -makefile -o conftest.mak conftest.pro &> /dev/null
+ if test $? -ne 0; then
+  AC_MSG_ERROR([TEST_QT4: could not create a Makefile])
+ fi
+
+ make -s -f conftest.mak &>/dev/null
+ if test $? -ne 0; then
+  AC_MSG_NOTICE([Qt4 not found.])
+ else
+  make -f conftest.mak distclean &>/dev/null
+  AC_MSG_NOTICE([Found Qt4])
+  # Check for Qt qmake utility.
+  AC_PATH_PROG(ac_qt3to4, qt3to4, [no], $QTDIR/bin:${PATH})
+  if test "x$ac_qt3to4" = "xno"; then
+     AC_MSG_ERROR([qt3to4 not found: install Qt3Support, the Qt 3 compatibility module for Qt 4])
+  fi
+  AC_SUBST(ac_qt3to4)
+ fi
+
+fi
 
 #AC_CHECK_LIB([Imlib2], [Imlib_init], foundimlib=yes , foundimlib=no) 
 #

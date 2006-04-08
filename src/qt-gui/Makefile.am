@@ -1,6 +1,7 @@
 ACLOCAL_AMFLAGS = -I m4
 
 qmake   = @ac_qmake@
+qt3to4   = @ac_qt3to4@
 
 name    = qjadeo
 
@@ -12,7 +13,8 @@ sources = qjadeo.cpp \
 all:	$(name)
 
 $(name).mak:	$(name).pro
-	$(qmake) -o $(name).mak $(name).pro
+	if test "x$(qt3to4)" != "x"; then $(qt3to4) -alwaysOverwrite $(name).pro; fi
+	$(qmake) -o $(name).mak "DEFINES += BINDIR=\\\"$(bindir)\\\"" $(name).pro
 
 $(name):	$(name).mak $(sources) $(headers)
 	make -f $(name).mak
@@ -31,6 +33,7 @@ clean:	$(name).mak
 	rm -rf .ui         
 	rm -rf .obj
 	rm -rf .moc
+	rm portinglog.txt
 	rm -rf .tmp
 
 distclean:	clean

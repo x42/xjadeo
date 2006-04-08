@@ -1,3 +1,7 @@
+2006-04-08  Luis Garrido  <luisgarrido@users.sourceforge.net>
+ - Autotoolification of qjadeo for Qt4. Now qjadeo takes the xjadeo binary 
+ from the environment variable XJADEO or from the install path.
+
 2006-04-08  rgareus  <robin@gareus.org>
  split xjadeo.c -> main.c remote.c - and loads of extern's :(
  xjadeo v0.3.7

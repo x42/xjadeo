@@ -1,11 +1,11 @@
 #include <qapplication.h>
-#include <qprocess.h>
+#include <q3process.h>
 #include <qtimer.h>
-#include <qfiledialog.h>
+#include <q3filedialog.h>
 #include <qmessagebox.h>
-#include <qpopupmenu.h>
+#include <q3popupmenu.h>
 #include <qstatusbar.h>
-#include <qprogressbar.h>
+#include <q3progressbar.h>
 #include <qspinbox.h>
 #include <qdesktopwidget.h>
 
@@ -13,7 +13,7 @@
 
 // Global variables
 
-QProcess xjadeo;
+Q3Process xjadeo;
 
 ///////////////////////////////////////////////////////
 // QJadeo window
@@ -97,7 +97,7 @@ void QJadeo::saveOptions()
 
 void QJadeo::fileOpen()
 {
-  QString s = QFileDialog::getOpenFileName("",
+  QString s = Q3FileDialog::getOpenFileName("",
 					   0,
 					   this,
 					   "Browse file dialog",
@@ -256,18 +256,17 @@ int main(int argc, char **argv)
 
 // Launch xjadeo
 
-  if(!getenv("XJADEO"))
-  {
-    qFatal
-      ("Set your XJADEO environment variable to point to xjadeo executable.");
-  }
+  QString xjadeoPath(getenv("XJADEO"));
 
-  xjadeo.addArgument(getenv("XJADEO"));
+  if(xjadeoPath.isEmpty())
+    xjadeoPath = BINDIR "/xjadeo";
+
+  xjadeo.addArgument(xjadeoPath);
   xjadeo.addArgument("-R");
 
   if(!xjadeo.start())
   {
-    qFatal("Could not start xjadeo.");
+    qFatal("Could not start xjadeo executable: " + xjadeoPath);
   }
 
 
