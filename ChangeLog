@@ -1,3 +1,7 @@
+2006-04-08  rgareus  <robin@gareus.org>
+ split xjadeo.c -> main.c remote.c - and loads of extern's :(
+ xjadeo v0.3.7
+
 2006-04-07  rgareus  <robin@gareus.org>
  fixed b0rken XV (typo in display.c)
  added smpte parser and output (via remote and OSD)

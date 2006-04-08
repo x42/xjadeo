@@ -6,61 +6,36 @@ complete the qjadeo integration in the build system:
  - add support for Qt4
  - pass xjadeo binary path to qjadeo at build time via -D option.
 
-complete the xjadeo video modes:
+  DISPLAY:
 
- - SDL : 'enable' refresh/redraw events.. 
- - Xv : video options (fullscreen, aspect ratio,...)
-        event loop - copy/re-use stuff from xjadeo-0.1 x11
- - gtk : improve gtk UI. resize, 
- - imlib :  xjadeo-0.1 - nothing todo. 
-
- 
  - fall back on a different video mode when one is not avail.
- - better video mode selection (argument parsing)
-   allow specific options for each VO ?!?
+ - parse --vo option by names (no ints -> remove SUP_XXX stuff from display.c)
+ - XV & SDL  multiple sessions...??  -> fall back to use different (non accelerated) video mode.
 
  - speed up YUV trancoding - rewrite "buffer" concept.
    have ffmpeg decode directly to shared-mem...
 
  - add some credits to http://libdv.sourceforge.net/  
    playdv source provided good inspiration for SDL and Xv.
-
- - parse --vo option by names (no ints -> remove SUP_XXX stuff from display.c)
-   split up display.c into different files. 
- 
- - XV & SDL  multiple sessions...??  -> fall back to use different (non accelerated) video mode.
+ - keyboard events. (-> generate remote msgs)
 
  - check and fix for POSIX compliance 
 
-########
   MIDI:
+ - use alsamidi -> qjackctrl client (LATER - if at all)
+ - make midi_eventloop standalone thread, or make midi buffer configurable
 
-   - use alsamidi -> qjackctrl client
-
-   - make midi_eventloop standalone thread, or make midi buffer configurable
-   - convert midi fps to video fps.
-   - smpte and/or frame verbose output
-   - parse cmdline '-o' offsets smpte and/or frames
-   
-   - "bridge" missing MTC frames. (just an idea - probably never in xjadeo)
-    -> internal timer and sync to average ext. midi clock
-     * determine "default" midi interval (diff two continuous smpte)
-     * average last N midi intervals (circle-buffer local clock units)
-     * "tick in" a frame. if "default" midi interval > 1/fps 
-       (calc "tick in" position from midi avgs)
-
+  REMOTE: 
+ - some commands are 402: not yet implemented
+ - notify key event
+ - internal (default) key press handler if no-bidir remote ctrl.
+ - map key event to command (dynamic or fixed ?!)
 
 ########
-
-
-
 
 Support more video formats. Doubtful. It is difficult and taxes performance.
 
-rewrite contrib/encode.sh and 'install' files in contrib (include in deb/rpm)
-
-parse smpte offset - eg: -02:3:04 ... (need to know video fps to calc)
-checkout contrib/videocalc.c  and midi.c
+rewrite contrib/encode.sh and install files in contrib (include in deb/rpm)
 
 rename "-fps" option - can be confusing: fps of the movie-file, and delay
 between display-updates.
@@ -69,13 +44,10 @@ put xjadeo-session name in window title ?
 
 New Feature request / Brainstorm:
  - check cpu load - dynamically increase delay if above threshold.
- - OSD - render text information in the image.
-   eg. while pressing mouse button - display smpte / file info,...
 
  - allow dynamically adj. of offset.
    eg. press key '-' '+' sub/add a frame. (see note abvoe)
  - parse offset from EDL file 
- - remote control /  pipe command line
  
- * libdv / libtheora / mjpeg  :)
+ - libdv / libtheora / mjpeg  :)
 

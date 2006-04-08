@@ -21,6 +21,21 @@ void Xresize (unsigned int x, unsigned int y);
 void Xgetsize (unsigned int *x, unsigned int *y);
 void Xposition (int x, int y);
 
+/* remote.c */
+void close_remote_ctrl (void) ;
+void open_remote_ctrl (void);
+int remote_fd_set(fd_set *fd);
+int remote_read(void);
+void remote_printf(int val, const char *format, ...);
+
+/* xjadeo.c */
+void display_frame(int64_t timestamp, int force_update);
+int open_movie(char* file_name);
+int close_movie();
+void avinit (void);
+void init_moviebuffer(void);
+void event_loop(void);
+void do_try_this_file_and_exit(char *movie);
 
 /* jack.c function prototype */
 long jack_poll_frame (void);
