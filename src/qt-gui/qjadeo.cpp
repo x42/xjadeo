@@ -1,11 +1,11 @@
 #include <qapplication.h>
-#include <q3process.h>
+#include <qprocess.h>
 #include <qtimer.h>
-#include <q3filedialog.h>
+#include <qfiledialog.h>
 #include <qmessagebox.h>
-#include <q3popupmenu.h>
+#include <qpopupmenu.h>
 #include <qstatusbar.h>
-#include <q3progressbar.h>
+#include <qprogressbar.h>
 #include <qspinbox.h>
 #include <qdesktopwidget.h>
 
@@ -13,7 +13,7 @@
 
 // Global variables
 
-Q3Process xjadeo;
+QProcess xjadeo;
 
 ///////////////////////////////////////////////////////
 // QJadeo window
@@ -97,7 +97,7 @@ void QJadeo::saveOptions()
 
 void QJadeo::fileOpen()
 {
-  QString s = Q3FileDialog::getOpenFileName("",
+  QString s = QFileDialog::getOpenFileName("",
 					   0,
 					   this,
 					   "Browse file dialog",

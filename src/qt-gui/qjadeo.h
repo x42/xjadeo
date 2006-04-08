@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include <qsettings.h>
-#include <qwaitcondition.h>
 
 class QJadeo: public MainWindow
 {

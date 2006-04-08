@@ -10,3 +10,5 @@ SOURCES	+= qjadeo.cpp
 FORMS	= mainwindow.ui
 
 IMAGES	= images/fileopen
+
+QMAKE_CXXFLAGS_WARN_ON += -Wno-non-virtual-dtor

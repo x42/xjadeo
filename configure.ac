@@ -268,7 +268,19 @@ EOF
   AC_SUBST(ac_qt3to4)
  fi
 
+ ac_qtgui_dir="qt-gui"
+
+ AC_CONFIG_FILES(src/qt-gui/Makefile src/qt-gui/qjadeo.pro)
+
+else
+ ac_qtgui_dir=""
+
 fi
+
+AC_SUBST(ac_qtgui_dir)
+
+dnl ---------- End of Qt GUI stuff ---------------
+
 
 #AC_CHECK_LIB([Imlib2], [Imlib_init], foundimlib=yes , foundimlib=no) 
 #
@@ -283,4 +295,6 @@ fi
 # fi
 #fi
 
-AC_OUTPUT(Makefile src/Makefile src/xjadeo/Makefile src/qt-gui/Makefile src/qt-gui/qjadeo.pro xjadeo.lsm xjadeo.spec)
+AC_CONFIG_FILES([Makefile src/Makefile src/xjadeo/Makefile xjadeo.lsm xjadeo.spec])
+
+AC_OUTPUT

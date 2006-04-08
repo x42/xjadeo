@@ -1,4 +1,12 @@
 2006-04-08  Luis Garrido  <luisgarrido@users.sourceforge.net>
+ - Fixed qjadeo makefile so the qt4 compilation keeps a backup of the qt3 
+ version.
+
+2006-04-08  Luis Garrido  <luisgarrido@users.sourceforge.net>
+ - Fixed broken autogen.sh (after removal of m4 subdir)
+ - Fixed --disable-qtgui option.
+
+2006-04-08  Luis Garrido  <luisgarrido@users.sourceforge.net>
  - Autotoolification of qjadeo for Qt4. Now qjadeo takes the xjadeo binary 
  from the environment variable XJADEO or from the install path.
 
@@ -29,10 +37,11 @@
  - Reorganization of source tree.
 
 2005-11-07  Luis Garrido  <luisgarrido@users.sourceforge.net>
-Fixed avseekflags for compatibility with LIBAVFORMAT_BUILD <= 4622. Thanks to Geoff Beasley for his cooperation.
+ - Fixed avseekflags for compatibility with LIBAVFORMAT_BUILD <= 4622. Thanks to
+ Geoff Beasley for his cooperation.
 
 2005-11-03  Luis Garrido  <luisgarrido@users.sourceforge.net>
-Edited NEWS, xjadeo.1, README
+ - Edited NEWS, xjadeo.1, README
 
 2005-11-03  rgareus  <robin@gareus.org>
  - dynamic jack name. allowing multiple instances of xjadeo
