@@ -213,7 +213,7 @@ if test "x$enable_qtgui" != "xno"; then
 #endif
 EOF
 
- $ac_qmake -project -nopwd -t lib -o conftest.pro conftest.c &> /dev/null
+ $ac_qmake -project -nopwd -t lib -o conftest.pro "CONFIG+=qt warn_on release" conftest.c &> /dev/null
  if test $? -ne 0; then
   AC_MSG_ERROR([TEST_QT3: could not create a project file])
  fi
@@ -244,7 +244,7 @@ EOF
 #endif
 EOF
 
- $ac_qmake -project -nopwd -t lib -o conftest.pro conftest.c &> /dev/null
+ $ac_qmake -project -nopwd -t lib -o conftest.pro "CONFIG+=qt warn_on release" conftest.c &> /dev/null
  if test $? -ne 0; then
   AC_MSG_ERROR([TEST_QT4: could not create a project file])
  fi
