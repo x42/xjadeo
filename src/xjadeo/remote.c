@@ -62,7 +62,6 @@ extern int remote_en;
 extern int remote_mode;
 
 #ifdef HAVE_MIDI
-extern int midiid;
 extern int midi_clkconvert;
 #endif
 
@@ -256,8 +255,8 @@ void xapi_sseekmode (void *d) {
 	if (!strcmp(mode,"key") || atoi(mode)==1)
 		seekflags=AVSEEK_FLAG_BACKWARD;
 	remote_printf(200,"seekmode=%i", seekflags==AVSEEK_FLAG_BACKWARD?1:0);
-//	remote_printf(200,"seekmode=%s", seekflags==AVSEEK_FLAG_BACKWARD?"key":"any");
 }
+
 void xapi_pmwidth(void *d) {
 	remote_printf(200,"movie_width=%i", movie_width);
 }
@@ -414,19 +413,21 @@ void xapi_osd_pos(void *d) {
 
 void xapi_midi_status(void *d) {
 #ifdef HAVE_MIDI
-	if (midiid<0)
-		remote_printf(100,"midi not connected.");
+	if (midi_connected())
+		remote_printf(101,"midi not connected.");
 	else
-		remote_printf(200,"midiport=%i",midiid);
+		remote_printf(100,"midi connected.");
 #else
 	remote_printf(499,"midi not available.");
 #endif
 }
 void xapi_open_midi(void *d) {
 #ifdef HAVE_MIDI
-	midiid = atoi((char*)d);
-	remote_printf(100,"opening midi channel %i.",midiid);
-	midi_open(midiid);
+	midi_open(d);
+	if (midi_connected())
+		remote_printf(100,"MIDI connected.");
+	else
+		remote_printf(440,"MIDI open failed.");
 #else
 	remote_printf(499,"midi not available.");
 #endif
@@ -435,7 +436,6 @@ void xapi_open_midi(void *d) {
 void xapi_close_midi(void *d) {
 #ifdef HAVE_MIDI
 	midi_close();
-	midiid=-2; // back to jack
 	remote_printf(100,"midi close.");
 #else
 	remote_printf(499,"midi not available.");
@@ -444,9 +444,11 @@ void xapi_close_midi(void *d) {
 
 void xapi_detect_midi(void *d) {
 #ifdef HAVE_MIDI
-	midiid = midi_detectdevices(0);
-	midi_open(midiid);
-	remote_printf(100,"opening midi channel %i.",midiid);
+	midi_open("-1");
+	if (midi_connected())
+		remote_printf(100,"MIDI connected.");
+	else
+		remote_printf(440,"MIDI open failed.");
 #else
 	remote_printf(499,"midi not available.");
 #endif
@@ -493,9 +495,9 @@ typedef void myfunction (void *);
 typedef struct _command {
 	const char *name;
 	const char *help;
-	struct _command *children;
+	struct _command *children; // unused
 	myfunction *func;
-	int sticky; // unused - again - now children always overwrite func (precenance parser)
+	int sticky;  // unused
 } Dcommand;
 
 
@@ -592,7 +594,6 @@ void exec_remote_cmd (char *cmd) {
 		remote_printf(400,"unknown command.");
 		return; // no cmd found
 	}
-	//TODO: strip leading and  trailing whitespaces..
 	if ( cur_root[i].func)
 		cur_root[i].func(cmd+strlen(cur_root[i].name));
 	else 
@@ -673,7 +674,7 @@ inline int poll_remote(void) {
 void open_remote_ctrl (void) {
 	inbuf=malloc(sizeof(remotebuffer));
 	inbuf->offset=0;
-	remote_printf(800, "xjadeo - remote ctrl alpha-1 (type 'help<enter>' for info)");
+	remote_printf(800, "xjadeo - remote control (type 'help<enter>' for info)");
 }
 
 void close_remote_ctrl (void) {

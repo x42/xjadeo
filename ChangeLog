@@ -1,4 +1,10 @@
 2006-04-11  rgareus  <robin@gareus.org>
+ xjadeo v0.3.8
+ many minor typos and fixes.
+ fixed midi autodetection in configure.ac
+ added alsa midi support as fallback if portmidi is not found
+
+2006-04-11  rgareus  <robin@gareus.org>
  * configure.ac: renamed options for consistancy.
    new defaults: autodetect all feat. only gtk is disabled by default
    added -DTTFFONTFILE comment. no configure option yet.

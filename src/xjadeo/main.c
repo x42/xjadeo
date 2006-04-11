@@ -101,7 +101,7 @@ int remote_mode =0;	/* 0: undirectional ; >0: bidir
 int try_codec =0;	/* --try-codec */
 
 #ifdef HAVE_MIDI
-int midiid = -2;	/* --midi # -1: autodetect -2: jack*/
+char midiid[32] = "-2";	/* --midi # -1: autodetect -2: jack*/
 int midi_clkconvert =0;	/* --midifps [0:MTC|1:VIDEO|2:RESAMPLE] */
 #endif
 
@@ -120,7 +120,7 @@ char OSD_fontfile[1024] = FONT_FILE;
 char OSD_text[128] = "xjadeo!";
 char OSD_frame[48] = "";
 char OSD_smpte[13] = "";
-int OSD_mode = OSD_SMPTE ;
+int OSD_mode = 0;
 
 int OSD_fx = OSD_CENTER;
 int OSD_tx = OSD_CENTER;
@@ -217,7 +217,7 @@ decode_switches (int argc, char **argv)
 	  break;
 #ifdef HAVE_MIDI
 	case 'm':		/* --midi */
-          midiid = atoi(optarg);
+	  strncpy(midiid,optarg,32);
 	  break;
 	case 'M':		/* --midifps */
           midi_clkconvert = atoi(optarg);
@@ -255,14 +255,20 @@ jack video monitor\n", program_name);
 "  -x <int>, --vo <int>,     set the video output mode (default: 0 - autodetect\n"
 "      --videomode <int>    -1 prints a list of available modes.\n"
 #ifdef HAVE_MIDI
-"  -m <int>, --midi <int>,   use midi instead of jack (-1: autodetect)\n"
-"                            value > -1 specifies midi channel\n" 	  
-"                            use -v -m -1 to list midi channels during autodetection\n" 	  
+#ifdef HAVE_PORTMIDI
+"  -m <int>, --midi <int>,   use portmidi instead of jack (-1: autodetect)\n"
+"                            value > -1 specifies a (input) midi port to use\n" 	  
+"                            use -v -m -1 to list midi ports.\n" 	  
+#else /* alsa midi */
+"  -m <port>,                use alsamidi instead of jack\n"
+"      --midi <port>,        specify alsa midi port id ('amidi -l' to list)\n" 	  
+"                            eg. -m hw:2,0,0  or -m 2,0 \n" 	  
+#endif /* HAVE_PORTMIDI */
 "  -M <int>, --midifps <int> how to 'convert' MTC SMPTE to framenumber:\n"
 "                            0: use framerate of MTC clock\n" 
 "                            2: use video file FPS\n" 
 "                            3: resample: videoFPS / MTC \n" 
-#endif
+#endif /* HAVE_MIDI */
 "  -t, --try-codec           checks if the video-file can be played by jadeo.\n"
 "                            exits with code 1 if the file is not supported.\n"
 "			     no window is opened in this mode.\n"
@@ -367,11 +373,9 @@ main (int argc, char **argv)
   init_moviebuffer();
 
 #ifdef HAVE_MIDI
-  if (midiid < -1 ) {
+  if (atoi(midiid) < -1 ) {
     open_jack();
   } else {
-    if (want_verbose && midiid == -1) midiid = midi_detectdevices(1);
-    else if (midiid == -1) midiid = midi_detectdevices(0);
     midi_open(midiid);
   }
 #else
@@ -391,7 +395,7 @@ main (int argc, char **argv)
   close_movie();
 
 #ifdef HAVE_MIDI
-  if (midiid >=0 ) midi_close(); 
+  if (midi_connected()) midi_close(); 
   else
 #endif
   close_jack();

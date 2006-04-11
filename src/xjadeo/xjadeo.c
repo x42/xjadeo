@@ -75,10 +75,6 @@ extern int want_verbose;
 extern int remote_en;
 extern int remote_mode;
 
-#ifdef HAVE_MIDI
-extern int midiid;
-#endif
-
 extern double 		delay;
 
 extern int seekflags;
@@ -128,7 +124,7 @@ void event_loop(void)
     }
     
 #ifdef HAVE_MIDI
-    if (midiid>=0) newFrame = midi_poll_frame();
+    if (midi_connected()) newFrame = midi_poll_frame();
     else
 #endif
     newFrame = jack_poll_frame();

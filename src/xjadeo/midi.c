@@ -18,28 +18,23 @@
  *  Robin Gareus <robin@gareus.org>
  *  Luis Garrido <luisgarrido@users.sourceforge.net>
  *
- */
- 
-/*
  * many kudos to the portmidi developers and their
  * example code...
+ *
+ * the alsa midi code was inspired by the alsa-tools
+ * amidi.c written by Clemens Ladisch <clemens@ladisch.de>
  */
 
-#define _GNU_SOURCE
-#include <stdio.h>
-#include <string.h>
+#include <xjadeo.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <math.h>
+#include <ctype.h>
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
+#ifdef HAVE_MIDI
 extern int want_quiet;
 extern int want_verbose;
 extern double framerate;
-extern int  midi_clkconvert;
+extern int midi_clkconvert;
 
 
 /*
@@ -90,9 +85,6 @@ void parse_timecode( int data) {
 			tc.type = (data>>1)&3;
 			if (want_verbose) {
 			  printf("\t\t\t\t\t---  %02i:%02i:%02i.%02i [%s]       \r",tc.hour,tc.min,tc.sec,tc.frame,MTCTYPE[tc.type]);
-#ifdef MIDI_DEBUG
-			  printf("\n");
-#endif
 			  fflush(stdout);
 			}
 			memcpy(&last_tc,&tc,sizeof(smpte));
@@ -173,7 +165,7 @@ int parse_sysex_urtm (int data, int state, int type) {
  * portmidi 
  */
 
-#ifdef HAVE_MIDI
+#ifdef HAVE_PORTMIDI
 
 #include <portmidi.h>
 #include <porttime.h>
@@ -294,9 +286,15 @@ void process_midi(PtTimestamp timestamp, void *userData)
 }
 
 
-void midi_open(int midi_input) {
+void midi_open(char *midiid) {
+    int midi_input;
+    if (midi) return;
 
-    if (midi || midi_check(midi_input)) return ;
+    midi_input = atoi(midiid);
+    if (want_verbose && midi_input < 0) midi_input = midi_detectdevices(1);
+    else if (midi_input <0 ) midi_input = midi_detectdevices(0);
+
+    if (midi_check(midi_input)) return ;
 
     // init smpte
     tc.type=tc.min=tc.frame=tc.sec=tc.hour=0;
@@ -349,7 +347,7 @@ void midi_close(void) {
     midi=NULL;
 }
 
-int midi_conected(void) {
+int midi_connected(void) {
 	if (midi) return (1);
 	return (0);
 }
@@ -391,23 +389,10 @@ long midi_poll_frame (void) {
 	return(frame);
 }
 
-#endif /* HAVE_MIDI */
-
-#if 0
+#else  /* endif HAVE_PORTMIDI */
 
 /*
  * alsamidi 
- *
- * working drop in replacement for portmidi.
- * requires xjadeo -m option to be rewritten 
- * eg. open_midi("hw:2,0,0");
- *
- * (compile/link flags:  -lasound )
- *
- * list devices: via `amidi -l` :)
- *
- * this code was inspired by the alsa-tools
- * amidi.c written by Clemens Ladisch <clemens@ladisch.de>
  */
 
 #include <alsa/asoundlib.h>
@@ -439,7 +424,7 @@ void amidi_event(void) {
 	unsigned char buf[256];
 	unsigned short revents;
 
-//	snd_rawmidi_nonblock(amidi, 1);
+	snd_rawmidi_nonblock(amidi, 1);
 	npfds = snd_rawmidi_poll_descriptors_count(amidi);
 	pfds = alloca(npfds * sizeof(struct pollfd));
 	snd_rawmidi_poll_descriptors(amidi, pfds, npfds);
@@ -451,6 +436,7 @@ void amidi_event(void) {
 	if ((rv = snd_rawmidi_read(amidi, buf, sizeof(buf))) <=0 ) return;
 	for (i = 0; i < rv; ++i)
 		if (buf[i] == 0xf1 && (i+1 < rv) && !(buf[i+1]&0x80)) parse_timecode(buf[i+1]);
+	// TODO: parse sysex messages.
 }
 
 long amidi_poll_frame (void) {
@@ -482,4 +468,35 @@ long amidi_poll_frame (void) {
 	}
 	return(frame);
 }
-#endif
+
+inline long midi_poll_frame (void) { return (amidi_poll_frame() ); }
+inline void midi_close(void) {amidi_close();}
+
+void midi_open(char *midiid) {
+	char devicestring[32];
+	if (atoi(midiid)<0) {
+		fprintf(stderr,"AlsaMIDI does not support autodetection. using default hw:2,0,0\n");
+		snprintf(devicestring,31,"hw:2,0,0");
+	} else if (isdigit(midiid[0])) {
+		snprintf(devicestring,31,"hw:%s",midiid);
+	} else {
+		snprintf(devicestring,31,"%s",midiid);
+	}
+	if (want_verbose) 
+		printf("amidi device: '%s'\n",devicestring);
+	amidi_open(devicestring); 
+}
+
+int midi_detectdevices (int print) { 
+	if (print) printf("use 'amidi -l' to list Midi ports\n");
+	return(0);
+}
+
+int midi_connected(void) {
+	if (amidi) return (1);
+	return (0);
+}
+
+#endif /* no HAVE_PORTMIDI -> alsamidi */
+
+#endif /* HAVE_MIDI */

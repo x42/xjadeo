@@ -1,9 +1,5 @@
 TODO
 ----
-  XJADEO: 
-
- - check and fix for POSIX compliance 
-
   DISPLAY:
 
  - getwindow position 
@@ -20,8 +16,7 @@ TODO
  - freetype font config. outline font? color, xposition.
 
   MIDI:
- - xjadeoify alsamidi :)
- - portmidi: error handling (don't abort on error)
+ - portmidi: error handling (portmidi aborts on error)
 
   REMOTE: 
  - some commands are 402: not yet implemented

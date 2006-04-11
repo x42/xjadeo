@@ -55,9 +55,9 @@ void frame_to_smptestring(char *smptestring, long int frame);
 /* midi.c function prototype */
 #ifdef HAVE_MIDI
 long midi_poll_frame (void);
-int midi_detectdevices (int print);
-void midi_open(int midi_input);
+void midi_open(char *midiid);
 void midi_close(void);
+int midi_connected(void);
 #endif
 
 

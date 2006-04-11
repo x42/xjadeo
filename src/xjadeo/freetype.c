@@ -20,7 +20,7 @@
  *
  * this is basically the freetype2 rendering example
  *
- * ToDo: 
+ * TODO: 
  * - init the library and load font file only once
  * - merge the draw_bitmap() with OSD_renderXXX() 
  * - xjadeo configurable Font size 

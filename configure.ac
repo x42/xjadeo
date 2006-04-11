@@ -7,7 +7,7 @@ AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
 dnl Every other copy of the package version number gets its value from here
-AM_INIT_AUTOMAKE(xjadeo, 0.3.7)
+AM_INIT_AUTOMAKE(xjadeo, 0.3.8)
 
 dnl create a config.h file (Automake will add -DHAVE_CONFIG_H)
 AM_CONFIG_HEADER(config.h)
@@ -40,7 +40,8 @@ AH_TEMPLATE([HAVE_GTK], [Define as 1 if you have gtk])
 AH_TEMPLATE([HAVE_SDL], [Define as 1 if you have libsdl])
 AH_TEMPLATE([HAVE_LIBXV], [Define as 1 if  you have the Xv library (-lXv)])
 AH_TEMPLATE([HAVE_IMLIB], [Define as 1 if you have imlib])
-AH_TEMPLATE([HAVE_MIDI], [Define as 1 if you have portmidi and asound])
+AH_TEMPLATE([HAVE_PORTMIDI], [Define as 1 if you have portmidi and asound])
+AH_TEMPLATE([HAVE_MIDI], [Define as 1 if you have either alsa or portmidi])
 
 if test "$enable_gtk" = "yes"; then
 	REQUIRES='glib >= 1.2.4 gtk+ >= 1.2.4'
@@ -58,14 +59,28 @@ if test "x$enable_xv" != "xno"; then
 fi
 
 if test "x$enable_midi" != "xno"; then
-	AC_CHECK_HEADERS(portmidi.h porttime.h )
+	AC_CHECK_HEADERS(prtmidi.h porttime.h , [FOUND_H_PORTMIDI=yes])
 	BACKUPLIBS="$LIBS"
 	LIBS="$LIBS -lporttime"
-	AC_CHECK_LIB([portmidi], [Pm_CountDevices], , [AC_MSG_ERROR(*** MIDI: portmidi-dev not found ***)])
+	AC_CHECK_LIB([portmidi], [Pm_CountDevices], [FOUND_L_PORTMIDI=yes])
 	LIBS="$BACKUPLIBS"
-	AC_DEFINE(HAVE_MIDI) 
-	MIDI_LIBS="-lportmidi -lporttime"
-	AC_SUBST(MIDI_LIBS)
+
+	if test "x$FOUND_H_PORTMIDI$FOUND_H_PORTMIDI" = "xyesyes"; then
+		AC_DEFINE(HAVE_MIDI) 
+		AC_DEFINE(HAVE_PORTMIDI) 
+		MIDI_LIBS="-lportmidi -lporttime"
+		AC_SUBST(MIDI_LIBS)
+	else 
+	    AC_CHECK_HEADERS(alsa/asoundlib.h, [FOUND_H_ALSAMIDI=yes])
+	    BACKUPLIBS="$LIBS"
+	    AC_CHECK_LIB([asound], [snd_rawmidi_open], [FOUND_L_ALSAMIDI=yes])
+
+	    if test "x$FOUND_H_ALSAMIDI$FOUND_H_ALSAMIDI" = "xyesyes"; then
+		AC_DEFINE(HAVE_MIDI) 
+		MIDI_LIBS="-lasound"
+		AC_SUBST(MIDI_LIBS)
+	    fi
+	fi
 fi
 
 if test "x$enable_imlib" != "xno"; then
