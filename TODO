@@ -1,24 +1,27 @@
 TODO
 ----
+  XJADEO: 
+
+ - check and fix for POSIX compliance 
 
   DISPLAY:
 
- - fall back on a different video mode when one is not avail.
- - parse --vo option by names (no ints -> remove SUP_XXX stuff from display.c)
- - XV & SDL  multiple sessions...??  -> fall back to use different (non accelerated) video mode.
+ - getwindow position 
+
+ - fullscreen (windowless mode)
+
+ - SDL RGB SWSURFACE (new videomode)
 
  - speed up YUV trancoding - rewrite "buffer" concept.
    have ffmpeg decode directly to shared-mem...
 
- - add some credits to http://libdv.sourceforge.net/  
-   playdv source provided good inspiration for SDL and Xv.
  - keyboard events. (-> generate remote msgs)
 
- - check and fix for POSIX compliance 
+ - freetype font config. outline font? color, xposition.
 
   MIDI:
- - use alsamidi -> qjackctrl client (LATER - if at all)
- - make midi_eventloop standalone thread, or make midi buffer configurable
+ - xjadeoify alsamidi :)
+ - portmidi: error handling (don't abort on error)
 
   REMOTE: 
  - some commands are 402: not yet implemented
@@ -40,7 +43,7 @@ put xjadeo-session name in window title ?
 New Feature request / Brainstorm:
  - check cpu load - dynamically increase delay if above threshold.
 
- - allow dynamically adj. of offset.
+ - allow dynamic adj. of offset.
    eg. press key '-' '+' sub/add a frame. (see note abvoe)
  - parse offset from EDL file 
  

@@ -1,5 +1,28 @@
+/* xjadeo - jack video monitor
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+ *
+ * (c) 2006 
+ *  Robin Gareus <robin@gareus.org>
+ *  Luis Garrido <luisgarrido@users.sourceforge.net>
+ *
+ */
 #include "xjadeo.h"
 #include "display.h"
+
+extern int want_verbose;
 
 /*******************************************************************************
  *
@@ -14,6 +37,7 @@ void newsrc_null (void) { ; }
 void resize_null (unsigned int x, unsigned int y) { ; }
 void getsize_null (unsigned int *x, unsigned int *y) { if(x)*x=0; if(y)*y=0; }
 void position_null (int x, int y) { ; }
+void getpos_null (int *x, int *y) { if(x)*x=0; if(y)*y=0; }
 
 
 
@@ -106,42 +130,63 @@ typedef struct {
 	void (*resize)(unsigned int x, unsigned int y);
 	void (*getsize)(unsigned int *x, unsigned int *y);
 	void (*position)(int x, int y);
+	void (*getpos)(int *x, int *y);
 }vidout;
 
 // make sure the video modes are numbered the same on every system,
 // until we switch to named --vo :)
-const vidout VO[] = {
-	{ PIX_FMT_RGB24,   1, 		"NULL", &render_null, &open_window_null, &close_window_null, &handle_X_events_null, &newsrc_null, &resize_null, &getsize_null, &position_null}, // NULL is --vo 0 -> autodetect 
+#define NULLOUTPUT &render_null, &open_window_null, &close_window_null, &handle_X_events_null, &newsrc_null, &resize_null, &getsize_null, &position_null, &getpos_null
 
-	{ PIX_FMT_RGB24,   SUP_GTK,	"GTK",
-#if HAVE_MYGTK
-		&render_gtk, &open_window_gtk, &close_window_gtk, &handle_X_events_gtk, &newsrc_null, &resize_gtk, &getsize_gtk, &position_null},
+const vidout VO[] = {
+	{ PIX_FMT_RGB24,   1, 		"NULL", NULLOUTPUT}, // NULL is --vo 0 -> autodetect 
+	{ PIX_FMT_YUV420P, SUP_LIBXV,	"XV - X11 video extension",
+#if HAVE_LIBXV
+		&render_xv, &open_window_xv, &close_window_xv, &handle_X_events_xv, &newsrc_xv, &resize_xv, &get_window_size_xv, &position_xv, get_window_pos_xv},
 #else
-		&render_null, &open_window_null, &close_window_null, &handle_X_events_null, &newsrc_null, &resize_null, &getsize_null, &position_null},
+		NULLOUTPUT},
 #endif
 	{ PIX_FMT_YUV420P, SUP_SDL,	"SDL", 
 #if HAVE_SDL
-		&render_sdl, &open_window_sdl, &close_window_sdl, &handle_X_events_sdl, &newsrc_sdl, &resize_sdl, &getsize_sdl, &position_sdl},
+		&render_sdl, &open_window_sdl, &close_window_sdl, &handle_X_events_sdl, &newsrc_sdl, &resize_sdl, &getsize_sdl, &position_sdl, &getpos_null},
 #else
-		&render_null, &open_window_null, &close_window_null, &handle_X_events_null, &newsrc_null, &resize_null, &getsize_null, &position_null},
+		NULLOUTPUT},
 #endif
 	{ PIX_FMT_RGB24,   SUP_IMLIB,   "x11 - ImLib",
 #if HAVE_IMLIB
-		&render_imlib, &open_window_imlib, &close_window_imlib, &handle_X_events_imlib, &newsrc_imlib, &resize_imlib, &get_window_size_imlib, &position_imlib},
+		&render_imlib, &open_window_imlib, &close_window_imlib, &handle_X_events_imlib, &newsrc_imlib, &resize_imlib, &get_window_size_imlib, &position_imlib, &get_window_pos_imlib},
 #else
-		&render_null, &open_window_null, &close_window_null, &handle_X_events_null, &newsrc_null, &resize_null, &getsize_null, &position_null},
+		NULLOUTPUT},
 #endif
-	{ PIX_FMT_YUV420P, SUP_LIBXV,	"x11 - XV",
-#if HAVE_LIBXV
-		&render_xv, &open_window_xv, &close_window_xv, &handle_X_events_xv, &newsrc_xv, &resize_xv, &get_window_size_xv, &position_xv},
+	{ PIX_FMT_RGB24,   SUP_GTK,	"GTK",
+#if HAVE_MYGTK
+		&render_gtk, &open_window_gtk, &close_window_gtk, &handle_X_events_gtk, &newsrc_null, &resize_gtk, &getsize_gtk, &position_null, &getpos_null},
 #else
-		&render_null, &open_window_null, &close_window_null, &handle_X_events_null, &newsrc_null, &resize_null, &getsize_null, &position_null},
+		NULLOUTPUT},
 #endif
 	{-1,-1,NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL} // the end.
 };
 
 
 int VOutput = 0;
+
+
+int parsevidoutname (char *arg) {
+	int i=0;
+	int s0=strlen(arg);
+	if (s0==0) return (0);
+
+	while (VO[++i].supported>=0) {
+		int s1=strlen(VO[i].name);
+		if (!strncasecmp(VO[i].name,arg,s0>s1?s1:s0)) return(i);
+	}
+	return(0);
+}
+
+const char * vidoutname (int i) {
+	// this does not check if i < array length!!
+	// should be no need for :)
+	return (VO[i].name);
+}
 
 void dump_vopts (void) {
 	int i=0;
@@ -154,16 +199,28 @@ void dump_vopts (void) {
 	}
 }
 
+int try_next_vidoutmode(int user_req) {
+	int i=0;
+	// check available modes..
+	while (VO[++i].supported>=0);
+
+	if (user_req >= i || user_req < 0 ) return (-1);
+	if (user_req < i && user_req > 0 && VO[user_req].supported) return(1);
+	return (0);
+}
+
 int vidoutmode(int user_req) {
+	int i=0;
 	if (user_req < 0) {
 		dump_vopts();
 		exit (0);
 	}
 
-	// auto-detect
-	int i=0;
+	VOutput=0;
+
+	// check available modes..
 	while (VO[++i].supported>=0) {
-		if (VO[i].supported) {
+		if (VO[i].supported && VOutput==0) {
 			VOutput=i;
 		}
 	}
@@ -199,7 +256,6 @@ void open_window(int *argc, char ***argv) {
 		fprintf(stderr,"Could not open video output.\n");
 		VOutput=0;
 		loop_run=0;
-	//	exit(1);
 	}
 }
 
@@ -219,6 +275,10 @@ void newsourcebuffer (void) {
 
 int getvidmode (void) {
 	return(VOutput);
+}
+
+void Xgetpos (int *x, int *y) {
+	VO[VOutput].getpos(x,y);
 }
 
 void Xgetsize (unsigned int *x, unsigned int *y) {

@@ -1,20 +1,23 @@
-/* 
-   xjadeo - jack video monitor
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
-*/
+/* xjadeo - jack video monitor
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+ *
+ * (c) 2006 
+ *  Robin Gareus <robin@gareus.org>
+ *  Luis Garrido <luisgarrido@users.sourceforge.net>
+ */
 
 #include "xjadeo.h"
 
@@ -60,6 +63,7 @@ extern int remote_mode;
 
 #ifdef HAVE_MIDI
 extern int midiid;
+extern int midi_clkconvert;
 #endif
 
 extern double 		delay;
@@ -132,7 +136,7 @@ void xapi_set_videomode(void *d) {
 	remote_printf(100, "setting video mode to %i",vmode);
 
 	render_fmt = vidoutmode(vmode);
-	open_window(0,NULL); // else VOutout callback fn will fail.
+	open_window(0,NULL); // required here; else VOutout callback fn will fail.
 
 	if (pFrameFMT && current_file) { 
 		// reinit buffer with new format
@@ -150,10 +154,6 @@ void xapi_open_window(void *d) {
 		remote_printf(412, "window already open.");
 		return;
 	}
-
-// TODO: allow video output mode switching
-//render_fmt = vidoutmode(videomode);
-//  init_moviebuffer();
 	vidoutmode(videomode); // init VOutput
 	open_window(0,NULL);
 	remote_printf(100, "window opened.");
@@ -161,6 +161,12 @@ void xapi_open_window(void *d) {
 
 void xapi_pvideomode(void *d) {
 	remote_printf(200,"videomode=%i", getvidmode());
+}
+
+void xapi_pwinpos(void *d) {
+	int x,y;
+	Xgetpos(&x,&y); 
+	remote_printf(200,"windowpos=%ix%i",x,y);
 }
 
 void xapi_pwinsize(void *d) {
@@ -236,6 +242,22 @@ void xapi_poffset(void *d) {
 	remote_printf(200,"offset=%li",(long int) ts_offset);
 }
 
+void xapi_pseekmode (void *d) {
+	remote_printf(200,"seekmode=%i", seekflags==AVSEEK_FLAG_BACKWARD?1:0);
+}
+
+void xapi_sseekmode (void *d) {
+	char *mode= (char*)d;
+#if LIBAVFORMAT_BUILD > 4622
+	seekflags    = AVSEEK_FLAG_ANY; /* non keyframe */
+#else
+	seekflags    = AVSEEK_FLAG_BACKWARD; /* keyframe */
+#endif
+	if (!strcmp(mode,"key") || atoi(mode)==1)
+		seekflags=AVSEEK_FLAG_BACKWARD;
+	remote_printf(200,"seekmode=%i", seekflags==AVSEEK_FLAG_BACKWARD?1:0);
+//	remote_printf(200,"seekmode=%s", seekflags==AVSEEK_FLAG_BACKWARD?"key":"any");
+}
 void xapi_pmwidth(void *d) {
 	remote_printf(200,"movie_width=%i", movie_width);
 }
@@ -430,6 +452,23 @@ void xapi_detect_midi(void *d) {
 #endif
 }
 
+void xapi_pmidisync(void *d) {
+#ifdef HAVE_MIDI
+	remote_printf(200,"midisync=%i", midi_clkconvert);
+#else
+	remote_printf(499,"midi not available.");
+#endif
+}
+
+void xapi_smidisync(void *d) {
+#ifdef HAVE_MIDI
+        midi_clkconvert = atoi((char*)d);
+	remote_printf(100,"midisync=%i", midi_clkconvert);
+#else
+	remote_printf(499,"midi not available.");
+#endif
+}
+
 void xapi_bidir_noframe(void *d) {
 	remote_printf(100,"disabled frame notification.");
 	remote_mode&=~1;
@@ -485,8 +524,8 @@ Dcommand cmd_root[] = {
 	{"get width", ": query width of video source buffer", NULL, xapi_pmwidth , 0 },
 	{"get height", ": query width of video source buffer", NULL, xapi_pmheight , 0 },
 
-	{"get seekmode", ": returns 1 if decoding keyframes only", NULL, xapi_null, 0 },
-	{"set seekmode ", "<1|0>: set to one to seek only keyframes", NULL, xapi_null, 0 },
+	{"get seekmode", ": returns 1 if decoding keyframes only", NULL, xapi_pseekmode, 0 },
+	{"set seekmode ", "<1|0>: set to one to seek only keyframes", NULL, xapi_sseekmode, 0 },
 
 	{"window close", ": close window", NULL, xapi_close_window, 0 },
 	{"window open", ": open window", NULL, xapi_open_window, 0 },
@@ -496,7 +535,7 @@ Dcommand cmd_root[] = {
 	{"window pos " , "<int>x<int>: move window", NULL, xapi_swinpos, 0 },
 
 	{"get windowsize" , ": show current window size", NULL, xapi_pwinsize, 0 },
-	{"get windowpos" , ": show current window position", NULL, xapi_null, 0 },
+	{"get windowpos" , ": show current window position", NULL, xapi_pwinpos, 0 },
 
 	{"get videomode" , ": display current video mode", NULL, xapi_pvideomode, 0 },
 	{"list videomodes" , ": displays a list of possible video modes", NULL, xapi_null, 0 },
@@ -523,6 +562,8 @@ Dcommand cmd_root[] = {
 	{"midi connect ", "<int>: connect to midi time source", NULL, xapi_open_midi, 0 },
 	{"midi disconnect", ": unconect from midi device", NULL, xapi_close_midi, 0 },
 	{"midi status", ": show connected midi port", NULL, xapi_midi_status, 0 },
+	{"get midisync", ": display midi smpte conversion mode", NULL, xapi_pmidisync, 0 },
+	{"set midisync ", "<int>: MTC smpte conversion. 0:MTC 2:Video 3:resample", NULL, xapi_smidisync, 0 },
 
 	{"help", ": show a quick help", NULL , api_help, 0 },
 	{"quit", ": quit xjadeo", NULL , xapi_quit, 0 },

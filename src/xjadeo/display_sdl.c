@@ -1,3 +1,29 @@
+/* xjadeo - jack video monitor
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+ *
+ * (c) 2006 
+ *  Robin Gareus <robin@gareus.org>
+ *  Luis Garrido <luisgarrido@users.sourceforge.net>
+ *
+ * this file was inspired by playdv source code of http://libdv.sourceforge.net/.
+ *  - (c) 2000 Charles 'Buck' Krasic 
+ *  - (c) 2000 Erik Walthinsen 
+ *
+ */
+
 #include "xjadeo.h"
 #include "display.h"
 
@@ -27,7 +53,7 @@ void close_window_sdl(void) {
 TTF_Font *font;
 
 #define FONT_PTSIZE     18
-#define FONT_FILE       "arial.ttf"
+#define SDL_FONTFILE	"arial.ttf"
 
 
 SDL_Color white = { 0xFF, 0xFF, 0xFF, 0 };
@@ -49,9 +75,9 @@ int InitTTF (void) {
 		return (-1);
 	}
 //	atexit(TTF_Quit);
-	font = TTF_OpenFont(FONT_FILE, FONT_PTSIZE);
+	font = TTF_OpenFont(SDL_FONTFILE, FONT_PTSIZE);
 	if ( font == NULL ) {
-		fprintf(stderr, "Error: Couldn't load %d pt font from %s: %s\n", FONT_PTSIZE, FONT_FILE, SDL_GetError());
+		fprintf(stderr, "Error: Couldn't load %d pt font from %s: %s\n", FONT_PTSIZE, SDL_FONTFILE, SDL_GetError());
 		return(-2);
 	}
 	TTF_SetFontStyle(font, TTF_STYLE_NORMAL);
@@ -88,8 +114,9 @@ int open_window_sdl (int *argc, char ***argv) {
 	int video_bpp;
 
 	if(SDL_Init(SDL_INIT_VIDEO) < 0) goto no_sdl;
-
-//	InitTTF(); // FIXME: exit if rv..
+#if 0
+	InitTTF(); // FIXME: exit if retval !=0..
+#endif
 
 	/* Get the "native" video mode */
 	video_info = SDL_GetVideoInfo();
@@ -102,7 +129,9 @@ int open_window_sdl (int *argc, char ***argv) {
 			video_bpp = 16;
 			break;
 	} 
-
+// TODO : if no HWSURFACE overlay -> use RGB software rendering 
+// - SDL_CreateRGBSurfaceFrom..
+// - vidoutmodes "SDL RGB" and "SDL XV"!?
 	sdl_screen = SDL_SetVideoMode(movie_width,movie_height, video_bpp,SDL_HWSURFACE | SDL_RESIZABLE);
 	SDL_WM_SetCaption("xjadeo", "xjadeo");
 	sdl_overlay = SDL_CreateYUVOverlay(movie_width, movie_height, SDL_YV12_OVERLAY, sdl_screen);
@@ -116,7 +145,7 @@ int open_window_sdl (int *argc, char ***argv) {
 
 	if ( sdl_overlay->pitches[0] != movie_width ||
 			sdl_overlay->pitches[1] != sdl_overlay->pitches[2] ) {
-		printf("unsupported SDL YV12.\n"); 
+		fprintf(stderr,"unsupported SDL YV12.\n"); 
 		goto no_overlay;
 	}  
 #if 0  // verify YUV alignment
@@ -136,7 +165,7 @@ no_sdl:
 }
 
 void resize_sdl (unsigned int x, unsigned int y) { 
-	sdl_screen = SDL_SetVideoMode(x, y, 0, SDL_RESIZABLE | SDL_SWSURFACE);
+	sdl_screen = SDL_SetVideoMode(x, y, 0, SDL_RESIZABLE | SDL_HWSURFACE);
 	sdl_rect.w=x;
 	sdl_rect.h=y;
 }

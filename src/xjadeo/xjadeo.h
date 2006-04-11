@@ -9,17 +9,22 @@
 #endif
 
 /* prototypes of fn's in  display.c */
-void handle_X_events (void);
 void newsourcebuffer (void);
-void handle_X_events (void);
 void close_window(void);
 void open_window(int *argc, char ***argv);
-void render_buffer (uint8_t *mybuffer);
+
 int vidoutmode(int user_req);
+int parsevidoutname (char *arg);
 int getvidmode (void);
+const char *vidoutname (int i);
+int try_next_vidoutmode(int user_req);
+
+void render_buffer (uint8_t *mybuffer);
+void handle_X_events (void);
 void Xresize (unsigned int x, unsigned int y);
 void Xgetsize (unsigned int *x, unsigned int *y);
 void Xposition (int x, int y);
+void Xgetpos (int *x, int *y);
 
 /* remote.c */
 void close_remote_ctrl (void) ;
@@ -66,8 +71,18 @@ enum { OSD_LEFT=0, OSD_CENTER, OSD_RIGHT };
 
 #define ST_PADDING (10)
 
-//#define FONT_FILE       "arial.ttf"
-#define FONT_FILE       "/usr/share/fonts/truetype/msttcorefonts/arial.ttf"
+/* the default font file (first in the list of fontfiles to search)
+ * can be specified at compile time with...
+ * -DTTFFONTFILE=\"/path/to/file.ttf\"
+ *
+ * dont set to "" - or no fontfiles will be checked.
+ * full list in main.c fontfile[]
+ */
+#ifdef TTFFONTFILE
+#define FONT_FILE TTFFONTFILE
+#else 
+#define FONT_FILE       "/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf"
+#endif
 
 int render_font (char *fontfile, char *text);
 #ifdef HAVE_FT

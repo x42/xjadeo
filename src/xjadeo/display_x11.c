@@ -1,3 +1,29 @@
+/* xjadeo - jack video monitor
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+ *
+ * (c) 2006 
+ *  Robin Gareus <robin@gareus.org>
+ *  Luis Garrido <luisgarrido@users.sourceforge.net>
+ *
+ * this file was inspired by playdv source code of http://libdv.sourceforge.net/.
+ *  - (c) 2000 Charles 'Buck' Krasic 
+ *  - (c) 2000 Erik Walthinsen 
+ *
+ */
+
 #include "xjadeo.h"
 #include "display.h"
 
@@ -61,11 +87,18 @@ void deallocate_xvimage(void) {
 	xv_buffer=NULL;
 }
 
+void get_window_pos_xv (int *x,  int *y) {
+	unsigned int dummy_u0, dummy_u1;
+	unsigned int dummy_W, dummy_H;
+	Window dummy_w;
+	XGetGeometry(xv_dpy, xv_win, &dummy_w, x,y, &dummy_W, &dummy_H,&dummy_u0,&dummy_u1);
+}
+
 void get_window_size_xv (unsigned int *my_Width, unsigned int *my_Height) {
-	int dummy0,dummy1;
+	int dummyX,dummyY;
 	unsigned int dummy_u0, dummy_u1;
 	Window dummy_w;
-	XGetGeometry(xv_dpy, xv_win, &dummy_w, &dummy0,&dummy1,my_Width,my_Height,&dummy_u0,&dummy_u1);
+	XGetGeometry(xv_dpy, xv_win, &dummy_w, &dummyX,&dummyY,my_Width,my_Height,&dummy_u0,&dummy_u1);
 }
 
 void resize_xv (unsigned int x, unsigned int y) { 
@@ -160,6 +193,20 @@ void handle_X_events_xv (void) {
 				}
 //				fprintf(stdout, "Button %i release event.\n", event.xbutton.button);
 				render_xv(buffer);
+				break;
+			case KeyPress:
+				{
+					int key;
+					KeySym keySym;
+					char buf[100];
+					static XComposeStatus stat;
+
+					XLookupString(&event.xkey, buf, sizeof(buf), &keySym, &stat);
+					key = ((keySym & 0xff00) != 0 ? ((keySym & 0x00ff) + 256) : (keySym));
+					if (key == (0x1b + 256) ) loop_flag=0;
+				//	printf("X11 key press: '%c'\n",key);
+				//	xjadeo_putkey(key);
+				}
 				break;
 			default:
 				break;
@@ -321,7 +368,7 @@ int open_window_xv (int *argc, char ***argv) {
 		    &x_wname, &x_iname,
 		  NULL, 0, &hints, &wmhints, NULL);
 
-  XSelectInput(xv_dpy, xv_win, ButtonPressMask | ButtonReleaseMask | ExposureMask | StructureNotifyMask);
+  XSelectInput(xv_dpy, xv_win, KeyPressMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | StructureNotifyMask);
   XMapRaised(xv_dpy, xv_win);
 
   if ((xv_del_atom = XInternAtom(xv_dpy, "WM_DELETE_WINDOW", True)) != None)
@@ -375,6 +422,13 @@ void get_window_size_imlib (unsigned int *my_Width, unsigned int *my_Height) {
 	XGetGeometry(display, window, &dummy_w, &dummy0,&dummy1,my_Width,my_Height,&dummy_u0,&dummy_u1);
 }
 
+void get_window_pos_imlib (int *x,  int *y) {
+	unsigned int dummy_u0, dummy_u1;
+	unsigned int dummy_W, dummy_H;
+	Window dummy_w;
+	XGetGeometry(display, window, &dummy_w, x,y, &dummy_W, &dummy_H,&dummy_u0,&dummy_u1);
+}
+
 int open_window_imlib (int *argc, char ***argv) {
   if ( (display=XOpenDisplay(NULL)) == NULL )
   {
@@ -409,7 +463,7 @@ int open_window_imlib (int *argc, char ***argv) {
   gc = XCreateGC(display, window, valuemask, &values);
   
   // defined in: /usr/include/X11/X.h  //  | VisibilityChangeMask);
-  XSelectInput(display, window, ExposureMask | ButtonPressMask | ButtonReleaseMask |StructureNotifyMask ); 
+  XSelectInput(display, window, KeyPressMask | ExposureMask | ButtonPressMask | ButtonReleaseMask |StructureNotifyMask ); 
   
   XMapWindow(display, window);
       
@@ -504,6 +558,20 @@ void handle_X_events_imlib (void) {
 		else my_Height=floor((float)my_Width * (float)movie_height / (float)movie_width);
 
 		XResizeWindow(display, window, my_Width, my_Height);
+	}
+	break;
+	case KeyPress:
+	{
+		int key;
+		KeySym keySym;
+		char buf[100];
+		static XComposeStatus stat;
+
+		XLookupString(&event.xkey, buf, sizeof(buf), &keySym, &stat);
+		key = ((keySym & 0xff00) != 0 ? ((keySym & 0x00ff) + 256) : (keySym));
+		if (key == (0x1b + 256) ) loop_flag=0;
+	//	printf("X11 key press: '%c'\n",key);
+	//	xjadeo_putkey(key);
 	}
 	break;
 #if 0

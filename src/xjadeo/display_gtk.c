@@ -1,3 +1,25 @@
+/* xjadeo - jack video monitor
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+ *
+ * (c) 2006 
+ *  Robin Gareus <robin@gareus.org>
+ *  Luis Garrido <luisgarrido@users.sourceforge.net>
+ *
+ */
+
 #include "xjadeo.h"
 #include "display.h"
 
@@ -19,11 +41,16 @@ void on_mygtk_destroy (GtkObject *object, gpointer user_data) {
 }
 
 void on_mygtk_expose (GtkObject *object, gpointer user_data) {
-	printf("expose\n");
-//	render_gtk (buffer);
+	if(buffer) render_gtk (buffer);
 }
 
-static gint on_mygtk_clicked( GtkWidget      *widget, GdkEventButton *event )
+void on_mygtk_key( GtkWidget      *widget, GdkEventKey *event ){
+	if(event->keyval == GDK_Escape) loop_flag=0;
+//	return TRUE;
+}
+
+
+void on_mygtk_clicked( GtkWidget      *widget, GdkEventButton *event )
 {
 	if (event->button == 1 ) {
 		gdk_window_resize(gwindow->window,movie_width,movie_height);
@@ -57,7 +84,7 @@ static gint on_mygtk_clicked( GtkWidget      *widget, GdkEventButton *event )
 	else printf("other: %i\n",event->button);
 #endif
 
-	return TRUE;
+//	return TRUE;
 }
 
 void resize_gtk (unsigned int x, unsigned int y) { 
@@ -102,13 +129,16 @@ int open_window_gtk(int *argc, char ***argv) {
 	gtk_signal_connect ((gpointer) gwindow, "destroy", on_mygtk_destroy, NULL);
 //	gtk_signal_connect ((gpointer) gwindow, "destroy", gtk_widget_destroy, NULL);
 
-	gtk_signal_connect ((gpointer) gimage, "expose", on_mygtk_expose, NULL);
 //
 	gtk_widget_add_events (gimage,
-			GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK |
+			GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK | 
 			GDK_BUTTON_PRESS_MASK| GDK_BUTTON_RELEASE_MASK);
 
+	gtk_widget_add_events (gwindow, GDK_KEY_PRESS_MASK);
+
+	gtk_signal_connect ((gpointer) gimage, "expose_event", on_mygtk_expose, NULL);
  	gtk_signal_connect ((gpointer) gimage, "button_release_event", on_mygtk_clicked, NULL);
+ 	gtk_signal_connect ((gpointer) gwindow, "key_press_event", on_mygtk_key, NULL);
 
 
 	gtk_widget_show(gimage);

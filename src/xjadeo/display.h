@@ -27,6 +27,7 @@
 #if HAVE_MYGTK
 #include <gtk/gtk.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
+#include <gdk/gdkkeysyms.h>
 
 #define SUP_GTK 1
 #else
@@ -85,6 +86,7 @@ void handle_X_events_sdl (void) ;
 #endif /* HAVE_LIBXV */
 
 void get_window_size_xv (unsigned int *my_Width, unsigned int *my_Height);
+void get_window_pos_xv (int *x,  int *y);
 void resize_xv (unsigned int x, unsigned int y);
 void position_xv (int x, int y);
 void render_xv (uint8_t *mybuffer);
@@ -113,6 +115,7 @@ void close_window_xv(void);
 #endif 
 
 void get_window_size_imlib (unsigned int *my_Width, unsigned int *my_Height);
+void get_window_pos_imlib (int *x,  int *y);
 int open_window_imlib (int *argc, char ***argv);
 void close_window_imlib(void);
 void render_imlib (uint8_t *mybuffer);

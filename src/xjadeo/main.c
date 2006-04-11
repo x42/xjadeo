@@ -1,23 +1,22 @@
-/* 
-   xjadeo - jack video monitor
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
-*/
-/* Credits:
- * 
- * xjadeo: 
+/* xjadeo - jack video monitor
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+ *
+ * Credits:
+ *
+ * xjadeo:  (c) 2006 
  *  Luis Garrido <luisgarrido@users.sourceforge.net>
  *  Robin Gareus <robin@gareus.org>
  *
@@ -41,6 +40,8 @@
 
 #include <getopt.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 
@@ -101,15 +102,16 @@ int try_codec =0;	/* --try-codec */
 
 #ifdef HAVE_MIDI
 int midiid = -2;	/* --midi # -1: autodetect -2: jack*/
+int midi_clkconvert =0;	/* --midifps [0:MTC|1:VIDEO|2:RESAMPLE] */
 #endif
 
-double 		delay = 0.1; // default update rate 10 Hz
-int		videomode = 0; // autodect
+double 	delay = 0.1; // default update rate 10 Hz
+int	videomode = 0; // --vo <int>  - default: autodetect
 
 #if LIBAVFORMAT_BUILD > 4622
- int seekflags    = AVSEEK_FLAG_ANY; /* non keyframe */
+ int 	seekflags    = AVSEEK_FLAG_ANY; /* non keyframe */
 #else
- int seekflags    = AVSEEK_FLAG_BACKWARD; /* keyframe */
+ int 	seekflags    = AVSEEK_FLAG_BACKWARD; /* keyframe */
 #endif
 
 
@@ -118,7 +120,7 @@ char OSD_fontfile[1024] = FONT_FILE;
 char OSD_text[128] = "xjadeo!";
 char OSD_frame[48] = "";
 char OSD_smpte[13] = "";
-int OSD_mode = 0 ;
+int OSD_mode = OSD_SMPTE ;
 
 int OSD_fx = OSD_CENTER;
 int OSD_tx = OSD_CENTER;
@@ -151,6 +153,7 @@ static struct option const long_options[] =
   {"try-codec", no_argument, 0, 't'},
 #ifdef HAVE_MIDI
   {"midi", required_argument, 0, 'm'},
+  {"midifps", required_argument, 0, 'M'},
 #endif
   {NULL, 0, NULL, 0}
 };
@@ -175,6 +178,7 @@ decode_switches (int argc, char **argv)
 			   "x:"	/* video-mode */
 #ifdef HAVE_MIDI
 			   "m:"	/* midi interface */
+			   "M:"	/* midi clk convert */
 #endif
 			   "V",	/* version */
 			   long_options, (int *) 0)) != EOF)
@@ -209,10 +213,14 @@ decode_switches (int argc, char **argv)
 	  break;
 	case 'x':		/* --vo --videomode */
           videomode = atoi(optarg);
+	  if (videomode == 0) videomode = parsevidoutname(optarg);
 	  break;
 #ifdef HAVE_MIDI
 	case 'm':		/* --midi */
           midiid = atoi(optarg);
+	  break;
+	case 'M':		/* --midifps */
+          midi_clkconvert = atoi(optarg);
 	  break;
 #endif
 	case 'V':
@@ -239,17 +247,21 @@ jack video monitor\n", program_name);
   printf (""
 "Options:\n"
 "  -q, --quiet, --silent     inhibit usual output\n"
-"  -R,                       remote control (stdin) - implies non verbose quiet mode\n"
-"  --verbose                 print more information\n"
-"  -f <val>, --fps <val>     override default fps.\n"
+"  -v, --verbose             print more information\n"
+"  -R, --remote              remote control (stdin) - implies non verbose quiet mode\n"
+"  -f <val>, --fps <val>     video display update fps - default 10.0 fps\n"
 "  -k, --keyframes           seek to keyframes only\n"
 "  -o <int>, --offset <int>  add/subtract <int> video-frames to/from timecode\n"
 "  -x <int>, --vo <int>,     set the video output mode (default: 0 - autodetect\n"
-"       --videomode <int>    -1 prints a list of available modes.\n"
+"      --videomode <int>    -1 prints a list of available modes.\n"
 #ifdef HAVE_MIDI
 "  -m <int>, --midi <int>,   use midi instead of jack (-1: autodetect)\n"
 "                            value > -1 specifies midi channel\n" 	  
 "                            use -v -m -1 to list midi channels during autodetection\n" 	  
+"  -M <int>, --midifps <int> how to 'convert' MTC SMPTE to framenumber:\n"
+"                            0: use framerate of MTC clock\n" 
+"                            2: use video file FPS\n" 
+"                            3: resample: videoFPS / MTC \n" 
 #endif
 "  -t, --try-codec           checks if the video-file can be played by jadeo.\n"
 "                            exits with code 1 if the file is not supported.\n"
@@ -257,13 +269,40 @@ jack video monitor\n", program_name);
 "  -h, --help                display this help and exit\n"
 "  -V, --version             output version information and exit\n"
 "  \n"
-"  framerate does not need to be integer, and defaults to 10.0 fps\n"
 "  Check the docs to learn how the video should be encoded.\n"
 );
   exit (status);
 }
 
+const char fontfile[][128] = {
+	FONT_FILE,
+	"/var/lib/defoma/gs.d/dirs/fonts/FreeMonoBold.ttf"
+	"/usr/share/xplanet/fonts/FreeMonoBold.ttf",
+	"/usr/share/fonts/truetype/freefont/FreeMono.ttf",
+	"/var/lib/defoma/gs.d/dirs/fonts/FreeMono.ttf"
+	"/var/lib/defoma/gs.d/dirs/fonts/Courier_New_Bold.ttf",
+	"/var/lib/defoma/gs.d/dirs/fonts/Courier_New.ttf",
+	"/usr/share/fonts/truetype/msttcorefonts/arial.ttf",
+	"/usr/share/fonts/truetype/vera.ttf",
+	""
+};
 
+void stat_osd_fontfile(void) {
+#ifdef HAVE_FT
+	struct stat s;
+	int i=0;
+	while (fontfile[i][0]!=0) {
+		if ( stat(OSD_fontfile, &s) ==0 ) {
+			strcpy(OSD_fontfile,fontfile[i]);
+   			if (want_verbose) fprintf(stdout,"OSD font file: %s\n",OSD_fontfile);
+			return;
+		}
+		i++;
+	}
+   	if (!want_quiet)
+		fprintf(stderr,"no TTF font found. OSD will not be available until you set one.\n");
+#endif
+}
 
 //--------------------------------------------
 // Main
@@ -279,24 +318,53 @@ main (int argc, char **argv)
 
   i = decode_switches (argc, argv);
 
-  render_fmt = vidoutmode(videomode);
+  if (videomode < 0) vidoutmode(videomode); // dump modes and exit.
 
   if ((i+1)== argc) movie = argv[i];
   else if (remote_en && i==argc) movie = "";
   else usage (EXIT_FAILURE);
 
-#ifdef HAVE_FT
-  // FIXME
-  // stat (OSD_fontfile)
-  // look for .ttf files in common paths
-  //
-#endif
+  if (want_verbose) printf ("xjadeo %s\n", VERSION);
+
+  stat_osd_fontfile();
     
   /* do the work */
   avinit();
 
+  // format needs to be set before calling init_moviebuffer
+  render_fmt = vidoutmode(videomode);
+
   // only try to seek to frame 1 and decode it.
   if (try_codec) do_try_this_file_and_exit (movie);
+
+
+  open_movie(movie);
+  
+  open_window(&argc,&argv);
+
+ // try fallbacks if window open failed in autodetect mode
+  if (videomode==0 && getvidmode() ==0) { // re-use cmd-option variable as counter.
+   if (want_verbose) printf("trying video driver fallbacks.\n");
+   while (getvidmode() ==0) { // check if window is open.
+	videomode++;
+	int tv=try_next_vidoutmode(videomode);
+	if (tv<0) break; // no videomode found!
+        if (want_verbose) printf("trying videomode: %i: %s\n",videomode,vidoutname(videomode));
+	if (tv==0) continue; // this mode is not available
+	render_fmt = vidoutmode(videomode);
+	open_window(&argc,&argv); 
+   }
+  }
+
+  if (getvidmode() ==0) {
+	fprintf(stderr,"Could not open display.\n");
+  	if(!remote_en) {
+		// FIXME: cleanup close jack, midi and file ??
+		exit(1);
+	}
+  }
+
+  init_moviebuffer();
 
 #ifdef HAVE_MIDI
   if (midiid < -1 ) {
@@ -312,21 +380,15 @@ main (int argc, char **argv)
 
   if(remote_en) open_remote_ctrl();
 
-  open_movie(movie);
-  
-  open_window(&argc,&argv);
-
-  init_moviebuffer();
-
   display_frame(0LL,1);
   
   event_loop();
+
+  if(remote_en) close_remote_ctrl();
   
   close_window();
   
   close_movie();
-
-  if(remote_en) close_remote_ctrl();
 
 #ifdef HAVE_MIDI
   if (midiid >=0 ) midi_close(); 

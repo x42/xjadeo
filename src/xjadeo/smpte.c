@@ -1,3 +1,23 @@
+/* simple smpte parser.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+ *
+ * (c) 2006 
+ *  Robin Gareus <robin@gareus.org>
+ *
+ */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -88,6 +108,7 @@ void sub (smpte*s, smpte *s0, smpte *s1) {
 	FIX_SMPTE_OVERFLOW(SMPTE_HOUR,SMPTE_OVERFLOW,24);
 }
 
+#if 0
 void dump(smpte *s, char *info) {
 	printf("%s %02i:%02i:%02i:%02i -- %i\n",info?info:"",
 			s->v[SMPTE_HOUR],
@@ -96,12 +117,11 @@ void dump(smpte *s, char *info) {
 			s->v[SMPTE_FRAME], to_frame(s));
 }
 
-int none (int argc, char **argv) {
+int main (int argc, char **argv) {
 	smpte n0,n1;
 	smpte d0;
 
-//	if (argc != 5) return(1);
-
+//	if (argc != 2) return(1);
 	parse_string(&n0,argv[1]);
 	parse_int(&n1,1100);
 	sub(&d0,&n0,&n1);
@@ -112,6 +132,7 @@ int none (int argc, char **argv) {
 
 	return(0);
 }
+#endif
 
 long int smptestring_to_frame (char *str) {
 	smpte n0;

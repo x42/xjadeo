@@ -12,16 +12,16 @@ AM_INIT_AUTOMAKE(xjadeo, 0.3.7)
 dnl create a config.h file (Automake will add -DHAVE_CONFIG_H)
 AM_CONFIG_HEADER(config.h)
 
-AC_ARG_ENABLE(gtk,     [  --enable-gtk            Enable use of gtk for display])
-AC_ARG_ENABLE(noxv,    [  --enable-noxv           Disable use of XVideo extension for display])
-AC_ARG_ENABLE(noiml,   [  --enable-noiml          Disable use of imlib for display])
-AC_ARG_ENABLE(nosdl,   [  --enable-nosdl          Disable use of SDL for display])
-AC_ARG_ENABLE(midi,    [  --enable-midi           Offer MTC sync as an alternative to jack (portmidi) ])
-# not supported by xjadeo-SDL yet
-#AC_ARG_ENABLE(ttf,    [  --enable-ttf            Enable TTF font support],,enable_ttf=no) 
-AC_ARG_ENABLE(noft,    [  --enable-noft           Disable freetype OSD support]) 
+AC_ARG_ENABLE(gtk,   AC_HELP_STRING([--enable-gtk],  [Enable use of gtk for display]))
+AC_ARG_ENABLE(xv,    AC_HELP_STRING([--disable-xv],  [Disable use of Xvideo extension for display]))
+AC_ARG_ENABLE(imlib, AC_HELP_STRING([--disable-imlib], [Disable use of imlib for display]))
+AC_ARG_ENABLE(sdl,   AC_HELP_STRING([--disable-sdl], [Disable use of SDL for display]))
+AC_ARG_ENABLE(midi,  AC_HELP_STRING([--disable-midi],  [Don't probe for portmidi - disable MTC sync]))
+AC_ARG_ENABLE(ft,    AC_HELP_STRING([--disable-ft],  [Disable freetype On Screen Display support]))
 AC_ARG_ENABLE(qtgui, AC_HELP_STRING([--disable-qtgui],[Don't build the Qt GUI controller]))
 
+# not supported by xjadeo-SDL yet
+#AC_ARG_ENABLE(ttf,    [  --enable-ttf            Enable TTF font support],,enable_ttf=no) 
 
 AC_ARG_WITH(ffmpegprefix, AS_HELP_STRING([--with-ffmpegprefix], [prefix to ffmpeg source, if libavcodec and libavformat are not in . (default=.)]), ffmpegprefix="$withval", ffmpegprefix="ffmpeg")
 
@@ -53,11 +53,11 @@ fi
 # FIXME
 X_LIBS="-L/usr/X11R6/lib/"
 
-if test ! "$enable_noxv" = "yes"; then
+if test "x$enable_xv" != "xno"; then
 	AC_CHECK_LIB(Xv, XvQueryAdaptors, [AC_DEFINE(HAVE_LIBXV) AC_SUBST(XV_LIBS) XV_LIBS='-lXv' ], [AC_MSG_ERROR([Could not find Xv Lib])], $X_LIBS)
 fi
 
-if test  "$enable_midi" = "yes"; then
+if test "x$enable_midi" != "xno"; then
 	AC_CHECK_HEADERS(portmidi.h porttime.h )
 	BACKUPLIBS="$LIBS"
 	LIBS="$LIBS -lporttime"
@@ -68,13 +68,13 @@ if test  "$enable_midi" = "yes"; then
 	AC_SUBST(MIDI_LIBS)
 fi
 
-if test ! "$enable_noiml" = "yes"; then
+if test "x$enable_imlib" != "xno"; then
 #	AC_CHECK_HEADERS(Imlib.h)
 #	AC_CHECK_LIB([Imlib], [Imlib_init], , [AC_MSG_ERROR(*** IMAGE: You should install imlib-dev first ***)])
         AM_PATH_IMLIB(1.9.13, [ AC_DEFINE(HAVE_IMLIB) ])
 fi
 
-if ! test "$enable_nosdl" = "yes"; then
+if test "x$enable_sdl" != "xno"; then
         AM_PATH_SDL(1.1.6, [ AC_DEFINE(HAVE_SDL) ])
 
 	# SDL TTF detect
@@ -105,7 +105,7 @@ PKG_CHECK_MODULES(FREETYPE, freetype2,
 	  [freetype_pkgconfig=yes], [freetype_pkgconfig=no])
 
 if test "x$freetype_pkgconfig" = "xyes"; then
-	if test ! "$enable_noft" = "yes"; then
+	if test ! "x$enable_ft" = "xno"; then
 	  AC_DEFINE(HAVE_FREETYPE_H, 1, [Have FreeType2 include files])
 	  AC_DEFINE(HAVE_FT, 1, [Use freetype for OSD])
 	else
@@ -115,7 +115,7 @@ if test "x$freetype_pkgconfig" = "xyes"; then
 else
 	AC_PATH_PROG(FREETYPE_CONFIG, freetype-config, no)
 	if test "x$FREETYPE_CONFIG" != "xno" ; then
-	    if test ! "$enable_noft" = "yes"; then
+	    if test ! "x$enable_ft" = "xno"; then
 		FREETYPE_CFLAGS=`$FREETYPE_CONFIG --cflags`
 		FREETYPE_LIBS=`$FREETYPE_CONFIG --libs`
 		AC_DEFINE(HAVE_FREETYPE_H, 1, [Have FreeType2 include files])
@@ -123,9 +123,13 @@ else
 	    fi
 	fi
 fi
+
+# I'm not sure if this is the proper way to escape a #define string.
+# but this allows to specify the default font file
+#FREETYPE_CFLAGS+="-DTTFFONTFILE=\\\"/usr/share/fonts/truetype/msttcorefonts/arial.ttf\\\""
+
 AC_SUBST(FREETYPE_CFLAGS)
 AC_SUBST(FREETYPE_LIBS)
-
 
 
 
