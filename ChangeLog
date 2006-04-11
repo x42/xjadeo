@@ -1,3 +1,18 @@
+2006-04-11  rgareus  <robin@gareus.org>
+ * configure.ac: renamed options for consistancy.
+   new defaults: autodetect all feat. only gtk is disabled by default
+   added -DTTFFONTFILE comment. no configure option yet.
+ * xjadeo:
+ - --vo [<int>|<name>]. also swapped --vo option numbering.. for:
+ - fallback video mode auto detection. 
+ - implemented rudimentary keyboard event support (for all display modes)
+ - <ESC> key quits xjadeo (all display modes) 
+ - --midifps [MTC|Video|resample] option and 'get/set midisync' remote cmd.
+ - initialize midi just before event loop -> prevent midi buffer overflow
+ - added alsamidi code. (works but not integrated in xjadeo & build system)
+ - xapi 'get/set seekmode': seek to keyframes only.
+ - minor fixes.
+
 2006-04-09  Luis Garrido  <luisgarrido@users.sourceforge.net>
  - configure.ac: fixed Qt autoconf test so Qt4 debug lib is not required.
  - src/qt-gui/Makefile.am: fixed typo.
