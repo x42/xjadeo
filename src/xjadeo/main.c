@@ -151,6 +151,7 @@ static struct option const long_options[] =
   {"help", no_argument, 0, 'h'},
   {"version", no_argument, 0, 'V'},
   {"try-codec", no_argument, 0, 't'},
+  {"info", no_argument, 0, 'i'},
 #ifdef HAVE_MIDI
   {"midi", required_argument, 0, 'm'},
   {"midifps", required_argument, 0, 'M'},
@@ -176,6 +177,7 @@ decode_switches (int argc, char **argv)
 			   "t"	/* try-codec */
 			   "f:"	/* fps */
 			   "x:"	/* video-mode */
+			   "i:"	/* info - OSD-mode */
 #ifdef HAVE_MIDI
 			   "m:"	/* midi interface */
 			   "M:"	/* midi clk convert */
@@ -199,6 +201,15 @@ decode_switches (int argc, char **argv)
 	  break;
 	case 't':		/* --try */
 	  try_codec = 1;
+	  break;
+	case 'i':		/* --info */
+	  OSD_mode=atoi(optarg)&3;
+	  printf("On screen display: [%s%s%s] \n",
+		(!OSD_mode)?"off": 
+		(OSD_mode&OSD_FRAME)?"frames":"",
+		(OSD_mode&(OSD_FRAME|OSD_SMPTE))==(OSD_FRAME|OSD_SMPTE)?" ":"",
+		(OSD_mode&OSD_SMPTE)?"SMPTE":""
+		);
 	  break;
 	case 'o':		/* --offset */
 	  ts_offset=atoi(optarg);
@@ -243,17 +254,23 @@ usage (int status)
 {
   printf ("%s - \
 jack video monitor\n", program_name);
-  printf ("usage: %s [option]... <video-file>...\n", program_name);
+  printf ("usage: %s [Options] <video-file>\n", program_name);
+  printf ("       %s -R [Options] [<video-file>]\n", program_name);
   printf (""
 "Options:\n"
 "  -q, --quiet, --silent     inhibit usual output\n"
 "  -v, --verbose             print more information\n"
-"  -R, --remote              remote control (stdin) - implies non verbose quiet mode\n"
+"  -R, --remote              remote control (stdin) - implies non verbose&quiet\n"
 "  -f <val>, --fps <val>     video display update fps - default 10.0 fps\n"
 "  -k, --keyframes           seek to keyframes only\n"
 "  -o <int>, --offset <int>  add/subtract <int> video-frames to/from timecode\n"
 "  -x <int>, --vo <int>,     set the video output mode (default: 0 - autodetect\n"
-"      --videomode <int>    -1 prints a list of available modes.\n"
+"      --videomode <int>     -1 prints a list of available modes.\n"
+"  -i <int> --info <int>     render OnScreenDisplay info: 0:off, %i:frame,\n"
+"                            %i:smpte, %i:both. (use remote ctrl for more opts.)\n",
+	OSD_FRAME,OSD_SMPTE,OSD_FRAME|OSD_SMPTE); // :)
+
+  printf (""
 #ifdef HAVE_MIDI
 #ifdef HAVE_PORTMIDI
 "  -m <int>, --midi <int>,   use portmidi instead of jack (-1: autodetect)\n"

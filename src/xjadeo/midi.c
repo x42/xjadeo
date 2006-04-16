@@ -1,4 +1,5 @@
 /* xjadeo - jack video monitor
+ * midi.c - midi SMPTE / raw midi data parser.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,16 +32,17 @@
 #include <ctype.h>
 
 #ifdef HAVE_MIDI
+
+/*
+ * xjadeo MTC defines and functions
+ * midi library independant
+ */
+
 extern int want_quiet;
 extern int want_verbose;
 extern double framerate;
 extern int midi_clkconvert;
 
-
-/*
- * common xjadeo MTC 
- * SMPTE / parse raw midi data...
- */
 typedef struct {
 	int frame;
 	int sec;
@@ -56,12 +58,18 @@ typedef struct {
 smpte tc;
 smpte last_tc;
 
+
 const char MTCTYPE[4][10] = {
 	"24fps",
 	"25fps",
 	"29fps",
 	"30fps",
 };
+
+/* midi system exclusive start/end byte*/
+#define MIDI_SOX 0xf0
+#define MIDI_EOX 0xf7
+
 
 /* parse MTC 0x71 message data */
 void parse_timecode( int data) {
@@ -114,14 +122,15 @@ int parse_sysex_urtm (int data, int state, int type) {
  * F0 7F 7F 06 44 06 01 20 00 03 01 00 F7
  * timecode 00:00:03:01 (@ 25fps) -- Roland MTC
  *
- *  roland sysex real time message - reverse engineered format
- *         06 xx 06 xx: [fps (bit 6..5) hour: bit4..0)] [min] [sec] [frame] Checksum F7
- *         01 01: [fps (bit 6..5) hour: bit4..0)] [min] [sec] [frame] F7
+ *  roland MTC sysex real time message - reverse engineered format
+ *         01 01 [fps: bit 6..5 hour: bit4..0] [min] [sec] [frame] F7
+ *         06 xx 06 xx [fps (bit 6..5) hour: bit4..0)] [min] [sec] [frame] Checksum F7
  *
- *  fps:  (011HHHHH): 30fps, 29fps (non drop)
- *        (010HHHHH :  29 fps (drop)
- *	  (001HHHHH):  25 fps
- *	  (000HHHHH):  24 fps
+ *  fps/hour:	(011HHHHH):  30 fps, 29fps - non drop
+ *		(010HHHHH :  29 fps (drop)
+ *		(001HHHHH):  25 fps
+ *		(000HHHHH):  24 fps
+ *  min,sec,frame are 6bit values
  */
 
 	int rv=type;
@@ -161,7 +170,7 @@ int parse_sysex_urtm (int data, int state, int type) {
 
 
 
-/*
+/************************************************
  * portmidi 
  */
 
@@ -222,9 +231,6 @@ int active = FALSE;
 int sysex_state = -1;
 int sysex_type = 0; 
 
-#define MIDI_SOX 0xf0
-#define MIDI_EOX 0xf7
-
 /* shared queues */
 PmQueue *midi_to_main;
 PmQueue *main_to_midi;
@@ -242,7 +248,7 @@ void process_midi(PtTimestamp timestamp, void *userData)
     do { 
         result = Pm_Dequeue(main_to_midi, &msg); 
         if (result) {
-		if (msg.frame == 0xaffe) { 
+		if (msg.frame == 0xaffe) {  
 			// stop thread
                 	Pm_Enqueue(midi_to_main, &msg);
 			active= FALSE;
@@ -271,7 +277,10 @@ void process_midi(PtTimestamp timestamp, void *userData)
 
 		/* if this is a status byte that's not MIDI_EOX, the sysex
 		 * message is incomplete and there is no more sysex data */
-		if (data & 0x80 && data != MIDI_EOX && data != MIDI_SOX) break;
+		if (data & 0x80 && data != MIDI_EOX && data != MIDI_SOX) {
+			sysex_state=-1;
+			break;
+		}
 
 		// sysex- universal  real time message f0 7f ... f7 
 	    	if (data == 0xf7) { sysex_state=-1;}
@@ -299,6 +308,7 @@ void midi_open(char *midiid) {
     // init smpte
     tc.type=tc.min=tc.frame=tc.sec=tc.hour=0;
     last_tc.type=last_tc.min=last_tc.frame=last_tc.sec=last_tc.hour=0;
+    sysex_state = -1;
 
     midi_to_main = Pm_QueueCreate(2, sizeof(smpte));
     main_to_midi = Pm_QueueCreate(2, sizeof(smpte));
@@ -391,23 +401,32 @@ long midi_poll_frame (void) {
 
 #else  /* endif HAVE_PORTMIDI */
 
-/*
+/************************************************
  * alsamidi 
  */
 
 #include <alsa/asoundlib.h>
 
 static snd_rawmidi_t *amidi= NULL;
+int sysex_state = -1;
+int sysex_type = 0; 
 
 void amidi_open(char *port_name) {
 	int err=0;
+
 	if (amidi) return;
 	if ((err = snd_rawmidi_open(&amidi, NULL, port_name, 0)) < 0) {
 		fprintf(stderr,"cannot open port \"%s\": %s", port_name, snd_strerror(err));
 		return;
 	}
-	snd_rawmidi_read(amidi, NULL, 0); 
+
+	// init smpte
+	tc.type=tc.min=tc.frame=tc.sec=tc.hour=0;
+	last_tc.type=last_tc.min=last_tc.frame=last_tc.sec=last_tc.hour=0;
+        sysex_state = -1;
+
 	snd_rawmidi_nonblock(amidi, 1);
+//	snd_rawmidi_read(amidi, NULL, 0); 
 }
 
 void amidi_close(void) {
@@ -433,10 +452,29 @@ void amidi_event(void) {
 	if (snd_rawmidi_poll_descriptors_revents(amidi, pfds, npfds, &revents) < 0) return;
 	if (!(revents & POLLIN)) return;
 
+	// TODO: loop until buffer is empty... if rv>=256
 	if ((rv = snd_rawmidi_read(amidi, buf, sizeof(buf))) <=0 ) return;
-	for (i = 0; i < rv; ++i)
+	for (i = 0; i < rv; ++i) {
+		int data;
+
 		if (buf[i] == 0xf1 && (i+1 < rv) && !(buf[i+1]&0x80)) parse_timecode(buf[i+1]);
-	// TODO: parse sysex messages.
+#if 1 /* parse sysex msgs */
+		data = (buf[i]) & 0xFF;
+
+		/* if this is a status byte that's not MIDI_EOX, the sysex
+		 * message is incomplete and there is no more sysex data */
+		if (data & 0x80 && data != MIDI_EOX && data != MIDI_SOX) {sysex_state=-1;}
+
+		// sysex- universal  real time message f0 7f ... f7 
+	    	if (data == 0xf7) { sysex_state=-1;}
+		else if (sysex_state < 0 && data == 0xf0) { sysex_state=0; sysex_type=0; }
+		else if (sysex_state>=0) {
+			sysex_type = parse_sysex_urtm (data,sysex_state,sysex_type);
+			sysex_state++;
+		}
+#endif
+	}
+
 }
 
 long amidi_poll_frame (void) {
@@ -484,6 +522,7 @@ void midi_open(char *midiid) {
 	}
 	if (want_verbose) 
 		printf("amidi device: '%s'\n",devicestring);
+
 	amidi_open(devicestring); 
 }
 
@@ -497,6 +536,6 @@ int midi_connected(void) {
 	return (0);
 }
 
-#endif /* no HAVE_PORTMIDI -> alsamidi */
+#endif /* not HAVE_PORTMIDI = alsamidi */
 
 #endif /* HAVE_MIDI */

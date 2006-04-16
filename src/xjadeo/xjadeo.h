@@ -46,6 +46,7 @@ void do_try_this_file_and_exit(char *movie);
 long jack_poll_frame (void);
 void open_jack(void );
 void close_jack(void);
+int jack_connected(void);
 
 /* smpte.c prototypes */
 

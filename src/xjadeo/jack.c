@@ -42,6 +42,12 @@ void jack_shutdown(void *arg)
 	fprintf (stderr, "jack server shutdown\n");
 }
 
+int jack_connected(void)
+{
+	if (jack_client) return (1);
+	return (0);
+}
+
 void open_jack(void ) 
 {
 	if (jack_client) {

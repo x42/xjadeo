@@ -297,7 +297,6 @@ int open_movie(char* file_name)
       return(-1);
   }
 
-  // TODO: share this memory with the 'hardware' display framebuffer if possible.
   pFrameFMT=avcodec_alloc_frame();
   if(pFrameFMT==NULL)
   {
@@ -432,7 +431,11 @@ void do_try_this_file_and_exit(char *movie) {
     packet.data=NULL;
     int frameFinished=0;
     
-    open_movie(movie);
+    if(open_movie(movie)){
+      if (!want_quiet)
+        printf("File not found or invalid.\n");
+      exit(1);
+    }
     init_moviebuffer();
     if (my_seek_frame(&packet, 1)) {
     avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet.data, packet.size);

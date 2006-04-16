@@ -7,7 +7,7 @@ AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
 dnl Every other copy of the package version number gets its value from here
-AM_INIT_AUTOMAKE(xjadeo, 0.3.8)
+AM_INIT_AUTOMAKE(xjadeo, 0.3.9)
 
 dnl create a config.h file (Automake will add -DHAVE_CONFIG_H)
 AM_CONFIG_HEADER(config.h)
@@ -16,7 +16,8 @@ AC_ARG_ENABLE(gtk,   AC_HELP_STRING([--enable-gtk],  [Enable use of gtk for disp
 AC_ARG_ENABLE(xv,    AC_HELP_STRING([--disable-xv],  [Disable use of Xvideo extension for display]))
 AC_ARG_ENABLE(imlib, AC_HELP_STRING([--disable-imlib], [Disable use of imlib for display]))
 AC_ARG_ENABLE(sdl,   AC_HELP_STRING([--disable-sdl], [Disable use of SDL for display]))
-AC_ARG_ENABLE(midi,  AC_HELP_STRING([--disable-midi],  [Don't probe for portmidi - disable MTC sync]))
+AC_ARG_ENABLE(midi,  AC_HELP_STRING([--disable-midi],  [disable MTC sync support]))
+AC_ARG_ENABLE(portmidi, AC_HELP_STRING([--disable-portmidi],  [Don't use portmidi - try alsamidi instead]))
 AC_ARG_ENABLE(ft,    AC_HELP_STRING([--disable-ft],  [Disable freetype On Screen Display support]))
 AC_ARG_ENABLE(qtgui, AC_HELP_STRING([--disable-qtgui],[Don't build the Qt GUI controller]))
 
@@ -59,17 +60,19 @@ if test "x$enable_xv" != "xno"; then
 fi
 
 if test "x$enable_midi" != "xno"; then
-	AC_CHECK_HEADERS(prtmidi.h porttime.h , [FOUND_H_PORTMIDI=yes])
-	BACKUPLIBS="$LIBS"
-	LIBS="$LIBS -lporttime"
-	AC_CHECK_LIB([portmidi], [Pm_CountDevices], [FOUND_L_PORTMIDI=yes])
-	LIBS="$BACKUPLIBS"
+	if test "x$enable_portmidi" != "xno"; then
+	    AC_CHECK_HEADERS(portmidi.h porttime.h , [FOUND_H_PORTMIDI=yes])
+	    BACKUPLIBS="$LIBS"
+	    LIBS="$LIBS -lporttime"
+	    AC_CHECK_LIB([portmidi], [Pm_CountDevices], [FOUND_L_PORTMIDI=yes])
+	    LIBS="$BACKUPLIBS"
+	fi
 
 	if test "x$FOUND_H_PORTMIDI$FOUND_H_PORTMIDI" = "xyesyes"; then
-		AC_DEFINE(HAVE_MIDI) 
-		AC_DEFINE(HAVE_PORTMIDI) 
-		MIDI_LIBS="-lportmidi -lporttime"
-		AC_SUBST(MIDI_LIBS)
+	    AC_DEFINE(HAVE_MIDI) 
+	    AC_DEFINE(HAVE_PORTMIDI) 
+	    MIDI_LIBS="-lportmidi -lporttime"
+	    AC_SUBST(MIDI_LIBS)
 	else 
 	    AC_CHECK_HEADERS(alsa/asoundlib.h, [FOUND_H_ALSAMIDI=yes])
 	    BACKUPLIBS="$LIBS"
