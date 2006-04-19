@@ -19,11 +19,13 @@
  *  Robin Gareus <robin@gareus.org>
  *  Luis Garrido <luisgarrido@users.sourceforge.net>
  *
+ * Copyright (c) 2005 Clemens Ladisch <clemens@ladisch.de>
+ *
  * many kudos to the portmidi developers and their
  * example code...
  *
  * the alsa midi code was inspired by the alsa-tools
- * amidi.c written by Clemens Ladisch <clemens@ladisch.de>
+ * amidi.c, aseqdump.c written by Clemens Ladisch <clemens@ladisch.de>
  */
 
 #include <xjadeo.h>
@@ -156,14 +158,26 @@ int parse_sysex_urtm (int data, int state, int type) {
 	if (state==5 && type ==1 ) { last_tc.min=(data&0x7f); } // min
 	if (state==6 && type ==1 ) { last_tc.sec=(data&0x7f); } // sec
 	if (state==7 && type ==1 ) { last_tc.frame=(data&0x7f); } // frame
-	if (state>7 && type ==2 ) return (-1);
+	if (state>7 && type ==1 ) {
+		if (want_verbose) {
+			printf("\t\t\t\t\t---  %02i:%02i:%02i.%02i [%s]       \r",tc.hour,tc.min,tc.sec,tc.frame,MTCTYPE[tc.type]);
+			fflush(stdout);
+		}
+		return (-1);
+	}
 
 	// type==2 && state6,7,8,9
 	if (state==6 && type ==2 ) { last_tc.hour=(data&0x1f); last_tc.type=(data>>5)&3; } // hour + format
 	if (state==7 && type ==2 ) { last_tc.min=(data&0x7f); } // min
 	if (state==8 && type ==2 ) { last_tc.sec=(data&0x7f); } // sec
 	if (state==9 && type ==2 ) { last_tc.frame=(data&0x7f); } // frame
-	if (state>9 && type ==2 ) return (-1);
+	if (state>9 && type ==2 ) {
+		if (want_verbose) {
+			printf("\t\t\t\t\t---  %02i:%02i:%02i.%02i [%s]       \r",tc.hour,tc.min,tc.sec,tc.frame,MTCTYPE[tc.type]);
+			fflush(stdout);
+		}
+		return (-1);
+	}
 
 	return (rv);
 }
@@ -318,15 +332,11 @@ void midi_open(char *midiid) {
     }
     
     PmEvent buffer[1];
-/* It is recommended to start timer before Midi; otherwise, PortMidi may
- * start the timer with its (default) parameters
- */
     Pt_Start(1, &process_midi, 0); /* timer started w/millisecond accuracy */
 
     Pm_Initialize();
 
     /* open input device */
-//  Pm_OpenInput(&midi, midi_input, NULL, INPUT_BUFFER_SIZE, ((long (*)(void *)) Pt_Time), NULL);
     Pm_OpenInput(&midi, midi_input, NULL, INPUT_BUFFER_SIZE, NULL, NULL);
 
     if (!want_quiet) printf("Midi Input opened.\n");
@@ -405,6 +415,8 @@ long midi_poll_frame (void) {
  * alsamidi 
  */
 
+#if 0 /* old alsa raw midi  */
+
 #include <alsa/asoundlib.h>
 
 static snd_rawmidi_t *amidi= NULL;
@@ -435,7 +447,8 @@ void amidi_close(void) {
     snd_rawmidi_close(amidi);
     amidi=NULL;
 }
-
+ // TODO increase buffer size ( avg: 15Hz * 8 msgs )
+ // better: standalone thread
 void amidi_event(void) {
 	int i,rv;
 	int npfds = 0;
@@ -443,7 +456,6 @@ void amidi_event(void) {
 	unsigned char buf[256];
 	unsigned short revents;
 
-	snd_rawmidi_nonblock(amidi, 1);
 	npfds = snd_rawmidi_poll_descriptors_count(amidi);
 	pfds = alloca(npfds * sizeof(struct pollfd));
 	snd_rawmidi_poll_descriptors(amidi, pfds, npfds);
@@ -535,6 +547,249 @@ int midi_connected(void) {
 	if (amidi) return (1);
 	return (0);
 }
+
+#else /* 1: alsa raw/sequcer */
+
+/************************************************
+ * alsa seq midi interface 
+ */
+	
+#include <alsa/asoundlib.h>
+#include <pthread.h>
+
+// getpid()
+#include <sys/types.h>
+#include <unistd.h>
+
+
+pthread_t aseq_thread;
+pthread_attr_t aseq_pth_attr;
+pthread_mutex_t aseq_lock;
+
+snd_seq_t *seq= NULL;
+int sysex_state = -1;
+int sysex_type = 0; 
+int aseq_stop=0; // only modify in main thread. 
+
+void aseq_close(void) {
+    if(!seq) return;
+    if (!want_quiet) printf("closing alsa midi...");
+    snd_seq_close(seq);
+    seq=NULL;
+}
+
+void aseq_open(char *port_name) {
+	int err=0;
+	snd_seq_addr_t port;
+	char seq_name[32];
+	snprintf(seq_name,32,"xjadeo-%i",(int) getpid());
+
+	if (seq) return;
+
+	/* open sequencer */ // SND_SEQ_OPEN_INPUT
+	if ((err = snd_seq_open(&seq, "default", SND_SEQ_OPEN_INPUT, 0)) <0 ) {
+		fprintf(stderr,"cannot open alsa sequencer: %s\n", snd_strerror(err));
+		seq=NULL;
+		return;
+	}
+
+	if ((err = snd_seq_set_client_name(seq, seq_name)) <0 ) {
+		fprintf(stderr,"cannot set client name: %s\n", snd_strerror(err));
+		aseq_close();
+		return;
+	}
+
+
+	if ((err = snd_seq_create_simple_port(seq, "MTC in", 
+			SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE, 
+			SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION)) < 0) {
+		fprintf(stderr,"cannot create port: %s\n", snd_strerror(err));
+		aseq_close();
+		return;
+	}
+
+	if (port_name) {
+		err = snd_seq_parse_address(seq, &port, port_name);
+		if (err < 0) {
+			fprintf(stderr,"Invalid port %s - %s\n", port_name, snd_strerror(err));
+		}
+		err = snd_seq_connect_from(seq, 0, port.client, port.port);
+		if (err < 0) {
+			fprintf(stderr,"Cannot connect from port %d:%d - %s\n", port.client, port.port, snd_strerror(err));
+		}
+	}
+
+	snd_seq_nonblock(seq, 1);
+
+	// init smpte
+	tc.type=tc.min=tc.frame=tc.sec=tc.hour=0;
+	last_tc.type=last_tc.min=last_tc.frame=last_tc.sec=last_tc.hour=0;
+
+}
+
+void process_seq_event(const snd_seq_event_t *ev) {
+	if (ev->type == SND_SEQ_EVENT_QFRAME) parse_timecode(ev->data.control.value);
+	else if (ev->type == SND_SEQ_EVENT_SYSEX) {
+		unsigned int i; 
+		sysex_type = 0;
+		for (i = 1; i < ev->data.ext.len; ++i) {
+			sysex_type = parse_sysex_urtm(((unsigned char*)ev->data.ext.ptr)[i],i-1,sysex_type);
+		}
+	}
+}
+
+void aseq_event(void) {
+	int err;
+	int npfds = 0;
+	struct pollfd *pfds;
+
+	npfds = snd_seq_poll_descriptors_count(seq, POLLIN);
+	pfds = alloca(sizeof(*pfds) * npfds);
+
+	snd_seq_poll_descriptors(seq, pfds, npfds, POLLIN);
+	if (poll(pfds, npfds, 0) <= 0) return;
+
+	do {
+		snd_seq_event_t *event;
+		err = snd_seq_event_input(seq, &event);
+		if (err < 0) break;
+		if (event) process_seq_event(event);
+	} while (err > 0);
+
+}
+
+long aseq_poll_frame (void) {
+	long frame =0 ;
+	int fps= 25; 
+	if (!seq) return (0);
+
+	pthread_mutex_lock(&aseq_lock);
+
+	switch(last_tc.type) {
+		case 0: fps=24; break;
+		case 1: fps=25; break;
+		case 2: fps=29; break;
+		case 3: fps=30; break;
+	}
+	switch (midi_clkconvert) {
+		case 2: // force video fps
+			frame = last_tc.frame +  (int)
+				floor(framerate * ( last_tc.sec + 60*last_tc.min + 3600*last_tc.hour));
+		break;
+		case 3: // 'convert' FPS.
+			frame = last_tc.frame + 
+				fps * ( last_tc.sec + 60*last_tc.min + 3600*last_tc.hour);
+			frame = (int) rint(frame * framerate / fps);
+		break;
+		default: // use MTC fps info
+			frame = last_tc.frame + 
+				fps * ( last_tc.sec + 60*last_tc.min + 3600*last_tc.hour);
+	}
+	pthread_mutex_unlock(&aseq_lock);
+	return(frame);
+}
+
+inline long midi_poll_frame (void) { return (aseq_poll_frame() ); }
+inline void midi_close(void) {
+	if(!seq) return;
+	aseq_stop =1;
+	pthread_join(aseq_thread,NULL);
+	pthread_mutex_destroy(&aseq_lock);
+	aseq_close();
+}
+
+void *aseq_run(void *arg) {
+	int err;
+	int npfds = 0;
+	struct pollfd *pfds;
+
+	npfds = snd_seq_poll_descriptors_count(seq, POLLIN);
+	pfds = alloca(sizeof(*pfds) * npfds);
+	for (;;) {
+		snd_seq_poll_descriptors(seq, pfds, npfds, POLLIN);
+		if (poll(pfds, npfds, 1) < 0) break;
+		do {
+			snd_seq_event_t *event;
+			err = snd_seq_event_input(seq, &event);
+			if (err < 0) break;
+			if (event) {
+				// TODO? lock only when actually modifying last_tc
+				pthread_mutex_lock(&aseq_lock);
+				process_seq_event(event);
+				pthread_mutex_unlock(&aseq_lock);
+			}
+		} while (err > 0);
+		if (aseq_stop) break;
+	}
+	pthread_exit(NULL);
+	return (NULL);
+}
+
+
+/* list devices...
+ * borrowed from aseqdump.c
+ * Copyright (c) 2005 Clemens Ladisch <clemens@ladisch.de>
+ * GPL
+ */
+void midi_detectdevices (int print) { 
+	if (print) {
+		snd_seq_client_info_t *cinfo;
+		snd_seq_port_info_t *pinfo;
+
+		snd_seq_client_info_alloca(&cinfo);
+		snd_seq_port_info_alloca(&pinfo);
+
+		printf(" Dumping midi seq ports: (not connecting to any)\n");
+		printf("  Port    Client name                      Port name\n");
+
+		snd_seq_client_info_set_client(cinfo, -1);
+		while (snd_seq_query_next_client(seq, cinfo) >= 0) {
+			int client = snd_seq_client_info_get_client(cinfo);
+
+			snd_seq_port_info_set_client(pinfo, client);
+			snd_seq_port_info_set_port(pinfo, -1);
+			while (snd_seq_query_next_port(seq, pinfo) >= 0) {
+				/* we need both READ and SUBS_READ */
+				if ((snd_seq_port_info_get_capability(pinfo)
+				     & (SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ))
+				    != (SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ))
+					continue;
+				printf(" %3d:%-3d  %-32.32s %s\n",
+				       snd_seq_port_info_get_client(pinfo),
+				       snd_seq_port_info_get_port(pinfo),
+				       snd_seq_client_info_get_name(cinfo),
+				       snd_seq_port_info_get_name(pinfo));
+			}
+		}
+	}
+}
+
+
+
+void midi_open(char *midiid) {
+	if (atoi(midiid)<0) {
+		aseq_open(NULL); 
+    		if (want_verbose) midi_detectdevices(1);
+	} else {
+		aseq_open(midiid); 
+	}
+
+	if (!seq) return;
+	aseq_stop =0;
+	pthread_mutex_init(&aseq_lock, NULL);
+	if(pthread_create(&aseq_thread, NULL, aseq_run, NULL)) {
+		fprintf(stderr,"could not start midi seq. thread\n");
+		pthread_mutex_destroy(&aseq_lock);
+		aseq_close();
+	}
+}
+
+int midi_connected(void) {
+	if (seq) return (1);
+	return (0);
+}
+
+#endif /*  alsa raw/seq midi  */
 
 #endif /* not HAVE_PORTMIDI = alsamidi */
 

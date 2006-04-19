@@ -390,7 +390,6 @@ void xapi_osd_avail(void *d) {
 #endif
 }
 
-
 void xapi_osd_pos(void *d) {
 	int x,y;
 	char *t0= (char*)d;
@@ -409,14 +408,18 @@ void xapi_osd_pos(void *d) {
 	}  else {
 		remote_printf(421,"invalid  argument (example 1 95)");
 	}
+	display_frame((int64_t)(dispFrame),1); // update OSD
 }
 
 void xapi_midi_status(void *d) {
 #ifdef HAVE_MIDI
+	// FIXME: we shall return "200,midiid=XXX" 
+	// and "100 not connected" ?? as in jack connected
+	// BUT: // midiid can be <int> (portmidi) or string (alsa midi)
 	if (midi_connected())
-		remote_printf(101,"midi not connected.");
-	else
 		remote_printf(100,"midi connected.");
+	else
+		remote_printf(101,"midi not connected.");
 #else
 	remote_printf(499,"midi not available.");
 #endif

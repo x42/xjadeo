@@ -75,10 +75,11 @@ if test "x$enable_midi" != "xno"; then
 	    AC_SUBST(MIDI_LIBS)
 	else 
 	    AC_CHECK_HEADERS(alsa/asoundlib.h, [FOUND_H_ALSAMIDI=yes])
+	    AC_CHECK_HEADERS(pthread.h, [FOUND_H_PTHREAD=yes])
 	    BACKUPLIBS="$LIBS"
 	    AC_CHECK_LIB([asound], [snd_rawmidi_open], [FOUND_L_ALSAMIDI=yes])
 
-	    if test "x$FOUND_H_ALSAMIDI$FOUND_H_ALSAMIDI" = "xyesyes"; then
+	    if test "x$FOUND_H_ALSAMIDI$FOUND_H_ALSAMIDI$FOUND_H_PTHREAD" = "xyesyesyes"; then
 		AC_DEFINE(HAVE_MIDI) 
 		MIDI_LIBS="-lasound"
 		AC_SUBST(MIDI_LIBS)

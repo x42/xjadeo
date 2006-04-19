@@ -125,8 +125,8 @@ int OSD_mode = 0;
 int OSD_fx = OSD_CENTER;
 int OSD_tx = OSD_CENTER;
 int OSD_sx = OSD_CENTER;
-int OSD_fy = 95; // percent
-int OSD_sy = 5; // percent
+int OSD_fy = 5; // percent
+int OSD_sy = 98; // percent
 int OSD_ty = 50; // percent
 
 /* The name the program was run with, stripped of any leading path. */
@@ -278,8 +278,8 @@ jack video monitor\n", program_name);
 "                            use -v -m -1 to list midi ports.\n" 	  
 #else /* alsa midi */
 "  -m <port>,                use alsamidi instead of jack\n"
-"      --midi <port>,        specify alsa midi port id ('amidi -l' to list)\n" 	  
-"                            eg. -m hw:2,0,0  or -m 2,0 \n" 	  
+"      --midi <port>,        specify alsa seq id to connect to. (-1: none)\n" 	  
+"                            eg. -m ardour or -m 80 \n"
 #endif /* HAVE_PORTMIDI */
 "  -M <int>, --midifps <int> how to 'convert' MTC SMPTE to framenumber:\n"
 "                            0: use framerate of MTC clock\n" 

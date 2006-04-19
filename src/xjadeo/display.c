@@ -175,6 +175,8 @@ int parsevidoutname (char *arg) {
 	int s0=strlen(arg);
 	if (s0==0) return (0);
 
+	if (!strncasecmp("list",arg,s0>4?4:s0)) return(-1);
+
 	while (VO[++i].supported>=0) {
 		int s1=strlen(VO[i].name);
 		if (!strncasecmp(VO[i].name,arg,s0>s1?s1:s0)) return(i);
