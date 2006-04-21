@@ -15,6 +15,7 @@ void open_window(int *argc, char ***argv);
 
 int vidoutmode(int user_req);
 int parsevidoutname (char *arg);
+int vidoutsupported (int i);
 int getvidmode (void);
 const char *vidoutname (int i);
 int try_next_vidoutmode(int user_req);

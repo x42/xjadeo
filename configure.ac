@@ -320,4 +320,6 @@ dnl ---------- End of Qt GUI stuff ---------------
 
 AC_CONFIG_FILES([Makefile src/Makefile src/xjadeo/Makefile xjadeo.lsm xjadeo.spec])
 
+AC_CONFIG_FILES([contrib/cli-remote/Makefile])
+
 AC_OUTPUT

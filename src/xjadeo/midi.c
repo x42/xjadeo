@@ -611,7 +611,7 @@ void aseq_open(char *port_name) {
 	if (port_name) {
 		err = snd_seq_parse_address(seq, &port, port_name);
 		if (err < 0) {
-			fprintf(stderr,"Invalid port %s - %s\n", port_name, snd_strerror(err));
+			fprintf(stderr,"Cannot find port %s - %s\n", port_name, snd_strerror(err));
 		}
 		err = snd_seq_connect_from(seq, 0, port.client, port.port);
 		if (err < 0) {
@@ -763,8 +763,6 @@ void midi_detectdevices (int print) {
 		}
 	}
 }
-
-
 
 void midi_open(char *midiid) {
 	if (atoi(midiid)<0) {

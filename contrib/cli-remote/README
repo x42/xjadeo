@@ -1,0 +1,52 @@
+this is a quick hack to experiment with xjadeo remote control.
+
+jadeo-rcli is a Command Line Client xjadeo, that generates remote commands
+to be piped into a 'xjadeo -R' instance.
+
+ eg.  ./xjadeo-rcli | ../../src/xjadeo/xjadeo -R 
+
+xjadeo-rcli connects to a local time source (jack or MIDI) and generates 
+'seek <frame>' messages to stdout. It is a crude way to forward sync
+information from one host to another. I've been using a small script
+'rjadeo.sh' to start a xjadeo on a local display of the remote-host:
+
+rjadeo.sh: (on remote host)
+--------8<-------
+#!/bin/sh
+export DISPLAY=:0
+exec ~/xjadeo $@ &>/dev/null
+-------->8-------
+
+./xjadeo-rcli | ssh <user@host> ~/bin/rjadeo.sh -R <file> 
+
+This does not require the remote hosts to run a jackd, but gets you a
+monitor screen in sync with your local jack transport or MTC.
+
+With TCP or even SSL overhead, the latency is unpredictable, but
+even on a cheap system acceptable: playing at 25 fps, I got less than one
+video frame skew when transmitting to 2 remote hosts simulaneously
+on a local 11Mbit/s wireless!
+
+However if you want to have an accurate synchronization use netjack.sf.net to
+sync transport of the jackd's via UDP. 
+
+
+###
+
+ jadeo.c:
+
+  this is a proof of concept code. much of the code is hardcoded.
+  edit jadeo.c for your needs..
+  
+ * it outputs some hardcoded remote-commands to initialize the xjadeo
+ * connect to local jackd or MIDI TC source. and generate
+   'seek <frame>' messages if the frame changes.
+ * read from <stdin> and echo lines to <stdout>. allows to 
+   insert custom remote commands.
+
+
+###
+
+using the 'seek' remote command to play a movie is not an intended
+feature of xjadeo! Neither is the concept of passing sync info like 
+this. However it may come in handy..

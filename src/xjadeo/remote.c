@@ -124,6 +124,7 @@ void xapi_close_window(void *d) {
 
 void xapi_set_videomode(void *d) {
 	int vmode= atoi((char*)d);
+	// parsevidoutname ()
 	if (getvidmode() !=0) {
 		remote_printf(413, "cannot change videomode while window is open.");
 		return;
@@ -158,8 +159,20 @@ void xapi_open_window(void *d) {
 	remote_printf(100, "window opened.");
 }
 
+
 void xapi_pvideomode(void *d) {
 	remote_printf(200,"videomode=%i", getvidmode());
+}
+
+void xapi_lvideomodes(void *d) {
+	int i=0;
+	remote_printf(100,"list video modes.");
+	while (vidoutsupported(++i)>=0) {
+		if (vidoutsupported(i)) 
+			remote_printf(102,"vmode=%i : %s",i,vidoutname(i));
+		else  
+			remote_printf(800,"n/a=%i : %s",i,vidoutname(i));
+	}
 }
 
 void xapi_pwinpos(void *d) {
@@ -540,11 +553,11 @@ Dcommand cmd_root[] = {
 	{"window pos " , "<int>x<int>: move window", NULL, xapi_swinpos, 0 },
 
 	{"get windowsize" , ": show current window size", NULL, xapi_pwinsize, 0 },
-	{"get windowpos" , ": show current window position", NULL, xapi_pwinpos, 0 },
+// TODO: complete the display backends and then enable this fn.
+//	{"get windowpos" , ": show current window position", NULL, xapi_pwinpos, 0 },
 
 	{"get videomode" , ": display current video mode", NULL, xapi_pvideomode, 0 },
-	{"list videomodes" , ": displays a list of possible video modes", NULL, xapi_null, 0 },
-	{"ask videomodes" , ": dump CSV list of possible video modes", NULL, xapi_null, 0 },
+	{"list videomodes" , ": displays a list of possible video modes", NULL, xapi_lvideomodes, 0 },
 
 	{"osd frame " , "<ypos>: render current framenumber. y=0..100 (<0 disable)", NULL, xapi_osd_frame, 0 },
 	{"osd smpte " , "<ypos>: render smpte. y=0..100 (<0 disable)", NULL, xapi_osd_smpte, 0 },

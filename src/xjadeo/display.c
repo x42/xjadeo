@@ -185,9 +185,11 @@ int parsevidoutname (char *arg) {
 }
 
 const char * vidoutname (int i) {
-	// this does not check if i < array length!!
-	// should be no need for :)
 	return (VO[i].name);
+}
+
+int vidoutsupported (int i) {
+	return(VO[i].supported);
 }
 
 void dump_vopts (void) {

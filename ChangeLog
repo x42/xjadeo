@@ -1,3 +1,10 @@
+2006-04-22  rgareus  <robin@gareus.org>
+ - added contrib folder 
+ - implememted 'list videomodes'
+ - disabled 'get windowpos' 
+ - configure.ac: added contrib/cli-remote/Makefile to AC_CONFIG_FILES
+   Note: contrib will not be built as it is not a subdir in Makefile.am
+
 2006-04-17  rgareus  <robin@gareus.org>
  - amidi seqencer instead of alsa rawmidi
  - remote cmd midi status fixed.

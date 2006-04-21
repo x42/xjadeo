@@ -86,11 +86,19 @@ void deallocate_xvimage(void) {
 	XSync(xv_dpy, False);
 	xv_buffer=NULL;
 }
-
 void get_window_pos_xv (int *x,  int *y) {
+	XWindowAttributes attr;
+	XGetWindowAttributes(xv_dpy, xv_win, &attr);
+	if (x) *x=attr.x;
+	if (y) *y=attr.y;
+}
+
+void get_window_pos_xv_old (int *x,  int *y) {
 	unsigned int dummy_u0, dummy_u1;
 	unsigned int dummy_W, dummy_H;
 	Window dummy_w;
+	// FIXME: this returns the position of the video in the window
+	// should return the pos of the window relative to the root.
 	XGetGeometry(xv_dpy, xv_win, &dummy_w, x,y, &dummy_W, &dummy_H,&dummy_u0,&dummy_u1);
 }
 
@@ -426,6 +434,8 @@ void get_window_pos_imlib (int *x,  int *y) {
 	unsigned int dummy_u0, dummy_u1;
 	unsigned int dummy_W, dummy_H;
 	Window dummy_w;
+	// FIXME: this returns the position of the video in the window
+	// should return the pos of the window relative to the root.
 	XGetGeometry(display, window, &dummy_w, x,y, &dummy_W, &dummy_H,&dummy_u0,&dummy_u1);
 }
 
