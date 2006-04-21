@@ -1,0 +1,681 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<article>
+  <section>
+    <title>DESCRIPTION</title>
+
+    <para></para>
+  </section>
+
+  <section>
+    <title>NEWS</title>
+
+    <para></para>
+  </section>
+
+  <appendix>
+    <title>Manual Pages</title>
+
+    <refentry>
+      <refentryinfo>
+        <date>April 19, 2006</date>
+
+        <authorgroup>
+          <author>
+            <firstname>Luis</firstname>
+
+            <surname>Garrido</surname>
+
+            <affiliation>
+              <address><email>luisgarrido@users.sourceforge.net</email></address>
+            </affiliation>
+          </author>
+
+          <author>
+            <firstname>Robin</firstname>
+
+            <surname>Gareus</surname>
+
+            <affiliation>
+              <address><email>robin@gareus.org</email></address>
+            </affiliation>
+          </author>
+        </authorgroup>
+      </refentryinfo>
+
+      <refmeta>
+        <refentrytitle>XJADEO</refentrytitle>
+      </refmeta>
+
+      <refnamediv>
+        <refname>xjadeo</refname>
+
+        <refpurpose>displays a video clip in sync with an external timing
+        source</refpurpose>
+      </refnamediv>
+
+      <refsynopsisdiv>
+        <cmdsynopsis>
+          <command>xjadeo</command>
+
+          <arg>options</arg>
+
+          <arg>videofile</arg>
+        </cmdsynopsis>
+      </refsynopsisdiv>
+
+      <refsection>
+        <title>DESCRIPTION</title>
+
+        <para><command>xjadeo</command> displays a video clip in sync with an
+        external timing source. It is a handy tool to help with the
+        synchronization of the soundtrack of a video file.
+        <command>xjadeo</command> supports different video file formats, video
+        output libraries and sync sources.</para>
+      </refsection>
+
+      <refsection>
+        <title>OPTIONS</title>
+
+        <variablelist>
+          <varlistentry>
+            <term><option>-h, --help</option></term>
+
+            <listitem>
+              <para>Prints usage help and exits.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>-q, --quiet, --silent</option></term>
+
+            <listitem>
+              <para>Supresses normal output messages.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>-v, --verbose</option></term>
+
+            <listitem>
+              <para>Prints additional information during the execution.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>-R, --remote</option></term>
+
+            <listitem>
+              <para>Enables interactive (stdin/stdout) control mode. Options
+              <option>--quiet</option> and <option>--verbose</option> have no
+              effect in remote mode.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>-f, --fps <replaceable
+            class="option">n</replaceable></option></term>
+
+            <listitem>
+              <para>Desired refresh rate of the video display in frames per
+              second. Lower values lighten the CPU load at the cost of video
+              quality. Admits non-integer values. Defaults to 10.0 fps.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>-k, --keyframes </option></term>
+
+            <listitem>
+              <para>Instructs the internal algorithm to seek only keyframes.
+              This option may improve the performance for certain video
+              encodings.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>-o, --offset <replaceable
+            class="option">n</replaceable></option></term>
+
+            <listitem>
+              <para>Offset the video player a certain number of frames
+              relative to the sync master time base. Admits negative
+              values.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>-x, --vo, --videomode <replaceable
+            class="option">n</replaceable></option></term>
+
+            <listitem>
+              <para>Selects the video output driver. Defaults to 0
+              (autodetect.) A value of -1 makes the program list the available
+              drivers and exit.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>-i, --info <replaceable
+            class="option">n</replaceable></option></term>
+
+            <listitem>
+              <para>Displays useful info using the OSD (on-screen
+              display.)<variablelist>
+                  <varlistentry>
+                    <term><option>0</option></term>
+
+                    <listitem>
+                      <para>Off.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term><option>1</option></term>
+
+                    <listitem>
+                      <para>Frame number.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term><option>2</option></term>
+
+                    <listitem>
+                      <para>SMPTE time code.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term><option>3</option></term>
+
+                    <listitem>
+                      <para>Both frame number and SMPTE.</para>
+                    </listitem>
+                  </varlistentry>
+                </variablelist>The remote interface allows more complete
+              control over the OSD.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>-m, --midi <replaceable
+            class="option">port</replaceable></option></term>
+
+            <listitem>
+              <para>Get sync from MTC (MIDI Time Code) instead of jack.
+              <replaceable class="option">port</replaceable> is the ALSA
+              sequencer id of the MTC source. A value of -1 will leave
+              <command>xjadeo</command> unconnected.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>-M, --midifps <replaceable
+            class="option">n</replaceable></option></term>
+
+            <listitem>
+              <para>Conversion between MTC SMPTE and frame number.
+              <variablelist>
+                  <varlistentry>
+                    <term><option>0</option></term>
+
+                    <listitem>
+                      <para>Use MTC clock frame rate.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term><option>2</option></term>
+
+                    <listitem>
+                      <para>Use video file frame rate.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term><option>3</option></term>
+
+                    <listitem>
+                      <para>Resample video frame rate / MTC.</para>
+                    </listitem>
+                  </varlistentry>
+                </variablelist></para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>-t, --try-codec</option></term>
+
+            <listitem>
+              <para>Checks if the video file is encoded in a format suitable
+              for use with <command>xjadeo</command> and exits. If the video
+              format is not supported the exit code is 1.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>-h, --help</option></term>
+
+            <listitem>
+              <para>Display usage information and exit.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>-V, --version</option></term>
+
+            <listitem>
+              <para>Display version information and exit.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+      </refsection>
+
+      <refsection>
+        <title>SYNC SOURCES</title>
+
+        <para><command>xjadeo</command> currently supports the following
+        synchronization sources:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Jack transport.</para>
+          </listitem>
+
+          <listitem>
+            <para>MTC (MIDI Time Code) via ALSA sequencer.</para>
+          </listitem>
+        </itemizedlist>
+      </refsection>
+
+      <refsection>
+        <title>VIDEO DRIVERS</title>
+
+        <para><command>xjadeo</command> currently supports the following video
+        output drivers:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>xv hardware overlay.</para>
+          </listitem>
+
+          <listitem>
+            <para>SDL hardware overlay.</para>
+          </listitem>
+
+          <listitem>
+            <para>ImLib.</para>
+          </listitem>
+
+          <listitem>
+            <para>GTK.</para>
+          </listitem>
+        </itemizedlist>
+      </refsection>
+
+      <refsection>
+        <title>VIDEO FORMATS</title>
+
+        <para><command>xjadeo</command> uses the ffmpeg libraries to decode
+        video files, so a wide range of codecs is available. Note, however,
+        that not all the formats support frame seeking. You can use a command
+        like:</para>
+
+        <programlisting>mencoder -idx -ovc lavc -lavcopts keyint=1 -nosound input_file.xxx -o output_file.avi</programlisting>
+
+        <para>This creates from your input-file.xxx an AVI mpeg4 encoded video
+        file with no sound, an index (-idx) and no compression between frames
+        (every frame is a keyframe). The file thus can become really BIG, so
+        watch out your disk space.</para>
+
+        <para>You may also want to shrink the size of the frame by adding the
+        option</para>
+
+        <programlisting>-vf scale=width:height</programlisting>
+
+        <para>This will reduce the size of the avi file, will tax less the
+        system resources when displayed and will leave more space in the
+        screen for your audio software.</para>
+      </refsection>
+
+      <refsection>
+        <title>USER INPUT</title>
+
+        <para><command>xjadeo</command> window accepts the following
+        input:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Resizing the window will resize the movie as well. (CAVEAT:
+            resizing a video frame to make it fit the window is a cpu
+            expensive operation unless you are using hardware overlay. If you
+            are not comfortable with the frame size of your movie it is more
+            cpu efficient that you reencode the video file with the desired
+            size beforehand.)</para>
+          </listitem>
+
+          <listitem>
+            <para>Pressing mouse button 1 will resize the window to the
+            original movie size.</para>
+          </listitem>
+
+          <listitem>
+            <para>Mouse button 2 and 3 resize the window to match the movie
+            aspect ratio.</para>
+          </listitem>
+
+          <listitem>
+            <para>Scroll Wheel (buttons 4,5) stepwise decreases/increases the
+            window size maintaining the original aspect ratio.</para>
+          </listitem>
+
+          <listitem>
+            <para>Closing the window or pressing ctrl-C will terminate
+            <command>xjadeo</command>.</para>
+          </listitem>
+        </itemizedlist>
+      </refsection>
+
+      <refsection>
+        <title>REMOTE MODE</title>
+
+        <para>When started in remote mode (option <option>-R</option> or
+        <option>--remote</option>) <command>xjadeo</command> will
+        interactively accept commands and issue responses through its standard
+        input/output mechanism.</para>
+
+        <para>Currently <command>xjadeo</command> accepts the following
+        commands:</para>
+
+        <variablelist>
+          <varlistentry>
+            <term><option>load <replaceable
+            class="option">filename</replaceable></option></term>
+
+            <listitem>
+              <para>Load a video file, replacing any previous one. </para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>unload</option></term>
+
+            <listitem>
+              <para>Unload the current video file.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>jack connect</option></term>
+
+            <listitem>
+              <para>Get the synchronism from jack transport.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>jack disconnect</option></term>
+
+            <listitem>
+              <para>Stop synchronization with jack transport.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>jack status</option></term>
+
+            <listitem>
+              <para>Get the status of the connection with jack.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>seek <replaceable
+            class="option">frame</replaceable></option></term>
+
+            <listitem>
+              <para>Display the indicated frame (only when disconnected from
+              any sync source.)</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>get position</option></term>
+
+            <listitem>
+              <para>Returns the current frame number.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>get smpte</option></term>
+
+            <listitem>
+              <para>Returns the current head position in SMPTE code.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>get fps</option></term>
+
+            <listitem>
+              <para>Returns the current window update rate.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>set fps <replaceable
+            class="option">value</replaceable></option></term>
+
+            <listitem>
+              <para>Set the window update rate.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>get offset</option></term>
+
+            <listitem>
+              <para>Returns the current time offset in frames.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>set offset <replaceable
+            class="option">value</replaceable></option></term>
+
+            <listitem>
+              <para>Set the time offset in frames.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>get filename</option></term>
+
+            <listitem>
+              <para>Returns the file name of the current movie.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>get duration</option></term>
+
+            <listitem>
+              <para>Returns the length of the movie in seconds.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>get frames</option></term>
+
+            <listitem>
+              <para>Returns the length of the movie in frames.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>get framerate</option></term>
+
+            <listitem>
+              <para>Returns the frame rate of the current movie.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>get width</option></term>
+
+            <listitem>
+              <para>Returns the width of the current movie in pixels.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>get height</option></term>
+
+            <listitem>
+              <para>Returns the height of the current movie in pixels.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>get seekmode</option></term>
+
+            <listitem>
+              <para>Returns 1 if the application is seeking keyframes only, 0
+              otherwise.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>set seekmode <replaceable
+            class="option">value</replaceable></option></term>
+
+            <listitem>
+              <para>A value of 1 will make the application seek only to
+              keyframes.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>window close</option></term>
+
+            <listitem>
+              <para>Closes the video window.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>window open</option></term>
+
+            <listitem>
+              <para>Opens the video window.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>get videomode</option></term>
+
+            <listitem>
+              <para>Returns the current video mode.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+
+        <para>window close: close window window open: open window window mode
+        &lt;int&gt;: changes video mode and opens window window resize
+        &lt;int&gt;|&lt;int&gt;x&lt;int&gt;: resize window (percent of movie
+        or abso lute) window position &lt;int&gt;x&lt;int&gt;: move window
+        window pos &lt;int&gt;x&lt;int&gt;: move window get windowsize: show
+        current window size get windowpos: show current window position list
+        videomodes: displays a list of possible video modes ask videomodes:
+        dump CSV list of possible video modes osd frame &lt;ypos&gt;: render
+        current framenumber. y=0..100 (&lt;0 disable) osd smpte &lt;ypos&gt;:
+        render smpte. y=0..100 (&lt;0 disable) osd text &lt;text&gt;: render
+        &lt;text&gt; on screen osd text: display prev. OSD text osd notext:
+        clear text OSD osd off: same as 'osd notext' osd on: same as 'osd
+        text' osd pos &lt;xalign&gt; &lt;ypos&gt;: xalign=0..2 (L,C,R)
+        ypos=0..100 osd available: return 100 if freetype OSD is available osd
+        font &lt;filename&gt;: use this TTF font file osd box: forces a black
+        box around the OSD osd nobox: make OSD backgroung transparent notify
+        frame: enable async frame-update messages notify disable: disable
+        async messages midi autoconnect: discover and connect to midi time
+        source midi connect &lt;int&gt;: connect to midi time source midi
+        disconnect: unconect from midi device midi status: show connected midi
+        port get midisync: display midi smpte conversion mode set midisync
+        &lt;int&gt;: MTC smpte conversion. 0:MTC 2:Video 3:resample help: show
+        a quick help quit: quit xjadeo</para>
+
+        <para>The remote mode issues its responses in the following
+        format:</para>
+
+        <para></para>
+      </refsection>
+    </refentry>
+
+    <refentry>
+      <refentryinfo>
+        <date>April 19, 2006</date>
+
+        <authorgroup>
+          <author>
+            <firstname>Luis</firstname>
+
+            <surname>Garrido</surname>
+
+            <affiliation>
+              <address><email>luisgarrido@users.sourceforge.net</email></address>
+            </affiliation>
+          </author>
+
+          <author>
+            <firstname>Robin</firstname>
+
+            <surname>Gareus</surname>
+
+            <affiliation>
+              <address><email>robin@gareus.org</email></address>
+            </affiliation>
+          </author>
+        </authorgroup>
+      </refentryinfo>
+
+      <refmeta>
+        <refentrytitle>QJADEO</refentrytitle>
+      </refmeta>
+
+      <refnamediv>
+        <refname>qjadeo</refname>
+
+        <refpurpose>GUI front-end to <command>xjadeo </command>remote
+        mode.</refpurpose>
+      </refnamediv>
+
+      <refsynopsisdiv>
+        <cmdsynopsis>
+          <command>qjadeo</command>
+
+          <arg>videofile</arg>
+        </cmdsynopsis>
+      </refsynopsisdiv>
+
+      <refsection>
+        <title>DESCRIPTION</title>
+
+        <para><command>xjadeo</command> displays a video clip in sync with an
+        external timing source. It is a handy tool to help with the
+        synchronization of the soundtrack of a video file.
+        <command>xjadeo</command> supports different video file formats, video
+        output libraries and sync sources.</para>
+      </refsection>
+
+      <refsection>
+        <title>ENVIRONMENT</title>
+
+        <para><command>qjadeo</command> if the XJADEO variable is set, qjadeo
+        will assume that it holds the path to the xjadeo executable.</para>
+      </refsection>
+    </refentry>
+  </appendix>
+</article>
