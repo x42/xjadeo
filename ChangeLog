@@ -4,6 +4,11 @@
  - disabled 'get windowpos' 
  - configure.ac: added contrib/cli-remote/Makefile to AC_CONFIG_FILES
    Note: contrib will not be built as it is not a subdir in Makefile.am
+ - remote command return status now identifies physical units. 
+   added doc to the source: remote.c
+ - changed return value of some xapi function. 
+   only MINOR numbers have been changed (rv: = MAJOR*100 + MINOR)
+ * xjadeo v0.3.10
 
 2006-04-17  rgareus  <robin@gareus.org>
  - amidi seqencer instead of alsa rawmidi

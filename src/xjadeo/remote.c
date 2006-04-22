@@ -17,6 +17,31 @@
  * (c) 2006 
  *  Robin Gareus <robin@gareus.org>
  *  Luis Garrido <luisgarrido@users.sourceforge.net>
+ *
+ *
+ *
+ * XAPI return values:
+ *  1xx: command succeeded 
+ *  2xx: query variable succeeded: 
+ *  4xx: error
+ *  8xx: info message (eg. help)
+ *
+ * more detailed: 
+ *  100: <text>
+ *  101: var=<int> // long int 
+ *  124: vmode=<int> : <string> (list of avail video modes)
+ *
+ *  201: var=<int>  // long int
+ *  202: var=<double>
+ *  210: var=<int>x<int> 
+ *  220: var=<string>
+ *  228: var=<smpte-string>
+ *
+ *  suggestions, TODO:
+ *  3xx: command succeeded, but status is negative.
+ *    eg. 310 midi not connected, but available
+ *       which is currenlty 199.
+ *
  */
 
 #include "xjadeo.h"
@@ -92,11 +117,6 @@ void remote_printf(int val, const char *format, ...);
 // API commands
 //--------------------------------------------
 
-/* replace current movie file
- *
- * argument d needs to be a pointer to a char array 
- * with the data 'load <filename>\0'
- */
 void xapi_open(void *d) {
 	char *fn= (char*)d;
 	printf("open file: '%s'\n",fn);
@@ -161,7 +181,7 @@ void xapi_open_window(void *d) {
 
 
 void xapi_pvideomode(void *d) {
-	remote_printf(200,"videomode=%i", getvidmode());
+	remote_printf(201,"videomode=%i", getvidmode());
 }
 
 void xapi_lvideomodes(void *d) {
@@ -169,7 +189,7 @@ void xapi_lvideomodes(void *d) {
 	remote_printf(100,"list video modes.");
 	while (vidoutsupported(++i)>=0) {
 		if (vidoutsupported(i)) 
-			remote_printf(102,"vmode=%i : %s",i,vidoutname(i));
+			remote_printf(124,"vmode=%i : %s",i,vidoutname(i));
 		else  
 			remote_printf(800,"n/a=%i : %s",i,vidoutname(i));
 	}
@@ -178,13 +198,13 @@ void xapi_lvideomodes(void *d) {
 void xapi_pwinpos(void *d) {
 	int x,y;
 	Xgetpos(&x,&y); 
-	remote_printf(200,"windowpos=%ix%i",x,y);
+	remote_printf(210,"windowpos=%ix%i",x,y);
 }
 
 void xapi_pwinsize(void *d) {
 	unsigned int x,y;
 	Xgetsize(&x,&y); 
-	remote_printf(200,"windowsize=%ux%u",x,y);
+	remote_printf(210,"windowsize=%ux%u",x,y);
 }
 
 void xapi_swinsize(void *d) {
@@ -233,29 +253,29 @@ void xapi_quit(void *d) {
 
 void xapi_pfilename(void *d) {
 	if (current_file) 
-		remote_printf(200, "filename=%s", current_file);
+		remote_printf(220, "filename=%s", current_file);
 	else 
 		remote_printf(410, "no open video file");
 }
 
 void xapi_pduration(void *d) {
-	remote_printf(200, "duration=%g", duration);
+	remote_printf(202, "duration=%g", duration);
 }
 
 void xapi_pframerate(void *d) {
-	remote_printf(200, "framerate=%g", framerate);
+	remote_printf(202, "framerate=%g", framerate);
 }
 
 void xapi_pframes(void *d) {
-	remote_printf(200, "frames=%ld ", frames);
+	remote_printf(201, "frames=%ld ", frames);
 }
 
 void xapi_poffset(void *d) {
-	remote_printf(200,"offset=%li",(long int) ts_offset);
+	remote_printf(201,"offset=%li",(long int) ts_offset);
 }
 
 void xapi_pseekmode (void *d) {
-	remote_printf(200,"seekmode=%i", seekflags==AVSEEK_FLAG_BACKWARD?1:0);
+	remote_printf(201,"seekmode=%i", seekflags==AVSEEK_FLAG_BACKWARD?1:0);
 }
 
 void xapi_sseekmode (void *d) {
@@ -267,53 +287,53 @@ void xapi_sseekmode (void *d) {
 #endif
 	if (!strcmp(mode,"key") || atoi(mode)==1)
 		seekflags=AVSEEK_FLAG_BACKWARD;
-	remote_printf(200,"seekmode=%i", seekflags==AVSEEK_FLAG_BACKWARD?1:0);
+	remote_printf(201,"seekmode=%i", seekflags==AVSEEK_FLAG_BACKWARD?1:0);
 }
 
 void xapi_pmwidth(void *d) {
-	remote_printf(200,"movie_width=%i", movie_width);
+	remote_printf(201,"movie_width=%i", movie_width);
 }
 
 void xapi_pmheight(void *d) {
-	remote_printf(200,"movie_height=%i", movie_height);
+	remote_printf(201,"movie_height=%i", movie_height);
 }
 void xapi_soffset(void *d) {
 //	long int new = atol((char*)d);
 	long int new = smptestring_to_frame((char*)d);
 	ts_offset= (int64_t) new;
-	remote_printf(100,"offset=%li",(long int) ts_offset);
+	remote_printf(101,"offset=%li",(long int) ts_offset);
 }
 
 void xapi_pposition(void *d) {
-	remote_printf(200,"position=%li",dispFrame);
+	remote_printf(201,"position=%li",dispFrame);
 }
 
 void xapi_psmpte(void *d) {
 	char smptestr[13];
 	frame_to_smptestring(smptestr,dispFrame);
-	remote_printf(200,"smpte=%s",smptestr);
+	remote_printf(228,"smpte=%s",smptestr);
 }
 
 void xapi_seek(void *d) {
 //	long int new = atol((char*)d);
 	long int new = smptestring_to_frame((char*)d);
 	userFrame= (int64_t) new;
-	remote_printf(100,"defaultseek=%li",userFrame);
+	remote_printf(101,"defaultseek=%li",userFrame);
 }
 
 void xapi_pfps(void *d) {
-	remote_printf(200,"updatefps=%i",(int) rint(1/delay));
+	remote_printf(201,"updatefps=%i",(int) rint(1/delay));
 }
 
 void xapi_sfps(void *d) {
 	char *off= (char*)d;
         delay = 1.0 / atof(off);
-	remote_printf(100,"updatefps=%i",(int) rint(1/delay));
+	remote_printf(101,"updatefps=%i",(int) rint(1/delay));
 }
 
 void xapi_jack_status(void *d) {
 	if (jack_client) 
-		remote_printf(200,"jackclient='%s'.",jackid);
+		remote_printf(220,"jackclient=%s",jackid);
 	else 
 		remote_printf(100,"not connected to jack server");
 
@@ -432,7 +452,7 @@ void xapi_midi_status(void *d) {
 	if (midi_connected())
 		remote_printf(100,"midi connected.");
 	else
-		remote_printf(101,"midi not connected.");
+		remote_printf(199,"midi not connected.");
 #else
 	remote_printf(499,"midi not available.");
 #endif
@@ -470,9 +490,22 @@ void xapi_detect_midi(void *d) {
 #endif
 }
 
+void xapi_pmidilibrary (void *d) {
+#ifdef HAVE_MIDI
+    #ifdef HAVE_PORTMIDI
+	remote_printf(220,"midilib=portmidi");
+    #else
+	remote_printf(220,"midilib=alsaseq");
+    #endif
+#else
+	remote_printf(499,"midi not available.");
+#endif
+}
+
+	
 void xapi_pmidisync(void *d) {
 #ifdef HAVE_MIDI
-	remote_printf(200,"midisync=%i", midi_clkconvert);
+	remote_printf(201,"midisync=%i", midi_clkconvert);
 #else
 	remote_printf(499,"midi not available.");
 #endif
@@ -481,7 +514,7 @@ void xapi_pmidisync(void *d) {
 void xapi_smidisync(void *d) {
 #ifdef HAVE_MIDI
         midi_clkconvert = atoi((char*)d);
-	remote_printf(100,"midisync=%i", midi_clkconvert);
+	remote_printf(101,"midisync=%i", midi_clkconvert);
 #else
 	remote_printf(499,"midi not available.");
 #endif
@@ -580,6 +613,8 @@ Dcommand cmd_root[] = {
 	{"midi connect ", "<int>: connect to midi time source", NULL, xapi_open_midi, 0 },
 	{"midi disconnect", ": unconect from midi device", NULL, xapi_close_midi, 0 },
 	{"midi status", ": show connected midi port", NULL, xapi_midi_status, 0 },
+// this is working - but kind of useless.
+//	{"midi library", ": display the used midi libaray", NULL, xapi_pmidilibrary, 0 },
 	{"get midisync", ": display midi smpte conversion mode", NULL, xapi_pmidisync, 0 },
 	{"set midisync ", "<int>: MTC smpte conversion. 0:MTC 2:Video 3:resample", NULL, xapi_smidisync, 0 },
 
@@ -653,7 +688,6 @@ int remote_read(void) {
 #define LOGLEN 1023
 
 void remote_printf(int rv, const char *format, ...) {
-//	FILE *out = stdout;
 	va_list arglist;
 	char text[LOGLEN];
 	char msg[LOGLEN];
@@ -663,29 +697,10 @@ void remote_printf(int rv, const char *format, ...) {
 	va_end(arglist);
 
 	text[LOGLEN -1] =0; // just to be safe :)
-//	fprintf(out, "@%i %s\n",rv,text);
 	snprintf(msg, LOGLEN, "@%i %s\n",rv,text);
 	msg[LOGLEN -1] =0; 
  	write(REMOTE_TX,msg,strlen(msg));
 }
-
-#if 0
-int remote_select(void)
-{
-	fd_set fd;
-	struct timeval tv = { 0, 0 };
-	FD_ZERO(&fd);
-	FD_SET(REMOTE_RX,&fd);
-
-	if (select((REMOTE_RX+1), &fd, NULL, NULL, &tv)) return remote_read();
-	return 0;
-}
-
-inline int poll_remote(void) {
-	if (remote_en) return (remote_select());
-	return(0);
-}
-#endif
 
 void open_remote_ctrl (void) {
 	inbuf=malloc(sizeof(remotebuffer));
