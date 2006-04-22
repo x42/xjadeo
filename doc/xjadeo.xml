@@ -5,21 +5,340 @@
   <section>
     <title>DESCRIPTION</title>
 
-    <para></para>
+    <para>
+        <application>xjadeo</application> is a program that displays a video clip in sync with an
+        external timing source. It is a handy tool to help synchronizing the soundtrack of a video file.
+
+        <application>xjadeo</application> supports different video file formats, video output libraries and sync sources. 
+	It includes an optional GUI <application>qjadeo</application> that provides a
+	file-history and allows to modify settings of the <application>xjadeo</application> monitor.
+    </para>
+
+    <para>
+        <application>xjadeo</application> is beeing developed on the gnu/Linux operating system, but should 
+	not be limited to it. There are some low priority efforts to make a mac-osX binray:
+	all of ffmpeg, SDL, jack and portmidi are available on osX.
+    </para>
+
+   <section>
+    <title>News</title>
+    <para>
+      <application>xjadeo v0.9</application> is a oven-fresh rewrite. Some of the documentation is still so hot
+      that is not readably rendered. 
+      If your're already interested, see the NEWS and Changelog files provided with the source.
+    </para>
+   </section>
+
+   <section>
+    <title>Specs</title>
+      <itemizedlist>
+             <listitem> <para> XV, SDL, gtk, imlib/X11 </para> </listitem>
+             <listitem> <para> jack trasport or midi sync </para> </listitem>
+             <listitem> <para> ... </para> </listitem>
+      </itemizedlist>
+   </section>
+
+   <section>
+    <title>Prospects</title>
+    <para>
+    see TODO file in the source.
+    </para>
+   </section>
+
+   <section>
+    <title>Credits and Thanks</title>
+    <para>
+     xjadeo was written by Luis Garrido and Robin Gareus.
+
+Fortunately we stand on giants' shoulders:
+ *
+ * XLib code:
+ * http://www.ac3.edu.au/SGI_Developer/books/XLib_PG/sgi_html/index.html
+ *
+ * ffmpeg code:
+ * http://www.inb.uni-luebeck.de/~boehme/using_libavcodec.html
+ *
+ * displays are inspired by playdv source code of http://libdv.sourceforge.net/.
+ *  - (c) 2000 Charles 'Buck' Krasic 
+ *  - (c) 2000 Erik Walthinsen 
+ *
+ * midi: 
+ * portmidi example code. 
+
+ * the alsa midi code was inspired by the alsa-tools
+ * amidi.c, aseqdump.c written by Clemens Ladisch 
+ *
+ * freetype2 rendering example.
+
+    </para>
+   </section>
+
+   <section>
+    <title>The Name</title>
+    <para> Well. Is an X-based application that links JAck with viDEO. XJADEO. In spanish, 'jadeo' means 'panting, gasping'.  </para>
+    <para> Rumour has it that Xja Deo is also regarded as the name of a mystic chinese warrior that will be born in 3000 DC and will bring universal peace and harmony to the world by means of extreme lethal force, but who would be that fool to believe such a thing?</para>
+   </section>
+
+   <section>
+    <title>License</title>
+	<para> <application>xjadeo</application> is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version. </para>
+	<para> This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.</para>
+	<para> You should receive a copy of the GNU General Public License along with the program; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA</para>
+   </section>
+
   </section>
 
   <section>
-    <title>NEWS</title>
+    <title>Build and Install Instructions</title>
 
-    <para></para>
+   <section>
+    <title>Source and Binaries</title>
+    <para>
+      <application>xjadeo</application> is developed using Subversion repositories at
+      <ulink url="http://svn.sourceforge.net/xjadeo/">http://svn.sourceforge.net/xjadeo/</ulink>. 
+      In case you are unfamiliar with SVN, Sourceforge 
+      <ulink url="http://sourceforge.net/svn/?group_id=131926">provides</ulink> information on how to access it.
+    </para>
+    <para>
+     <application>xjadeo</application> is also available for <ulink url="http://sourceforge.net/project/showfiles.php?group_id=131926">download</ulink> as source and binary package. 
+     For convenience we provide a  binary rpm built on a FC4 for i386 systems.
+    </para>
+    <para>
+      A debian package can be found at <ulink url="ftp://ftp.nerim.net/debian-marillat/pool/main/x/xjadeo/">debian-marillat</ulink>
+      edit <filename>/etc/apt/sources.list</filename> to include
+      <screen>
+      deb ftp://ftp.nerim.net/debian-marillat sid main
+      deb-src ftp://ftp.nerim.net/debian-marillat sid main
+      </screen>
+    </para>
+   </section>
+
+   <section>
+    <title>Build Dependencies</title>
+    <para>
+Install the development packages of the libraries you need for running xjadeo. These are, in Fedora Core, ffmpeg-devel, imlib-devel and jack-audio-connection-kit-devel. Pay special attention to the version of ffmpeg, since some versions of this package are not compatible with xjadeo.
+
+ Pay special attention to the version of ffmpeg, since some versions of this package are not compatible with xjadeo.
+    </para>
+    <para>
+These are the libraries upon which xjadeo is built. I provide the version numbers present at my Fedora Core machine.
+
+- jack-audio-connection-kit (0.99.36)
+      performs the connection between audio software and xjadeo.
+
+- ffmpeg (0.4.9-6)
+      decodes the video file.
+      
+- Imlib (1.9.13-19)
+      displays the frame.
+
+To compile the source you will need the "devel" version of these libraries.
+
+Libray version setup known to work on debian/sid.
+
+- libjack-dev (0.100.0-0)
+- Imlib11-dev (1.9.14-28)
+- ffmpeg 
+  - libavformat-dev, libavcodec-dev (debian ffmpeg 0.cvs20050918-6)
+OR
+  - libavcodeccvs (debian marillat ffmpegcvs 3:20060129-0.0)
+
+    </para>
+    <para>
+Furthermore, you will need mencoder to convert the video file to a suitable format.
+    </para>
+   </section>
+
+   <section>
+    <title>Building xjadeo</title>
+    <para>
+    Once you have all the build dependencies, the usual spells apply:
+      <screen>
+       ./autogen.sh # (creates configure using autotools)
+       ./configure
+       make 
+       make install # (requires root privileges)
+       </screen>
+       alternatley you can use the .spec file generated via <application>configure</application>
+       to build an rpm. debian rules have been removed from the source in favor of the having them maintained in the 
+       debian-marillat archive.
+    </para>
+    <para>
+    The configuration process tries to autodetect and include supported featues. However
+    you might want to consider using some of the compile time options. use <command>./configure --help</command>
+    for a full list of available options.
+        <variablelist>
+          <varlistentry>
+            <term><option>--enable-gtk</option></term>
+            <listitem>
+              <para>autodetects gtk and build in gtk display support to xjadeo if available</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>--disable-midi</option></term>
+            <listitem>
+              <para>Disables to probe for midi libraries. xjadeo will be build without midi support.
+	      The current default is to to use portmidi if availble and fall back to using alsa-midi else.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>--disable-portmidi</option></term>
+            <listitem>
+              <para>Disables to check for portmidi library. This will force xjadeo to compile with the alsa driver
+	      even if portmidi is available.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>--disable-ft</option></term>
+            <listitem>
+              <para>Disables the use of freetype2 for On Screen Display. xjadeo will be build without on screen display 
+	      support</para>
+            </listitem>
+          </varlistentry>
+
+        </variablelist>
+ 
+    </para>
+   </section>
+
+   <section>
+   <title>Behind the Scenes</title>
+   <para>
+
+It is very easy. 
+
+When xjadeo is started, 
+
+1) Checks that jackd is running and connects as a client.
+2) Opens the video file.
+3) Opens the window.
+4) Enters a loop that:
+       - Queries jack time position.
+       - Calculates and display the appropriate video frame.
+The loop runs 'framerate' times per second, depending on what you entered in the command line.
+
+Closing the window will terminate xjadeo.
+
+Not very fancy, but works for me. Volunteers to improve it are gladly welcome.
+
+references:
+http://jackit.sourceforge.net/docs/reference/transport-design.html
+   </para>
+   </section>
+
   </section>
+
+  <section>
+    <title>Using xjadeo</title>
+
+    <para>please refer to the manuals in the appendix. run <command>jadeo --help</command> or use <command>qjadeo</command> for starters.</para>
+
+  <section>
+    <title>Video Formats</title>
+    <para>
+    <application>xjadeo</application> has been designed to aid creative people and not as a general purpose video player.
+    <application>xjadeo</application> uses <ulink url="http://ffmpeg.sourceforge.net/">ffmpeg</ulink> to decode the video file, so you first need to encode your video file to a <ulink url="http://ffmpeg.sourceforge.net/faq.html">supported format</ulink>.
+    </para>
+    <para>
+    We recommend <application>mencoder</application> that comes with mplayer:
+    <screen>
+  mencoder -idx -ovc lavc -lavcopts keyint=1 -nosound input-file.xxx -o output-file.avi
+    </screen>
+This creates from your <filename>input-file.xxx</filename> an AVI mpeg4 encoded video file with no sound, an index (-idx) and no compression between frames (every frame is a key frame). The file thus can become really BIG, so watch out your disk space.  You may also want to shrink the size of the frame by adding the option -vf scale=width:height. This will reduce the size of the avi file, will tax less the system resources when displayed and will leave more space in the screen for your audio software...
+    </para>
+
+    <para> in the <filename>/contrib</filename> folder there is an example video and a shell script that can help you finding an appropriate codec.</para>
+   </section>
+
+  <section>
+    <title>invoking xjadeo</title>
+    <para>
+	<command>xjadeo [options] output-file.avi</command>
+    </para>
+    <para> There you are. If you use, for instance, muse 0.7, you can now fool around with its transport controls and see your video clip moving along. When the sequencer is playing at normal speed, the video will play at the framerate you set on the command line. Default is 10 fps, the lower the framerate, the smaller is the impact of xjadeo on the performance of your system.
+    </para>
+
+    <section>
+      <title>Configure Ardour to sync to jack</title>
+    <para>
+      <itemizedlist>
+             <listitem> <para> <menuchoice> <guimenu>Windows</guimenu> <guimenuitem>Option Editor</guimenuitem> </menuchoice> </para> </listitem> 
+             <listitem> <para> Tab "Sync" </para> </listitem>
+             <listitem> <para> Check option "JACK time master" </para> </listitem>
+             <listitem> <para> Set "Positional Sync" to "Sync with JACK" </para> </listitem>
+      </itemizedlist>
+    </para>
+    </section>
+
+    <section>
+      <title>configure rosegarden ro run with xjadeo</title>
+    <para>
+      <itemizedlist>
+             <listitem> <para> <menuchoice> <guimenu>Settings</guimenu> <guimenuitem>Configure Rosegarden</guimenuitem> </menuchoice> </para> </listitem>
+             <listitem> <para> Select "Sequencer" icon.  </para> </listitem>
+             <listitem> <para> Tab "Synchronisation" </para> </listitem>
+             <listitem> <para> Set "JACK transport mode" to "Sync" </para> </listitem>
+      </itemizedlist>
+    </para>
+    </section>
+
+   </section>
+   <section>
+    <title>Troubleshoot </title>
+    <para>
+In case xjadeo does not work out of the box...
+
+* can you play the (re-encoded) video with other players on your system ?
+
+* run <command>xjadeo -v filename</command> - check displayed frame count and jack transport info.
+
+* play the example from http://svn.sourceforge.net/viewsvn.py/xjadeo/trunk/contrib/
+
+* there is a known issue with X11 composite extension on some systems, that will result in xjadeo displaying black 
+  frames only. [ https://sourceforge.net/forum/message.php?msg_id=3571290 ] 
+  -> tweak your X11 config. xjadeo does not use any accelerated video output. 
+
+* ask for help and/or share your experience: [ https://sourceforge.net/forum/?group_id=131926 ]
+
+
+    </para>
+   </section>
+
+   <section>
+    <title>Known Issues</title>
+    <para>
+     Some Video Codecs are known not to work properly on some systems.
+     This is mostly due to different ffmpeg versions, available codec decoders, etc.
+    </para>
+    <para>
+     <application>xjadeo</application> portmidi sync make xjadeo bail out if it fails to connect or
+     encounters a MIDI buffer overflow. This is in fact a feature of portmidi but could also be considered a bug
+     in <application>xjadeo</application>.
+    </para>
+    <para>
+     The gtk display works stable but issues GTK warnings... 
+    </para>
+    <para>
+     xjadeo has not been tested on a 64bit architecture. not sure if we ought to expect problems there...
+    </para>
+    <para>
+     If you experience unexpected behaviour please file a bug ticket at 
+     http://sourceforge.net/projects/xjadeo/
+     </para>
+   </section>
+
+  </section>
+
 
   <appendix>
     <title>Manual Pages</title>
 
     <refentry>
       <refentryinfo>
-        <date>April 19, 2006</date>
+        <date>April 22, 2006</date>
 
         <authorgroup>
           <author>
@@ -45,7 +364,7 @@
       </refentryinfo>
 
       <refmeta>
-        <refentrytitle>XJADEO</refentrytitle>
+        <refentrytitle>xjadeo</refentrytitle>
       </refmeta>
 
       <refnamediv>
@@ -616,7 +935,7 @@
 
     <refentry>
       <refentryinfo>
-        <date>April 19, 2006</date>
+        <date>April 22, 2006</date>
 
         <authorgroup>
           <author>
@@ -642,7 +961,7 @@
       </refentryinfo>
 
       <refmeta>
-        <refentrytitle>QJADEO</refentrytitle>
+        <refentrytitle>qjadeo</refentrytitle>
       </refmeta>
 
       <refnamediv>

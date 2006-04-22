@@ -1,28 +1,12 @@
-NOTE: xjadeo-0.3.1 (cvs-tag xj3) is a alpha devel rewrite of xjadeo-0.1.1
-
-some of the documentation is out of date and xj3 still needs some cleaning,
-fixing and integration....  nevertheless it already works.
-
- ./configure --help 
-
-to get "ALL" features 
- ./configure --enable-gtk --enable-midi 
-
-to compile a xjadeo-0.1.1 from the xj3 sources
- ./configure --disable-sdl --disable-xv
-
-
-UTSL,
-robin
-
 ###############################################################################
 
 
 	xjadeo - jack video monitor
 
+  Copyright (C) 2005, 2006  rgareus, luisgarrido
 
-
-  Copyright (C) 2005 rgareus, luisgarrido
+   Luis Garrido <luisgarrido@users.sourceforge.net>
+   Robin Gareus <robin@gareus.org>
 
   xjadeo is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -38,215 +22,34 @@ robin
   along with this program; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-Comments are welcome.
 
+###############################################################################
 
--------------------------------------------
-DESCRIPTION
--------------------------------------------
+xjadeo is a very simple video player that gets sync from jack. 
 
-xjadeo is a very simple video player that gets sync from jack.
- 
-When a sequencer like Muse or Rosegarden acts as a timebase master, xjadeo will display the video frame in sync with the sequencer transport.
+please refer to the documentation in the doc/ for any details!
 
-This means that you can visually synchronize an audio event with a certain frame in the movie, which comes quite handy when you want to create a soundtrack for a video clip.
+ Build Instructions for the impatient:
 
-
-
--------------------------------------------
-BUILD & INSTALL
--------------------------------------------
-
-Install the development packages of the libraries you need for running xjadeo. These are, in Fedora Core, ffmpeg-devel, imlib-devel and jack-audio-connection-kit-devel. Pay special attention to the version of ffmpeg, since some versions of this package are not compatible with xjadeo.
-
-Then download and uncompress the source tarball, chdir there and cast the usual spells:
-
-  ./configure
-  make
-  make install    (This requires root privileges)
-    
-
-FURTHER INFORMATION
-
-Rebuid the build environement:
-  make -f Makefile.cvs [autoconf|compile]
-
-XJADEO ./configure ARGUMENTS
- 
-  --with-ffmpegprefix  : specify custom ffmpeg developent library path
-  --enable-skip-detect : enables xjadeo to output warnings when frames are skipped.
-
+ ./autogen.sh
+ ./configure
+ make 
+ make install
 
 -------------------------------------------
-USAGE
+BUILD DEPENDANCIES
 -------------------------------------------
 
-First you have to encode your video file to a certain specific format. For this I use the utility mencoder that comes with mplayer. The appropriate spell is:
+you need have the devel packages installed on the system to compile xjadeo:
+ * ffmpeg-devel  -  ffmpeg (0.4.9-6)
+ * jack-audio-connection-kit-devel
+ * libX11 
 
-  mencoder -idx -ovc lavc -lavcopts keyint=1 -nosound input-file.xxx -o output-file.avi
-  
-This creates from your input-file.xxx an AVI mpeg4 encoded video file with no sound, an index (-idx) and no compression between frames (every frame is a key frame). The file thus can become really BIG, so watch out your disk space. 
-
-You may also want to shrink the size of the frame by adding the option -vf scale=width:height. This will reduce the size of the avi file, will tax less the system resources when displayed and will leave more space in the screen for your audio software. Usually I find 160:120 enough, but depending on the size of your screen and hard disk and the power of your computer, you may want to have a bigger display.
-
-Then you have to be sure that jackd is running.
-
-Finally, run xjadeo with the following command:
-
-	xjadeo [options] output-file.avi &
-
-
-There you are. If you use, for instance, muse 0.7, you can now fool around with its transport controls and see your video clip moving along. When the sequencer is playing at normal speed, the video will play at the framerate you insert in the command line. Default is 10 fps. Again, the lower the framerate, the smaller is the impact of xjadeo on the performance of your system.
-
-
--------------------------------------------
-OPTIONS
--------------------------------------------
-
-xjadeo accepts the following options:
-
--q, --quiet, --silent
-	Inhibit usual output.
-
--v, --verbose
-	Print more information.  
-
--k, --keyframes 
-	Seek only to keyframes of the video. (improves performance but makes
-	playing jerky or simply static if keyframes are not frequent ).
-
--t, --try-codec  
-	Check  if the  given  video  file  can be played by xjadeo.  No window
-	is opened in this mode.  The program exits with code 1 if the file
-	format is not supported.
-
--f, --fps
-	How often xjadeo updates the screen. The default is 10 fps (not
-	the video file default)!
-
--h, --help
-	Shows a summary of the options.
-
--V, --version
-	Shows the version of the program.
-
--o --offset
-	Time offset in video-frames. There is a machine-dependent time lag 
-	between jack transport and video display. This option allows to 
-	compensate it.
-
-
--------------------------------------------
-CONFIGURE ARDOUR TO RUN WITH XJADEO
--------------------------------------------
-
-Menu "Windows/Option Editor"
-Tab "Sync"
-Check option "JACK time master"
-Set "Positional Sync" to "Sync with JACK"
-
-
--------------------------------------------
-CONFIGURE ROSEGARDEN TO RUN WITH XJADEO
--------------------------------------------
-
-Menu "Settings/Configure Rosegarden"
-Select "Sequencer" icon.
-Tab "Synchronisation"
-Set "JACK transport mode" to "Sync"
-
-
--------------------------------------------
-HOW IT WORKS
--------------------------------------------
-
-It is very easy. This is what I call "glue software". Fortunately we stand on giants' shoulders.
-
-When xjadeo is started, 
-
-1) Checks that jackd is running and connects as a client.
-2) Opens the video file.
-3) Opens the window.
-4) Enters a loop that:
-       - Queries jack time position.
-       - Calculates and display the appropriate video frame.
-The loop runs 'framerate' times per second, depending on what you entered in the command line.
-
-Closing the window will terminate xjadeo.
-
-Not very fancy, but works for me. Volunteers to improve it are gladly welcome.
-
-
--------------------------------------------
-BUILDING DEPENDENCIES
--------------------------------------------
-
-These are the libraries upon which xjadeo is built. I provide the version numbers present at my Fedora Core machine.
-
-- jack-audio-connection-kit (0.99.36)
-      performs the connection between audio software and xjadeo.
-
-- ffmpeg (0.4.9-6)
-      decodes the video file.
-      
-- Imlib (1.9.13-19)
-      displays the frame.
-
-To compile the source you will need the "devel" version of these libraries.
-
-Furthermore, you will need mencoder to convert the video file to a suitable format.
-
-
-Libray version setup known to work on debian/sid.
-
-- libjack-dev (0.100.0-0)
-- Imlib11-dev (1.9.14-28)
-- ffmpeg 
-  - libavformat-dev, libavcodec-dev (debian ffmpeg 0.cvs20050918-6)
-OR
-  - libavcodeccvs (debian marillat ffmpegcvs 3:20060129-0.0)
-
--------------------------------------------
-TROUBLESHOOT
--------------------------------------------
-
-In case xjadeo does not work out of the box...
-
-* can you play the (re-encoded) video with other players on your system ?
-
-* run 'xjadeo -v <file>' - check displayed frame count and jack transport info.
-
-* play the example from http://cvs.sourceforge.net/viewcvs.py/xjadeo/xjadeo/contrib/
-
-* there is a known issue with X11 composite extension on some systems, that will result in xjadeo displaying black 
-  frames only. [ https://sourceforge.net/forum/message.php?msg_id=3571290 ] 
-  -> tweak your X11 config. xjadeo does not use any accelerated video output. 
-
-* ask for help and/or share your experience: [ https://sourceforge.net/forum/?group_id=131926 ]
-
--------------------------------------------
-TODO
--------------------------------------------
-
-Improve performance. Will e.g., SDL perform better than Imlib? Sure in XVideo enabled video cards. Stop refreshing loop if window is minimized or jack is stopped.
-
-Improve interface. Clicking screen opens file manager to load different video? Widget or key press to adjust framerate?
-
-Support more video formats. Doubtful. It is difficult and taxes performance.
-
-      
--------------------------------------------
-REFERENCES
--------------------------------------------
-
-http://jackit.sourceforge.net/docs/reference/transport-design.html
-
-
--------------------------------------------
-THE NAME
--------------------------------------------
-
-Well. Is an X-based application that links JAck with viDEO. XJADEO. In spanish, 'jadeo' means 'panting, gasping'.
-
-Rumour has it that Xja Deo is also regarded as the name of a mistic chinese warrior that will be born in 3000 DC and will bring universal peace and harmony to the world by means of extreme lethal force, but who would be that fool to believe such a thing?
+optionally you may want to have
+ * freetype2
+ * gtk
+ * imlib         - Imlib (1.9.13-19) or Imlib11-dev (1.9.14-28)
+ * SDL
+ * portmidi
+ * alsamidi
 
