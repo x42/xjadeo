@@ -1263,8 +1263,8 @@ This creates from your <filename>input-file.xxx</filename> an AVI mpeg4 encoded 
         interactively accept commands and issue responses through its standard
         input/output mechanism.</para>
 
-	<para>use the <command>help</command> remote command to get a quick 
-	overview of all available commands. please refer to the documentation for 
+	<para>Use the remote command <command>help</command> to get a quick 
+	overview of all available commands. please refer to the docbook documentation for 
 	a complete description of the remote commands.</para>
 
       </refsection>
