@@ -95,7 +95,8 @@ int remote_en =0;	/* --remote, -R */
 int remote_mode =0;	/* 0: undirectional ; >0: bidir
 			 * bitwise enable async-messages 
 			 *  so far only: 
-			 *   (1) notify changed timecode 
+			 *   (1) notify timecode 
+			 *   (2) notify changed timecode 
 			 */
 
 int try_codec =0;	/* --try-codec */
@@ -282,7 +283,7 @@ jack video monitor\n", program_name);
 "                            eg. -m ardour or -m 80 \n"
 #endif /* HAVE_PORTMIDI */
 "  -M <int>, --midifps <int> how to 'convert' MTC SMPTE to framenumber:\n"
-"                            0: use framerate of MTC clock\n" 
+"                            0: use framerate of MTC clock (default)\n" 
 "                            2: use video file FPS\n" 
 "                            3: resample: videoFPS / MTC \n" 
 #endif /* HAVE_MIDI */

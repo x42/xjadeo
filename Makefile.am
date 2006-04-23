@@ -3,7 +3,7 @@ AC_MACRO_DIR = m4
 
 SUBDIRS = src
 
-man_MANS = xjadeo.1
+man_MANS = doc/xjadeo.1 doc/qjadeo.1
 
 EXTRA_DIST=xjadeo.lsm.in xjadeo.spec.in xjadeo.spec contrib autogen.sh
 

@@ -143,19 +143,21 @@ void xapi_close_window(void *d) {
 }
 
 void xapi_set_videomode(void *d) {
-	int vmode= atoi((char*)d);
+	int vmode; 
 	// parsevidoutname ()
 	if (getvidmode() !=0) {
 		remote_printf(413, "cannot change videomode while window is open.");
 		return;
 	}
+	vmode=parsevidoutname(d);
+	if (vmode==0 ) vmode = atoi((char*)d);
 	if (vmode <0) {
 		remote_printf(414, "video mode needs to be a positive integer or 0 for autodetect.");
 		return;
 	}
-	remote_printf(100, "setting video mode to %i",vmode);
-
 	render_fmt = vidoutmode(vmode);
+	remote_printf(100, "setting video mode to %i",getvidmode());
+
 	open_window(0,NULL); // required here; else VOutout callback fn will fail.
 
 	if (pFrameFMT && current_file) { 
@@ -522,12 +524,17 @@ void xapi_smidisync(void *d) {
 
 void xapi_bidir_noframe(void *d) {
 	remote_printf(100,"disabled frame notification.");
-	remote_mode&=~1;
+	remote_mode&=~3;
+}
+
+void xapi_bidir_loop(void *d) {
+	remote_printf(100,"enabled frame notify.");
+	remote_mode|=1;
 }
 
 void xapi_bidir_frame(void *d) {
 	remote_printf(100,"enabled frame notify.");
-	remote_mode|=1;
+	remote_mode|=2;
 }
 
 void xapi_null(void *d) {
@@ -607,14 +614,14 @@ Dcommand cmd_root[] = {
 	{"osd nobox" , ": make OSD backgroung transparent", NULL, xapi_osd_nobox, 0 },
 
 	{"notify frame" , ": enable async frame-update messages", NULL, xapi_bidir_frame, 0 },
+	{"notify loop" , ": enable continuous frame position messages", NULL, xapi_bidir_loop, 0 },
 	{"notify disable" , ": disable async messages", NULL, xapi_bidir_noframe, 0 },
 
 	{"midi autoconnect", ": discover and connect to midi time source", NULL, xapi_detect_midi, 0 },
-	{"midi connect ", "<int>: connect to midi time source", NULL, xapi_open_midi, 0 },
+	{"midi connect ", "<port>: connect to midi time source", NULL, xapi_open_midi, 0 },
 	{"midi disconnect", ": unconect from midi device", NULL, xapi_close_midi, 0 },
-	{"midi status", ": show connected midi port", NULL, xapi_midi_status, 0 },
-// this is working - but kind of useless.
-//	{"midi library", ": display the used midi libaray", NULL, xapi_pmidilibrary, 0 },
+	{"midi status", ": display status of midi connection.", NULL, xapi_midi_status, 0 },
+	{"midi library", ": display the used midi libaray", NULL, xapi_pmidilibrary, 0 },
 	{"get midisync", ": display midi smpte conversion mode", NULL, xapi_pmidisync, 0 },
 	{"set midisync ", "<int>: MTC smpte conversion. 0:MTC 2:Video 3:resample", NULL, xapi_smidisync, 0 },
 

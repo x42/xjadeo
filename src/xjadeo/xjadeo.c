@@ -134,21 +134,19 @@ void event_loop(void)
     offFrame = newFrame + ts_offset;
 
     if(offFrame != currentFrame)
-    {
-      currentFrame = offFrame;
-      display_frame((int64_t)(currentFrame),0);
-    }
+        display_frame((int64_t)(currentFrame),0);
     if(want_verbose) {
 	fprintf(stdout, "frame: smpte:%li\r", newFrame);
     	fflush(stdout); 
     }
-    if (remote_en && (remote_mode&1)) {
+    if (remote_en && ((remote_mode&1) || ((remote_mode&2)&& offFrame!=currentFrame)) ) {
 		//call 	xapi_pposition ?? -> rv:200
 		// dispFrame is the currently displayed frame 
 		// = SMPTE + offset
-		remote_printf(300,"position=%li",dispFrame);
+		remote_printf(301,"position=%li",dispFrame);
     }
 
+    currentFrame = offFrame;
 
     handle_X_events();
 
