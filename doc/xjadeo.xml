@@ -261,7 +261,9 @@
     <screen>
   mencoder -idx -ovc lavc -lavcopts keyint=1 -nosound input-file.xxx -o output-file.avi
     </screen>
-This creates from your <filename>input-file.xxx</filename> an AVI mpeg4 encoded video file with no sound, an index (-idx) and no compression between frames (every frame is a key frame). The file thus can become really BIG, so watch out your disk space.  You may also want to shrink the size of the frame by adding the option -vf scale=width:height. This will reduce the size of the avi file, will tax less the system resources when displayed and will leave more space in the screen for your audio software...
+This creates from your <filename>input-file.xxx</filename> an AVI mpeg4 encoded video file with no sound, an index (-idx) and no compression between frames (every frame is a key frame). The file thus can become really BIG, so watch out your disk space. You may also want to shrink the size of the frame by adding the option</para>
+        <programlisting>-vf scale=width:height</programlisting>
+    <para> This will reduce the size of the avi file, will tax less the system resources when displayed and will leave more space in the screen for your audio software...
     </para>
 
     <para> in the <filename>/contrib</filename> folder there is an example video and a shell script that can help you finding an appropriate codec.</para>
@@ -314,23 +316,13 @@ This creates from your <filename>input-file.xxx</filename> an AVI mpeg4 encoded 
    </section>
    <section>
     <title>Troubleshoot </title>
-    <para>
-In case xjadeo does not work out of the box...
-
-* can you play the (re-encoded) video with other players on your system ?
-
-* run <command>xjadeo -v filename</command> - check displayed frame count and jack transport info.
-
-* play the example from http://svn.sourceforge.net/viewsvn.py/xjadeo/trunk/contrib/
-
-* there is a known issue with X11 composite extension on some systems, that will result in xjadeo displaying black 
-  frames only. [ https://sourceforge.net/forum/message.php?msg_id=3571290 ] 
-  -> tweak your X11 config. xjadeo does not use any accelerated video output. 
-
-* ask for help and/or share your experience: [ https://sourceforge.net/forum/?group_id=131926 ]
-
-
-    </para>
+    <para> In case xjadeo does not work out of the box...</para>
+      <itemizedlist>
+             <listitem> <para> can you play the (re-encoded) video with other players on your system ? </para> </listitem>
+             <listitem> <para> run <command>xjadeo -v filename</command> - check displayed frame count and jack transport info.</para> </listitem>
+             <listitem> <para> play the example from http://svn.sourceforge.net/viewsvn.py/xjadeo/trunk/contrib/ </para> </listitem>
+             <listitem> <para> ask for help and/or share your experience: [ https://sourceforge.net/forum/?group_id=131926 ] </para> </listitem>
+      </itemizedlist>
    </section>
 
    <section>
@@ -789,7 +781,7 @@ In case xjadeo does not work out of the box...
 	    <replaceable class="option">ypos</replaceable></option></term>
             <listitem>
               <para>Sets the position of the OSD text</para>
-              <para>xalign is 0:Left, 1:Center, 2:Right</para>
+              <para>xalign is an integer: 0:Left, 1:Center, 2:Right</para>
               <para>ypos specifies the vertical position in percent (0..100).</para>
             </listitem>
           </varlistentry>
