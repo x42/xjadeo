@@ -12,21 +12,21 @@ xjadeo supports different video file formats, video
 output libraries and sync sources.
 
 .TP 
-\fB\-h, \-\-help\fR
+\fB\-h, \-\-help\fR 
 Prints usage help and exits.
 .TP 
-\fB\-q, \-\-quiet, \-\-silent\fR
+\fB\-q, \-\-quiet, \-\-silent\fR 
 Supresses normal output messages.
 .TP 
-\fB\-v, \-\-verbose\fR
+\fB\-v, \-\-verbose\fR 
 Prints additional information during the execution.
 .TP 
-\fB\-R, \-\-remote\fR
+\fB\-R, \-\-remote\fR 
 Enables interactive (stdin/stdout) control mode. Options
 \fB\-\-quiet\fR and \fB\-\-verbose\fR have no
 effect in remote mode.
 .TP 
-\fB\-f, \-\-fps \fIn\fB\fR
+\fB\-f, \-\-fps \fIn\fB\fR 
 Desired refresh rate of the video display in frames per
 second. Lower values lighten the CPU load at the cost of video
 quality. Admits non\-integer values. Defaults to 10.0 fps.
@@ -36,17 +36,17 @@ Instructs the internal algorithm to seek only keyframes.
 This option may improve the performance for certain video
 encodings.
 .TP 
-\fB\-o, \-\-offset \fIn\fB\fR
+\fB\-o, \-\-offset \fIn\fB\fR 
 Offset the video player a certain number of frames
 relative to the sync master time base. Admits negative
 values.
 .TP 
-\fB\-x, \-\-vo, \-\-videomode \fIn\fB\fR
+\fB\-x, \-\-vo, \-\-videomode \fIn\fB\fR 
 Selects the video output driver. Defaults to 0
 (autodetect.) A value of \-1 makes the program list the available
 drivers and exit.
 .TP 
-\fB\-i, \-\-info \fIn\fB\fR
+\fB\-i, \-\-info \fIn\fB\fR 
 Displays useful info using the OSD (on\-screen
 display.)
 .RS 
@@ -67,7 +67,7 @@ Both frame number and SMPTE.
 The remote interface allows more complete
 control over the OSD.
 .TP 
-\fB\-m, \-\-midi \fIport\fB\fR
+\fB\-m, \-\-midi \fIport\fB\fR 
 Get sync from MTC (MIDI Time Code) instead of jack.
 
 If compiled with ALSA midi, \fIport\fR is the ALSA
@@ -77,7 +77,7 @@ If using portmidi, \fIport\fR
 is the portnumber of the midi input to use. value \-1 will attempt autoconnect.
 use \-v \-m \-1 to list midi ports during autodetection.
 .TP 
-\fB\-M, \-\-midifps \fIn\fB\fR
+\fB\-M, \-\-midifps \fIn\fB\fR 
 Conversion between MTC SMPTE and frame number.
 .RS 
 .TP 
@@ -91,15 +91,15 @@ Use video file frame rate.
 Resample video frame rate / MTC.
 .RE
 .TP 
-\fB\-t, \-\-try\-codec\fR
+\fB\-t, \-\-try\-codec\fR 
 Checks if the video file is encoded in a format suitable
 for use with xjadeo and exits. If the video
 format is not supported the exit code is 1.
 .TP 
-\fB\-h, \-\-help\fR
+\fB\-h, \-\-help\fR 
 Display usage information and exit.
 .TP 
-\fB\-V, \-\-version\fR
+\fB\-V, \-\-version\fR 
 Display version information and exit.
 .PP
 
