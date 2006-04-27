@@ -47,9 +47,12 @@ QJadeo::QJadeo()
   }
   if(m_recentFiles.count())
     updateRecentFilesMenu();
-  
+
+  m_osdfont = m_settings.readEntry("OSD font");
+  xjadeo.writeToStdin("osd font " + m_osdfont + "\nosd text \n");
+
   statusBar()->hide();
-  
+
 }
 
 // Recent files list
@@ -93,6 +96,7 @@ void QJadeo::saveOptions()
   m_settings.writeEntry("WindowY", y());
   for(int i = 0; i < int (m_recentFiles.count()); ++i)
     m_settings.writeEntry("File" + QString::number(i + 1), m_recentFiles[i]);
+  m_settings.writeEntry("OSD font", m_osdfont);
 }
 
 void QJadeo::fileOpen()
@@ -120,7 +124,7 @@ void QJadeo::helpAbout()
 {
   QMessageBox::about(
     this,
-    "About qjadeo", 
+    "About qjadeo",
     "(c) 2006 Robin Gareus & Luis Garrido\n"
     "http://xjadeo.sf.net"
   );
@@ -146,7 +150,7 @@ void QJadeo::zoomFullScreen()
   QDesktopWidget *d = QApplication::desktop();
   xjadeo.writeToStdin(QString("window position 0x0\n"));
   xjadeo.writeToStdin(
-    "window resize " + QString::number(d->width()) + 
+    "window resize " + QString::number(d->width()) +
     "x" + QString::number(d->height()) + "\n"
   );
 }
@@ -166,6 +170,37 @@ void QJadeo::setOffset(const QString &offset)
   xjadeo.writeToStdin("set offset " + offset + "\n");
 }
 
+void QJadeo::osdFrameToggled(bool value)
+{
+  if(value)
+    xjadeo.writeToStdin("osd frame 0\n");
+  else
+    xjadeo.writeToStdin("osd frame -1\n");
+}
+
+void QJadeo::osdSMPTEToggled(bool value)
+{
+  if(value)
+    xjadeo.writeToStdin("osd smpte 100\n");
+  else
+    xjadeo.writeToStdin("osd smpte -1\n");
+}
+
+void QJadeo::osdFont()
+{
+  QString s = QFileDialog::getOpenFileName("",
+					   "TrueType fonts (*.ttf)",
+					   this,
+					   "Browse font dialog",
+					   "Choose a font");
+
+  if(!s.isNull())
+  {
+    m_osdfont = s;
+    xjadeo.writeToStdin("osd font " + s + "\n");
+  }
+}
+
 // Called when xjadeo outputs to stdout
 
 void QJadeo::readFromStdout()
@@ -177,7 +212,7 @@ void QJadeo::readFromStdout()
     //qDebug("Response: " + response);
 
     int status = response.mid(1, 3).toInt();
-    
+
     switch(status / 100)
     {
       case 4:
@@ -188,8 +223,8 @@ void QJadeo::readFromStdout()
             break;
           default:
             QMessageBox::critical(
-              this, 
-              "qjadeo", 
+              this,
+              "qjadeo",
               "Error " + response, "&Close"
             );
         }
@@ -243,8 +278,8 @@ void QJadeo::fileLoad(const QString & filename)
   xjadeo.writeToStdin(QString("get frames\n"));
   xjadeo.writeToStdin(QString("get framerate\n"));
   xjadeo.writeToStdin(QString("notify frame\n"));
-  
-  
+
+
 }
 
 // Program entry point

@@ -8,8 +8,8 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>337</width>
-            <height>197</height>
+            <width>260</width>
+            <height>106</height>
         </rect>
     </property>
     <property name="caption">
@@ -19,34 +19,43 @@
         <property name="name">
             <cstring>unnamed</cstring>
         </property>
+        <property name="margin">
+            <number>2</number>
+        </property>
+        <property name="spacing">
+            <number>2</number>
+        </property>
+        <property name="resizeMode">
+            <enum>Minimum</enum>
+        </property>
         <widget class="QLayoutWidget">
             <property name="name">
-                <cstring>layout5</cstring>
+                <cstring>layout6</cstring>
             </property>
             <hbox>
                 <property name="name">
                     <cstring>unnamed</cstring>
                 </property>
-                <widget class="QSpinBox">
-                    <property name="name">
-                        <cstring>fpsSpinBox</cstring>
-                    </property>
-                    <property name="maxValue">
-                        <number>50</number>
-                    </property>
-                    <property name="minValue">
-                        <number>1</number>
-                    </property>
-                    <property name="value">
-                        <number>10</number>
-                    </property>
-                </widget>
                 <widget class="QLabel">
                     <property name="name">
                         <cstring>textLabel2</cstring>
                     </property>
                     <property name="text">
                         <string>FPS</string>
+                    </property>
+                </widget>
+                <widget class="QSpinBox">
+                    <property name="name">
+                        <cstring>fpsSpinBox</cstring>
+                    </property>
+                    <property name="maxValue">
+                        <number>99</number>
+                    </property>
+                    <property name="minValue">
+                        <number>1</number>
+                    </property>
+                    <property name="value">
+                        <number>10</number>
                     </property>
                 </widget>
                 <spacer>
@@ -61,32 +70,11 @@
                     </property>
                     <property name="sizeHint">
                         <size>
-                            <width>61</width>
+                            <width>20</width>
                             <height>20</height>
                         </size>
                     </property>
                 </spacer>
-            </hbox>
-        </widget>
-        <widget class="QLayoutWidget">
-            <property name="name">
-                <cstring>layout4</cstring>
-            </property>
-            <hbox>
-                <property name="name">
-                    <cstring>unnamed</cstring>
-                </property>
-                <widget class="QSpinBox">
-                    <property name="name">
-                        <cstring>offsetSpinBox</cstring>
-                    </property>
-                    <property name="maxValue">
-                        <number>50</number>
-                    </property>
-                    <property name="minValue">
-                        <number>-50</number>
-                    </property>
-                </widget>
                 <widget class="QLabel">
                     <property name="name">
                         <cstring>textLabel1</cstring>
@@ -95,9 +83,55 @@
                         <string>Frame offset</string>
                     </property>
                 </widget>
+                <widget class="QSpinBox">
+                    <property name="name">
+                        <cstring>offsetSpinBox</cstring>
+                    </property>
+                    <property name="maxValue">
+                        <number>999999999</number>
+                    </property>
+                    <property name="minValue">
+                        <number>-999999999</number>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+        <widget class="QLayoutWidget">
+            <property name="name">
+                <cstring>layout15</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="spacing">
+                    <number>0</number>
+                </property>
+                <widget class="QProgressBar">
+                    <property name="name">
+                        <cstring>progressBar</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>3</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>5</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="maximumSize">
+                        <size>
+                            <width>2000</width>
+                            <height>6</height>
+                        </size>
+                    </property>
+                    <property name="percentageVisible">
+                        <bool>false</bool>
+                    </property>
+                </widget>
                 <spacer>
                     <property name="name">
-                        <cstring>spacer3</cstring>
+                        <cstring>spacer4</cstring>
                     </property>
                     <property name="orientation">
                         <enum>Horizontal</enum>
@@ -107,20 +141,12 @@
                     </property>
                     <property name="sizeHint">
                         <size>
-                            <width>61</width>
-                            <height>20</height>
+                            <width>1</width>
+                            <height>6</height>
                         </size>
                     </property>
                 </spacer>
             </hbox>
-        </widget>
-        <widget class="QProgressBar">
-            <property name="name">
-                <cstring>progressBar</cstring>
-            </property>
-            <property name="percentageVisible">
-                <bool>false</bool>
-            </property>
         </widget>
     </vbox>
 </widget>
@@ -134,17 +160,21 @@
         <action name="fileExitAction"/>
         <separator/>
     </item>
-    <item text="Sync" name="Sync">
+    <item text="&amp;Sync" name="Sync">
         <action name="syncJackAction"/>
         <action name="syncMTCAction"/>
     </item>
-    <item text="Zoom" name="Zoom">
+    <item text="&amp;Zoom" name="Zoom">
         <action name="zoom50Action"/>
         <action name="zoom100Action"/>
         <action name="zoom200Action"/>
         <action name="zoomFullScreenAction"/>
     </item>
-    <separator/>
+    <item text="&amp;OSD" name="OSD">
+        <action name="osdFontAction"/>
+        <action name="osdFrameAction"/>
+        <action name="osdSMTPEAction"/>
+    </item>
     <item text="&amp;Help" name="helpMenu">
         <action name="helpAboutAction"/>
     </item>
@@ -157,7 +187,7 @@
             <cstring>fileOpenAction</cstring>
         </property>
         <property name="iconSet">
-            <iconset>fileopen</iconset>
+            <iconset></iconset>
         </property>
         <property name="text">
             <string>Open</string>
@@ -277,6 +307,45 @@
             </property>
         </action>
     </actiongroup>
+    <action>
+        <property name="name">
+            <cstring>osdFrameAction</cstring>
+        </property>
+        <property name="toggleAction">
+            <bool>true</bool>
+        </property>
+        <property name="text">
+            <string>Frame number</string>
+        </property>
+        <property name="menuText">
+            <string>Frame number</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>osdSMTPEAction</cstring>
+        </property>
+        <property name="toggleAction">
+            <bool>true</bool>
+        </property>
+        <property name="text">
+            <string>SMTPE</string>
+        </property>
+        <property name="menuText">
+            <string>SMTPE</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>osdFontAction</cstring>
+        </property>
+        <property name="text">
+            <string>Font...</string>
+        </property>
+        <property name="menuText">
+            <string>Font...</string>
+        </property>
+    </action>
 </actions>
 <connections>
     <connection>
@@ -339,6 +408,24 @@
         <receiver>MainWindow</receiver>
         <slot>setFPS(const QString&amp;)</slot>
     </connection>
+    <connection>
+        <sender>osdSMTPEAction</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>MainWindow</receiver>
+        <slot>osdSMPTEToggled(bool)</slot>
+    </connection>
+    <connection>
+        <sender>osdFrameAction</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>MainWindow</receiver>
+        <slot>osdFrameToggled(bool)</slot>
+    </connection>
+    <connection>
+        <sender>osdFontAction</sender>
+        <signal>activated()</signal>
+        <receiver>MainWindow</receiver>
+        <slot>osdFont()</slot>
+    </connection>
 </connections>
 <slots>
     <slot>fileOpen()</slot>
@@ -352,6 +439,9 @@
     <slot>syncMTC()</slot>
     <slot>setOffset( const QString &amp; )</slot>
     <slot>fileExit()</slot>
+    <slot>osdFrameToggled(bool)</slot>
+    <slot>osdSMPTEToggled(bool)</slot>
+    <slot>osdFont()</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>

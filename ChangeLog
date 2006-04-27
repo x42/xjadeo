@@ -1,3 +1,9 @@
+2006-04-09  Luis Garrido  <luisgarrido@users.sourceforge.net>
+ - Added OSD font, frame and smpte commands to qjadeo menu.
+ - OSD font is stored as a qjadeo preference.
+ - Some docbook fixing.
+
+
 2006-04-23  rgareus  <robin@gareus.org>
  - some remote function help typos
  - parsing videomode integer and text
@@ -6,14 +12,14 @@
  - version v0.3.11
 
 2006-04-22  rgareus  <robin@gareus.org>
- - added contrib folder 
+ - added contrib folder
  - implememted 'list videomodes'
- - disabled 'get windowpos' 
+ - disabled 'get windowpos'
  - configure.ac: added contrib/cli-remote/Makefile to AC_CONFIG_FILES
    Note: contrib will not be built as it is not a subdir in Makefile.am
- - remote command return status now identifies physical units. 
+ - remote command return status now identifies physical units.
    added doc to the source: remote.c
- - changed return value of some xapi function. 
+ - changed return value of some xapi function.
    only MINOR numbers have been changed (rv: = MAJOR*100 + MINOR)
  * xjadeo v0.3.10
 
@@ -25,7 +31,7 @@
 2006-04-16  rgareus  <robin@gareus.org>
  - configure.ac: --disable-portmidi -> 'force to' use alsamidi if avaliable
  - midi.c: added MTC sysex parser for alsamidi.
- - main.c: xjadeo new command line option -i <OSD-mode>, --info <OSD-mode> 
+ - main.c: xjadeo new command line option -i <OSD-mode>, --info <OSD-mode>
  - xjadeo: fixed -t option. (exit instead of segfault when file not found :)
  * xjadeo v0.3.9
 
@@ -41,9 +47,9 @@
    added -DTTFFONTFILE comment. no configure option yet.
  * xjadeo:
  - --vo [<int>|<name>]. also swapped --vo option numbering.. for:
- - fallback video mode auto detection. 
+ - fallback video mode auto detection.
  - implemented rudimentary keyboard event support (for all display modes)
- - <ESC> key quits xjadeo (all display modes) 
+ - <ESC> key quits xjadeo (all display modes)
  - --midifps [MTC|Video|resample] option and 'get/set midisync' remote cmd.
  - initialize midi just before event loop -> prevent midi buffer overflow
  - added alsamidi code. (works but not integrated in xjadeo & build system)
@@ -55,7 +61,7 @@
  - src/qt-gui/Makefile.am: fixed typo.
 
 2006-04-08  Luis Garrido  <luisgarrido@users.sourceforge.net>
- - Fixed qjadeo makefile so the qt4 compilation keeps a backup of the qt3 
+ - Fixed qjadeo makefile so the qt4 compilation keeps a backup of the qt3
  version.
 
 2006-04-08  Luis Garrido  <luisgarrido@users.sourceforge.net>
@@ -63,7 +69,7 @@
  - Fixed --disable-qtgui option.
 
 2006-04-08  Luis Garrido  <luisgarrido@users.sourceforge.net>
- - Autotoolification of qjadeo for Qt4. Now qjadeo takes the xjadeo binary 
+ - Autotoolification of qjadeo for Qt4. Now qjadeo takes the xjadeo binary
  from the environment variable XJADEO or from the install path.
 
 2006-04-08  rgareus  <robin@gareus.org>
@@ -74,7 +80,7 @@
  fixed b0rken XV (typo in display.c)
  added smpte parser and output (via remote and OSD)
  added MTC-fps to video-fps conversion code.
- 
+
 2006-04-07  rgareus  <robin@gareus.org>
  splitted the display.c into sdl, gtk and X11 source files
  quick fixed configure.ac (qmake on debian)
@@ -108,8 +114,8 @@
 2005-10-30  rgareus  <robin@gareus.org>
  - new build environement, that checks dep. libraries.
  - parse command line options
- - fixes to work with newer Version of libffmpeg.  
+ - fixes to work with newer Version of libffmpeg.
  * xjadeo v0.1.1
 
-2005-02-02  luis 
+2005-02-02  luis
  * xjadeo v0.1.0

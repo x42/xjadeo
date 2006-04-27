@@ -1,1135 +1,1594 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN" "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <article>
   <section>
     <title>DESCRIPTION</title>
-    <para><application>xjadeo</application> is a program that displays a video clip in sync with an
-        external timing source. It is a handy tool to help synchronizing the soundtrack of a video file.
-    </para>
-    <para><application>xjadeo</application> supports different video file formats, video output libraries and sync sources. 
-	It includes an optional GUI <application>qjadeo</application> that provides 
-	file-history and allows to modify settings of a running <application>xjadeo</application> monitor instance.
-    </para>
-    <para><application>xjadeo</application> is beeing developed on the gnu/Linux operating system, but should 
-	not be limited to it. There are some low priority efforts to make a mac-osX binray:
-	all of ffmpeg, SDL, jack and portmidi are available on osX.
-    </para>
-    <section>
-      <title>News</title>
-      <para><application>xjadeo v0.9</application> is a oven-fresh rewrite. Some of the documentation is still so hot
-      that is not readably rendered. 
-    </para>
-      <para>
-      As soon as the documentation is finished xjadeo is bound to reach v1.0.
-      If your're already interested, see the NEWS and Changelog files provided with the source.
-    </para>
-    </section>
-    <section>
-      <title>Features and Specs</title>
-      <itemizedlist>
-        <listitem>
-          <para> Display modes:
-		<itemizedlist><listitem><para> XV (hardware accellerated)</para></listitem><listitem><para> SDL (hardware accellerated)</para></listitem><listitem><para> gtk </para></listitem><listitem><para> imlib/X11 </para></listitem></itemizedlist>
-	     </para>
-        </listitem>
-        <listitem>
-          <para> Video stream decoding via FFMPEG. <application>xjadeo</application> supports all seakable media and It plays most MPEG/VOB, AVI, ASF/WMA/WMV, RM, QT/MOV/MP4, Ogg/OGM, MKV, VIVO, FLI, yuv4mpeg films.
-	     </para>
-        </listitem>
-        <listitem>
-          <para> Transport Sync
-		<itemizedlist><listitem><para> jack-audio connection-KIT </para></listitem><listitem><para> MTC using either ALSA-midi or portmidi.</para></listitem></itemizedlist>
-	     </para>
-        </listitem>
-        <listitem>
-          <para> remote control interface allows to query and modify all xjadeo settings and parameters </para>
-        </listitem>
-        <listitem>
-          <para> QT Graphical User interface via remote interface 
-		<itemizedlist><listitem><para> file history </para></listitem><listitem><para> quick modify offset and update times</para></listitem><listitem><para> transport information</para></listitem><listitem><para> re-connect to sync source</para></listitem></itemizedlist>
-	     </para>
-        </listitem>
-        <listitem>
-          <para> ... </para>
-        </listitem>
-      </itemizedlist>
-    </section>
-    <section>
-      <title>Prospects</title>
-      <para>
-    see TODO file in the source repository for now... Ideas range from minor OSD addons to making <application>xjadeo</application> a real-time video sync player. The source is suitable to be extended to support multiple video buffers which for example could be switched depending on timecode etc... <application>xjadeo</application> can also be used as a VJ tool to synchronize playback on multiple screens.
-    </para>
-      <para>
-    For now the maxime is to only maintain this rather simple version before the tool gets even more bloated.
-    </para>
-    </section>
-    <section>
-      <title>Credits and Thanks</title>
-      <para><application>xjadeo</application> was designed and written by Luis Garrido and Robin Gareus.
-    </para>
-      <para>Fortunately we stand on the GNU giants' shoulders! see comments in the source files for detailed information.
-    </para>
-      <itemizedlist>
-        <listitem>
-          <para>XV, SDL and imlib display code was inspired by playdv of <ulink url="http://libdv.sourceforge.net/">http://libdv.sourceforge.net/</ulink> written by Charles 'Buck' Krasic and Erik Walthinsen.</para>
-        </listitem>
-        <listitem>
-          <para>original ffmpeg code <ulink url="http://www.inb.uni-luebeck.de/~boehme/using_libavcodec.html">http://www.inb.uni-luebeck.de/~boehme/using_libavcodec.html</ulink> </para>
-        </listitem>
-        <listitem>
-          <para>XLib code: <ulink url="http://www.ac3.edu.au/SGI_Developer/books/XLib_PG/sgi_html/index.html">http://www.ac3.edu.au/SGI_Developer/books/XLib_PG/sgi_html/index.html</ulink> </para>
-        </listitem>
-        <listitem>
-          <para>portmidi has nice example code, without any credits. same goes for freetype2. many kudos!</para>
-        </listitem>
-        <listitem>
-          <para>the xjadeo alsamidi sequencer was inspired by the alsa-tools amidi.c and aseqdump.c written by Clemens Ladisch</para>
-        </listitem>
-        <listitem>
-          <para>jack: <ulink url="http://jackit.sourceforge.net/docs/reference/transport-design.html">http://jackit.sourceforge.net/docs/reference/transport-design.html</ulink> </para>
-        </listitem>
-      </itemizedlist>
-    </section>
-    <section>
-      <title>The Name</title>
-      <para> Well. Is an X-based application that links JAck with viDEO. XJADEO. In spanish, 'jadeo' means 'panting, gasping'.  </para>
-      <para> Rumour has it that Xja Deo is also regarded as the name of a mystic chinese warrior that will be born in 3000 DC and will bring universal peace and harmony to the world by means of extreme lethal force, but who would be that fool to believe such a thing?</para>
-    </section>
-    <section>
-      <title>License</title>
-      <para><application>xjadeo</application> is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version. </para>
-      <para> This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.</para>
-      <para> You should receive a copy of the GNU General Public License along with the program; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA</para>
-    </section>
+
+    <para><application>xjadeo</application> is a program that displays a video
+    clip in sync with an external timing source. It is a handy tool to help
+    synchronizing the soundtrack of a video file.</para>
+
+    <para><application>xjadeo</application> supports different video file
+    formats, video output libraries and sync sources. It includes an optional
+    GUI <application>qjadeo</application> that provides file-history and
+    allows to modify settings of a running <application>xjadeo</application>
+    monitor instance.</para>
+
+    <para><application>xjadeo</application> is being developed on the
+    GNU/Linux operating system, but should not be limited to it. There are
+    some low priority efforts to build a Mac OS X binary:</para>
   </section>
+
+  <section>
+    <title>LICENSE</title>
+
+    <para><application>xjadeo</application> is free software; you can
+    redistribute it and/or modify it under the terms of the GNU General Public
+    License as published by the Free Software Foundation; either version 2 of
+    the License, or (at your option) any later version.</para>
+
+    <para>This program is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+    for more details.</para>
+
+    <para>You should receive a copy of the GNU General Public License along
+    with the program; if not, write to the Free Software Foundation, Inc., 59
+    Temple Place, Suite 330, Boston, MA 02111-1307 USA</para>
+  </section>
+
+  <section>
+    <title>CREDITS AND ACKNOWLEDGMENTS</title>
+
+    <para><application>xjadeo</application> was designed and written by Luis
+    Garrido and Robin Gareus.</para>
+
+    <para>Fortunately we stand on the GNU giants' shoulders! See comments in
+    the source files for more detailed information.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>XV, SDL and imlib display code was inspired by playdv of <ulink
+        url="http://libdv.sourceforge.net/">http://libdv.sourceforge.net/</ulink>
+        written by Charles 'Buck' Krasic and Erik Walthinsen.</para>
+      </listitem>
+
+      <listitem>
+        <para>Original ffmpeg code <ulink
+        url="http://www.inb.uni-luebeck.de/~boehme/using_libavcodec.html">http://www.inb.uni-luebeck.de/~boehme/using_libavcodec.html</ulink></para>
+      </listitem>
+
+      <listitem>
+        <para>XLib code: <ulink
+        url="http://www.ac3.edu.au/SGI_Developer/books/XLib_PG/sgi_html/index.html">http://www.ac3.edu.au/SGI_Developer/books/XLib_PG/sgi_html/index.html</ulink></para>
+      </listitem>
+
+      <listitem>
+        <para>portmidi has nice example code, without any credits. same goes
+        for freetype2. many kudos!</para>
+      </listitem>
+
+      <listitem>
+        <para>the xjadeo alsamidi sequencer was inspired by the alsa-tools
+        amidi.c and aseqdump.c written by Clemens Ladisch</para>
+      </listitem>
+
+      <listitem>
+        <para>jack: <ulink
+        url="http://jackit.sourceforge.net/docs/reference/transport-design.html">http://jackit.sourceforge.net/docs/reference/transport-design.html</ulink></para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>PROSPECTS</title>
+
+    <para>See TODO file in the source repository for now... Ideas range from
+    minor OSD addons to making <application>xjadeo</application> a real-time
+    video sync player. The source is suitable to be extended to support
+    multiple video buffers which for example could be switched depending on
+    timecode etc... <application>xjadeo</application> can also be used as a VJ
+    tool to synchronize playback on multiple screens.</para>
+
+    <para>For now the maxime is to only maintain this rather simple version
+    before the tool gets even more bloated.</para>
+  </section>
+
+  <section>
+    <title>FEATURES</title>
+
+    <itemizedlist>
+      <listitem>
+        <para>Display modes: <itemizedlist>
+            <listitem>
+              <para>XV (hardware accelerated)</para>
+            </listitem>
+
+            <listitem>
+              <para>SDL (hardware accelerated)</para>
+            </listitem>
+
+            <listitem>
+              <para>gtk</para>
+            </listitem>
+
+            <listitem>
+              <para>imlib/X11</para>
+            </listitem>
+          </itemizedlist></para>
+      </listitem>
+
+      <listitem>
+        <para>Video stream decoding via FFMPEG,
+        <application>xjadeo</application> supports MPEG/VOB, AVI, ASF/WMA/WMV,
+        RM, QT/MOV/MP4, Ogg/OGM, MKV, VIVO, FLI, yuv4mpeg films, provided they
+        use a seekable encoding.</para>
+      </listitem>
+
+      <listitem>
+        <para>Sync source:<itemizedlist>
+            <listitem>
+              <para>jack transport.</para>
+            </listitem>
+
+            <listitem>
+              <para>MTC using either ALSA midi or portmidi.</para>
+            </listitem>
+          </itemizedlist></para>
+      </listitem>
+
+      <listitem>
+        <para>Remote control interface allows to query and modify all of
+        <application>xjadeo</application> settings and parameters</para>
+      </listitem>
+
+      <listitem>
+        <para>Optional Qt Graphical User interface via remote
+        interface.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>NEWS</title>
+
+    <para><application>xjadeo v0.9</application> is a oven-fresh rewrite. Some
+    of the documentation is still so hot that is not readably rendered.</para>
+
+    <para>As soon as the documentation is finished xjadeo is bound to reach
+    v1.0. If your're already interested, see the NEWS and Changelog files
+    provided with the source.</para>
+  </section>
+
   <section>
     <title>Build and Install Instructions</title>
+
     <section>
       <title>Source and Binaries</title>
-      <para><application>xjadeo</application> is developed using Subversion repositories at
-      <ulink url="http://svn.sourceforge.net/xjadeo/">http://svn.sourceforge.net/xjadeo/</ulink>. 
-      In case you are unfamiliar with SVN, Sourceforge 
-      <ulink url="http://sourceforge.net/svn/?group_id=131926">provides</ulink> information on how to access it.
-    </para>
-      <para><application>xjadeo</application> is also available for <ulink url="http://sourceforge.net/project/showfiles.php?group_id=131926">download</ulink> as source and binary package. 
-     For convenience we provide a binary rpm built on a FC4 for i386 systems.
-    </para>
-      <para>
-      A debian package can be found at <ulink url="ftp://ftp.nerim.net/debian-marillat/pool/main/x/xjadeo/">debian-marillat</ulink>
-      edit <filename>/etc/apt/sources.list</filename> to include
-      <screen>
+
+      <para><application>xjadeo</application> is developed using Subversion
+      repositories at <ulink
+      url="http://svn.sourceforge.net/xjadeo/">http://svn.sourceforge.net/xjadeo/</ulink>.
+      In case you are unfamiliar with SVN, Sourceforge <ulink
+      url="http://sourceforge.net/svn/?group_id=131926">provides</ulink>
+      information on how to access it.</para>
+
+      <para><application>xjadeo</application> is also available for <ulink
+      url="http://sourceforge.net/project/showfiles.php?group_id=131926">download</ulink>
+      as source and binary package. For convenience we provide a binary rpm
+      built on a FC4 for i386 systems.</para>
+
+      <para>A debian package can be found at <ulink
+      url="ftp://ftp.nerim.net/debian-marillat/pool/main/x/xjadeo/">debian-marillat</ulink>
+      edit <filename>/etc/apt/sources.list</filename> to include <screen>
       deb ftp://ftp.nerim.net/debian-marillat sid main
       deb-src ftp://ftp.nerim.net/debian-marillat sid main
-      </screen>
-    </para>
+      </screen></para>
     </section>
+
     <section>
       <title>Build Dependencies</title>
-      <para>In order to compile the xjadeo from source, you will need the "devel" version of these libraries.</para>
+
+      <para>In order to compile the xjadeo from source, you will need the
+      "devel" version of these libraries.</para>
+
       <para>Mandatory libraries:</para>
+
       <itemizedlist>
         <listitem>
-          <para>ffmpeg (libavcodec, libavformat/libavutil) </para>
+          <para>ffmpeg (libavcodec, libavformat/libavutil)</para>
         </listitem>
+
         <listitem>
-          <para>jack-audio-connection-kit (libjack) &gt;0.80 </para>
+          <para>jack-audio-connection-kit (libjack) &gt;0.80</para>
         </listitem>
       </itemizedlist>
+
       <para>At least one of the video libraries:</para>
+
       <itemizedlist>
         <listitem>
-          <para>IMlib &gt; 1.9.13 </para>
+          <para>IMlib &gt; 1.9.13</para>
         </listitem>
+
         <listitem>
           <para>libXV</para>
         </listitem>
+
         <listitem>
-          <para>GTK &gt;1.2.4 </para>
+          <para>GTK &gt;1.2.4</para>
         </listitem>
+
         <listitem>
-          <para>SDL 1.2 </para>
+          <para>SDL 1.2</para>
         </listitem>
       </itemizedlist>
+
       <para>Optional libraries:</para>
+
       <itemizedlist>
         <listitem>
-          <para>Freetype 2 actually  libfreetype6_2.1.5 (libfreetype, soname 6)</para>
+          <para>Freetype 2 actually libfreetype6_2.1.5 (libfreetype, soname
+          6)</para>
         </listitem>
+
         <listitem>
-          <para>Portmidi (libportmidi0 = 20041117-1) </para>
+          <para>Portmidi (libportmidi0 = 20041117-1)</para>
         </listitem>
+
         <listitem>
           <para>ALSA (alsa-lib &gt; 1.0.10-2 , libasound &gt; 1.0.10-2;</para>
         </listitem>
+
         <listitem>
-          <para>QT - needed to compile and run qjadeo gui - not xjadeo itself. 
-	      <itemizedlist><listitem><para>qt3 &gt; 3.3.6</para></listitem><listitem><para>qt4 plus qt3compat libraries. &gt; 4.1.1</para></listitem></itemizedlist>
-	  </para>
+          <para>Qt - needed to compile and run qjadeo gui - not xjadeo itself.
+          <itemizedlist>
+              <listitem>
+                <para>qt3 &gt; 3.3.6</para>
+              </listitem>
+
+              <listitem>
+                <para>qt4 plus qt3compat libraries. &gt; 4.1.1</para>
+              </listitem>
+            </itemizedlist></para>
         </listitem>
       </itemizedlist>
-      <para> Furthermore you'll need autotools to generate the build environement, and the standard gnu devel system. We recommend mencoder to convert the video file to a suitable format.</para>
-      <para>Pay special attention to the version of ffmpeg, since some versions of this package are not compatible with xjadeo. Here's a list of version known to work with xjadeo:</para>
+
+      <para>Furthermore you'll need autotools to generate the build
+      environement, and the standard gnu devel system. We recommend mencoder
+      to convert the video file to a suitable format.</para>
+
+      <para>Pay special attention to the version of ffmpeg, since some
+      versions of this package are not compatible with xjadeo. Here's a list
+      of version known to work with xjadeo:</para>
+
       <table frame="all">
         <title>Library Versions</title>
+
         <tgroup cols="3">
           <thead>
             <row>
               <entry>Library</entry>
+
               <entry>FC4 rpm</entry>
+
               <entry>debian/sid</entry>
             </row>
           </thead>
+
           <tbody>
             <row>
               <entry>jack-audio-connection-kit</entry>
+
               <entry>0.99.36</entry>
+
               <entry>0.100.0-0</entry>
             </row>
+
             <row>
               <entry>ffmpeg</entry>
+
               <entry>0.4.9-6</entry>
-              <entry>ffmpeg 0.cvs20050918-6, ffmpegcvs &gt; 3:20060129-0.0 </entry>
+
+              <entry>ffmpeg 0.cvs20050918-6, ffmpegcvs &gt;
+              3:20060129-0.0</entry>
             </row>
+
             <row>
               <entry>imlib</entry>
+
               <entry>1.9.13-19</entry>
+
               <entry>1.19.14-28</entry>
             </row>
+
             <row>
               <entry>libxv</entry>
-              <entry> ??</entry>
+
+              <entry>??</entry>
+
               <entry>1:1.0.1-2</entry>
             </row>
+
             <row>
               <entry>libsdl</entry>
-              <entry> ??</entry>
+
+              <entry>??</entry>
+
               <entry>1.2.9-5</entry>
             </row>
           </tbody>
         </tgroup>
       </table>
     </section>
+
     <section>
       <title>Building xjadeo</title>
-      <para>
-    Once you have all the build dependencies, the usual spells apply:
+
+      <para>Once you have all the build dependencies, the usual spells apply:
       <screen>
        ./autogen.sh # (creates configure using autotools)
        ./configure
        make 
        make install # (requires root privileges)
-       </screen>
-       alternatley you can use the .spec file generated via <application>configure</application>
-       to build an rpm. debian rules have been removed from the source in favor of the having them maintained in the 
-       debian-marillat archive.
-    </para>
-      <para>
-    The configuration process tries to autodetect and include supported featues. However
-    you might want to consider using some of the compile time options. use <command>./configure --help</command>
-    for a full list of available options. Per default the configure script tries to autodetect XV,SDL and imlib and midi libraries.
-        <variablelist><varlistentry><term><option>--enable-gtk</option></term><listitem><para>autodetects gtk and build in gtk display support to xjadeo if available</para></listitem></varlistentry><varlistentry><term><option>--disable-midi</option></term><listitem><para>Disables to probe for midi libraries. xjadeo will be build without midi support.
-	      The current default is to to use portmidi if availble and fall back to using alsa-midi else.</para></listitem></varlistentry><varlistentry><term><option>--disable-portmidi</option></term><listitem><para>Disables to check for portmidi library. This will force xjadeo to compile with the alsa driver
-	      even if portmidi is available.</para></listitem></varlistentry><varlistentry><term><option>--disable-ft</option></term><listitem><para>Disables the use of freetype2 for On Screen Display. xjadeo will be build without on screen display 
-	      support</para></listitem></varlistentry></variablelist>
- 
-    </para>
+       </screen>alternatively you can use the .spec file generated via
+      <application>configure</application> to build an rpm. debian rules have
+      been removed from the source in favor of the having them maintained in
+      the debian-marillat archive.</para>
+
+      <para>The configuration process tries to autodetect and include
+      supported featues. However you might want to consider using some of the
+      compile time options. use <command>./configure --help</command> for a
+      full list of available options. Per default the configure script tries
+      to autodetect XV,SDL and imlib and midi libraries. <variablelist>
+          <varlistentry>
+            <term><option>--enable-gtk</option></term>
+
+            <listitem>
+              <para>autodetects gtk and build in gtk display support to xjadeo
+              if available</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>--disable-midi</option></term>
+
+            <listitem>
+              <para>Disables to probe for midi libraries. xjadeo will be build
+              without midi support. The current default is to to use portmidi
+              if availble and fall back to using alsa-midi else.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>--disable-portmidi</option></term>
+
+            <listitem>
+              <para>Disables to check for portmidi library. This will force
+              xjadeo to compile with the alsa driver even if portmidi is
+              available.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>--disable-ft</option></term>
+
+            <listitem>
+              <para>Disables the use of freetype2 for On Screen Display.
+              xjadeo will be build without on screen display support</para>
+            </listitem>
+          </varlistentry>
+        </variablelist></para>
     </section>
+
     <section>
       <title>Behind the Scenes</title>
-      <para> This information represents xjadeo-0.1 and is slightly outdated. Nevertheless it still describes the basic bahaviour of xjadeo-0.9.</para>
-      <para> It is very easy: When <application>xjadeo</application> is started, it </para>
+
+      <para>This information represents xjadeo-0.1 and is slightly outdated.
+      Nevertheless it still describes the basic bahaviour of
+      xjadeo-0.9.</para>
+
+      <para>It is very easy: When <application>xjadeo</application> is
+      started, it</para>
+
       <orderedlist>
         <listitem>
           <para>Checks that jackd is running and connects as a client.</para>
         </listitem>
+
         <listitem>
           <para>Opens the video file.</para>
         </listitem>
+
         <listitem>
           <para>Opens the window.</para>
         </listitem>
+
         <listitem>
           <para>Enters a loop that:</para>
+
           <orderedlist>
             <listitem>
               <para>Queries jack time position.</para>
             </listitem>
+
             <listitem>
-              <para>Calculates and displays the appropriate video frame.</para>
+              <para>Calculates and displays the appropriate video
+              frame.</para>
             </listitem>
           </orderedlist>
         </listitem>
       </orderedlist>
-      <para>The loop runs 'framerate' times per second, depending on what you entered in the command line. Closing the window will terminate xjadeo.</para>
+
+      <para>The loop runs 'framerate' times per second, depending on what you
+      entered in the command line. Closing the window will terminate
+      xjadeo.</para>
     </section>
   </section>
+
   <section>
     <title>Using xjadeo</title>
-    <para>please refer to the manuals in the appendix. run <command>jadeo --help</command> or use <command>qjadeo</command> for starters.</para>
+
+    <para>please refer to the manuals in the appendix. run <command>jadeo
+    --help</command> or use <command>qjadeo</command> for starters.</para>
+
     <section>
       <title>Video Formats</title>
-      <para><application>xjadeo</application> has been designed to aid creative people and not as a general purpose video player.
-    <application>xjadeo</application> uses <ulink url="http://ffmpeg.sourceforge.net/">ffmpeg</ulink> to decode the video file. xjadeo supports only seekable video stream, so most probably you first need to encode your video file to a <ulink url="http://ffmpeg.sourceforge.net/faq.html">supported format</ulink>.
-    </para>
-      <para>
-    We recommend <application>mencoder</application> that comes with mplayer:
-    <screen>
+
+      <para><application>xjadeo</application> has been designed to aid
+      creative people and not as a general purpose video player.
+      <application>xjadeo</application> uses <ulink
+      url="http://ffmpeg.sourceforge.net/">ffmpeg</ulink> to decode the video
+      file. xjadeo supports only seekable video stream, so most probably you
+      first need to encode your video file to a <ulink
+      url="http://ffmpeg.sourceforge.net/faq.html">supported
+      format</ulink>.</para>
+
+      <para>We recommend <application>mencoder</application> that comes with
+      mplayer: <screen>
   mencoder -idx -ovc lavc -lavcopts keyint=1 -nosound input-file.xxx -o output-file.avi
-    </screen>
-This creates from your <filename>input-file.xxx</filename> an AVI mpeg4 encoded video file with no sound, an index (-idx) and no compression between frames (every frame is a key frame). The file thus can become really BIG, so watch out your disk space. You may also want to shrink the size of the frame by adding the option</para>
+    </screen> This creates from your <filename>input-file.xxx</filename> an
+      AVI mpeg4 encoded video file with no sound, an index (-idx) and no
+      compression between frames (every frame is a key frame). The file thus
+      can become really BIG, so watch out your disk space. You may also want
+      to shrink the size of the frame by adding the option</para>
+
       <programlisting>-vf scale=width:height</programlisting>
-      <para> This will reduce the size of the avi file, will tax less the system resources when displayed and will leave more space in the screen for your audio software...
-    </para>
-      <para> In the <ulink url="http://svn.sourceforge.net/viewcvs.cgi/*checkout*/xjadeo/trunk/contrib/xjadeo-example.avi"><filename>/contrib</filename></ulink> folder there is an example video and a shell script that can help you finding an appropriate codec.</para>
+
+      <para>This will reduce the size of the avi file, will tax less the
+      system resources when displayed and will leave more space in the screen
+      for your audio software...</para>
+
+      <para>In the <ulink
+      url="http://svn.sourceforge.net/viewcvs.cgi/*checkout*/xjadeo/trunk/contrib/xjadeo-example.avi"><filename>/contrib</filename></ulink>
+      folder there is an example video and a shell script that can help you
+      finding an appropriate codec.</para>
     </section>
+
     <section>
       <title>invoking xjadeo</title>
-      <para>
-        <command>xjadeo [options] output-file.avi</command>
-      </para>
-      <para> There you are. If you use, for instance, muse 0.7, you can now fool around with its transport controls and see your video clip moving along. When the sequencer is playing at normal speed, the video will play at the framerate you set on the command line. Default is 10 fps, the lower the framerate, the smaller is the impact of xjadeo on the performance of your system.
-    </para>
+
+      <para><command>xjadeo [options] output-file.avi</command></para>
+
+      <para>There you are. If you use, for instance, muse 0.7, you can now
+      fool around with its transport controls and see your video clip moving
+      along. When the sequencer is playing at normal speed, the video will
+      play at the framerate you set on the command line. Default is 10 fps,
+      the lower the framerate, the smaller is the impact of xjadeo on the
+      performance of your system.</para>
+
       <section>
         <title>sync methods</title>
-        <para>xjadeo polls the time code information in the following order, using the first available: </para>
+
+        <para>xjadeo polls the time code information in the following order,
+        using the first available:</para>
+
         <orderedlist>
           <listitem>
             <para>Midi MTC (if connected).</para>
           </listitem>
+
           <listitem>
             <para>jack (if connected).</para>
           </listitem>
+
           <listitem>
-            <para>default value (settable using <command>seek</command> remote command).</para>
+            <para>default value (settable using <command>seek</command> remote
+            command).</para>
           </listitem>
         </orderedlist>
-        <para> per default <application>xjadeo</application> connects to jackd on startup. This behaviour can be overridden by command line arguments or using the remote control interface.</para>
-        <para> the offset value is added after converting the frames to the video file FPS format. followed by binding the displayed frame into the range of the video file duration.</para>
+
+        <para>per default <application>xjadeo</application> connects to jackd
+        on startup. This behaviour can be overridden by command line arguments
+        or using the remote control interface.</para>
+
+        <para>the offset value is added after converting the frames to the
+        video file FPS format. followed by binding the displayed frame into
+        the range of the video file duration.</para>
       </section>
+
       <section>
         <title>Configure Ardour to sync to jack</title>
-        <para>
-          <itemizedlist>
+
+        <para><itemizedlist>
             <listitem>
-              <para>
-                <menuchoice>
+              <para><menuchoice>
                   <guimenu>Windows</guimenu>
+
                   <guimenuitem>Option Editor</guimenuitem>
-                </menuchoice>
-              </para>
+                </menuchoice></para>
             </listitem>
+
             <listitem>
-              <para> Tab "Sync" </para>
+              <para>Tab "Sync"</para>
             </listitem>
+
             <listitem>
-              <para> Check option "JACK time master" </para>
+              <para>Check option "JACK time master"</para>
             </listitem>
+
             <listitem>
-              <para> Set "Positional Sync" to "Sync with JACK" </para>
+              <para>Set "Positional Sync" to "Sync with JACK"</para>
             </listitem>
-          </itemizedlist>
-        </para>
+          </itemizedlist></para>
       </section>
+
       <section>
         <title>configure rosegarden ro run with xjadeo</title>
-        <para>
-          <itemizedlist>
+
+        <para><itemizedlist>
             <listitem>
-              <para>
-                <menuchoice>
+              <para><menuchoice>
                   <guimenu>Settings</guimenu>
+
                   <guimenuitem>Configure Rosegarden</guimenuitem>
-                </menuchoice>
-              </para>
+                </menuchoice></para>
             </listitem>
+
             <listitem>
-              <para> Select "Sequencer" icon.  </para>
+              <para>Select "Sequencer" icon.</para>
             </listitem>
+
             <listitem>
-              <para> Tab "Synchronisation" </para>
+              <para>Tab "Synchronisation"</para>
             </listitem>
+
             <listitem>
-              <para> Set "JACK transport mode" to "Sync" </para>
+              <para>Set "JACK transport mode" to "Sync"</para>
             </listitem>
-          </itemizedlist>
-        </para>
+          </itemizedlist></para>
       </section>
     </section>
+
     <section>
-      <title>Troubleshoot </title>
-      <para> In case xjadeo does not work out of the box...</para>
+      <title>Troubleshoot</title>
+
+      <para>In case xjadeo does not work out of the box...</para>
+
       <itemizedlist>
         <listitem>
-          <para> can you play the (re-encoded) video with other players on your system ? </para>
+          <para>can you play the (re-encoded) video with other players on your
+          system ?</para>
         </listitem>
+
         <listitem>
-          <para> run <command>xjadeo -v filename</command> - check displayed frame count and jack transport info.</para>
+          <para>run <command>xjadeo -v filename</command> - check displayed
+          frame count and jack transport info.</para>
         </listitem>
+
         <listitem>
-          <para> play the example from <ulink url="http://svn.sourceforge.net/viewcvs.cgi/*checkout*/xjadeo/trunk/contrib/xjadeo-example.avi">http://svn.sourceforge.net/viewcvs.cgi/*checkout*/xjadeo/trunk/contrib/xjadeo-example.avi</ulink>
-	     </para>
+          <para>play the example from <ulink
+          url="http://svn.sourceforge.net/viewcvs.cgi/*checkout*/xjadeo/trunk/contrib/xjadeo-example.avi">http://svn.sourceforge.net/viewcvs.cgi/*checkout*/xjadeo/trunk/contrib/xjadeo-example.avi</ulink></para>
         </listitem>
+
         <listitem>
-          <para> ask for help and/or share your experience: [ https://sourceforge.net/forum/?group_id=131926 ] </para>
+          <para>ask for help and/or share your experience: [
+          https://sourceforge.net/forum/?group_id=131926 ]</para>
         </listitem>
       </itemizedlist>
     </section>
+
     <section>
       <title>Known Issues</title>
-      <para>
-     Some Video Codecs are known not to work properly on some systems.
-     This is mostly due to different ffmpeg versions, available codec decoders, etc.
-    </para>
-      <para><application>xjadeo</application> portmidi sync make xjadeo bail out if it fails to connect or
-     encounters a MIDI buffer overflow. This is in fact a feature of portmidi but could also be considered a bug
-     in <application>xjadeo</application>.
-    </para>
-      <para>
-     The gtk display works stable but issues GTK warnings... 
-    </para>
-      <para>
-     xjadeo has not been tested on a 64bit architecture. not sure if we ought to expect problems there...
-    </para>
-      <para>
-     If you experience unexpected behaviour please file a bug ticket at 
-     http://sourceforge.net/projects/xjadeo/
-     </para>
-    </section>
-    <section>
-      <title>Remote Control API</title>
-      <para>xjadeo features a remote control mode that allows to modify all settings of a running xjadeo monitor window.
-        When started in remote mode (option <option>-R</option> or <option>--remote</option>) <command>xjadeo</command> will
-        interactively accept commands and issue responses through  standard
-        input/output mechanism.</para>
-      <para>Currently <command>xjadeo</command> accepts the following
-        commands:</para>
-      <section>
-        <title>General Commands</title>
-        <variablelist>
-          <varlistentry>
-            <term>
-              <option>help</option>
-            </term>
-            <listitem>
-              <para>print a list of available commands with a short description.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>quit</option>
-            </term>
-            <listitem>
-              <para>exit qjadeo.</para>
-            </listitem>
-          </varlistentry>
-        </variablelist>
-      </section>
-      <section>
-        <title>Video File Commands</title>
-        <variablelist>
-          <varlistentry>
-            <term>
-              <option>load <replaceable class="option">filename</replaceable></option>
-            </term>
-            <listitem>
-              <para>Load a video file, replacing any previous one. </para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>unload</option>
-            </term>
-            <listitem>
-              <para>Unload the current video file.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>get filename</option>
-            </term>
-            <listitem>
-              <para>Returns the file name of the current movie.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>get duration</option>
-            </term>
-            <listitem>
-              <para>Returns the length of the movie in seconds.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>get frames</option>
-            </term>
-            <listitem>
-              <para>Returns the length of the movie in frames.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>get framerate</option>
-            </term>
-            <listitem>
-              <para>Returns the frame rate of the current movie.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>get width</option>
-            </term>
-            <listitem>
-              <para>Returns the width of the current movie in pixels.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>get height</option>
-            </term>
-            <listitem>
-              <para>Returns the height of the current movie in pixels.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>get seekmode</option>
-            </term>
-            <listitem>
-              <para>Returns 1 if the application is seeking keyframes only, 0
-              otherwise.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>set seekmode <replaceable class="option">value</replaceable></option>
-            </term>
-            <listitem>
-              <para>A value of 1 will make the application seek only to
-              keyframes.</para>
-            </listitem>
-          </varlistentry>
-        </variablelist>
-      </section>
-      <section>
-        <title>Synchronization Commands</title>
-        <section>
-          <title>Jack</title>
-          <variablelist>
-            <varlistentry>
-              <term>
-                <option>jack connect</option>
-              </term>
-              <listitem>
-                <para>Get the synchronism from jack transport.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>
-                <option>jack disconnect</option>
-              </term>
-              <listitem>
-                <para>Stop synchronization with jack transport.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>
-                <option>jack status</option>
-              </term>
-              <listitem>
-                <para>Get the status of the connection with jack.</para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
-        </section>
-        <section>
-          <title>Midi</title>
-          <variablelist>
-            <varlistentry>
-              <term>
-                <option>midi autoconnect </option>
-              </term>
-              <listitem>
-                <para>Autodiscover and connect to a MIDI time source, overriding jack transport information.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>
-                <option>midi connect
-	    <replaceable class="option">port</replaceable></option>
-              </term>
-              <listitem>
-                <para>Get sync from MTC (MIDI Time Code) instead of jack.</para>
-                <para>If compiled with ALSA midi, <replaceable class="option">port</replaceable> is the ALSA
-              sequencer id of the MTC source. A value of -1 will leave <command>xjadeo</command> unconnected.</para>
-                <para> If using portmidi, <replaceable class="option">port</replaceable> 
-	      is the portnumber of the midi input to use. WARNING: using an invalid id with portmidi will cause 
-	      xjadeo to bail out!</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>
-                <option>midi disconnect </option>
-              </term>
-              <listitem>
-                <para>Close midi device.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>
-                <option> midi status </option>
-              </term>
-              <listitem>
-                <para>Displays the status of the xjadeo midi port connection.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>
-                <option>get midisync </option>
-              </term>
-              <listitem>
-                <para>Display midi smpte conversion mode, corresponding to -M option.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>
-                <option>set midisync
-	    <replaceable class="option">n</replaceable></option>
-              </term>
-              <listitem>
-                <para>Set MIDI smpte conversion mode. n is an integer, corresponding to the -M command line option.</para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
-        </section>
-        <section>
-          <title>General xjadeo sync commands</title>
-          <variablelist>
-            <varlistentry>
-              <term>
-                <option>seek <replaceable class="option">frame</replaceable></option>
-              </term>
-              <listitem>
-                <para>Display the indicated frame (only when disconnected from
-              any sync source.)</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>
-                <option>get position</option>
-              </term>
-              <listitem>
-                <para>Returns the current frame number.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>
-                <option>get smpte</option>
-              </term>
-              <listitem>
-                <para>Returns the current head position in SMPTE code.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>
-                <option>get fps</option>
-              </term>
-              <listitem>
-                <para>Returns the current window update rate.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>
-                <option>set fps <replaceable class="option">value</replaceable></option>
-              </term>
-              <listitem>
-                <para>Set the window update rate.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>
-                <option>get offset</option>
-              </term>
-              <listitem>
-                <para>Returns the current time offset in frames.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>
-                <option>set offset <replaceable class="option">value</replaceable></option>
-              </term>
-              <listitem>
-                <para>Set the time offset in frames.</para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
-        </section>
-      </section>
-      <section>
-        <title>Monitor Window Commands</title>
-        <variablelist>
-          <varlistentry>
-            <term>
-              <option>window close</option>
-            </term>
-            <listitem>
-              <para>Closes the video window.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>window open</option>
-            </term>
-            <listitem>
-              <para>Opens the video window using the default videmode. the default videomode is autodetect unless overridden by command line.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>window mode <replaceable class="option">value</replaceable></option>
-            </term>
-            <listitem>
-              <para>Opens the video window using the specified videomode. a value of 0 autodetects while a positive integer coresponds to a videomode which can be listed with the <command>list videomodes</command> command.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>get videomode</option>
-            </term>
-            <listitem>
-              <para>Returns the current video mode.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>list videomodes</option>
-            </term>
-            <listitem>
-              <para>Prints a list of available video modes.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>get windowsize</option>
-            </term>
-            <listitem>
-              <para>Prints the size of the video window in a 2d vector. &lt;width&gt;x&lt;height&gt;</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>window resize <replaceable class="option">value</replaceable></option>
-            </term>
-            <listitem>
-              <para>Resizes the monitor window. Value may either be a 2 dimensional vector
-	      &lt;width&gt;x&lt;height&gt; of absolute values, or a single integer specifying the 
-	      the window size in percentage of the movie file geometry.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>window move <replaceable class="option">value</replaceable> </option>
-            </term>
-            <listitem>
-              <para>Position the monitor window on the desktop. value is expected to be: &lt;width&gt;x&lt;height&gt;</para>
-            </listitem>
-          </varlistentry>
-        </variablelist>
-      </section>
-      <section>
-        <title>Notify Commands</title>
-        <variablelist>
-          <varlistentry>
-            <term>
-              <option>notify loop </option>
-            </term>
-            <listitem>
-              <para>Enables async messages. xjadeo will generate a 300 reply each time it polls for a timecode.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>notify frame </option>
-            </term>
-            <listitem>
-              <para>Enables async messages. xjadeo will generate a 300 reply each time it displays a frame.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>notify disable </option>
-            </term>
-            <listitem>
-              <para>Stop generating notify messages.</para>
-            </listitem>
-          </varlistentry>
-        </variablelist>
-      </section>
-      <section>
-        <title>On Screen Display Commands</title>
-        <variablelist>
-          <varlistentry>
-            <term>
-              <option>osd frame
-	    <replaceable class="option">ypos</replaceable></option>
-            </term>
-            <listitem>
-              <para>Render current framenumber on screen. ypos specifies the vertical position in percent (0..100). the text is horizontally centered. a value &lt;0 disables the frame display.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option> osd smpte
-	    <replaceable class="option">ypos</replaceable></option>
-            </term>
-            <listitem>
-              <para>Render SMPTE on screen. ypos specifies the vertical position in percent. the text is horizontally centered. a ypos value &lt;0 disables SMPTE OSD.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>osd text
-	    <replaceable class="option">text</replaceable></option>
-            </term>
-            <listitem>
-              <para>Renders the specified text on the screen. the position can be specified with the <command>osd pos</command> command.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>osd text </option>
-            </term>
-            <listitem>
-              <para>Display the previously set OSD text again.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>osd notext </option>
-            </term>
-            <listitem>
-              <para>Turn off OSD text.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>osd off </option>
-            </term>
-            <listitem>
-              <para>Alias for <command>osd notext</command></para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>osd on </option>
-            </term>
-            <listitem>
-              <para>Synonym for <command>osd text</command></para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>osd pos
-	    <replaceable class="option">xalign</replaceable>
-	    <replaceable class="option">ypos</replaceable></option>
-            </term>
-            <listitem>
-              <para>Sets the position of the OSD text</para>
-              <para>xalign is an integer: 0:Left, 1:Center, 2:Right</para>
-              <para>ypos specifies the vertical position in percent (0..100).</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>osd available </option>
-            </term>
-            <listitem>
-              <para>displays if freetype support in available.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>osd font
-	    <replaceable class="option">font-filename</replaceable></option>
-            </term>
-            <listitem>
-              <para>Specifies the TrueType Font file to use when rendering text.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>osd box </option>
-            </term>
-            <listitem>
-              <para>draws a black box around the OSD</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>
-              <option>osd nobox </option>
-            </term>
-            <listitem>
-              <para>make On Screen Display background transparent.</para>
-            </listitem>
-          </varlistentry>
-        </variablelist>
-      </section>
-      <section>
-        <title>Response Format</title>
-        <para>Each remote command is acknowledged with a response, which you can ignore at your wish.
-	It is intended to be both human readable and machine parsable. Each response is a single line terminated with the '\n' formatted as:
-	<screen>
-	 @&lt;status-integer&gt; &lt;text&gt; 
-	</screen>
-	each line start with an @ followed by an integer that tells if the command suceeded and specifies the format of the text.  The status integer is usually a 3 digit decimal number in [100..999]:
-              <variablelist><varlistentry><term><option>1xx:</option></term><listitem><para>ok. the command suceeded returning a small text info message.</para></listitem></varlistentry><varlistentry><term><option>2xx:</option></term><listitem><para>the command succeeded and the return text is in format name=value</para><para>This is used for returning variables. 200-299 defines the type of the value as follows:</para><variablelist><varlistentry><term><option>201:</option></term><listitem><para>integer</para></listitem></varlistentry><varlistentry><term><option>202:</option></term><listitem><para>double</para></listitem></varlistentry><varlistentry><term><option>210:</option></term><listitem><para>2d vector &lt;int&gt;x&lt;int&gt;</para></listitem></varlistentry><varlistentry><term><option>220:</option></term><listitem><para>string</para></listitem></varlistentry><varlistentry><term><option>228:</option></term><listitem><para>smpte-string in format 'HH:MM:SS:FF'</para></listitem></varlistentry></variablelist></listitem></varlistentry><varlistentry><term><option>3xx:</option></term><listitem><para>these are messages that are generated by xjadeo notify, not in response to a command. the format and type declaration is identical to 2xx messages. Currently the only 3xx message is 301 position=integer.</para></listitem></varlistentry><varlistentry><term><option>4xx:</option></term><listitem><para>error message.</para></listitem></varlistentry><varlistentry><term><option>8xx:</option></term><listitem><para>info or help message. These messages are ment to be ignored by automatic parsers and are for user information or displaying comments only.</para></listitem></varlistentry></variablelist>
-	</para>
-      </section>
+
+      <para>Some Video Codecs are known not to work properly on some systems.
+      This is mostly due to different ffmpeg versions, available codec
+      decoders, etc.</para>
+
+      <para><application>xjadeo</application> portmidi sync make xjadeo bail
+      out if it fails to connect or encounters a MIDI buffer overflow. This is
+      in fact a feature of portmidi but could also be considered a bug in
+      <application>xjadeo</application>.</para>
+
+      <para>The gtk display works stable but issues GTK warnings...</para>
+
+      <para>xjadeo has not been tested on a 64bit architecture. not sure if we
+      ought to expect problems there...</para>
+
+      <para>If you experience unexpected behaviour please file a bug ticket at
+      http://sourceforge.net/projects/xjadeo/</para>
     </section>
   </section>
+
+  <section>
+    <title>REMOTRE CONTROL MODE</title>
+
+    <para>xjadeo features a remote control mode that allows to modify all
+    settings of a running xjadeo monitor window. When started in remote mode
+    (option <option>-R</option> or <option>--remote</option>)
+    <command>xjadeo</command> will interactively accept commands and issue
+    responses through standard input/output mechanism.</para>
+
+    <para>Currently <command>xjadeo</command> accepts the following
+    commands:</para>
+
+    <section>
+      <title>General Commands</title>
+
+      <variablelist>
+        <varlistentry>
+          <term><option>help</option></term>
+
+          <listitem>
+            <para>print a list of available commands with a short
+            description.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>quit</option></term>
+
+          <listitem>
+            <para>exit qjadeo.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section>
+      <title>Video File Commands</title>
+
+      <variablelist>
+        <varlistentry>
+          <term><option>load <replaceable
+          class="option">filename</replaceable></option></term>
+
+          <listitem>
+            <para>Load a video file, replacing any previous one.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>unload</option></term>
+
+          <listitem>
+            <para>Unload the current video file.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>get filename</option></term>
+
+          <listitem>
+            <para>Returns the file name of the current movie.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>get duration</option></term>
+
+          <listitem>
+            <para>Returns the length of the movie in seconds.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>get frames</option></term>
+
+          <listitem>
+            <para>Returns the length of the movie in frames.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>get framerate</option></term>
+
+          <listitem>
+            <para>Returns the frame rate of the current movie.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>get width</option></term>
+
+          <listitem>
+            <para>Returns the width of the current movie in pixels.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>get height</option></term>
+
+          <listitem>
+            <para>Returns the height of the current movie in pixels.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>get seekmode</option></term>
+
+          <listitem>
+            <para>Returns 1 if the application is seeking keyframes only, 0
+            otherwise.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>set seekmode <replaceable
+          class="option">value</replaceable></option></term>
+
+          <listitem>
+            <para>A value of 1 will make the application seek only to
+            keyframes.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section>
+      <title>Synchronization Commands</title>
+
+      <section>
+        <title>Jack</title>
+
+        <variablelist>
+          <varlistentry>
+            <term><option>jack connect</option></term>
+
+            <listitem>
+              <para>Get the synchronism from jack transport.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>jack disconnect</option></term>
+
+            <listitem>
+              <para>Stop synchronization with jack transport.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>jack status</option></term>
+
+            <listitem>
+              <para>Get the status of the connection with jack.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+      </section>
+
+      <section>
+        <title>Midi</title>
+
+        <variablelist>
+          <varlistentry>
+            <term><option>midi autoconnect </option></term>
+
+            <listitem>
+              <para>Autodiscover and connect to a MIDI time source, overriding
+              jack transport information.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>midi connect <replaceable
+            class="option">port</replaceable></option></term>
+
+            <listitem>
+              <para>Get sync from MTC (MIDI Time Code) instead of jack.</para>
+
+              <para>If compiled with ALSA midi, <replaceable
+              class="option">port</replaceable> is the ALSA sequencer id of
+              the MTC source. A value of -1 will leave
+              <command>xjadeo</command> unconnected.</para>
+
+              <para>If using portmidi, <replaceable
+              class="option">port</replaceable> is the portnumber of the midi
+              input to use. WARNING: using an invalid id with portmidi will
+              cause xjadeo to bail out!</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>midi disconnect </option></term>
+
+            <listitem>
+              <para>Close midi device.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>midi status </option></term>
+
+            <listitem>
+              <para>Displays the status of the xjadeo midi port
+              connection.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>get midisync </option></term>
+
+            <listitem>
+              <para>Display midi smpte conversion mode, corresponding to -M
+              option.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>set midisync <replaceable
+            class="option">n</replaceable></option></term>
+
+            <listitem>
+              <para>Set MIDI smpte conversion mode. n is an integer,
+              corresponding to the -M command line option.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+      </section>
+
+      <section>
+        <title>General xjadeo sync commands</title>
+
+        <variablelist>
+          <varlistentry>
+            <term><option>seek <replaceable
+            class="option">frame</replaceable></option></term>
+
+            <listitem>
+              <para>Display the indicated frame (only when disconnected from
+              any sync source.)</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>get position</option></term>
+
+            <listitem>
+              <para>Returns the current frame number.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>get smpte</option></term>
+
+            <listitem>
+              <para>Returns the current head position in SMPTE code.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>get fps</option></term>
+
+            <listitem>
+              <para>Returns the current window update rate.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>set fps <replaceable
+            class="option">value</replaceable></option></term>
+
+            <listitem>
+              <para>Set the window update rate.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>get offset</option></term>
+
+            <listitem>
+              <para>Returns the current time offset in frames.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>set offset <replaceable
+            class="option">value</replaceable></option></term>
+
+            <listitem>
+              <para>Set the time offset in frames.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+      </section>
+    </section>
+
+    <section>
+      <title>Monitor Window Commands</title>
+
+      <variablelist>
+        <varlistentry>
+          <term><option>window close</option></term>
+
+          <listitem>
+            <para>Closes the video window.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>window open</option></term>
+
+          <listitem>
+            <para>Opens the video window using the default videmode. the
+            default videomode is autodetect unless overridden by command
+            line.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>window mode <replaceable
+          class="option">value</replaceable></option></term>
+
+          <listitem>
+            <para>Opens the video window using the specified videomode. a
+            value of 0 autodetects while a positive integer coresponds to a
+            videomode which can be listed with the <command>list
+            videomodes</command> command.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>get videomode</option></term>
+
+          <listitem>
+            <para>Returns the current video mode.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>list videomodes</option></term>
+
+          <listitem>
+            <para>Prints a list of available video modes.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>get windowsize</option></term>
+
+          <listitem>
+            <para>Prints the size of the video window in a 2d vector.
+            &lt;width&gt;x&lt;height&gt;</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>window resize <replaceable
+          class="option">value</replaceable></option></term>
+
+          <listitem>
+            <para>Resizes the monitor window. Value may either be a 2
+            dimensional vector &lt;width&gt;x&lt;height&gt; of absolute
+            values, or a single integer specifying the the window size in
+            percentage of the movie file geometry.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>window move <replaceable
+          class="option">value</replaceable> </option></term>
+
+          <listitem>
+            <para>Position the monitor window on the desktop. value is
+            expected to be: &lt;width&gt;x&lt;height&gt;</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section>
+      <title>Notify Commands</title>
+
+      <variablelist>
+        <varlistentry>
+          <term><option>notify loop </option></term>
+
+          <listitem>
+            <para>Enables async messages. xjadeo will generate a 300 reply
+            each time it polls for a timecode.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>notify frame </option></term>
+
+          <listitem>
+            <para>Enables async messages. xjadeo will generate a 300 reply
+            each time it displays a frame.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>notify disable </option></term>
+
+          <listitem>
+            <para>Stop generating notify messages.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section>
+      <title>On Screen Display Commands</title>
+
+      <variablelist>
+        <varlistentry>
+          <term><option>osd frame <replaceable
+          class="option">ypos</replaceable></option></term>
+
+          <listitem>
+            <para>Render current framenumber on screen. ypos specifies the
+            vertical position in percent (0..100). the text is horizontally
+            centered. a value &lt;0 disables the frame display.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>osd smpte <replaceable
+          class="option">ypos</replaceable></option></term>
+
+          <listitem>
+            <para>Render SMPTE on screen. ypos specifies the vertical position
+            in percent. the text is horizontally centered. a ypos value &lt;0
+            disables SMPTE OSD.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>osd text <replaceable
+          class="option">text</replaceable></option></term>
+
+          <listitem>
+            <para>Renders the specified text on the screen. the position can
+            be specified with the <command>osd pos</command> command.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>osd text </option></term>
+
+          <listitem>
+            <para>Display the previously set OSD text again.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>osd notext </option></term>
+
+          <listitem>
+            <para>Turn off OSD text.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>osd off </option></term>
+
+          <listitem>
+            <para>Alias for <command>osd notext</command></para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>osd on </option></term>
+
+          <listitem>
+            <para>Synonym for <command>osd text</command></para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>osd pos <replaceable
+          class="option">xalign</replaceable> <replaceable
+          class="option">ypos</replaceable></option></term>
+
+          <listitem>
+            <para>Sets the position of the OSD text</para>
+
+            <para>xalign is an integer: 0:Left, 1:Center, 2:Right</para>
+
+            <para>ypos specifies the vertical position in percent
+            (0..100).</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>osd available </option></term>
+
+          <listitem>
+            <para>displays if freetype support in available.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>osd font <replaceable
+          class="option">font-filename</replaceable></option></term>
+
+          <listitem>
+            <para>Specifies the TrueType Font file to use when rendering
+            text.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>osd box </option></term>
+
+          <listitem>
+            <para>draws a black box around the OSD</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>osd nobox </option></term>
+
+          <listitem>
+            <para>make On Screen Display background transparent.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section>
+      <title>Response Format</title>
+
+      <para>Each remote command is acknowledged with a response, which you can
+      ignore at your wish. It is intended to be both human readable and
+      machine parsable. Each response is a single line terminated with the
+      '\n' formatted as: <screen>@&lt;status-integer&gt; &lt;text&gt;</screen>
+      each line start with an @ followed by an integer that tells if the
+      command suceeded and specifies the format of the text. The status
+      integer is usually a 3 digit decimal number in [100..999]: <variablelist>
+          <varlistentry>
+            <term><option>1xx:</option></term>
+
+            <listitem>
+              <para>ok. the command suceeded returning a small text info
+              message.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>2xx:</option></term>
+
+            <listitem>
+              <para>the command succeeded and the return text is in format
+              name=value</para>
+
+              <para>This is used for returning variables. 200-299 defines the
+              type of the value as follows:</para>
+
+              <variablelist>
+                <varlistentry>
+                  <term><option>201:</option></term>
+
+                  <listitem>
+                    <para>integer</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term><option>202:</option></term>
+
+                  <listitem>
+                    <para>double</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term><option>210:</option></term>
+
+                  <listitem>
+                    <para>2d vector &lt;int&gt;x&lt;int&gt;</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term><option>220:</option></term>
+
+                  <listitem>
+                    <para>string</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term><option>228:</option></term>
+
+                  <listitem>
+                    <para>smpte-string in format 'HH:MM:SS:FF'</para>
+                  </listitem>
+                </varlistentry>
+              </variablelist>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>3xx:</option></term>
+
+            <listitem>
+              <para>these are messages that are generated by xjadeo notify,
+              not in response to a command. the format and type declaration is
+              identical to 2xx messages. Currently the only 3xx message is 301
+              position=integer.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>4xx:</option></term>
+
+            <listitem>
+              <para>error message.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>8xx:</option></term>
+
+            <listitem>
+              <para>info or help message. These messages are ment to be
+              ignored by automatic parsers and are for user information or
+              displaying comments only.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist></para>
+    </section>
+  </section>
+
   <appendix>
     <title>Manual Pages</title>
+
     <refentry>
       <refentryinfo>
         <date>April 22, 2006</date>
+
         <authorgroup>
           <author>
             <firstname>Luis</firstname>
+
             <surname>Garrido</surname>
+
             <affiliation>
-              <address>
-                <email>luisgarrido@users.sourceforge.net</email>
-              </address>
+              <address><email>luisgarrido@users.sourceforge.net</email></address>
             </affiliation>
           </author>
+
           <author>
             <firstname>Robin</firstname>
+
             <surname>Gareus</surname>
+
             <affiliation>
-              <address>
-                <email>robin@gareus.org</email>
+              <address><email>robin@gareus.org</email>
               </address>
             </affiliation>
           </author>
         </authorgroup>
       </refentryinfo>
+
       <refmeta>
         <refentrytitle>xjadeo</refentrytitle>
       </refmeta>
+
       <refnamediv>
         <refname>xjadeo</refname>
+
         <refpurpose>displays a video clip in sync with an external timing
         source</refpurpose>
       </refnamediv>
+
       <refsynopsisdiv>
         <cmdsynopsis>
           <command>xjadeo</command>
+
           <arg>options</arg>
+
           <arg>videofile</arg>
         </cmdsynopsis>
       </refsynopsisdiv>
+
       <refsection>
         <title>DESCRIPTION</title>
+
         <para><command>xjadeo</command> displays a video clip in sync with an
         external timing source. It is a handy tool to help with the
         synchronization of the soundtrack of a video file.
         <command>xjadeo</command> supports different video file formats, video
         output libraries and sync sources.</para>
       </refsection>
+
       <refsection>
         <title>OPTIONS</title>
+
         <variablelist>
           <varlistentry>
-            <term>
-              <option>-h, --help</option>
-            </term>
+            <term><option>-h, --help</option></term>
+
             <listitem>
               <para>Prints usage help and exits.</para>
             </listitem>
           </varlistentry>
+
           <varlistentry>
-            <term>
-              <option>-q, --quiet, --silent</option>
-            </term>
+            <term><option>-q, --quiet, --silent</option></term>
+
             <listitem>
               <para>Supresses normal output messages.</para>
             </listitem>
           </varlistentry>
+
           <varlistentry>
-            <term>
-              <option>-v, --verbose</option>
-            </term>
+            <term><option>-v, --verbose</option></term>
+
             <listitem>
               <para>Prints additional information during the execution.</para>
             </listitem>
           </varlistentry>
+
           <varlistentry>
-            <term>
-              <option>-R, --remote</option>
-            </term>
+            <term><option>-R, --remote</option></term>
+
             <listitem>
               <para>Enables interactive (stdin/stdout) control mode. Options
               <option>--quiet</option> and <option>--verbose</option> have no
               effect in remote mode.</para>
             </listitem>
           </varlistentry>
+
           <varlistentry>
-            <term>
-              <option>-f, --fps <replaceable class="option">n</replaceable></option>
-            </term>
+            <term><option>-f, --fps <replaceable
+            class="option">n</replaceable></option></term>
+
             <listitem>
               <para>Desired refresh rate of the video display in frames per
               second. Lower values lighten the CPU load at the cost of video
               quality. Admits non-integer values. Defaults to 10.0 fps.</para>
             </listitem>
           </varlistentry>
+
           <varlistentry>
-            <term>
-              <option>-k, --keyframes </option>
-            </term>
+            <term><option>-k, --keyframes </option></term>
+
             <listitem>
               <para>Instructs the internal algorithm to seek only keyframes.
               This option may improve the performance for certain video
               encodings.</para>
             </listitem>
           </varlistentry>
+
           <varlistentry>
-            <term>
-              <option>-o, --offset <replaceable class="option">n</replaceable></option>
-            </term>
+            <term><option>-o, --offset <replaceable
+            class="option">n</replaceable></option></term>
+
             <listitem>
               <para>Offset the video player a certain number of frames
               relative to the sync master time base. Admits negative
               values.</para>
             </listitem>
           </varlistentry>
+
           <varlistentry>
-            <term>
-              <option>-x, --vo, --videomode <replaceable class="option">n</replaceable></option>
-            </term>
+            <term><option>-x, --vo, --videomode <replaceable
+            class="option">n</replaceable></option></term>
+
             <listitem>
               <para>Selects the video output driver. Defaults to 0
               (autodetect.) A value of -1 makes the program list the available
               drivers and exit.</para>
             </listitem>
           </varlistentry>
+
           <varlistentry>
-            <term>
-              <option>-i, --info <replaceable class="option">n</replaceable></option>
-            </term>
+            <term><option>-i, --info <replaceable
+            class="option">n</replaceable></option></term>
+
             <listitem>
               <para>Displays useful info using the OSD (on-screen
-              display.)<variablelist><varlistentry><term><option>0</option></term><listitem><para>Off.</para></listitem></varlistentry><varlistentry><term><option>1</option></term><listitem><para>Frame number.</para></listitem></varlistentry><varlistentry><term><option>2</option></term><listitem><para>SMPTE time code.</para></listitem></varlistentry><varlistentry><term><option>3</option></term><listitem><para>Both frame number and SMPTE.</para></listitem></varlistentry></variablelist>The remote interface allows more complete
+              display.)<variablelist>
+                  <varlistentry>
+                    <term><option>0</option></term>
+
+                    <listitem>
+                      <para>Off.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term><option>1</option></term>
+
+                    <listitem>
+                      <para>Frame number.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term><option>2</option></term>
+
+                    <listitem>
+                      <para>SMPTE time code.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term><option>3</option></term>
+
+                    <listitem>
+                      <para>Both frame number and SMPTE.</para>
+                    </listitem>
+                  </varlistentry>
+                </variablelist>The remote interface allows more complete
               control over the OSD.</para>
             </listitem>
           </varlistentry>
+
           <varlistentry>
-            <term>
-              <option>-m, --midi <replaceable class="option">port</replaceable></option>
-            </term>
+            <term><option>-m, --midi <replaceable
+            class="option">port</replaceable></option></term>
+
             <listitem>
               <para>Get sync from MTC (MIDI Time Code) instead of jack.</para>
-              <para>If compiled with ALSA midi, <replaceable class="option">port</replaceable> is the ALSA
-              sequencer id of the MTC source. A value of -1 will leave <command>xjadeo</command> unconnected.</para>
-              <para> If using portmidi, <replaceable class="option">port</replaceable> 
-	      is the portnumber of the midi input to use. value -1 will attempt autoconnect.
-	      use -v -m -1 to list midi ports during autodetection.</para>
+
+              <para>If compiled with ALSA midi, <replaceable
+              class="option">port</replaceable> is the ALSA sequencer id of
+              the MTC source. A value of -1 will leave
+              <command>xjadeo</command> unconnected.</para>
+
+              <para>If using portmidi, <replaceable
+              class="option">port</replaceable> is the portnumber of the midi
+              input to use. value -1 will attempt autoconnect. use -v -m -1 to
+              list midi ports during autodetection.</para>
             </listitem>
           </varlistentry>
+
           <varlistentry>
-            <term>
-              <option>-M, --midifps <replaceable class="option">n</replaceable></option>
-            </term>
+            <term><option>-M, --midifps <replaceable
+            class="option">n</replaceable></option></term>
+
             <listitem>
               <para>Conversion between MTC SMPTE and frame number.
-              <variablelist><varlistentry><term><option>0</option></term><listitem><para>Use MTC clock frame rate.</para></listitem></varlistentry><varlistentry><term><option>2</option></term><listitem><para>Use video file frame rate.</para></listitem></varlistentry><varlistentry><term><option>3</option></term><listitem><para>Resample video frame rate / MTC.</para></listitem></varlistentry></variablelist></para>
+              <variablelist>
+                  <varlistentry>
+                    <term><option>0</option></term>
+
+                    <listitem>
+                      <para>Use MTC clock frame rate.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term><option>2</option></term>
+
+                    <listitem>
+                      <para>Use video file frame rate.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term><option>3</option></term>
+
+                    <listitem>
+                      <para>Resample video frame rate / MTC.</para>
+                    </listitem>
+                  </varlistentry>
+                </variablelist></para>
             </listitem>
           </varlistentry>
+
           <varlistentry>
-            <term>
-              <option>-t, --try-codec</option>
-            </term>
+            <term><option>-t, --try-codec</option></term>
+
             <listitem>
               <para>Checks if the video file is encoded in a format suitable
               for use with <command>xjadeo</command> and exits. If the video
               format is not supported the exit code is 1.</para>
             </listitem>
           </varlistentry>
+
           <varlistentry>
-            <term>
-              <option>-h, --help</option>
-            </term>
+            <term><option>-h, --help</option></term>
+
             <listitem>
               <para>Display usage information and exit.</para>
             </listitem>
           </varlistentry>
+
           <varlistentry>
-            <term>
-              <option>-V, --version</option>
-            </term>
+            <term><option>-V, --version</option></term>
+
             <listitem>
               <para>Display version information and exit.</para>
             </listitem>
           </varlistentry>
         </variablelist>
       </refsection>
+
       <refsection>
         <title>SYNC SOURCES</title>
+
         <para><command>xjadeo</command> currently supports the following
         synchronization sources:</para>
+
         <itemizedlist>
           <listitem>
             <para>Jack transport.</para>
           </listitem>
+
           <listitem>
             <para>MTC (MIDI Time Code) via ALSA sequencer.</para>
           </listitem>
+
           <listitem>
             <para>MTC (MIDI Time Code) via portmidi.</para>
           </listitem>
         </itemizedlist>
       </refsection>
+
       <refsection>
         <title>VIDEO DRIVERS</title>
+
         <para><command>xjadeo</command> currently supports the following video
         output drivers:</para>
+
         <itemizedlist>
           <listitem>
             <para>xv hardware overlay.</para>
           </listitem>
+
           <listitem>
             <para>SDL hardware overlay.</para>
           </listitem>
+
           <listitem>
             <para>ImLib.</para>
           </listitem>
+
           <listitem>
             <para>GTK.</para>
           </listitem>
         </itemizedlist>
       </refsection>
+
       <refsection>
         <title>VIDEO FORMATS</title>
+
         <para><command>xjadeo</command> uses the ffmpeg libraries to decode
         video files, so a wide range of codecs is available. Note, however,
         that not all the formats support frame seeking. You can use a command
         like:</para>
+
         <programlisting>mencoder -idx -ovc lavc -lavcopts keyint=1 -nosound input_file.xxx -o output_file.avi</programlisting>
+
         <para>This creates from your input-file.xxx an AVI mpeg4 encoded video
         file with no sound, an index (-idx) and no compression between frames
         (every frame is a keyframe). The file thus can become really BIG, so
         watch out your disk space.</para>
+
         <para>You may also want to shrink the size of the frame by adding the
         option</para>
+
         <programlisting>-vf scale=width:height</programlisting>
+
         <para>This will reduce the size of the avi file, will tax less the
         system resources when displayed and will leave more space in the
         screen for your audio software.</para>
       </refsection>
+
       <refsection>
         <title>USER INPUT</title>
+
         <para><command>xjadeo</command> window accepts the following
         input:</para>
+
         <itemizedlist>
           <listitem>
             <para>Resizing the window will resize the movie as well. (CAVEAT:
@@ -1139,83 +1598,103 @@ This creates from your <filename>input-file.xxx</filename> an AVI mpeg4 encoded 
             cpu efficient that you reencode the video file with the desired
             size beforehand.)</para>
           </listitem>
+
           <listitem>
             <para>Pressing mouse button 1 will resize the window to the
             original movie size.</para>
           </listitem>
+
           <listitem>
             <para>Mouse button 2 and 3 resize the window to match the movie
             aspect ratio.</para>
           </listitem>
+
           <listitem>
             <para>Scroll Wheel (buttons 4,5) stepwise decreases/increases the
             window size maintaining the original aspect ratio.</para>
           </listitem>
+
           <listitem>
             <para>Closing the window or pressing ctrl-C will terminate
             <command>xjadeo</command>.</para>
           </listitem>
         </itemizedlist>
       </refsection>
+
       <refsection>
         <title>REMOTE MODE</title>
+
         <para>When started in remote mode (option <option>-R</option> or
         <option>--remote</option>) <command>xjadeo</command> will
         interactively accept commands and issue responses through its standard
         input/output mechanism.</para>
-        <para>Use the remote command <command>help</command> to get a quick 
-	overview of all available commands. please refer to the docbook documentation for 
-	a complete description of the remote commands.</para>
+
+        <para>Use the remote command <command>help</command> to get a quick
+        overview of all available commands. please refer to the docbook
+        documentation for a complete description of the remote
+        commands.</para>
       </refsection>
     </refentry>
+
     <refentry>
       <refentryinfo>
         <date>April 22, 2006</date>
+
         <authorgroup>
           <author>
             <firstname>Luis</firstname>
+
             <surname>Garrido</surname>
+
             <affiliation>
-              <address>
-                <email>luisgarrido@users.sourceforge.net</email>
-              </address>
+              <address><email>luisgarrido@users.sourceforge.net</email></address>
             </affiliation>
           </author>
+
           <author>
             <firstname>Robin</firstname>
+
             <surname>Gareus</surname>
+
             <affiliation>
-              <address>
-                <email>robin@gareus.org</email>
-              </address>
+              <address><email>robin@gareus.org</email></address>
             </affiliation>
           </author>
         </authorgroup>
       </refentryinfo>
+
       <refmeta>
         <refentrytitle>qjadeo</refentrytitle>
       </refmeta>
+
       <refnamediv>
         <refname>qjadeo</refname>
+
         <refpurpose>GUI front-end to <command>xjadeo </command>remote
         mode.</refpurpose>
       </refnamediv>
+
       <refsynopsisdiv>
         <cmdsynopsis>
           <command>qjadeo</command>
+
           <arg>videofile</arg>
         </cmdsynopsis>
       </refsynopsisdiv>
+
       <refsection>
         <title>DESCRIPTION</title>
+
         <para><command>xjadeo</command> displays a video clip in sync with an
         external timing source. It is a handy tool to help with the
         synchronization of the soundtrack of a video file.
         <command>xjadeo</command> supports different video file formats, video
         output libraries and sync sources.</para>
       </refsection>
+
       <refsection>
         <title>ENVIRONMENT</title>
+
         <para><command>qjadeo</command> if the XJADEO variable is set, qjadeo
         will assume that it holds the path to the xjadeo executable.</para>
       </refsection>

@@ -5,13 +5,13 @@ class QJadeo: public MainWindow
 {
 
 	Q_OBJECT
-  
+
 public:
 
   QJadeo();
 
 private:
-  
+
   QStringList m_recentFiles;
   QSettings m_settings;
 
@@ -20,14 +20,15 @@ private:
   int m_updatefps;
   int m_frames;
   int m_framerate;
-  
+  QString m_osdfont;
+
   void updateRecentFilesMenu();
   void updateRecentFiles(const QString & filename);
   void saveOptions();
   void fileLoad(const QString & filename);
 
 public slots:
-  
+
   void fileOpen();
   void fileExit();
   void helpAbout();
@@ -44,5 +45,9 @@ public slots:
   void fileOpenRecent(int index);
 
   void readFromStdout ();
+
+  void osdFrameToggled(bool);
+  void osdSMPTEToggled(bool);
+  void osdFont();
 
 };
