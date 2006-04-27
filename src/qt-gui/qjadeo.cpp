@@ -173,17 +173,17 @@ void QJadeo::setOffset(const QString &offset)
 void QJadeo::osdFrameToggled(bool value)
 {
   if(value)
-    xjadeo.writeToStdin("osd frame 0\n");
+    xjadeo.writeToStdin(QString("osd frame 0\n"));
   else
-    xjadeo.writeToStdin("osd frame -1\n");
+    xjadeo.writeToStdin(QString("osd frame -1\n"));
 }
 
 void QJadeo::osdSMPTEToggled(bool value)
 {
   if(value)
-    xjadeo.writeToStdin("osd smpte 100\n");
+    xjadeo.writeToStdin(QString("osd smpte 100\n"));
   else
-    xjadeo.writeToStdin("osd smpte -1\n");
+    xjadeo.writeToStdin(QString("osd smpte -1\n"));
 }
 
 void QJadeo::osdFont()

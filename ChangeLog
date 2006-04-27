@@ -1,8 +1,8 @@
-2006-04-09  Luis Garrido  <luisgarrido@users.sourceforge.net>
+2006-27-09  Luis Garrido  <luisgarrido@users.sourceforge.net>
  - Added OSD font, frame and smpte commands to qjadeo menu.
  - OSD font is stored as a qjadeo preference.
  - Some docbook fixing.
-
+ - Revamped qjadeo layout.
 
 2006-04-23  rgareus  <robin@gareus.org>
  - some remote function help typos
