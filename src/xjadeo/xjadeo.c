@@ -134,7 +134,7 @@ void event_loop(void)
     offFrame = newFrame + ts_offset;
 
     if(offFrame != currentFrame)
-        display_frame((int64_t)(currentFrame),0);
+        display_frame((int64_t)(offFrame),0);
     if(want_verbose) {
 	fprintf(stdout, "frame: smpte:%li\r", newFrame);
     	fflush(stdout); 

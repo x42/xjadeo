@@ -1,3 +1,7 @@
+2006-04-28  rgareus  <robin@gareus.org>
+ - fixed typo: since the 04/23 patches
+   xjadeo was displaying the previous instead of the current frame!
+
 2006-27-09  Luis Garrido  <luisgarrido@users.sourceforge.net>
  - Added OSD font, frame and smpte commands to qjadeo menu.
  - OSD font is stored as a qjadeo preference.
