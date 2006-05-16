@@ -144,7 +144,6 @@ void xapi_close_window(void *d) {
 
 void xapi_set_videomode(void *d) {
 	int vmode; 
-	// parsevidoutname ()
 	if (getvidmode() !=0) {
 		remote_printf(413, "cannot change videomode while window is open.");
 		return;
@@ -176,9 +175,7 @@ void xapi_open_window(void *d) {
 		remote_printf(412, "window already open.");
 		return;
 	}
-	vidoutmode(videomode); // init VOutput
-	open_window(0,NULL);
-	remote_printf(100, "window opened.");
+	xapi_set_videomode("0");
 }
 
 
@@ -551,113 +548,160 @@ typedef void myfunction (void *);
 typedef struct _command {
 	const char *name;
 	const char *help;
-	struct _command *children; // unused
+	struct _command *children;
 	myfunction *func;
 	int sticky;  // unused
 } Dcommand;
 
+Dcommand cmd_test[] = {
+	{"load ", "<filename>: replace current video file.", NULL , xapi_open, 0 },
+	{"seek ", "<int>: seek to this frame - if jack and midi are offline", NULL, xapi_seek , 0 },
+	{NULL, NULL, NULL , NULL, 0}
+};
+
+Dcommand cmd_midi[] = {
+	{"autoconnect", ": discover and connect to midi time source", NULL, xapi_detect_midi, 0 },
+	{"connect ", "<port>: connect to midi time source", NULL, xapi_open_midi, 0 },
+	{"disconnect", ": unconect from midi device", NULL, xapi_close_midi, 0 },
+	{"status", ": display status of midi connection.", NULL, xapi_midi_status, 0 },
+	{"library", ": display the used midi libaray", NULL, xapi_pmidilibrary, 0 },
+	{"sync ", "<int>: set MTC smpte conversion. 0:MTC 2:Video 3:resample", NULL, xapi_smidisync, 0 },
+	{NULL, NULL, NULL , NULL, 0}
+};
+
+Dcommand cmd_jack[] = {
+	{"connect", ": connect and sync to jack server", NULL, xapi_open_jack , 0 },
+	{"disconnect", ": disconnect from jack server", NULL, xapi_close_jack , 0 },
+	{"status", ": get status of jack connection", NULL, xapi_jack_status , 0 },
+	{NULL, NULL, NULL , NULL, 0}
+};
+
+Dcommand cmd_osd[] = {
+	{"frame " , "<ypos>: render current framenumber. y=0..100 (<0 disable)", NULL, xapi_osd_frame, 0 },
+	{"smpte " , "<ypos>: render smpte. y=0..100 (<0 disable)", NULL, xapi_osd_smpte, 0 },
+	{"text " , "<text>: render <text> on screen", NULL, xapi_osd_text, 0 },
+	{"text" , ": display prev. OSD text", NULL, xapi_osd_on, 0 },
+	{"notext" , ": clear text OSD", NULL, xapi_osd_off, 0 },
+	{"off" , ": same as 'osd notext'", NULL, xapi_osd_off, 0 },
+	{"on" , ": same as 'osd text'", NULL, xapi_osd_on, 0 },
+	{"pos " , "<xalign> <ypos>: xalign=0..2 (L,C,R) ypos=0..100", NULL, xapi_osd_pos, 0 },
+	{"available" , ": return 100 if freetype OSD is available", NULL, xapi_osd_avail, 0 },
+	{"font " , "<filename>: use this TTF font file", NULL, xapi_osd_font, 0 },
+	{"box" , ": forces a black box around the OSD", NULL, xapi_osd_box, 0 },
+	{"nobox" , ": make OSD backgroung transparent", NULL, xapi_osd_nobox, 0 },
+	{NULL, NULL, NULL , NULL, 0}
+};
+
+Dcommand cmd_get[] = {
+	{"position", ": return current frame position", NULL, xapi_pposition , 0 },
+	{"smpte", ": return current frame position", NULL, xapi_psmpte , 0 },
+	{"fps", ": display current update frequency", NULL, xapi_pfps , 0 },
+	{"offset", ": show current frame offset", NULL, xapi_poffset , 0 },
+
+	{"file", ": print filename of current video buffer", NULL, xapi_pfilename , 0 },
+	{"duration", ": query length of video buffer in seconds", NULL, xapi_pduration , 0 },
+	{"frames", ": show length of video buffer in frames", NULL, xapi_pframes , 0 },
+	{"framerate", ": show frame rate of video file", NULL, xapi_pframerate , 0 },
+	{"width", ": query width of video source buffer", NULL, xapi_pmwidth , 0 },
+	{"height", ": query width of video source buffer", NULL, xapi_pmheight , 0 },
+
+	{"seekmode", ": returns 1 if decoding keyframes only", NULL, xapi_pseekmode, 0 },
+	{"windowsize" , ": show current window size", NULL, xapi_pwinsize, 0 },
+// TODO:  complete the display backends and then enable this fn.
+//	{"windowpos" , ": show current window position", NULL, xapi_pwinpos, 0 },
+	{"videomode" , ": display current video mode", NULL, xapi_pvideomode, 0 },
+	{"midisync", ": display midi smpte conversion mode", NULL, xapi_pmidisync, 0 },
+	{NULL, NULL, NULL , NULL, 0}
+};
+
+Dcommand cmd_notify[] = {
+	{"frame" , ": enable async frame-update messages", NULL, xapi_bidir_frame, 0 },
+	{"loop" , ": enable continuous frame position messages", NULL, xapi_bidir_loop, 0 },
+	{"disable" , ": disable async messages", NULL, xapi_bidir_noframe, 0 },
+	{NULL, NULL, NULL , NULL, 0}
+};
+
+Dcommand cmd_window[] = {
+	{"close", ": close window", NULL, xapi_close_window, 0 },
+	{"open", ": open window", NULL, xapi_open_window, 0 },
+	{"mode " , "<int>: changes video mode and opens window", NULL, xapi_set_videomode, 0 },
+	{"resize " , "<int>|<int>x<int>: resize window (percent of movie or abs)", NULL, xapi_swinsize, 0 },
+	{"position " , "<int>x<int>: move window to absolute position", NULL, xapi_swinpos, 0 },
+	{"pos " , "<int>x<int>: alias for 'window position'", NULL, xapi_swinpos, 0 },
+	{NULL, NULL, NULL , NULL, 0}
+};
+
+Dcommand cmd_set[] = {
+	{"fps ", "<int>: set current update frequency", NULL, xapi_sfps , 0 },
+	{"offset", "<int>: set current frame offset", NULL, xapi_soffset , 0 },
+	{"seekmode ", "<1|0>: set to one to seek only keyframes", NULL, xapi_sseekmode, 0 },
+	{NULL, NULL, NULL , NULL, 0}
+};
 
 Dcommand cmd_root[] = {
+	// note: keep 'seek' on top of the list - if an external app wants seek a lot, xjadeo will 
+	// not spend time comparing command strings - OTOH I/O takes much longer than this anyway :X
+	{"seek ", "<int>: seek to this frame - if jack and midi are offline", NULL, xapi_seek , 0 },
 	{"load ", "<filename>: replace current video file.", NULL , xapi_open, 0 },
 	{"unload", ": close video file.", NULL , xapi_close, 0 },
 
-	{"jack connect", ": connect and sync to jack server", NULL, xapi_open_jack , 0 },
-	{"jack disconnect", ": disconnect from jack server", NULL, xapi_close_jack , 0 },
-	{"jack status", ": get status of jack connection", NULL, xapi_jack_status , 0 },
+	{"window", " .. : monitor window functions", cmd_window, NULL, 0 },
+	{"notify", " .. : async remote info messages", cmd_notify, NULL, 0 },
+	{"get", " .. : query xjadeo variables or state", cmd_get, NULL, 0 },
+	{"set", " .. : set xjadeo variables", cmd_set, NULL, 0 },
+	{"osd", " .. : on screen display commands", cmd_osd, NULL, 0 },
+	{"jack", " .. : jack commands", cmd_jack, NULL, 0 },
+	{"midi", " .. : midi commands", cmd_midi, NULL, 0 },
 
-	{"seek ", "<int>: seek to this frame - if jack and midi are offline", NULL, xapi_seek , 0 },
-	{"get position", ": return current frame position", NULL, xapi_pposition , 0 },
-	{"get smpte", ": return current frame position", NULL, xapi_psmpte , 0 },
-	
-	{"get fps", ": display current update frequency", NULL, xapi_pfps , 0 },
-	{"set fps ", "<int>: set current update frequency", NULL, xapi_sfps , 0 },
-
-	{"get offset", ": show current frame offset", NULL, xapi_poffset , 0 },
-	{"set offset", "<int>: set current frame offset", NULL, xapi_soffset , 0 },
-
-	{"get file", ": print filename of current video buffer", NULL, xapi_pfilename , 0 },
-	{"get duration", ": query length of video buffer in seconds", NULL, xapi_pduration , 0 },
-	{"get frames", ": show length of video buffer in frames", NULL, xapi_pframes , 0 },
-	{"get framerate", ": show frame rate of video file", NULL, xapi_pframerate , 0 },
-	{"get width", ": query width of video source buffer", NULL, xapi_pmwidth , 0 },
-	{"get height", ": query width of video source buffer", NULL, xapi_pmheight , 0 },
-
-	{"get seekmode", ": returns 1 if decoding keyframes only", NULL, xapi_pseekmode, 0 },
-	{"set seekmode ", "<1|0>: set to one to seek only keyframes", NULL, xapi_sseekmode, 0 },
-
-	{"window close", ": close window", NULL, xapi_close_window, 0 },
-	{"window open", ": open window", NULL, xapi_open_window, 0 },
-	{"window mode " , "<int>: changes video mode and opens window", NULL, xapi_set_videomode, 0 },
-	{"window resize " , "<int>|<int>x<int>: resize window (percent of movie or absolute)", NULL, xapi_swinsize, 0 },
-	{"window position " , "<int>x<int>: move window", NULL, xapi_swinpos, 0 },
-	{"window pos " , "<int>x<int>: move window", NULL, xapi_swinpos, 0 },
-
-	{"get windowsize" , ": show current window size", NULL, xapi_pwinsize, 0 },
-// TODO: complete the display backends and then enable this fn.
-//	{"get windowpos" , ": show current window position", NULL, xapi_pwinpos, 0 },
-
-	{"get videomode" , ": display current video mode", NULL, xapi_pvideomode, 0 },
 	{"list videomodes" , ": displays a list of possible video modes", NULL, xapi_lvideomodes, 0 },
-
-	{"osd frame " , "<ypos>: render current framenumber. y=0..100 (<0 disable)", NULL, xapi_osd_frame, 0 },
-	{"osd smpte " , "<ypos>: render smpte. y=0..100 (<0 disable)", NULL, xapi_osd_smpte, 0 },
-	{"osd text " , "<text>: render <text> on screen", NULL, xapi_osd_text, 0 },
-	{"osd text" , ": display prev. OSD text", NULL, xapi_osd_on, 0 },
-	{"osd notext" , ": clear text OSD", NULL, xapi_osd_off, 0 },
-	{"osd off" , ": same as 'osd notext'", NULL, xapi_osd_off, 0 },
-	{"osd on" , ": same as 'osd text'", NULL, xapi_osd_on, 0 },
-	{"osd pos " , "<xalign> <ypos>: xalign=0..2 (L,C,R) ypos=0..100", NULL, xapi_osd_pos, 0 },
-	{"osd available" , ": return 100 if freetype OSD is available", NULL, xapi_osd_avail, 0 },
-	{"osd font " , "<filename>: use this TTF font file", NULL, xapi_osd_font, 0 },
-
-	{"osd box" , ": forces a black box around the OSD", NULL, xapi_osd_box, 0 },
-	{"osd nobox" , ": make OSD backgroung transparent", NULL, xapi_osd_nobox, 0 },
-
-	{"notify frame" , ": enable async frame-update messages", NULL, xapi_bidir_frame, 0 },
-	{"notify loop" , ": enable continuous frame position messages", NULL, xapi_bidir_loop, 0 },
-	{"notify disable" , ": disable async messages", NULL, xapi_bidir_noframe, 0 },
-
-	{"midi autoconnect", ": discover and connect to midi time source", NULL, xapi_detect_midi, 0 },
-	{"midi connect ", "<port>: connect to midi time source", NULL, xapi_open_midi, 0 },
-	{"midi disconnect", ": unconect from midi device", NULL, xapi_close_midi, 0 },
-	{"midi status", ": display status of midi connection.", NULL, xapi_midi_status, 0 },
-	{"midi library", ": display the used midi libaray", NULL, xapi_pmidilibrary, 0 },
-	{"get midisync", ": display midi smpte conversion mode", NULL, xapi_pmidisync, 0 },
-	{"set midisync ", "<int>: MTC smpte conversion. 0:MTC 2:Video 3:resample", NULL, xapi_smidisync, 0 },
-
 	{"help", ": show a quick help", NULL , api_help, 0 },
 	{"quit", ": quit xjadeo", NULL , xapi_quit, 0 },
 	{NULL, NULL, NULL , NULL, 0},
 };
 
-Dcommand *cur_root= cmd_root;
-
-void api_help(void *d) {
+void api_help_recursive(Dcommand *r, const char *prefix) {
 	int i=0;
-	remote_printf(100, "print help");
-	remote_printf(800, "+ xjadeo remote control commands:");
-	while (cur_root[i].name) {
-		remote_printf(800,"+  %s%s",cur_root[i].name,cur_root[i].help);
+	while (r[i].name) {
+		if (r[i].children) {
+			int len = 2+strlen(prefix)+ strlen(r[i].name);
+			char *tmp= malloc(len*sizeof(char));
+			snprintf(tmp,len,"%s%s ",prefix,r[i].name);
+			//remote_printf(800,"#  %s%s%s",prefix,r[i].name,r[i].help);
+			api_help_recursive(r[i].children, tmp);
+			free(tmp);
+		} else  {
+			remote_printf(800,"+  %s%s%s",prefix,r[i].name,r[i].help);
+		}
 		i++;
 	}
 }
 
-void exec_remote_cmd (char *cmd) {
+void api_help(void *d) {
+	remote_printf(100, "print help");
+	remote_printf(800, "+ xjadeo remote control commands:");
+	api_help_recursive(cmd_root,"");
+}
+
+void exec_remote_cmd_recursive (Dcommand *leave, char *cmd) {
 	int i=0;
-	while (cur_root[i].name) {
-		if (strncmp(cmd,cur_root[i].name,strlen(cur_root[i].name))==0) break; 
+	while (*cmd==' ') ++cmd;
+//	fprintf(stderr,"DEBUG: %s\n",cmd);
+
+	while (leave[i].name) {
+		if (strncmp(cmd,leave[i].name,strlen(leave[i].name))==0) break; 
 		i++;
 	}
-	if (!cur_root[i].name) {
+	if (!leave[i].name) {
 		remote_printf(400,"unknown command.");
 		return; // no cmd found
 	}
-	if ( cur_root[i].func)
-		cur_root[i].func(cmd+strlen(cur_root[i].name));
+	if (leave[i].children) 
+		exec_remote_cmd_recursive(leave[i].children,cmd+strlen(leave[i].name));
+	else if (leave[i].func) 
+		leave[i].func(cmd+strlen(leave[i].name));
 	else 
 		remote_printf(401,"command not implemented.");
 }
-
 
 //--------------------------------------------
 // remote control
@@ -684,7 +728,8 @@ int remote_read(void) {
 
 	while ((end = strchr(start, '\n'))) {
 		*(end) = '\0';
-		exec_remote_cmd(start);
+		//exec_remote_cmd(start);
+		exec_remote_cmd_recursive(cmd_root,start);
 		inbuf->offset-=((++end)-start);
 		if (inbuf->offset) memmove(inbuf->buf,end,inbuf->offset);
 	}

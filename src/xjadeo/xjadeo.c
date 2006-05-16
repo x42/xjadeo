@@ -198,8 +198,8 @@ int open_movie(char* file_name)
   AVCodec             *pCodec;
 
   if (pFrameFMT) {
-	  fprintf(stderr,"replacing current video file buffer\n");
 	  // close currently open movie
+	  //fprintf(stderr,"replacing current video file buffer\n");
 	  close_movie();
   }
 
