@@ -88,6 +88,6 @@ long jack_poll_frame (void) {
 	jack_transport_query(jack_client, &jack_position);
 	jack_time = jack_position.frame / (double) jack_position.frame_rate;
 	//fprintf(stdout, "jack calculated time: %lf\n", jack_time);
-	frame = floor(frames * jack_time / duration);
+	frame = rint(frames * jack_time / duration);
 	return(frame);
 }
