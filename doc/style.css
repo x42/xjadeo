@@ -1,0 +1,137 @@
+/***************************************************************************
+                             Basic headers and text:
+ ***************************************************************************/
+
+body
+{
+    font-family: sans-serif;
+    background: white;
+}
+
+h1,h2,h3
+{
+    color: #005aa0;
+    text-align: left;
+}
+
+h1
+{
+    font-size: 175%;
+}
+
+h2
+{
+    font-size: 150%;
+}
+
+h3
+{
+    font-size: 120%;
+}
+
+
+
+/***************************************************************************
+                               Program listings:
+ ***************************************************************************/
+
+pre.programlisting
+{
+    border: 1px solid #6185a0;
+    padding: 6px 6px;
+    margin-left: 3em;
+    margin-right: 3em;
+    color: #600000;
+    background: #eeeeee;
+    font-family: monospace;
+    font-size: 90%;
+}
+
+/***************************************************************************
+                        Links colors and highlighting: 
+ ***************************************************************************/
+
+a:link { color: #0048b3; }
+a:visited { color: #002a6a; }
+a:hover { background: #ffffcd; }
+
+
+/***************************************************************************
+                              Table of contents:
+ ***************************************************************************/
+
+.toc
+{
+    font-size: 80%;
+}
+
+
+
+/***************************************************************************
+                               Special elements:
+ ***************************************************************************/
+
+tt
+{
+    color: #400000;
+}
+
+.term
+{
+    font-weight: bold;
+    
+}
+
+div.variablelist dd
+{
+    margin-bottom: 1em;
+}
+
+.default
+{
+    font-style: italic;
+}
+
+.availability
+{
+    font-style: italic;
+}
+
+.varname
+{
+    color: #400000;
+}
+
+
+div.informaltable table
+{
+  border: 1px solid #6185a0;
+  width: 100%;
+}
+
+div.informaltable td
+{
+  border: 0;
+  padding: 5px;
+}
+
+div.informaltable td.default
+{
+  text-align: right;
+}
+
+div.informaltable th
+{
+  color: #005aa0;
+  border: 0;
+  padding: 5px;
+  background: #fffff5;
+  font-weight: normal;
+  font-style: italic;
+}
+
+td.varname, td.tagname
+{
+  font-weight: bold;
+  vertical-align: top;
+}
