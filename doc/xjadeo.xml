@@ -82,22 +82,20 @@
   </section>
 
   <section>
-    <title>PROSPECTS</title>
+    <title>Prospects</title>
 
     <para>See TODO file in the source repository for now... Ideas range from
-    minor OSD addons to making <application>xjadeo</application> a real-time
-    video sync player.</para>
+    minor OSD addons and fixes to making <application>xjadeo</application> a real-time
+    video sync player. the latter is unlikely though.</para>
 
     <para>The source is suitable to be extended to support
     multiple video buffers which for example could be switched depending on
     timecode etc... <application>xjadeo</application> can also be used as a VJ
-    tool to synchronize playback on multiple screens. see 
-    <ulink url="http://svn.sourceforge.net/xjadeo/trunk/contrib/">http://svn.sourceforge.net/xjadeo/trunk/contrib/</ulink> 
-    for further additions.</para>
+    tool to synchronize playback on multiple screens (using <ulink url="netjack.sourceforge.net">netjack</ulink>, by using xjadeo remote-ctrl see <xref linkend="sync_remote_commands" /> ). check <ulink url="http://svn.sourceforge.net/viewcvs.cgi/xjadeo/trunk/contrib/">http://svn.sourceforge.net/viewcvs.cgi/xjadeo/trunk/contrib/</ulink> for further additions.</para>
 
     <para>With SDL, jack and portmidi <application>xjadeo</application> should be ready for the Mac. Having only occasional access to OS-X, we did not yet succeed in building ijadeo ;-) </para>
 
-    <para>Anyway, for now the maxime is to only maintain this rather simple version
+    <para>Anyway, for now the maxime is to complete and maintain this rather simple version
     before <application>xjadeo</application> gets even more bloated.</para>
   </section>
 
@@ -194,9 +192,8 @@
       <para>A debian package can be found at <ulink
       url="ftp://ftp.nerim.net/debian-marillat/pool/main/x/xjadeo/">debian-marillat</ulink>
       edit <filename>/etc/apt/sources.list</filename> to include <screen>
-      deb ftp://ftp.nerim.net/debian-marillat sid main
-      deb-src ftp://ftp.nerim.net/debian-marillat sid main
-      </screen>
+deb ftp://ftp.nerim.net/debian-marillat sid main
+deb-src ftp://ftp.nerim.net/debian-marillat sid main </screen>
       and run <command>apt-get install xjadeo</command>
       </para>
     </section>
@@ -207,10 +204,8 @@
       <para>In order to compile the xjadeo from source, you will need the
       "devel" (-dev) version of these libraries.</para>
 
-      <para>Mandatory libraries:</para>
-
       <table frame="all">
-        <title>Mandatory Library</title>
+        <title>Mandatory Libraries</title>
 
         <tgroup cols="3">
           <thead>
@@ -367,10 +362,10 @@
         </tgroup>
       </table>
 
-      <para>QT is only needed to compile and run the qjadeo GUI - not xjadeo itself.
-      you can compile and use xjadeo without the GUI wrapper at your wish. - qjadeo works with 
+      <para>QT is only needed to compile and run the qjadeo GUI - not xjadeo itself.  qjadeo works with 
       both QT3 or QT4. If both libraries are available QT4 is prefered by the configure script.
-      Override by setting the QTDIR environement variable.</para>
+      Override by setting the QTDIR environement variable.  You can certainly build and use xjadeo without the GUI wrapper if you wish so.
+      </para>
 
       <para>Furthermore you'll need autotools to generate the build
       environement, and the standard gnu devel system (gcc,make). We recommend <application>mencoder</application>
@@ -437,6 +432,14 @@
               xjadeo will be build without on screen display support</para>
             </listitem>
           </varlistentry>
+
+          <varlistentry>
+            <term><option>--disable-qtgui</option></term>
+
+            <listitem>
+              <para>Do not build the QT Graphical User Interface.</para>
+            </listitem>
+          </varlistentry>
         </variablelist></para>
     </section>
   </section>
@@ -444,7 +447,7 @@
   <section>
     <title>Using xjadeo</title>
 
-    <para>It's not that complicated: for the impatient: run <command>xjadeo video-file.avi</command> from an xterm to get a default monitor window displaying the specified video file synchroneouly to jack transport. You can use <command>qjackctl</command> or any jack transport aware application to start, stop or reposition the transport. </para>
+    <para>It's not that complicated: for the impatient: run <command>xjadeo video-file.avi</command> from an xterm to get a default monitor window displaying the specified video file synchroneouly to jack transport. You can use <command>qjackctl</command> or any jack transport aware application to start, stop or reposition the transport location. </para>
     <para> <command>xjadeo --help</command> will give you a list of available command line options.  please refer to the manuals in the appendix. which is also available as manual page via <command>man xjadeo</command>.</para>
 
     <para>If you prefer, you can also use the graphical user interface <command>qjadeo</command>.</para>
@@ -455,9 +458,9 @@
       <title>Video Formats</title>
 
       <para><application>xjadeo</application> has been designed to aid
-      creative people and not as a general purpose video player. As it is most likely you will work
-      with the video file for a while, you should take some time to put in a suitable format for your purpose.
-      <application>xjadeo</application> uses <ulink
+      creative people and not as a general purpose video player. As it is most likely that you will work
+      with the video file for a while, you should take some time to convert in to suitable format for your purpose, trading off I/O and the efforts to decode the file.</para>
+      <para><application>xjadeo</application> uses <ulink
       url="http://ffmpeg.sourceforge.net/">ffmpeg</ulink> to decode the video
       file and supports only seekable video streams. Probably you
       first need to encode your video file to a <ulink
@@ -465,22 +468,21 @@
       format</ulink>.</para>
 
       <para>We recommend <application>mencoder</application> that comes with
-      mplayer: <screen>
-  mencoder -idx -ovc lavc -lavcopts keyint=1 -nosound input-file.xxx -o output-file.avi
-    </screen> This creates from your <filename>input-file.xxx</filename> an
+      mplayer: <screen> mencoder -idx -ovc lavc -lavcopts keyint=1 -nosound input-file.xxx -o output-file.avi</screen>
+      This creates from your <filename>input-file.xxx</filename> an
       AVI mpeg4 encoded video file with no sound, an index (-idx) and no
       compression between frames (every frame is a key frame). The file thus
       can become really BIG, so watch out your disk space. You may also want
       to shrink the size of the frame by adding the option</para>
 
-      <programlisting>-vf scale=width:height</programlisting>
+      <screen>-vf scale=width:height</screen>
 
       <para>This will reduce the size of the avi file, will tax less the
       system resources when displayed and will leave more space in the screen
       for your audio software...</para>
 
       <para>In the <ulink
-      url="http://svn.sourceforge.net/viewcvs.cgi/*checkout*/xjadeo/trunk/contrib/xjadeo-example.avi"><filename>/contrib</filename></ulink>
+      url="http://svn.sourceforge.net/viewcvs.cgi/*checkout*/xjadeo/trunk/contrib/xjadeo-example.avi"><filename>contrib/</filename></ulink>
       folder there is an example video and a shell script that can help you
       finding an appropriate codec.</para>
     </section>
@@ -871,7 +873,7 @@
         </variablelist>
       </section>
 
-      <section>
+      <section id="sync_remote_commands">
         <title>General xjadeo sync commands</title>
 
         <variablelist>
@@ -1598,7 +1600,7 @@
         that not all the formats support frame seeking. You can use a command
         like:</para>
 
-        <programlisting>mencoder -idx -ovc lavc -lavcopts keyint=1 -nosound input_file.xxx -o output_file.avi</programlisting>
+        <screen>mencoder -idx -ovc lavc -lavcopts keyint=1 -nosound input_file.xxx -o output_file.avi</screen>
 
         <para>This creates from your input-file.xxx an AVI mpeg4 encoded video
         file with no sound, an index (-idx) and no compression between frames
@@ -1608,7 +1610,7 @@
         <para>You may also want to shrink the size of the frame by adding the
         option</para>
 
-        <programlisting>-vf scale=width:height</programlisting>
+        <screen>-vf scale=width:height</screen>
 
         <para>This will reduce the size of the avi file, will tax less the
         system resources when displayed and will leave more space in the

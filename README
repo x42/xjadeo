@@ -41,6 +41,8 @@ BUILD DEPENDANCIES
 -------------------------------------------
 
 you need have the devel packages installed on the system to compile xjadeo:
+see docbook in doc/ for detailed version information.
+
  * ffmpeg-devel  -  ffmpeg (0.4.9-6)
  * jack-audio-connection-kit-devel
  * libX11 

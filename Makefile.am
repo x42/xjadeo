@@ -5,7 +5,11 @@ SUBDIRS = src
 
 man_MANS = doc/xjadeo.1 doc/qjadeo.1
 
-EXTRA_DIST=xjadeo.lsm.in xjadeo.spec.in xjadeo.spec contrib autogen.sh
+EXTRA_DIST= \
+ jadeo.lsm.in xjadeo.spec.in xjadeo.spec \
+ doc/xjadeo.xml doc/Makefile doc/html.xslt doc/man.xslt \
+ contrib/ \
+ autogen.sh
 
 MAINTAINERCLEANFILES = \
  Makefile.in \

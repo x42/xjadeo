@@ -1,3 +1,9 @@
+2006-05-20  rgareus  <robin@gareus.org>
+ - added docbook xslt and doc/Makefile...
+ - work in progres on the manual.
+ - changed Audioframe to videoframe, smpte converstion from floor to rint 
+   yielding to proper results if audibuffers size != 1920 (48k->PAL) or 1601 (48k->NTSC) 
+
 2006-04-28  rgareus  <robin@gareus.org>
  - fixed typo: since the 04/23 patches
    xjadeo was displaying the previous instead of the current frame!
@@ -13,7 +19,7 @@
  - parsing videomode integer and text
  - notify [loop|frame]
  - more work in progress documentation.
- - version v0.3.11
+ * version v0.3.11
 
 2006-04-22  rgareus  <robin@gareus.org>
  - added contrib folder
