@@ -18,19 +18,26 @@ TODO
  - proper font selection for on screen display.
 
   MIDI:
+
  - portmidi: error handling (portmidi aborts on error)
 
+  MAIN:
+
+ - config file for our mighty jolly bunch of config options.
+
+ - allow to override autodetected framerate for a video file.
+
   REMOTE: 
+
  - some commands are 402: not yet implemented
  - notify key event
  - internal (default) key press handler if no-bidir remote ctrl.
  - map key event to command (dynamic or fixed ?!)
 
+
 ########
 
 Support more video formats. Doubtful. It is difficult and taxes performance.
-
-rewrite contrib/encode.sh and install files in contrib (include in deb/rpm)
 
 rename "-fps" option - can be confusing: fps of the movie-file, and delay
 between display-updates.

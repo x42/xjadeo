@@ -118,6 +118,8 @@ void event_loop(void)
   {
 
     if (loop_run==0) { 
+     // video offline - (eg. window minimized)
+     // do not update frame 
       select_sleep(2e5L);
       handle_X_events();
       continue;

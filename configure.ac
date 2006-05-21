@@ -7,7 +7,7 @@ AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
 dnl Every other copy of the package version number gets its value from here
-AM_INIT_AUTOMAKE(xjadeo, 0.3.11)
+AM_INIT_AUTOMAKE(xjadeo, 0.3.12)
 
 dnl create a config.h file (Automake will add -DHAVE_CONFIG_H)
 AM_CONFIG_HEADER(config.h)
@@ -20,6 +20,7 @@ AC_ARG_ENABLE(midi,  AC_HELP_STRING([--disable-midi],  [disable MTC sync support
 AC_ARG_ENABLE(portmidi, AC_HELP_STRING([--disable-portmidi],  [Don't use portmidi - try alsamidi instead]))
 AC_ARG_ENABLE(ft,    AC_HELP_STRING([--disable-ft],  [Disable freetype On Screen Display support]))
 AC_ARG_ENABLE(qtgui, AC_HELP_STRING([--disable-qtgui],[Don't build the Qt GUI controller]))
+AC_ARG_ENABLE(contrib,  AC_HELP_STRING([--enable-contrib],  [Compile and install code in contrib folder]))
 
 # not supported by xjadeo-SDL yet
 #AC_ARG_ENABLE(ttf,    [  --enable-ttf            Enable TTF font support],,enable_ttf=no) 
@@ -44,7 +45,7 @@ AH_TEMPLATE([HAVE_IMLIB], [Define as 1 if you have imlib])
 AH_TEMPLATE([HAVE_PORTMIDI], [Define as 1 if you have portmidi and asound])
 AH_TEMPLATE([HAVE_MIDI], [Define as 1 if you have either alsa or portmidi])
 
-if test "$enable_gtk" = "yes"; then
+if test "x$enable_gtk" = "xyes"; then
 	REQUIRES='glib >= 1.2.4 gtk+ >= 1.2.4'
 	PKG_CHECK_MODULES(GTK,$REQUIRES)
 	AM_PATH_GTK(1.2.4, [ AC_DEFINE(HAVE_GTK) ])
@@ -106,8 +107,8 @@ if test "x$enable_sdl" != "xno"; then
 
 fi
 
-if test x$HAVESDLTTF = xyes; then
-    if test x$enable_ttf = xyes; then
+if test "x$HAVESDLTTF" = "xyes"; then
+    if test "x$enable_ttf" = "xyes"; then
         AC_MSG_RESULT(yes)
         AC_DEFINE(USE_SDLTTF, 1, [Use SDL_ttf])
         LIBS="$LIBS -lSDL_ttf"
@@ -318,8 +319,19 @@ dnl ---------- End of Qt GUI stuff ---------------
 # fi
 #fi
 
-AC_CONFIG_FILES([Makefile src/Makefile src/xjadeo/Makefile xjadeo.lsm xjadeo.spec])
 
-AC_CONFIG_FILES([contrib/cli-remote/Makefile])
+if test "x$enable_gtk" = "xyes"; then
+  ac_contrib_dir="contrib/cli-remote/"
+else 
+  ac_contrib_dir=""
+fi
+
+AC_SUBST(ac_contrib_dir)
+
+if test "x$enable_gtk" = "xyes"; then
+  AC_CONFIG_FILES([contrib/cli-remote/Makefile])
+fi
+
+AC_CONFIG_FILES([Makefile src/Makefile src/xjadeo/Makefile xjadeo.lsm xjadeo.spec])
 
 AC_OUTPUT

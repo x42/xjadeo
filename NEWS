@@ -1,14 +1,15 @@
 -------------------------------------------
+20060521
+-------------------------------------------
+xjadeo has been working fine for personal usage over a month now, and
+though we lack time to clean up xjadeo, it's yet time for another release.
+
+-------------------------------------------
 20060422
 -------------------------------------------
 after 2 months of xjadeo-0.3 rewrite, testing and using
 we find that the current xjadeo implements all features 
-we expect from a simple video monitor and thus announce
-
-    xjadeo v0.9
-
-which is considered a pre-release of the upcoming v1.0 as 
-further development will continue on the SVN v1.1 branch.
+we expect from a simple video monitor :)
 
  New Features: 
   * XV, SDL, gtk display backends.

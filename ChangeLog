@@ -1,3 +1,9 @@
+2006-05-21  rgareus  <robin@gareus.org>
+ - minor fixes on the build environement for `make dist` (contrib, qt-gui sources, ..)
+ - fixed some typos in yesterdays Makefile.am
+ - never ending overkilling docbook
+ * version v0.3.12
+
 2006-05-20  rgareus  <robin@gareus.org>
  - added docbook xslt and doc/Makefile...
  - work in progres on the manual.

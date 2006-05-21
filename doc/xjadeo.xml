@@ -1,16 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+
 <article>
-  <section>
-    <title>DESCRIPTION</title>
+  <articleinfo>
+    <title><application>xjadeo</application> - X Jack Video Monitor</title>
+    <subtitle><ulink url="http://xjadeo.sourceforge.net"></ulink></subtitle>
+<!--
+
+     <author>
+	<firstname>Luis</firstname>
+	<surname>Garrido</surname>
+	<affiliation> <address><email>foo@example.com</email></address> </affiliation>
+     </author>
+
+     <author>
+	<firstname>Robin</firstname>
+	<surname>Gareus</surname>
+	<affiliation> <address><email>foo@example.com</email></address> </affiliation>
+     </author>
+-->
+     <copyright>
+	<year>2005</year>
+	<year>2006</year>
+	<holder>Luis Garrido, Robin Gareus</holder>
+     </copyright>
+							 
+     <abstract>
 
     <para><application>xjadeo</application> is a program that displays a video
     clip in sync with an external time source. It is a handy tool to help
     synchronizing the soundtrack of a video file.</para>
 
     <para><application>xjadeo</application> supports different video file
-    formats, video output libraries and sync sources. It includes an optional
+    formats, display libraries and sync sources. It includes an optional
     GUI <application>qjadeo</application> that provides file-history and
     allows to modify settings of a running <application>xjadeo</application>
     instance.</para>
@@ -18,6 +41,29 @@
     <para><application>xjadeo</application> is being developed on the
     GNU/Linux operating system, but should not be limited to it. There are
     some low priority efforts to build a Mac OS X binary.</para>
+  
+     </abstract>
+
+  </articleinfo>
+
+  <section>
+    <title>Introduction and Copyrights</title>
+
+  <section>
+    <title>NEWS</title>
+
+    <para><application>xjadeo v0.4</application> is a oven-fresh rewrite. Some
+    of the documentation is still so hot that is not readably rendered.
+    If you're already interested, see the NEWS and Changelog files
+    provided with the source. This manual is work in progress...</para>
+  </section>
+
+  <section>
+    <title>DOWNLOAD</title>
+    <para> <application>xjadeo</application> is available at 
+    <ulink url="http://sourceforge.net/project/showfiles.php?group_id=131926">Sourceforge</ulink>. 
+    Read <xref linkend="build_instructions"/> for further information.
+    </para>
   </section>
 
   <section>
@@ -36,67 +82,6 @@
     <para>You should receive a copy of the GNU General Public License along
     with the program; if not, write to the Free Software Foundation, Inc., 59
     Temple Place, Suite 330, Boston, MA 02111-1307 USA</para>
-  </section>
-
-  <section>
-    <title>CREDITS AND ACKNOWLEDGMENTS</title>
-
-    <para><application>xjadeo</application> was designed and written by Luis
-    Garrido and Robin Gareus.</para>
-
-    <para>Fortunately we stand on the GNU giants' shoulders! See comments in
-    the source files for more detailed information.</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>XV, SDL and imlib display code was inspired by playdv of <ulink
-        url="http://libdv.sourceforge.net/">http://libdv.sourceforge.net/</ulink>
-        written by Charles 'Buck' Krasic and Erik Walthinsen.</para>
-      </listitem>
-
-      <listitem>
-        <para>Original ffmpeg code <ulink
-        url="http://www.inb.uni-luebeck.de/~boehme/using_libavcodec.html">http://www.inb.uni-luebeck.de/~boehme/using_libavcodec.html</ulink></para>
-      </listitem>
-
-      <listitem>
-        <para>XLib code: <ulink
-        url="http://www.ac3.edu.au/SGI_Developer/books/XLib_PG/sgi_html/index.html">http://www.ac3.edu.au/SGI_Developer/books/XLib_PG/sgi_html/index.html</ulink></para>
-      </listitem>
-
-      <listitem>
-        <para>portmidi has nice example code, without any credits. same goes
-        for freetype2. many kudos!</para>
-      </listitem>
-
-      <listitem>
-        <para>the xjadeo alsamidi sequencer was inspired by the alsa-tools
-        amidi.c and aseqdump.c written by Clemens Ladisch</para>
-      </listitem>
-
-      <listitem>
-        <para>jack: <ulink
-        url="http://jackit.sourceforge.net/docs/reference/transport-design.html">http://jackit.sourceforge.net/docs/reference/transport-design.html</ulink></para>
-      </listitem>
-    </itemizedlist>
-  </section>
-
-  <section>
-    <title>Prospects</title>
-
-    <para>See TODO file in the source repository for now... Ideas range from
-    minor OSD addons and fixes to making <application>xjadeo</application> a real-time
-    video sync player. the latter is unlikely though.</para>
-
-    <para>The source is suitable to be extended to support
-    multiple video buffers which for example could be switched depending on
-    timecode etc... <application>xjadeo</application> can also be used as a VJ
-    tool to synchronize playback on multiple screens (using <ulink url="netjack.sourceforge.net">netjack</ulink>, by using xjadeo remote-ctrl see <xref linkend="sync_remote_commands" /> ). check <ulink url="http://svn.sourceforge.net/viewcvs.cgi/xjadeo/trunk/contrib/">http://svn.sourceforge.net/viewcvs.cgi/xjadeo/trunk/contrib/</ulink> for further additions.</para>
-
-    <para>With SDL, jack and portmidi <application>xjadeo</application> should be ready for the Mac. Having only occasional access to OS-X, we did not yet succeed in building ijadeo ;-) </para>
-
-    <para>Anyway, for now the maxime is to complete and maintain this rather simple version
-    before <application>xjadeo</application> gets even more bloated.</para>
   </section>
 
   <section>
@@ -156,16 +141,75 @@
   </section>
 
   <section>
-    <title>NEWS</title>
+    <title>CREDITS AND ACKNOWLEDGMENTS</title>
 
-    <para><application>xjadeo v0.4</application> is a oven-fresh rewrite. Some
-    of the documentation is still so hot that is not readably rendered.
-    If your're already interested, see the NEWS and Changelog files
-    provided with the source.</para>
+    <para><application>xjadeo</application> was designed and written by Luis
+    Garrido and Robin Gareus.</para>
+
+    <para>Fortunately we stand on the GNU giants' shoulders! See comments in
+    the source files for more detailed information.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>XV, SDL and imlib display code was inspired by playdv of <ulink
+        url="http://libdv.sourceforge.net/">http://libdv.sourceforge.net/</ulink>
+        written by Charles 'Buck' Krasic and Erik Walthinsen.</para>
+      </listitem>
+
+      <listitem>
+        <para>Original ffmpeg code <ulink
+        url="http://www.inb.uni-luebeck.de/~boehme/using_libavcodec.html">http://www.inb.uni-luebeck.de/~boehme/using_libavcodec.html</ulink></para>
+      </listitem>
+
+      <listitem>
+        <para>XLib code: <ulink
+        url="http://www.ac3.edu.au/SGI_Developer/books/XLib_PG/sgi_html/index.html">http://www.ac3.edu.au/SGI_Developer/books/XLib_PG/sgi_html/index.html</ulink></para>
+      </listitem>
+
+      <listitem>
+        <para>portmidi has nice example code, without any credits. same goes
+        for freetype2. many kudos!</para>
+      </listitem>
+
+      <listitem>
+        <para>the xjadeo alsamidi sequencer was inspired by the alsa-tools
+        amidi.c and aseqdump.c written by Clemens Ladisch</para>
+      </listitem>
+
+      <listitem>
+        <para>jack: <ulink
+        url="http://jackit.sourceforge.net/docs/reference/transport-design.html">http://jackit.sourceforge.net/docs/reference/transport-design.html</ulink></para>
+      </listitem>
+    </itemizedlist>
   </section>
 
+
   <section>
-    <title>Build and Install Instructions</title>
+    <title>PROSPECTS</title>
+
+    <para>See TODO file in the source repository for now... Ideas range from configuration file,
+    minor OSD addons and fixes to making <application>xjadeo</application> a real-time
+    video sync player. the latter is unlikely though.</para>
+
+    <para>With SDL, jack and portmidi <application>xjadeo</application> should be ready for the Mac. Having only occasional access to OS-X, we did not yet succeed in building ijadeo ;-) </para>
+
+    <para>Anyway, for now the maxim is to complete and maintain this rather simple version
+    before <application>xjadeo</application> gets even more bloated.</para>
+
+    <para>The source is suitable to be extended to support
+    multiple video buffers which for example could be switched depending on
+    timecode etc... Parts of <application>xjadeo</application> have been re-used for various VJ purposes, mainly to 
+    synchronize playback on multiple screens (using <ulink url="netjack.sourceforge.net">netjack</ulink> and/or xjadeo remote-ctrl see <xref linkend="sync_remote_commands" /> ). check <ulink url="http://svn.sourceforge.net/viewcvs.cgi/xjadeo/trunk/contrib/">http://svn.sourceforge.net/viewcvs.cgi/xjadeo/trunk/contrib/</ulink> for further additions.</para>
+
+  </section>
+
+  </section>
+
+
+
+
+  <section>
+    <title id="build_instructions">Build and Install Instructions</title>
 
     <section>
       <title>System Requirements</title>
@@ -175,7 +219,7 @@
     </section>
 
     <section>
-      <title>Binaries and Sources</title>
+      <title id="binaries_and_sources" >Binaries and Sources</title>
 
       <para><application>xjadeo</application> is developed using Subversion
       repositories at <ulink
@@ -363,12 +407,12 @@ deb-src ftp://ftp.nerim.net/debian-marillat sid main </screen>
       </table>
 
       <para>QT is only needed to compile and run the qjadeo GUI - not xjadeo itself.  qjadeo works with 
-      both QT3 or QT4. If both libraries are available QT4 is prefered by the configure script.
-      Override by setting the QTDIR environement variable.  You can certainly build and use xjadeo without the GUI wrapper if you wish so.
+      both QT3 or QT4. If both libraries are available QT4 is preferred by the configure script.
+      Override by setting the QTDIR environment variable.  You can certainly build and use xjadeo without the GUI wrapper if you wish so.
       </para>
 
-      <para>Furthermore you'll need autotools to generate the build
-      environement, and the standard gnu devel system (gcc,make). We recommend <application>mencoder</application>
+      <para>Furthermore you'll need <application>autotools</application> to generate the build
+      environment, and the standard gnu devel system (<application>gcc</application>, <application>make</application>). We recommend <application>mencoder</application>
       to convert the video file to a suitable format.</para>
 
       <para>Pay special attention to the version of ffmpeg, since some
@@ -379,22 +423,23 @@ deb-src ftp://ftp.nerim.net/debian-marillat sid main </screen>
     <section>
       <title>Building xjadeo</title>
 
-      <para>Once you have all the build dependencies, the usual spells apply:
+      <para>Once you have all the build dependencies and decompressed the xjadeo tar.gz the usual spells apply:
       <screen>
-       ./autogen.sh # (creates configure using autotools)
+       cd xjadeo-*
+       ./autogen.sh # (re-creates the ./configure using autotools)
        ./configure
        make 
        make install # (requires root privileges)
        </screen>alternatively you can use the .spec file generated via
-      <application>configure</application> to build an rpm. debian rules have
-      been removed from the source in favor of the having them maintained in
+      <application>configure</application> to build an rpm (<command>rpm -ba xjadeo.spec</command>).
+      the debian rules have been removed from the source in favor of the having them maintained in
       the debian-marillat archive.</para>
 
       <para>The configuration process tries to autodetect and include
-      supported featues. However you might want to consider using some of the
+      supported features. However you might want to consider using some of the
       compile time options. use <command>./configure --help</command> for a
       full list of available options. Per default the configure script tries
-      to autodetect XV,SDL and imlib and midi libraries. <variablelist>
+      to autodetect XV,SDL and IMlib as well as the midi libraries. <variablelist>
           <varlistentry>
             <term><option>--enable-gtk</option></term>
 
@@ -410,7 +455,7 @@ deb-src ftp://ftp.nerim.net/debian-marillat sid main </screen>
             <listitem>
               <para>Disables to probe for midi libraries. xjadeo will be build
               without midi support. The current default is to to use portmidi
-              if availble and fall back to using alsa-midi else.</para>
+              if available and fall back to using alsa-midi else.</para>
             </listitem>
           </varlistentry>
 
@@ -419,7 +464,7 @@ deb-src ftp://ftp.nerim.net/debian-marillat sid main </screen>
 
             <listitem>
               <para>Disables to check for portmidi library. This will force
-              xjadeo to compile with the alsa driver even if portmidi is
+              xjadeo to compile with the ALSA driver even if portmidi is
               available.</para>
             </listitem>
           </varlistentry>
@@ -447,7 +492,7 @@ deb-src ftp://ftp.nerim.net/debian-marillat sid main </screen>
   <section>
     <title>Using xjadeo</title>
 
-    <para>It's not that complicated: for the impatient: run <command>xjadeo video-file.avi</command> from an xterm to get a default monitor window displaying the specified video file synchroneouly to jack transport. You can use <command>qjackctl</command> or any jack transport aware application to start, stop or reposition the transport location. </para>
+    <para>It's not that complicated: for the impatient: run <command>xjadeo video-file.avi</command> from an xterm to get a default monitor window displaying the specified video file synchronously to jack transport. You can use <command>qjackctl</command> or any jack transport aware application to start, stop or reposition the transport location. </para>
     <para> <command>xjadeo --help</command> will give you a list of available command line options.  please refer to the manuals in the appendix. which is also available as manual page via <command>man xjadeo</command>.</para>
 
     <para>If you prefer, you can also use the graphical user interface <command>qjadeo</command>.</para>
@@ -488,7 +533,7 @@ deb-src ftp://ftp.nerim.net/debian-marillat sid main </screen>
     </section>
 
     <section>
-      <title>invoking xjadeo</title>
+      <title>Invoking xjadeo</title>
 
       <para><command>xjadeo [options] output-file.avi</command></para>
 
@@ -521,7 +566,7 @@ deb-src ftp://ftp.nerim.net/debian-marillat sid main </screen>
         </orderedlist>
 
         <para>per default <application>xjadeo</application> connects to jackd
-        on startup. This behaviour can be overridden by command line arguments
+        on startup. This behavior can be overridden by command line arguments
         or using the remote control interface.</para>
 
         <para>the offset value is added after converting the frames to the
@@ -535,7 +580,7 @@ deb-src ftp://ftp.nerim.net/debian-marillat sid main </screen>
         <para>
         <screen>xjadeo -f 25 -i 2 video-file.avi</screen> updates the monitor window 25 times per second and renders SMPTE on the bottom of the screen
         <screen>xjadeo -m -1 -v video-file.avi</screen> (using xjadeo compiled with portmidi) autoconnect to first available midi-in port and use arriving MTC messages display video in sync.
-        <screen>xjadeo -f 12.5 -m 80:0 video-file.avi</screen> (using xjadeo compiled with alsa seq) connect to midi device 80 port 0 and  display video in sync with MTC messages, updating the screen every 80ms.
+        <screen>xjadeo -f 12.5 -m 80:0 video-file.avi</screen> (using xjadeo compiled with ALSA seq) connect to midi device 80 port 0 and  display video in sync with MTC messages, updating the screen every 80ms.
         </para>
       </section>
 
@@ -634,7 +679,7 @@ deb-src ftp://ftp.nerim.net/debian-marillat sid main </screen>
       in fact a feature of portmidi but could also be considered a bug in
       <application>xjadeo</application>.</para>
 
-      <para>The gtk display works stable but issues GTK warnings...</para>
+      <para>The gtk display works but issues GTK warnings...</para>
 
       <para>xjadeo has not been tested on a 64bit architecture. not sure if we
       ought to expect problems there...</para>
@@ -829,7 +874,7 @@ deb-src ftp://ftp.nerim.net/debian-marillat sid main </screen>
               <command>xjadeo</command> unconnected.</para>
 
               <para>If using portmidi, <replaceable
-              class="option">port</replaceable> is the portnumber of the midi
+              class="option">port</replaceable> is the port number of the midi
               input to use. WARNING: using an invalid id with portmidi will
               cause xjadeo to bail out!</para>
             </listitem>
@@ -956,7 +1001,7 @@ deb-src ftp://ftp.nerim.net/debian-marillat sid main </screen>
           <term><option>window open</option></term>
 
           <listitem>
-            <para>Opens the video window using the default videmode. the
+            <para>Opens the video window using the default videomode. the
             default videomode is autodetect unless overridden by command
             line.</para>
           </listitem>
@@ -968,7 +1013,7 @@ deb-src ftp://ftp.nerim.net/debian-marillat sid main </screen>
 
           <listitem>
             <para>Opens the video window using the specified videomode. a
-            value of 0 autodetects while a positive integer coresponds to a
+            value of 0 autodetects while a positive integer corresponds to a
             videomode which can be listed with the <command>list
             videomodes</command> command.</para>
           </listitem>
@@ -1179,16 +1224,16 @@ deb-src ftp://ftp.nerim.net/debian-marillat sid main </screen>
 
       <para>Each remote command is acknowledged with a response, which you can
       ignore at your wish. It is intended to be both human readable and
-      machine parsable. The response is a single line terminated with the newline character
+      machine parse-able. The response is a single line terminated with the newline character
       '\n' formatted as: <screen>@&lt;status-integer&gt; &lt;text&gt;</screen>
       each line start with an @ followed by an integer that tells if the
-      command suceeded and specifies the format of the text. The status
+      command succeeded and specifies the format of the text. The status
       integer is usually a 3 digit decimal number in [100..999]: <variablelist>
           <varlistentry>
             <term><option>1xx:</option></term>
 
             <listitem>
-              <para>ok. the command suceeded returning a small text info
+              <para>ok. the command succeeded returning a small text info
               message.</para>
             </listitem>
           </varlistentry>
@@ -1270,13 +1315,71 @@ deb-src ftp://ftp.nerim.net/debian-marillat sid main </screen>
             <term><option>8xx:</option></term>
 
             <listitem>
-              <para>info or help message. These messages are ment to be
+              <para>info or help message. These messages are meant to be
               ignored by automatic parsers and are for user information or
               displaying comments only.</para>
             </listitem>
           </varlistentry>
         </variablelist></para>
     </section>
+  </section>
+
+  <section>
+    <title>Internals</title>
+
+    <section>
+    <title>Behind the Scenes</title>
+	<para>When <application>xjadeo</application> is started, it</para>
+	<orderedlist>
+	<listitem>
+	  <para>Checks that jackd is running and connects as a client.</para>
+	</listitem>
+
+        <listitem>
+          <para>Opens the video file and window.</para>
+        </listitem>
+
+        <listitem>
+          <para>Enters a loop that:</para>
+
+	  <orderedlist>
+		<listitem>
+		  <para>Queries jack time position.</para>
+		</listitem>
+
+		<listitem>
+		  <para>Calculates and displays the appropriate video frame.</para>
+		</listitem>
+		<listitem>
+		  <para>Handle display events.</para>
+		</listitem>
+		<listitem>
+		  <para>Sleep for the duration of the <option>framerate delay</option> subtracted by the time needed for this loop.</para>
+		  <para>If this xjadeo instance is remote controlled, any input will break the sleep and execute the command.</para>
+		</listitem>
+          </orderedlist>
+        </listitem>
+      </orderedlist>
+
+      <para>The loop runs 'framerate' times per second, depending on what you
+      entered in the command line. This loop is not synchronized to anything. xjadeo uses the select() and clock() system calls for internal time keeping.</para>
+    </section>
+
+    <section>
+    <title>Frame Conversion</title>
+    <para>The calculation from jack frame/framerate to video frame/framerate and smpte is done using
+    double precision arithmetics with seconds as basis unit. 
+    </para>
+    <para>This depends on correctly detecting the framerate of the video file.</para>
+    </section>
+
+    <section>
+    <title>Midi Clock Conversion</title>
+    <para>MTC includes information about the framerate of the SMPTE, which is used by xjadeo for generating framecount independent of the movie clip's framerate. Naturally you want to adjust the midi time source to match the exact framerate of the video that you want to display.
+    In any case xjadeo allows you to convert or force the video files framerate value with the <option>--midifps</option>.
+    Midi and smpte clock parsing is implemented using bitwise integer and long integer arithmetic operations on frame basis.</para>
+    </section>
+
   </section>
 
   <appendix>
@@ -1704,8 +1807,7 @@ deb-src ftp://ftp.nerim.net/debian-marillat sid main </screen>
       <refnamediv>
         <refname>qjadeo</refname>
 
-        <refpurpose>GUI front-end to <command>xjadeo </command>remote
-        mode.</refpurpose>
+        <refpurpose>GUI front-end to <command>xjadeo</command></refpurpose>
       </refnamediv>
 
       <refsynopsisdiv>

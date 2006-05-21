@@ -1,3 +1,6 @@
+# quick hack - else make dist won't include these files.
+EXTRA_DIST= qjadeo.cpp images/fileopen qjadeo.pro.in mainwindow.ui qjadeo.h
+
 qmake   = @ac_qmake@
 qt3to4   = @ac_qt3to4@
 
