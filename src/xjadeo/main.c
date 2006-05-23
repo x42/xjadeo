@@ -340,6 +340,8 @@ main (int argc, char **argv)
 
   program_name = argv[0];
 
+  xjadeorc(); // read config files - default values before parsing cmd line.
+
   i = decode_switches (argc, argv);
 
   if (videomode < 0) vidoutmode(videomode); // dump modes and exit.

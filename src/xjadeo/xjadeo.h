@@ -62,9 +62,11 @@ void midi_close(void);
 int midi_connected(void);
 #endif
 
+/* configfile.c */
+void xjadeorc (void);
 
 /* freetype - On screen display */
-enum { OSD_LEFT=0, OSD_CENTER, OSD_RIGHT };
+enum { OSD_LEFT=-1, OSD_CENTER=-2, OSD_RIGHT=-3 }; // use positive values as percent or pixel.
 
 #define OSD_BOX (256)
 #define OSD_FRAME (1)

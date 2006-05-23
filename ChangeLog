@@ -1,3 +1,6 @@
+2006-05-24  rgareus  <robin@gareus.org>
+ - added simple resource config parser.
+
 2006-05-21  rgareus  <robin@gareus.org>
  - minor fixes on the build environement for `make dist` (contrib, qt-gui sources, ..)
  - fixed some typos in yesterdays Makefile.am
