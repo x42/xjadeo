@@ -52,8 +52,13 @@
 
 // TODO: support other YUV Xv - ffmpeg combinations
 // (depending on hardware and X) Xv can do more than YV12 ...
-#define FOURCC_YV12  0x32315659
-  int xv_pic_format = FOURCC_YV12;
+#define FOURCC_YV12 0x32315659  /* YV12   YUV420P */
+#define FOURCC_I420 0x30323449  /* I420   Intel Indeo 4 */
+
+//#define FOURCC_YUV2 0x32595559  /* YUV2   YUV422 */
+//#define FOURCC_UYVY 0x59565955  /* YUV 4:2:2 */
+
+int xv_pic_format = FOURCC_I420; // the format used for allocation.
 
 
 void allocate_xvimage (void) {
@@ -124,16 +129,20 @@ void render_xv (uint8_t *mybuffer) {
 
 	size_t Ylen  = movie_width * movie_height;
 	size_t UVlen = movie_width * movie_height/4; 
-
-// decode ffmpeg - YUV 
-	uint8_t *Yptr=mybuffer; // Y 
-	uint8_t *Uptr=Yptr + Ylen; // U
-	uint8_t *Vptr=Uptr + UVlen; // V
-
-// encode YV12
-	memcpy(xv_buffer,Yptr,Ylen); // Y
-	memcpy(xv_buffer+Ylen,Vptr,UVlen); //V
-	memcpy(xv_buffer+Ylen+UVlen,Uptr,UVlen); // U
+	
+	if (xv_pic_format == FOURCC_I420) {
+	// copy YUV420P
+		memcpy(xv_buffer,mybuffer,Ylen+UVlen+UVlen); // Y+U+V
+	} else {
+	// decode ffmpeg - YUV 
+		uint8_t *Yptr=mybuffer; // Y 
+		uint8_t *Uptr=Yptr + Ylen; // U
+		uint8_t *Vptr=Uptr + UVlen; // V
+	// encode YV12
+		memcpy(xv_buffer,Yptr,Ylen); // Y
+		memcpy(xv_buffer+Ylen,Vptr,UVlen); //V
+		memcpy(xv_buffer+Ylen+UVlen,Uptr,UVlen); // U
+	}
 
 	XvShmPutImage(xv_dpy, xv_port,
 		xv_win, xv_gc,
@@ -246,8 +255,10 @@ int open_window_xv (int *argc, char ***argv) {
   size_t 	ad_cnt;
   int		scn_id,
                 fmt_cnt,
-                got_port, got_fmt,
+                got_port, 
                 i, k;
+  int xv_have_YV12, xv_have_I420;
+
   XGCValues	values;
   XSizeHints	hints;
   XWMHints	wmhints;
@@ -256,14 +267,12 @@ int open_window_xv (int *argc, char ***argv) {
   XvAdaptorInfo	*ad_info;
   XvImageFormatValues	*fmt_info;
 
-  if(!(xv_dpy = XOpenDisplay(NULL))) {
-    return 1;
-  } /* if */
+  if(!(xv_dpy = XOpenDisplay(NULL))) return 1;
 
   xv_rwin = DefaultRootWindow(xv_dpy);
   scn_id = DefaultScreen(xv_dpy);
 
-  //if (!XShmQueryExtension(xv_dpy)) BAILOUT
+  if (!XShmQueryExtension(xv_dpy)) return 1;
 
   /* So let's first check for an available adaptor and port */
   if(Success == XvQueryAdaptors(xv_dpy, xv_rwin, &ad_cnt, &ad_info)) {
@@ -292,18 +301,41 @@ int open_window_xv (int *argc, char ***argv) {
 	fprintf(stderr, "Xv: %s: NO supported formats\n", ad_info[i].name);
 	continue;
       } /* if */
-      for(got_fmt = False, k = 0; k < fmt_cnt; ++k) {
-	      // TODO: support all formats that ffmpeg can 'produce'
-	if (xv_pic_format == fmt_info[k].id) {
-	  got_fmt = True;
-	  break;
-	} /* if */
+      for(xv_have_YV12=0, xv_have_I420=0, k=0; k < fmt_cnt; ++k) {
+#if 0
+        fprintf(stderr, "INFO: Xvideo port %d: 0x%#08x (%c%c%c%c) %s",
+                (int)xv_port,
+                fmt_info[k].id,
+                (fmt_info[k].id)      & 0xff,
+                (fmt_info[k].id >  8) & 0xff,
+                (fmt_info[k].id > 16) & 0xff,
+                (fmt_info[k].id > 24) & 0xff,
+                (fmt_info[k].format == XvPacked) ? "packed" : "planar");
+
+	fprintf (stderr, " [%s]\n", fmt_info[k].guid);
+#endif
+        if (FOURCC_YV12 == fmt_info[k].id) {
+            xv_have_YV12 = 1; 
+        }
+        if (FOURCC_I420 == fmt_info[k].id) {
+            xv_have_I420 = 1; 
+        }
       } /* for */
-      if (!got_fmt) {
+
+      if (xv_have_I420) {
+	    xv_pic_format = FOURCC_I420;
+	    if (!want_quiet) 
+            fprintf(stderr,"XV: using YUV420P + Xvideo extention (I420)\n");
+      }
+      else if (xv_have_YV12) { 
+	    if (!want_quiet) 
+            fprintf(stderr,"XV: using YUV420P + Xvideo extention (YV12)\n");
+	    xv_pic_format = FOURCC_YV12;
+      }
+      else {
 	fprintf(stderr,
-		"Xv: %s: format %#08x is NOT in format list ( ",
-		ad_info[i].name,
-                xv_pic_format);
+		"Xv: %s: could not find a suitable colormodel in ( ",
+		ad_info[i].name);
 	for (k = 0; k < fmt_cnt; ++k) {
 	  fprintf (stderr, "%#08x[%s] ", fmt_info[k].id, fmt_info[k].guid);
 	}
@@ -511,6 +543,7 @@ void render_imlib (uint8_t *mybuffer) {
       pxmmask=Imlib_move_mask(imlib,iimage);
     /* Put the Image pixmap in the background of the window */
       XSetWindowBackgroundPixmap(display,window,pxm);       
+  //    XPutImage(display,window,gc,pxm, 0,0,0,0, my_Width, my_Height);
       XClearWindow(display,window);       
 //       XSync(display, True);     
 // No need to sync. XPending will take care in the event loop.

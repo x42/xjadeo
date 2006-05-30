@@ -67,7 +67,9 @@ int readconfig (char *fn) {
 		fprintf(stderr,"configfile failed: %s (%s)\n",fn,strerror(errno));
 		return (-1);
 	}
+#if 0
 	fprintf(stdout,"INFO: parsing configfile: %s\n",fn);
+#endif
        	while( fgets( line, MAX_LINE_LEN-1, config_fp ) != NULL ) {
 		line[MAX_LINE_LEN-1]=0;
 	       	token = strtok( line, "\t =\n\r" ) ; 

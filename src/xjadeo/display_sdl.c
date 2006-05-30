@@ -37,6 +37,7 @@
   SDL_Surface* sdl_screen;
   SDL_Overlay *sdl_overlay;
   SDL_Rect sdl_rect;
+  int sdl_pic_format= SDL_YV12_OVERLAY; // fourcc
 
 void close_window_sdl(void) {
 	// TODO: free sdl stuff (sdl_overlay)
@@ -134,7 +135,15 @@ int open_window_sdl (int *argc, char ***argv) {
 // - vidoutmodes "SDL RGB" and "SDL XV"!?
 	sdl_screen = SDL_SetVideoMode(movie_width,movie_height, video_bpp,SDL_HWSURFACE | SDL_RESIZABLE);
 	SDL_WM_SetCaption("xjadeo", "xjadeo");
-	sdl_overlay = SDL_CreateYUVOverlay(movie_width, movie_height, SDL_YV12_OVERLAY, sdl_screen);
+
+// FIXME: on linux the SDL_*_OVERLAY are defined as FOURCC numbers rather than beeing abstract 
+// so we could try other ffmpeg/lqt compatible 420P formats as I420 (0x30323449)
+	sdl_overlay = SDL_CreateYUVOverlay(movie_width, movie_height, 0x30323449, sdl_screen);
+	sdl_pic_format=0x30323449;
+	if(!sdl_overlay || (!sdl_overlay->hw_overlay)) {
+		sdl_overlay = SDL_CreateYUVOverlay(movie_width, movie_height, SDL_YV12_OVERLAY, sdl_screen);
+		sdl_pic_format=SDL_YV12_OVERLAY;
+	}
 	if((!sdl_overlay || (!sdl_overlay->hw_overlay) || SDL_LockYUVOverlay(sdl_overlay)<0)) {
 		goto no_overlay;
 	}
@@ -206,16 +215,23 @@ void render_sdl (uint8_t *mybuffer) {
 
 	size_t Ylen=sdl_overlay->pitches[0] * movie_height;
 	size_t UVlen=sdl_overlay->pitches[1] * movie_height/2; 
-// decode ffmpeg - YUV 
+
+	// decode ffmpeg - YUV 
 	uint8_t *Yptr=mybuffer;
 	uint8_t *Uptr=Yptr + Ylen;
 	uint8_t *Vptr=Uptr + UVlen;
 
-// encode SDL YV12
-	memcpy(sdl_overlay->pixels[0],Yptr,Ylen); // Y
-	memcpy(sdl_overlay->pixels[1],Vptr,UVlen); //V
-	memcpy(sdl_overlay->pixels[2],Uptr,UVlen); // U
-
+	if (sdl_pic_format == SDL_YV12_OVERLAY) { 
+	// encode SDL YV12
+		memcpy(sdl_overlay->pixels[0],Yptr,Ylen); // Y
+		memcpy(sdl_overlay->pixels[1],Vptr,UVlen); //V
+		memcpy(sdl_overlay->pixels[2],Uptr,UVlen); // U
+	} else {
+	// encode SDL YUV
+		memcpy(sdl_overlay->pixels[0],Yptr,Ylen); // Y
+		memcpy(sdl_overlay->pixels[1],Uptr,UVlen); // U
+		memcpy(sdl_overlay->pixels[2],Vptr,UVlen); //V
+	}
 
 	SDL_UnlockYUVOverlay(sdl_overlay);
 	SDL_DisplayYUVOverlay(sdl_overlay, &sdl_rect);

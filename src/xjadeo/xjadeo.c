@@ -138,7 +138,7 @@ void event_loop(void)
     if(offFrame != currentFrame)
         display_frame((int64_t)(offFrame),0);
     if(want_verbose) {
-	fprintf(stdout, "frame: smpte:%li\r", newFrame);
+	fprintf(stdout, "frame: smpte:%li    \r", newFrame);
     	fflush(stdout); 
     }
     if (remote_en && ((remote_mode&1) || ((remote_mode&2)&& offFrame!=currentFrame)) ) {

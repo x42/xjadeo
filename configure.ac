@@ -96,6 +96,7 @@ fi
 
 if test "x$enable_sdl" != "xno"; then
         AM_PATH_SDL(1.1.6, [ AC_DEFINE(HAVE_SDL) ])
+        AM_PATH_SDL(1.2.9, [ AC_DEFINE(HAVE_SDL) ])
 
 	# SDL TTF detect
 
