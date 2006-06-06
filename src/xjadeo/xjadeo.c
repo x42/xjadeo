@@ -106,13 +106,11 @@ void event_loop(void)
 {
   double              elapsed_time;
   clock_t             clock1, clock2;
-  long                newFrame, offFrame, currentFrame;
+  long                newFrame, offFrame;
   long                nanos;
   struct timespec     ts;
   
   clock1 = clock();
-  
-  currentFrame = -1;
   
   while(loop_flag)
   {
@@ -135,20 +133,18 @@ void event_loop(void)
 
     offFrame = newFrame + ts_offset;
 
-    if(offFrame != currentFrame)
-        display_frame((int64_t)(offFrame),0);
-    if(want_verbose) {
-	fprintf(stdout, "frame: smpte:%li    \r", newFrame);
-    	fflush(stdout); 
-    }
-    if (remote_en && ((remote_mode&1) || ((remote_mode&2)&& offFrame!=currentFrame)) ) {
+    if (remote_en && ((remote_mode&1) || ((remote_mode&2)&& offFrame!=dispFrame)) ) {
 		//call 	xapi_pposition ?? -> rv:200
 		// dispFrame is the currently displayed frame 
 		// = SMPTE + offset
 		remote_printf(301,"position=%li",dispFrame);
     }
+    display_frame((int64_t)(offFrame),0);
 
-    currentFrame = offFrame;
+    if(want_verbose) {
+	fprintf(stdout, "frame: smpte:%li    \r", newFrame);
+    	fflush(stdout); 
+    }
 
     handle_X_events();
 
@@ -191,6 +187,7 @@ void avinit (void) {
   av_register_all();
   avcodec_init();
   avcodec_register_all();
+  if(!want_verbose) av_log_set_level(AV_LOG_QUIET);
 }
 
 int open_movie(char* file_name)
@@ -252,7 +249,7 @@ int open_movie(char* file_name)
   framerate = (double) av_stream->r_frame_rate / av_stream->r_frame_rate_base;
 #endif
 
-  duration = (double) ( (int64_t) pFormatCtx->duration / (int64_t) AV_TIME_BASE);
+  duration = (double) ( (int64_t) (pFormatCtx->duration - pFormatCtx->start_time) / (int64_t) AV_TIME_BASE);
   frames = (long) (framerate * duration);
   
   if (!want_quiet) {
@@ -271,6 +268,7 @@ int open_movie(char* file_name)
   movie_width = pCodecCtx->width;
   movie_height = pCodecCtx->height;
 
+ fprintf( stderr, "movie size:  %ix%i\n", movie_width,movie_height);
   // Find the decoder for the video stream
   pCodec=avcodec_find_decoder(pCodecCtx->codec_id);
   if(pCodec==NULL)
@@ -309,19 +307,29 @@ int open_movie(char* file_name)
   current_file=strdup(file_name);
   return( 0 );
 }
-
+int my_avprev = 0;
 int my_seek_frame (AVPacket *packet, int timestamp) 
 {
 	// check if timestamp >0 && < length
 	// esp if there is a ts_offset :)
 
-  if(av_seek_frame(pFormatCtx, videoStream, timestamp, seekflags) >= 0)
+  int rv=1;
+  if (seekflags==SEEK_ANY) { 
+	rv= av_seek_frame(pFormatCtx, videoStream, timestamp, AVSEEK_FLAG_ANY) ;
+	avcodec_flush_buffers(pCodecCtx);
+  } else if (seekflags==SEEK_KEY) { 
+	rv= av_seek_frame(pFormatCtx, videoStream, timestamp, 0) ;
+	avcodec_flush_buffers(pCodecCtx);
+  } else /* SEEK_CONTINUOUS */ if (my_avprev > timestamp || ((my_avprev +10) < timestamp) ) { 
+	// seek to keyframe *BEFORE* this frame
+  	rv= av_seek_frame(pFormatCtx, videoStream, timestamp, AVSEEK_FLAG_BACKWARD) ;
+	avcodec_flush_buffers(pCodecCtx);
+  } 
+  my_avprev = timestamp;
+  if (rv >= 0)
   {
    
-    avcodec_flush_buffers(pCodecCtx);
-  
     // Find a video frame.
-    
     read_frame:
     
     if(av_read_frame(pFormatCtx, packet)<0)
@@ -330,13 +338,22 @@ int my_seek_frame (AVPacket *packet, int timestamp)
       fprintf(stderr, "Reached movie end\n");
       return (0);
     }
-    
     if(packet->stream_index!=videoStream)
     {
-	    // remove in quiet mode ?? (only if to stdout!)
-      fprintf(stderr, "Not a video frame\n");
+ //   fprintf(stderr, "Not a video frame\n");
       av_free_packet(packet);
       goto read_frame;
+    }
+
+    if (((int)(packet->pts)) < (timestamp)) {  // skip this frame - for continuous seeking
+	int64_t mtsb= packet->pts; // frame position of packet.
+	int frameFinished; // unused;
+	avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet->data, packet->size);
+	av_free_packet(packet);
+//      fprintf(stderr, "seek %i-> %i\n", (int)mtsb, timestamp);
+  	if (av_seek_frame(pFormatCtx, videoStream, mtsb+1, AVSEEK_FLAG_ANY) >= 0)
+	      goto read_frame;
+   	return (0);
     }
     return (1);
   }
@@ -373,7 +390,10 @@ void display_frame(int64_t timestamp, int force_update)
   }
 
   if (pFrameFMT && my_seek_frame(&packet, timestamp)) {
-   
+  //if (OSD_mode&OSD_FRAME && packet.pts != dispFrame) snprintf(OSD_frame,49,"Frame: %li [key for %li]", (long int)packet.pts, dispFrame);
+  if (OSD_mode&OSD_FRAME && packet.pts != dispFrame) snprintf(OSD_frame,49,"Frame: %li[k]", (long int)packet.pts);
+  if(want_verbose && packet.pts != dispFrame)
+	fprintf(stdout, "\t\t\tdisplay:%li        \r", (long int) packet.pts);
     // Decode video frame
     avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, 
         packet.data, packet.size);

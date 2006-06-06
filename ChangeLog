@@ -1,3 +1,13 @@
+2006-06-06  rgareus  <robin@gareus.org>
+ - when seeking to non key frames, 
+   the video can be decoded starting from the prev keyframe.
+ - removed LIBAVCODEC < 4622 backwards seek compat.
+ - new valid seekmodes (remote ctrl) are 'key', 'any' and 'continuous' (default).
+ - OSD Frame is now the displayed frame, while the SMPTE still corresponds to jack time.  
+ - XV,SDL (YUV): added support for video image strides other than XV pitches. 
+   eg. if video width is not a multiple of 8 -  prev. versions of xjadeo either crash, or display wrong colors... 
+ * version v0.3.13
+
 2006-05-30  rgareus  <robin@gareus.org>
  - proper YV12 and I420 support for XV.
  - SDL 1.2.9 or 1.1.6

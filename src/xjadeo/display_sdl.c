@@ -213,8 +213,8 @@ void position_sdl(int x, int y) {
 void render_sdl (uint8_t *mybuffer) {
 	/* http://www.fourcc.org/indexyuv.htm */
 
-	size_t Ylen=sdl_overlay->pitches[0] * movie_height;
-	size_t UVlen=sdl_overlay->pitches[1] * movie_height/2; 
+	size_t Ylen= movie_width * movie_height;
+	size_t UVlen= movie_width/2 * movie_height/2; 
 
 	// decode ffmpeg - YUV 
 	uint8_t *Yptr=mybuffer;
@@ -223,14 +223,14 @@ void render_sdl (uint8_t *mybuffer) {
 
 	if (sdl_pic_format == SDL_YV12_OVERLAY) { 
 	// encode SDL YV12
-		memcpy(sdl_overlay->pixels[0],Yptr,Ylen); // Y
-		memcpy(sdl_overlay->pixels[1],Vptr,UVlen); //V
-		memcpy(sdl_overlay->pixels[2],Uptr,UVlen); // U
+		stride_memcpy(sdl_overlay->pixels[0],Yptr,movie_width,movie_height,sdl_overlay->pitches[0],movie_width);//Y
+		stride_memcpy(sdl_overlay->pixels[1],Vptr,movie_width/2,movie_height/2,sdl_overlay->pitches[1],movie_width/2);//V
+		stride_memcpy(sdl_overlay->pixels[2],Uptr,movie_width/2,movie_height/2,sdl_overlay->pitches[2],movie_width/2);//U
 	} else {
 	// encode SDL YUV
-		memcpy(sdl_overlay->pixels[0],Yptr,Ylen); // Y
-		memcpy(sdl_overlay->pixels[1],Uptr,UVlen); // U
-		memcpy(sdl_overlay->pixels[2],Vptr,UVlen); //V
+		stride_memcpy(sdl_overlay->pixels[0],Yptr,movie_width,movie_height,sdl_overlay->pitches[0],movie_width);//Y
+		stride_memcpy(sdl_overlay->pixels[1],Uptr,movie_width/2,movie_height/2,sdl_overlay->pitches[1],movie_width/2);//U
+		stride_memcpy(sdl_overlay->pixels[2],Vptr,movie_width/2,movie_height/2,sdl_overlay->pitches[2],movie_width/2);//V
 	}
 
 	SDL_UnlockYUVOverlay(sdl_overlay);

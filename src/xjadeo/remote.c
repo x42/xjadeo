@@ -274,19 +274,29 @@ void xapi_poffset(void *d) {
 }
 
 void xapi_pseekmode (void *d) {
-	remote_printf(201,"seekmode=%i", seekflags==AVSEEK_FLAG_BACKWARD?1:0);
+	switch (seekflags) {
+		case SEEK_ANY:
+			remote_printf(201,"seekmode=2 # any"); break;
+		case SEEK_KEY:
+			remote_printf(201,"seekmode=3 # keyframe"); break;
+		default:
+			remote_printf(201,"seekmode=1 # continuous"); break;
+	}
 }
 
 void xapi_sseekmode (void *d) {
 	char *mode= (char*)d;
-#if LIBAVFORMAT_BUILD > 4622
-	seekflags    = AVSEEK_FLAG_ANY; /* non keyframe */
-#else
-	seekflags    = AVSEEK_FLAG_BACKWARD; /* keyframe */
-#endif
-	if (!strcmp(mode,"key") || atoi(mode)==1)
-		seekflags=AVSEEK_FLAG_BACKWARD;
-	remote_printf(201,"seekmode=%i", seekflags==AVSEEK_FLAG_BACKWARD?1:0);
+	if (!strcmp(mode,"key") || atoi(mode)==3)
+		seekflags=SEEK_KEY;
+	else if (!strcmp(mode,"any") || atoi(mode)==2)
+		seekflags=SEEK_ANY;
+	else if (!strcmp(mode,"continuous") || atoi(mode)==1)
+		seekflags=SEEK_CONTINUOUS;
+	else { 
+		remote_printf(422,"invalid argument (1-3 or 'continuous', 'any', 'key')");
+		return;
+	}
+	xapi_pseekmode(NULL);
 }
 
 void xapi_pmwidth(void *d) {
@@ -605,7 +615,7 @@ Dcommand cmd_get[] = {
 	{"width", ": query width of video source buffer", NULL, xapi_pmwidth , 0 },
 	{"height", ": query width of video source buffer", NULL, xapi_pmheight , 0 },
 
-	{"seekmode", ": returns 1 if decoding keyframes only", NULL, xapi_pseekmode, 0 },
+	{"seekmode", ": display how video frames are searched ", NULL, xapi_pseekmode, 0 },
 	{"windowsize" , ": show current window size", NULL, xapi_pwinsize, 0 },
 // TODO:  complete the display backends and then enable this fn.
 //	{"windowpos" , ": show current window position", NULL, xapi_pwinpos, 0 },
@@ -634,7 +644,7 @@ Dcommand cmd_window[] = {
 Dcommand cmd_set[] = {
 	{"fps ", "<int>: set current update frequency", NULL, xapi_sfps , 0 },
 	{"offset", "<int>: set current frame offset", NULL, xapi_soffset , 0 },
-	{"seekmode ", "<1|0>: set to one to seek only keyframes", NULL, xapi_sseekmode, 0 },
+	{"seekmode ", "<1-3>: seek continuous, to any or to keyframes only", NULL, xapi_sseekmode, 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 

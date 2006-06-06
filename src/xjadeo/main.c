@@ -109,11 +109,7 @@ int midi_clkconvert =0;	/* --midifps [0:MTC|1:VIDEO|2:RESAMPLE] */
 double 	delay = 0.1; // default update rate 10 Hz
 int	videomode = 0; // --vo <int>  - default: autodetect
 
-#if LIBAVFORMAT_BUILD > 4622
- int 	seekflags    = AVSEEK_FLAG_ANY; /* non keyframe */
-#else
- int 	seekflags    = AVSEEK_FLAG_BACKWARD; /* keyframe */
-#endif
+int 	seekflags    = SEEK_CONTINUOUS; 
 
 
 // On screen display
@@ -217,7 +213,7 @@ decode_switches (int argc, char **argv)
 	  printf("set time offset to %li frames\n",ts_offset);
 	  break;
 	case 'k':		/* --keyframes */
-	  seekflags=AVSEEK_FLAG_BACKWARD;
+	  seekflags=SEEK_KEY;
 	  printf("seeking to keyframes only\n");
 	  break;
 	case 'f':		/* --fps */

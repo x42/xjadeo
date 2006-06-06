@@ -799,8 +799,33 @@ make install # (requires root privileges) </screen></para>
           <term><option>get seekmode</option></term>
 
           <listitem>
-            <para>Returns 1 if the application is seeking keyframes only, 0
-            otherwise.</para>
+            <para>Returns an integer from 1 to 3 on how xjadeo seeks video frames.</para>
+	      <variablelist>
+
+		<varlistentry>
+		  <term><option>1</option></term>
+		  <listitem>
+		  <para>seek <option>continuous</option>ly staring from the prev. keyframe.</para> 
+		  </listitem>
+		</varlistentry>
+
+		<varlistentry>
+		  <term><option>2</option></term>
+		  <listitem>
+		  <para>seek directly to <option>any</option> frame.</para> 
+		  </listitem>
+		</varlistentry>
+
+		<varlistentry>
+		  <term><option>3</option></term>
+		  <listitem>
+		  <para>seek only to <option>keyframe</option>s.</para> 
+		  </listitem>
+		</varlistentry>
+
+	      </variablelist>
+
+		
           </listitem>
         </varlistentry>
 
@@ -809,8 +834,7 @@ make install # (requires root privileges) </screen></para>
           class="option">value</replaceable></option></term>
 
           <listitem>
-            <para>A value of 1 will make the application seek only to
-            keyframes.</para>
+            <para>Set the seekmode. valid parameters are integer 1-3 or any of the words: <option>keyframe</option>,  <option>any</option> or <option>continuous</option>. (the default is  <option>continuous</option> unless overridden with the <option>-k</option> command line option.</para>
           </listitem>
         </varlistentry>
       </variablelist>

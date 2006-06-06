@@ -39,6 +39,21 @@ void getsize_null (unsigned int *x, unsigned int *y) { if(x)*x=0; if(y)*y=0; }
 void position_null (int x, int y) { ; }
 void getpos_null (int *x, int *y) { if(x)*x=0; if(y)*y=0; }
 
+/*******************************************************************************
+ * strided memcopy - convert pitches of video buffer
+ */
+
+inline void stride_memcpy(void * dst, const void * src, int width, int height, int dstStride, int srcStride)
+{
+        int i;
+        if(dstStride == srcStride)
+                memcpy(dst, src, srcStride*height);
+        else for(i=0; i<height; i++) {
+		memcpy(dst, src, width);
+		src+= srcStride;
+		dst+= dstStride;
+        }
+}
 
 
 /*******************************************************************************

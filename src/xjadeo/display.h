@@ -17,6 +17,7 @@
   extern int OSD_tx, OSD_ty;
 
 
+  inline void stride_memcpy(void * dst, const void * src, int width, int height, int dstStride, int srcStride);
 
 /*******************************************************************************
  * GTK

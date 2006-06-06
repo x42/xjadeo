@@ -35,6 +35,11 @@ int remote_read(void);
 void remote_printf(int val, const char *format, ...);
 
 /* xjadeo.c */
+
+enum { 	SEEK_ANY, // < directly seek to givenvideo frame 
+	SEEK_KEY, // < seek to next keyframe after given frame.
+	SEEK_CONTINUOUS }; // < seek to keframe before this frame and advance to current frame.
+
 void display_frame(int64_t timestamp, int force_update);
 int open_movie(char* file_name);
 int close_movie();

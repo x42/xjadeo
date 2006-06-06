@@ -49,6 +49,7 @@
 
   char	 		*xv_buffer;
   size_t		xv_len;
+  int			xv_one_memcpy = 0; 
 
 // TODO: support other YUV Xv - ffmpeg combinations
 // (depending on hardware and X) Xv can do more than YV12 ...
@@ -71,7 +72,9 @@ void allocate_xvimage (void) {
 			 xv_dwidth, xv_dheight, //768, 486, //720, 576,
 			 &xv_shminfo);
 
-// if (xv_len != xv_image->data_size) BAILOUT
+  if (xv_len != xv_image->data_size) xv_one_memcpy =0; else xv_one_memcpy=0;
+
+  xv_len =  xv_image->data_size;
 
   xv_shminfo.shmid = shmget(IPC_PRIVATE, xv_len, IPC_CREAT | 0777);
 
@@ -122,26 +125,44 @@ void position_xv (int x, int y) {
 	XMoveWindow(xv_dpy, xv_win,x,y);
 }
 
-
 void render_xv (uint8_t *mybuffer) {
 
 	if (!xv_buffer || !mybuffer) return;
 
 	size_t Ylen  = movie_width * movie_height;
 	size_t UVlen = movie_width * movie_height/4; 
-	
-	if (xv_pic_format == FOURCC_I420) {
-	// copy YUV420P
-		memcpy(xv_buffer,mybuffer,Ylen+UVlen+UVlen); // Y+U+V
-	} else {
+	size_t mw2 = movie_width /2; 
+	size_t mh2 = movie_height /2; 
+
 	// decode ffmpeg - YUV 
-		uint8_t *Yptr=mybuffer; // Y 
-		uint8_t *Uptr=Yptr + Ylen; // U
-		uint8_t *Vptr=Uptr + UVlen; // V
+	uint8_t *Yptr=mybuffer; // Y 
+	uint8_t *Uptr=Yptr + Ylen; // U
+	uint8_t *Vptr=Uptr + UVlen; // V
+
+	if (xv_pic_format == FOURCC_I420 && xv_one_memcpy) {
+		// copy YUV420P 
+		memcpy(xv_buffer,mybuffer,Ylen+UVlen+UVlen); // Y+U+V
+	} else if (xv_pic_format == FOURCC_I420) {
+	
+	// encode YV420P
+		stride_memcpy(xv_buffer+xv_image->offsets[0],
+			Yptr, xv_swidth, xv_sheight, xv_image->pitches[0], xv_swidth);
+
+		stride_memcpy(xv_buffer+xv_image->offsets[1],
+			Uptr, mw2, mh2, xv_image->pitches[1], mw2);
+
+		stride_memcpy(xv_buffer+xv_image->offsets[2],
+			Vptr, mw2, mh2, xv_image->pitches[2], mw2);
+	} else {
 	// encode YV12
-		memcpy(xv_buffer,Yptr,Ylen); // Y
-		memcpy(xv_buffer+Ylen,Vptr,UVlen); //V
-		memcpy(xv_buffer+Ylen+UVlen,Uptr,UVlen); // U
+		stride_memcpy(xv_buffer+xv_image->offsets[0],
+			Yptr, xv_swidth, xv_sheight, xv_image->pitches[0], xv_swidth);
+
+		stride_memcpy(xv_buffer+xv_image->offsets[1],
+			Vptr, mw2, mh2, xv_image->pitches[1], mw2);
+
+		stride_memcpy(xv_buffer+xv_image->offsets[2],
+			Uptr, mw2, mh2, xv_image->pitches[2], mw2);
 	}
 
 	XvShmPutImage(xv_dpy, xv_port,

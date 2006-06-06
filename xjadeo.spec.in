@@ -1,6 +1,8 @@
 # xjadeo.spec
 #
-# Copyright (c) 2005 Luis Garrido <luisgarrido@users.sourceforge.net>
+# Copyright (C) 2005, 2006 GPL
+#  Luis Garrido <luisgarrido@users.sourceforge.net>
+#  Robin Gareus <robin@gareus.org>
 #
 %define name xjadeo
 %define version @VERSION@
@@ -15,7 +17,7 @@ License: GPL
 Group: Application/Multimedia
 
 # optional items
-#Vendor: rgareus
+#Vendor: rgareus 
 #Distribution:
 #Icon:
 #URL:
