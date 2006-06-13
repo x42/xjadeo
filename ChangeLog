@@ -1,3 +1,14 @@
+2006-06-12  rgareus  <robin@gareus.org>
+ - smpte support for non-integer fps 
+ - '-F <float>' allow to override fps info of file
+ - '-K' -> 'old' seek to any frame mode
+ - messed up avseek - added support for multi-packet frames.
+   urgent TODO: remove all the nasty goto's from the initial example code :-X
+   now that seeking is 'known to work' rewrite the whole darn thing and fix
+   the dts/pts issues.
+   This release is better than the version from June 06 as it fixes a
+   possible endless (until EOF) frame seek issue...
+
 2006-06-06  rgareus  <robin@gareus.org>
  - when seeking to non key frames, 
    the video can be decoded starting from the prev keyframe.

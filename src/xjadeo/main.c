@@ -107,6 +107,7 @@ int midi_clkconvert =0;	/* --midifps [0:MTC|1:VIDEO|2:RESAMPLE] */
 #endif
 
 double 	delay = 0.1; // default update rate 10 Hz
+double 	filefps = -1.0; // if > 0 override autodetected video file frame rate
 int	videomode = 0; // --vo <int>  - default: autodetect
 
 int 	seekflags    = SEEK_CONTINUOUS; 
@@ -140,8 +141,10 @@ static struct option const long_options[] =
   {"silent", no_argument, 0, 'q'},
   {"verbose", no_argument, 0, 'v'},
   {"keyframes", no_argument, 0, 'k'},
+  {"anyframe", required_argument, 0, 'K'},
   {"offset", no_argument, 0, 'o'},
   {"fps", required_argument, 0, 'f'},
+  {"filefps", required_argument, 0, 'F'},
   {"videomode", required_argument, 0, 'm'},
   {"vo", required_argument, 0, 'x'},
   {"remote", no_argument, 0, 'R'},
@@ -170,9 +173,11 @@ decode_switches (int argc, char **argv)
 			   "h"	/* help */
 			   "R"	/* remote control */
 			   "k"	/* keyframes */
+			   "K"	/* anyframe */
 			   "o:"	/* offset */
 			   "t"	/* try-codec */
 			   "f:"	/* fps */
+			   "F:"	/* file FPS */
 			   "x:"	/* video-mode */
 			   "i:"	/* info - OSD-mode */
 #ifdef HAVE_MIDI
@@ -215,6 +220,13 @@ decode_switches (int argc, char **argv)
 	case 'k':		/* --keyframes */
 	  seekflags=SEEK_KEY;
 	  printf("seeking to keyframes only\n");
+	  break;
+	case 'K':		/* --anyframe */
+	  seekflags=SEEK_ANY;
+	  printf("seeking to any frame.\n");
+	  break;
+	case 'F':		/* --filefps */
+          filefps = atof(optarg);
 	  break;
 	case 'f':		/* --fps */
           delay = 1.0 / atof(optarg);

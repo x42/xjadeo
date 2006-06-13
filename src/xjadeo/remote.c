@@ -76,6 +76,9 @@ extern double 	duration;
 extern double 	framerate;
 extern long	frames;
 
+extern AVFormatContext   *pFormatCtx;
+extern int               videoStream;
+
 /* Option flags and variables */
 extern char *current_file;
 extern long	ts_offset;
@@ -91,6 +94,7 @@ extern int midi_clkconvert;
 #endif
 
 extern double 		delay;
+extern double 		filefps;
 extern int		videomode;
 extern int 		seekflags;
 
@@ -338,6 +342,19 @@ void xapi_sfps(void *d) {
 	char *off= (char*)d;
         delay = 1.0 / atof(off);
 	remote_printf(101,"updatefps=%i",(int) rint(1/delay));
+}
+
+void xapi_sframerate(void *d) {
+	char *off= (char*)d;
+        filefps= atof(off);
+	if (filefps > 0) { 
+        	framerate = filefps;
+	} else { // reset framerate according to av_stream
+		framerate = av_q2d(pFormatCtx->streams[videoStream]->r_frame_rate);
+	}
+  	frames = (long) (framerate * duration);
+
+	remote_printf(202, "framerate=%g", framerate);
 }
 
 void xapi_jack_status(void *d) {
@@ -642,9 +659,10 @@ Dcommand cmd_window[] = {
 };
 
 Dcommand cmd_set[] = {
-	{"fps ", "<int>: set current update frequency", NULL, xapi_sfps , 0 },
+	{"fps ", "<float>: set current update frequency", NULL, xapi_sfps , 0 },
 	{"offset", "<int>: set current frame offset", NULL, xapi_soffset , 0 },
 	{"seekmode ", "<1-3>: seek continuous, to any or to keyframes only", NULL, xapi_sseekmode, 0 },
+	{"framerate", "<float>: show frame rate of video file", NULL, xapi_sframerate , 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 

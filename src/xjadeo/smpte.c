@@ -33,9 +33,13 @@ typedef struct {
 	int v[(SMPTE_LAST)];
 } smpte;
 
-#define FIX_SMPTE_OVERFLOW(THIS,NEXT,INC) \
+#define FIX_SMPTE_OVERFLOW_OLD(THIS,NEXT,INC) \
 	while (s->v[(THIS)] >= (INC)) { s->v[(THIS)] -= (INC); s->v[(NEXT)]++;} \
 	while (s->v[(THIS)] < 0  ) { s->v[(THIS)] += (INC); s->v[(NEXT)]--;}
+
+#define FIX_SMPTE_OVERFLOW(THIS,NEXT,INC) \
+	if (s->v[(THIS)] >= (INC)) { int ov= (int) floor((double) s->v[(THIS)] / (INC));  s->v[(THIS)] -= ov*(INC); s->v[(NEXT)]+=ov;} \
+	if (s->v[(THIS)] < 0 ) { int ov= (int) floor((double) s->v[(THIS)] / (INC));   s->v[(THIS)] -= ov*(INC); s->v[(NEXT)]-=ov;} 
 
 void parse_int (smpte *s, int val) {
 	int i;

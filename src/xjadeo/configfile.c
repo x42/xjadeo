@@ -13,6 +13,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <xjadeo.h>
+
 int testfile (char *filename) {
 	struct stat s;
 	int result= stat(filename, &s);

@@ -29,6 +29,7 @@
 
 
 extern double            duration;
+extern double            framerate;
 extern long              frames;
 extern int want_quiet;
 
@@ -87,7 +88,9 @@ long jack_poll_frame (void) {
 	/* Calculate frame. */
 	jack_transport_query(jack_client, &jack_position);
 	jack_time = jack_position.frame / (double) jack_position.frame_rate;
-	//fprintf(stdout, "jack calculated time: %lf\n", jack_time);
-	frame = rint(frames * jack_time / duration);
+//	fprintf(stdout, "jack calculated time: %lf sec\n", jack_time);
+	frame = (long) rint((double) frames * (double) jack_time / (double) duration);
+//	if (frame!= rint(framerate * jack_time) ) printf("\nDAMN %i %f\n",frame, rint(framerate * jack_time));
+//	frame = rint(framerate * jack_time);
 	return(frame);
 }
