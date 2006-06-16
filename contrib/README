@@ -3,6 +3,7 @@ Stuff that came to be while developing and playing with xjadeo.
 xjadeo-example.avi
  example video known to work with xjadeo.
  it's only one 160x120 frame displaying color-bars Motion JPEG AVI.
+ no audio.
 
 encode.sh:
  tests various mencoder codecs 
@@ -15,3 +16,5 @@ cli-remote:
  example code that generates xjadeo remote commands
  to be piped into a 'xjadeo -R' instance.
 
+jadio:
+ experimental cli audio player 

@@ -1,3 +1,9 @@
+2006-06-16  rgareus  <robin@gareus.org>
+ - updated contrib README and encode.sh
+
+2006-06-13  rgareus  <robin@gareus.org>
+ - added jadio to contrib folder.
+
 2006-06-12  rgareus  <robin@gareus.org>
  - smpte support for non-integer fps 
  - '-F <float>' allow to override fps info of file

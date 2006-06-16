@@ -8,11 +8,10 @@
 # codecs and checks if xjadeo supports playback
 #
 # TODO:
-# also loop through transcode export codecs.
-#
-# TODO:
-# allow ./encoder.sh  [<video-file>]  [mencoder options]
-#
+# * also loop through transcode export codecs.
+# * allow ./encoder.sh  [<video-file>]  [mencoder options]
+# * unhardcode example file path.
+# * default to mpeg4 instead of mjpeg ?
 #
 
 function check_execs {
@@ -111,6 +110,7 @@ if [ -n "$USE" ]; then
  echo "          $INPUTFILE -o output-file.avi"
  echo
  echo "adjust '-vf scale=width:height' "
+ echo "adjust input-file: (here: $INPUTFILE) "
  echo "or remove the option to use size of source file or mencoder default"
  echo "see 'man mencoder' for more advanced options"
 else 
