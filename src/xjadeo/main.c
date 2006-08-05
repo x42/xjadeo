@@ -86,7 +86,7 @@ long	frames = 1;
 /* Option flags and variables */
 char	*current_file = NULL;
 long	ts_offset = 0;
-long	userFrame = 0; // seek to this frame is jack and midi are N/A
+long	userFrame = 0; // seek to this frame if jack and midi are N/A
 long	dispFrame = 0; // global strorage... = (SMPTE+offset) with boundaries to [0..movie_file_frames]
 
 int want_quiet   =0;	/* --quiet, --silent */

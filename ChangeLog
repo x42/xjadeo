@@ -1,3 +1,6 @@
+2006-06-25  rgareus  <robin@gareus.org>
+ - updated debian-marillat to debian-multimedia in doc
+
 2006-06-16  rgareus  <robin@gareus.org>
  - updated contrib README and encode.sh
 
@@ -42,7 +45,8 @@
  - added docbook xslt and doc/Makefile...
  - work in progres on the manual.
  - changed Audioframe to videoframe, smpte converstion from floor to rint 
-   yielding to proper results if audibuffers size != 1920 (48k->PAL) or 1601 (48k->NTSC) 
+   transport increments in steps of audiobuffer-size so we get 
+   proper results as audiobuffer-size != 1920 (48k->PAL) or 1601 (48k->NTSC) 
 
 2006-04-28  rgareus  <robin@gareus.org>
  - fixed typo: since the 04/23 patches

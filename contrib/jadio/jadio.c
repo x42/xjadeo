@@ -37,8 +37,8 @@ jack_nframes_t m_resampled_length; // length of file in jack-frames. @ jack samp
 float m_fResampleRatio = 1.0;
 
 // parameters
-int p_phaseinvert = 0; 
-int p_scrublen= 3*1920; // will be rounded to jack bufsiz
+int p_phaseinvert = 1; 
+int p_scrublen=  3*1920; // will be rounded to jack bufsiz
 int p_scrub_audio = 1;
 int p_autoconnect = 1;
 
@@ -211,7 +211,7 @@ void openfile_ff (char *filename) {
 	}
 
 	if ( av_find_stream_info( m_formatContext ) < 0 ) {
-		fprintf(stderr, "av_find_stream_info failed" );
+		fprintf(stderr, "av_find_stream_info failed\n" );
 		return;
 	}
 	m_audioStream = -1;
@@ -223,17 +223,17 @@ void openfile_ff (char *filename) {
 		}
 	}
 	if ( m_audioStream == -1 ) {
-		fprintf(stderr, "No Audio Stream found in file" );
+		fprintf(stderr, "No Audio Stream found in file\n" );
 		return;
 	}
 	m_codecContext = m_formatContext->streams[m_audioStream]->codec;
 	m_codec = avcodec_find_decoder( m_codecContext->codec_id );
 	if ( m_codec == NULL ) {
-		fprintf(stderr, "Codec not supported" );
+		fprintf(stderr, "Codec not supported by ffmpeg\n" );
 		return;
 	}
 	if ( avcodec_open( m_codecContext, m_codec ) < 0 ) {
-		fprintf(stderr, "avcodec_open failed" );
+		fprintf(stderr, "avcodec_open failed\n" );
 		return;
 	}
 
@@ -638,14 +638,12 @@ jack_nframes_t fillBuffer_resample(jack_default_audio_sample_t **bufferptrs, jac
 	return (frames);
 } 
 
-void sampleseek_resample (jack_nframes_t sample) {
+int joffset=0;
+extern jack_nframes_t j_latency;
 
-// TODO: investigate and file a bug report -
-// phase inverting and playing in sync with ardour and ecasound...
-#if 1 // sync to ardour
-	if (sample > j_bufsiz) sample-=j_bufsiz; // seek ahead. 
+void sampleseek_resample (jack_nframes_t sample) {
+	if (sample > joffset) sample-=joffset+j_latency;//j_bufsiz; // seek ahead. 
 	else sample=0;
-#endif
 
 	sample/=m_fResampleRatio; // TODO round ?!
 
@@ -819,8 +817,51 @@ void openfile(char *filename) {
 	}
 }
 
+#if 0
+void mread (void) {
+	char buf[16];
+	int rx;
+	if ((rx = fread(buf, sizeof(char),1,stdin)) > 0) {
+		joffset++;
+		printf("read: %i\n",rx);
+	}
+	printf("new offset: %i\n",joffset);
+}
+#include <sys/poll.h>
+void loopthedebug(void) {
+        int y=0;
+        struct pollfd pfd;
+
+        pfd.fd = 0;
+        pfd.events = POLLIN | POLLPRI;
+        while (1) {
+       //        y=poll(&pfd,1,1000);
+        //        if (y>0 && pfd.revents & (POLLIN | POLLPRI))
+                  mread();
+		printf("debugloop\n");
+        }
+}
+
+void looptheCCCdebug(void) {
+        fd_set fd;
+        int max_fd=0;
+        struct timeval tv = { 0, 0 };
+
+	while (1) {
+		tv.tv_sec = 1; tv.tv_usec = 0;
+
+		FD_ZERO(&fd);
+		FD_SET(0,&fd);
+		max_fd=1;
+		if (select(max_fd, &fd, NULL, NULL, &tv)) mread();
+	}
+}
+#endif
 
 int main (int argc, char **argv) {
+	if (argc==3) {
+		joffset=atoi(argv[2]);
+	} else 
 	if (argc!=2) {
 		fprintf(stdout, "usage %s <file-name>\n",argv[0]);
 		exit(0);
@@ -834,6 +875,7 @@ int main (int argc, char **argv) {
 	// once jack is started m_channls MUST NOT change!
 	dothejack();
 	loopthejack();
+//	loopthedebug();
 
 	return (0);
 }

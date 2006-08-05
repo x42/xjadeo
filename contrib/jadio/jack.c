@@ -61,8 +61,9 @@ void jackreadAudio( jack_default_audio_sample_t **out, jack_transport_state_t ts
 		position+=(j_scrubpos) * j_bufsiz;
 		j_scrubpos=(j_scrubpos+1)%(j_scrubmax);
 	} else j_scrubpos=0;
-	
-	if ((position >= m_resampled_length ) ||  (!p_scrub_audio && ts != JackTransportRolling)) {
+
+	// FIXME: add offset+lat_compensation to position... then remove '*0'
+	if ((position* 0 >= m_resampled_length ) ||  (!p_scrub_audio && ts != JackTransportRolling)) {
 		// if transport is not rolling - or file ended : remain silent.
 		int i;
 
@@ -74,7 +75,6 @@ void jackreadAudio( jack_default_audio_sample_t **out, jack_transport_state_t ts
 		}
 		return;
 	}
-
 	sampleseek(position); // set absolute audio sample position
 
 	jack_nframes_t rv = fillBuffer(out, nframes);
@@ -92,20 +92,32 @@ void jackreadAudio( jack_default_audio_sample_t **out, jack_transport_state_t ts
  * The process callback for this JACK application is called in a
  * special realtime thread once for each audio cycle.
  */
+jack_nframes_t j_latency = 0;
+
 int jack_audio_callback (jack_nframes_t nframes, void *arg)
 {
 	jack_default_audio_sample_t **out = j_output_bufferptrs; // 
 	jack_position_t	jack_position;
 	jack_transport_state_t ts;
 	int i;
+	jack_nframes_t my_tot_latency = 0;
 
 	for (i=0;i<m_channels;i++) {
+
+		jack_nframes_t my_latency = jack_port_get_total_latency(j_client,j_output_port[i]);
+		if (my_latency > my_tot_latency) my_tot_latency = my_latency;
+//		printf("DEBUG: c=%i pl=%i tl=%i\n",i,jack_port_get_latency(j_output_port[i]) ,jack_port_get_total_latency(j_client,j_output_port[i]));
+
+
 		out[i] = jack_port_get_buffer (j_output_port[i], nframes);
 //		memset(out[i],0, sizeof (jack_default_audio_sample_t) * nframes);
 	}
+	if (my_tot_latency != j_latency) {
+		j_latency = my_tot_latency;
+		printf("latency compensation: %i frames \n",j_latency);
+	}
 
-	jack_transport_query(j_client, &jack_position);
-	ts = jack_transport_query(j_client, NULL);
+	ts=jack_transport_query(j_client, &jack_position);
 
 	jackreadAudio(out, ts, jack_position.frame, nframes);
 

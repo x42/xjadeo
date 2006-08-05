@@ -1,3 +1,5 @@
+all: jadio 
+
 jadio: jadio.c jack.c Makefile
 	gcc -g -O3 -o jadio \
 		-I/usr/include/lqt/ -lquicktimehv \
@@ -8,7 +10,7 @@ jadio: jadio.c jack.c Makefile
 #		-I/usr/include/lqt/ -lquicktime \
 #		-I/usr/include/lqt/ -lquicktimehv \
 
-.PHONY: clean tags
+.PHONY: clean tags all
 tags:
 	ctags *.[hc]
 clean:

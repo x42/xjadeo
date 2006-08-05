@@ -231,10 +231,11 @@
       built on a FC4 for i386 systems.</para>
 
       <para>A debian package can be found at <ulink
-      url="ftp://ftp.nerim.net/debian-marillat/pool/main/x/xjadeo/">debian-marillat</ulink>
+      url="http://www.debian-multimedia.org/">debian-multimedia</ulink>
       edit <filename>/etc/apt/sources.list</filename> to include <screen>
-deb ftp://ftp.nerim.net/debian-marillat sid main
-deb-src ftp://ftp.nerim.net/debian-marillat sid main </screen>
+deb http://www.debian-multimedia.org sid main
+deb-src http://www.debian-multimedia.org sid main</screen>
+      (<argument>sid</argument>  by your distribution name)
       and run <command>apt-get install xjadeo</command>
       </para>
     </section>

@@ -52,7 +52,7 @@ int parseoption (char *item, char *value) {
 	}
 //#ifdef HAVE_FT
 	else if (!strncasecmp(item,"FONTFILE",8)) {
-		strncpy(OSD_fontfile,value,1023);
+		strncpy(OSD_fontfile,value,1023);rv=1;
 		OSD_fontfile[1023]=0; // just to be sure.
 	}
 //#endif
