@@ -244,9 +244,12 @@ int open_movie(char* file_name)
   }
 
   AVStream *av_stream = pFormatCtx->streams[videoStream];
- if (filefps >0 ) framerate=filefps;
- // else framerate = (double) av_stream->r_frame_rate.num / av_stream->r_frame_rate.den;
- else framerate = av_q2d(av_stream->r_frame_rate);
+  if (filefps >0 ) framerate=filefps;
+#if LIBAVFORMAT_BUILD <  4753
+  else framerate = (double) av_stream->r_frame_rate.num / (double) av_stream->r_frame_rate.den;
+#else
+  else framerate = av_q2d(av_stream->r_frame_rate);
+#endif
 
   duration = (double) ( (int64_t) (pFormatCtx->duration - pFormatCtx->start_time) / (int64_t) AV_TIME_BASE);
   frames = (long) (framerate * duration);

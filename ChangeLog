@@ -1,3 +1,7 @@
+2006-08-12  rgareus  <robin@gareus.org>
+ - av_q2d - fix to compile with older 
+ ffmpeg before LIBAVCODEC_BUILD 4753
+
 2006-06-25  rgareus  <robin@gareus.org>
  - updated debian-marillat to debian-multimedia in doc
 
