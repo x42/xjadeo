@@ -23,6 +23,7 @@ int try_next_vidoutmode(int user_req);
 void render_buffer (uint8_t *mybuffer);
 void handle_X_events (void);
 void Xresize (unsigned int x, unsigned int y);
+void Xfullscreen ();
 void Xgetsize (unsigned int *x, unsigned int *y);
 void Xposition (int x, int y);
 void Xgetpos (int *x, int *y);

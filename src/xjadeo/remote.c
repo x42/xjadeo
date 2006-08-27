@@ -232,6 +232,10 @@ void xapi_swinsize(void *d) {
 	Xresize(x,y);
 }
 
+void xapi_fullscreen(void *d) {
+	Xfullscreen();
+}
+
 void xapi_swinpos(void *d) {
 	int x,y;
 	char *t0= (char*)d;
@@ -655,6 +659,7 @@ Dcommand cmd_window[] = {
 	{"resize " , "<int>|<int>x<int>: resize window (percent of movie or abs)", NULL, xapi_swinsize, 0 },
 	{"position " , "<int>x<int>: move window to absolute position", NULL, xapi_swinpos, 0 },
 	{"pos " , "<int>x<int>: alias for 'window position'", NULL, xapi_swinpos, 0 },
+	{"fullscreen" , ": toggle fullscreen mode (only XV videomode)", NULL, xapi_fullscreen, 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 

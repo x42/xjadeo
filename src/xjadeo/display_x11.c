@@ -22,11 +22,12 @@
  *  - (c) 2000 Charles 'Buck' Krasic 
  *  - (c) 2000 Erik Walthinsen 
  *
+ * EWMH fullscreen code - from mplayer 
+ *  - Strasser, Alexander (beastd) <eclipse7@gmx.net>  ?!
  */
 
 #include "xjadeo.h"
 #include "display.h"
-
 
 /*******************************************************************************
  * XV !!!
@@ -60,6 +61,63 @@
 //#define FOURCC_UYVY 0x59565955  /* YUV 4:2:2 */
 
 int xv_pic_format = FOURCC_I420; // the format used for allocation.
+
+
+
+
+/* EWMH state actions, see
+	 http://freedesktop.org/Standards/wm-spec/index.html#id2768769 */
+#define _NET_WM_STATE_REMOVE        0    /* remove/unset property */
+#define _NET_WM_STATE_ADD           1    /* add/set property */
+#define _NET_WM_STATE_TOGGLE        2    /* toggle property  */
+
+
+/* blatantly ripped off mplayer's libvo/x11_common.c - THX.
+ *
+ * Sends the EWMH fullscreen state event.
+ * 
+ * action: could be on of _NET_WM_STATE_REMOVE -- remove state
+ *                        _NET_WM_STATE_ADD    -- add state
+ *                        _NET_WM_STATE_TOGGLE -- toggle
+ */
+void vo_x11_ewmh_fullscreen(int action)
+{
+/*
+    assert(action == _NET_WM_STATE_REMOVE ||
+           action == _NET_WM_STATE_ADD || action == _NET_WM_STATE_TOGGLE);
+*/
+
+    if (1)
+    {
+        XEvent xev;
+
+        /* init X event structure for _NET_WM_FULLSCREEN client msg */
+        xev.xclient.type = ClientMessage;
+        xev.xclient.serial = 0;
+        xev.xclient.send_event = True;
+        xev.xclient.message_type = XInternAtom(xv_dpy,
+                                               "_NET_WM_STATE", False);
+        xev.xclient.window = xv_win;
+        xev.xclient.format = 32;
+        xev.xclient.data.l[0] = action;
+        xev.xclient.data.l[1] = XInternAtom(xv_dpy,
+                                            "_NET_WM_STATE_FULLSCREEN",
+                                            False);
+        xev.xclient.data.l[2] = 0;
+        xev.xclient.data.l[3] = 0;
+        xev.xclient.data.l[4] = 0;
+
+        /* finally send that damn thing */
+        if (!XSendEvent(xv_dpy, DefaultRootWindow(xv_dpy), False,
+                        SubstructureRedirectMask | SubstructureNotifyMask,
+                        &xev))
+        {
+            fprintf(stderr,"error (un)setting Fullscreen mode\n");
+        }
+    }
+}
+
+
 
 
 void allocate_xvimage (void) {
@@ -241,8 +299,10 @@ void handle_X_events_xv (void) {
 
 					XLookupString(&event.xkey, buf, sizeof(buf), &keySym, &stat);
 					key = ((keySym & 0xff00) != 0 ? ((keySym & 0x00ff) + 256) : (keySym));
-					if (key == (0x1b + 256) ) loop_flag=0;
-				//	printf("X11 key press: '%c'\n",key);
+					if (key == (0x1b + 256) ) loop_flag=0; // 'Esc'
+					if (key == (0x71) ) loop_flag=0; // 'q'
+					if (key == 0x66 ) vo_x11_ewmh_fullscreen(_NET_WM_STATE_TOGGLE); // 'f'
+				//	printf("X11 key press: '%c' %x\n",key,key);
 				//	xjadeo_putkey(key);
 				}
 				break;
