@@ -226,6 +226,7 @@ int open_movie(char* file_name)
   if (!want_quiet) dump_format(pFormatCtx, 0, file_name, 0);
 
   // Find the first video stream
+  videoStream==-1
   for(i=0; i<pFormatCtx->nb_streams; i++)
 #if LIBAVFORMAT_BUILD >  4629
       if(pFormatCtx->streams[i]->codec->codec_type==CODEC_TYPE_VIDEO)
@@ -243,10 +244,11 @@ int open_movie(char* file_name)
       return( -1 );
   }
 
+// At LIBAVFORMAT_BUILD==4624 r_frame_rate becomes an AVRational. Before it was an int.
   AVStream *av_stream = pFormatCtx->streams[videoStream];
   if (filefps >0 ) framerate=filefps;
-#if LIBAVFORMAT_BUILD <  4753
-  else framerate = (double) av_stream->r_frame_rate.num / (double) av_stream->r_frame_rate.den;
+#if LIBAVFORMAT_BUILD <= 4623
+  else framerate = (double) av_stream->r_frame_rate / (double) av_stream->r_frame_rate_base;
 #else
   else framerate = av_q2d(av_stream->r_frame_rate);
 #endif

@@ -351,11 +351,12 @@ void xapi_sfps(void *d) {
 void xapi_sframerate(void *d) {
 	char *off= (char*)d;
         filefps= atof(off);
-	if (filefps > 0) { 
-        	framerate = filefps;
-	} else { // reset framerate according to av_stream
-		framerate = av_q2d(pFormatCtx->streams[videoStream]->r_frame_rate);
-	}
+       	framerate = filefps;
+//	if (filefps > 0) { 
+//        	framerate = filefps;
+//	} else { // reset framerate according to av_stream
+//		framerate = av_q2d(pFormatCtx->streams[videoStream]->r_frame_rate);
+//	}
   	frames = (long) (framerate * duration);
 
 	remote_printf(202, "framerate=%g", framerate);
