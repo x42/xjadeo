@@ -226,7 +226,7 @@ int open_movie(char* file_name)
   if (!want_quiet) dump_format(pFormatCtx, 0, file_name, 0);
 
   // Find the first video stream
-  videoStream==-1
+  videoStream==-1;
   for(i=0; i<pFormatCtx->nb_streams; i++)
 #if LIBAVFORMAT_BUILD >  4629
       if(pFormatCtx->streams[i]->codec->codec_type==CODEC_TYPE_VIDEO)
