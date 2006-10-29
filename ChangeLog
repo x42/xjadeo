@@ -1,4 +1,7 @@
 2006-10-28  rgareus  <robin@gareus.org>
+ - made -V a little more verbose. and -q a little more quiet :D
+
+2006-10-28  rgareus  <robin@gareus.org>
  - changed audioframe -> videoframe conversion back to floor() 
  - updated framerate detection.
  - re-indented seek code. and changed -K, -k behaviour (no continuous seeks)

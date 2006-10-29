@@ -135,6 +135,7 @@ char *program_name;
 // prototypes .
 
 static void usage (int status);
+static void printversion (void);
 
 static struct option const long_options[] =
 {
@@ -209,7 +210,7 @@ decode_switches (int argc, char **argv)
 	  break;
 	case 'i':		/* --info */
 	  OSD_mode=atoi(optarg)&3;
-	  printf("On screen display: [%s%s%s] \n",
+	  if (!want_quiet) printf("On screen display: [%s%s%s] \n",
 		(!OSD_mode)?"off": 
 		(OSD_mode&OSD_FRAME)?"frames":"",
 		(OSD_mode&(OSD_FRAME|OSD_SMPTE))==(OSD_FRAME|OSD_SMPTE)?" ":"",
@@ -247,8 +248,9 @@ decode_switches (int argc, char **argv)
 	  break;
 #endif
 	case 'V':
-	  printf ("xjadeo %s\n", VERSION);
-  	  printf("compiled with LIBAVFORMAT_BUILD %i\n", LIBAVFORMAT_BUILD);
+	  printversion();
+	  exit(0);
+
 	  exit (0);
 
 	case 'a':
@@ -314,6 +316,36 @@ jack video monitor\n", program_name);
 );
   exit (status);
 }
+
+static void printversion (void) {
+	  printf ("xjadeo %s\n", VERSION);
+  	  printf("compiled with LIBAVFORMAT_BUILD 0x%x = %i\n", LIBAVFORMAT_BUILD, LIBAVFORMAT_BUILD);
+#ifndef HAVE_MIDI
+	; // jack only
+#else /* have Midi */
+# ifdef HAVE_PORTMIDI
+  	  printf("compiled with portmidi support\n");
+# else /* alsa midi */
+  	  printf("compiled with alsa-midi support\n");
+# endif 
+#endif /* HAVE_MIDI */
+  	  printf("video backends: "
+#if HAVE_LIBXV
+		"xv "
+#endif 
+#if HAVE_SDL
+		"SDL "
+#endif 
+#if HAVE_IMLIB
+		"x11/imlib "
+#endif 
+#if HAVE_MYGTK
+		"gtk "
+#endif 
+		"\n"
+	  );
+}
+
 
 const char fontfile[][128] = {
 	FONT_FILE,
