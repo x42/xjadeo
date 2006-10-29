@@ -1,3 +1,12 @@
+2006-10-28  rgareus  <robin@gareus.org>
+ - changed audioframe -> videoframe conversion back to floor() 
+ - updated framerate detection.
+ - re-indented seek code. and changed -K, -k behaviour (no continuous seeks)
+ - fixed ffmpeg packet allocation 
+ - XV-videomode only:
+   - added always on top feature. ( '-a' ; press 'a' on widow ; no remote command for that yet)
+   - added support to hide [mouse] cursor  (press 'm' )
+
 2006-08-27  rgareus  <robin@gareus.org>
  - added simple Extended Window Manager Hints(EWMH) fullscreen support for XV videomode.
 

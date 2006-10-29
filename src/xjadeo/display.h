@@ -5,6 +5,7 @@
 
   extern int want_quiet;
   extern int want_verbose;
+  extern int start_ontop;
   extern int remote_en;
 
   extern char OSD_fontfile[1024];

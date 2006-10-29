@@ -51,6 +51,8 @@
   char	 		*xv_buffer;
   size_t		xv_len;
   int			xv_one_memcpy = 0; 
+  int			xv_ontop = 0; 
+  int			xv_mouse = 0; 
 
 // TODO: support other YUV Xv - ffmpeg combinations
 // (depending on hardware and X) Xv can do more than YV12 ...
@@ -65,59 +67,104 @@ int xv_pic_format = FOURCC_I420; // the format used for allocation.
 
 
 
-/* EWMH state actions, see
-	 http://freedesktop.org/Standards/wm-spec/index.html#id2768769 */
-#define _NET_WM_STATE_REMOVE        0    /* remove/unset property */
-#define _NET_WM_STATE_ADD           1    /* add/set property */
-#define _NET_WM_STATE_TOGGLE        2    /* toggle property  */
+/* blatantly ripped off mplayer's libvo/x11_common.c - THX. */
 
-
-/* blatantly ripped off mplayer's libvo/x11_common.c - THX.
- *
- * Sends the EWMH fullscreen state event.
- * 
- * action: could be on of _NET_WM_STATE_REMOVE -- remove state
- *                        _NET_WM_STATE_ADD    -- add state
- *                        _NET_WM_STATE_TOGGLE -- toggle
- */
-void vo_x11_ewmh_fullscreen(int action)
+static int x11_get_property(Atom type, Atom ** args, unsigned long *nitems)
 {
-/*
-    assert(action == _NET_WM_STATE_REMOVE ||
-           action == _NET_WM_STATE_ADD || action == _NET_WM_STATE_TOGGLE);
-*/
+	int format;
+	unsigned long bytesafter;
+	return (Success == XGetWindowProperty(xv_dpy, xv_rwin, type, 0, 16384, False, AnyPropertyType, &type, &format, nitems, &bytesafter, (unsigned char **) args) && *nitems > 0);
+}
 
-    if (1)
-    {
-        XEvent xev;
+#define NET_WM_STATE_TEST(ARGX,ARGY) { Atom type= XInternAtom(xv_dpy, ARGX,0); if (atom == type) { if (!want_quiet) fprintf(stderr,"[x11] Detected wm supports " #ARGX " state.\n" ); return ARGY; } }
+static int net_wm_support_state_test(Atom atom)
+{
+	NET_WM_STATE_TEST("_NET_WM_STATE_FULLSCREEN",1);
+	NET_WM_STATE_TEST("_NET_WM_STATE_ABOVE",2);
+	NET_WM_STATE_TEST("_NET_WM_STATE_STAYS_ON_TOP",4);
+	return 0;
+}
 
-        /* init X event structure for _NET_WM_FULLSCREEN client msg */
-        xev.xclient.type = ClientMessage;
-        xev.xclient.serial = 0;
-        xev.xclient.send_event = True;
-        xev.xclient.message_type = XInternAtom(xv_dpy,
-                                               "_NET_WM_STATE", False);
-        xev.xclient.window = xv_win;
-        xev.xclient.format = 32;
-        xev.xclient.data.l[0] = action;
-        xev.xclient.data.l[1] = XInternAtom(xv_dpy,
-                                            "_NET_WM_STATE_FULLSCREEN",
-                                            False);
-        xev.xclient.data.l[2] = 0;
-        xev.xclient.data.l[3] = 0;
-        xev.xclient.data.l[4] = 0;
-
-        /* finally send that damn thing */
-        if (!XSendEvent(xv_dpy, DefaultRootWindow(xv_dpy), False,
-                        SubstructureRedirectMask | SubstructureNotifyMask,
-                        &xev))
-        {
-            fprintf(stderr,"error (un)setting Fullscreen mode\n");
-        }
+void check(void) {
+    Atom *args;
+    int i;
+    int wm=0;
+    unsigned long nitems;
+    if (x11_get_property(XInternAtom(xv_dpy, "_NET_SUPPORTED",0), &args, &nitems)) {
+	if (!want_quiet) fprintf(stderr,"[x11] Detected wm supports NetWM.\n");
+	for (i = 0; i < nitems; i++) wm |= net_wm_support_state_test(args[i]);
     }
+    XFree(args);
 }
 
 
+static void net_wm_set_property(Window window, char *atom, int state)
+{
+	XEvent xev;
+	int set = _NET_WM_STATE_ADD;
+	Atom type, property;
+
+	if (state == _NET_WM_STATE_TOGGLE) set = _NET_WM_STATE_TOGGLE;
+	else if (!state) set = _NET_WM_STATE_REMOVE;
+
+	type = XInternAtom(xv_dpy,"_NET_WM_STATE", 0);
+	property = XInternAtom(xv_dpy,atom, 0);
+
+	xev.type = ClientMessage;
+	xev.xclient.type = ClientMessage;
+	xev.xclient.window = window ; //xv_win;
+	xev.xclient.message_type = type;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = set;
+	xev.xclient.data.l[1] = property;
+	xev.xclient.data.l[2] = 0;
+	
+        if (!XSendEvent(xv_dpy, DefaultRootWindow(xv_dpy), False,
+		   SubstructureRedirectMask|SubstructureNotifyMask, &xev))
+        {
+            fprintf(stderr,"error (un)setting 'always on top' mode\n");
+        }
+}
+
+void xv_fullscreen (int action) {
+	net_wm_set_property(xv_win, "_NET_WM_STATE_FULLSCREEN", action);
+}
+
+/* also from mplayer's libvo/x11_common.c - thanks GPL !*/
+void vo_hidecursor(Display * disp, Window win)
+{
+    Cursor no_ptr;
+    Pixmap bm_no;
+    XColor black, dummy;
+    Colormap colormap;
+    static char bm_no_data[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+
+    colormap = DefaultColormap(disp, DefaultScreen(disp));
+    if ( !XAllocNamedColor(disp, colormap, "black", &black, &dummy) )
+    {
+      return; // color alloc failed, give up
+    }
+    bm_no = XCreateBitmapFromData(disp, win, bm_no_data, 8, 8);
+    no_ptr = XCreatePixmapCursor(disp, bm_no, bm_no, &black, &black, 0, 0);
+    XDefineCursor(disp, win, no_ptr);
+    XFreeCursor(disp, no_ptr);
+    if (bm_no != None)
+        XFreePixmap(disp, bm_no);
+    XFreeColors(disp,colormap,&black.pixel,1,0);
+}
+
+void vo_showcursor(Display * disp, Window win)
+{
+    XDefineCursor(disp, win, 0);
+}
+
+void xv_showcursor (void) {
+	vo_showcursor(xv_dpy,xv_win);
+}
+
+void xv_hidecursor (void) {
+	vo_hidecursor(xv_dpy,xv_win);
+}
 
 
 void allocate_xvimage (void) {
@@ -301,7 +348,11 @@ void handle_X_events_xv (void) {
 					key = ((keySym & 0xff00) != 0 ? ((keySym & 0x00ff) + 256) : (keySym));
 					if (key == (0x1b + 256) ) loop_flag=0; // 'Esc'
 					if (key == (0x71) ) loop_flag=0; // 'q'
-					if (key == 0x66 ) vo_x11_ewmh_fullscreen(_NET_WM_STATE_TOGGLE); // 'f'
+					if (key == 0x61 ) net_wm_set_property(xv_win, "_NET_WM_STATE_ABOVE", (xv_ontop^=1)); //'a'
+					if (key == 0x66 ) xv_fullscreen(_NET_WM_STATE_TOGGLE); //'f' // fullscreen
+					if (key == 0x6d) { 	// 'm'
+					    if (xv_mouse^=1) xv_hidecursor(); else xv_showcursor();
+					}    
 				//	printf("X11 key press: '%c' %x\n",key,key);
 				//	xjadeo_putkey(key);
 				}
@@ -498,6 +549,11 @@ int open_window_xv (int *argc, char ***argv) {
   xv_gc = XCreateGC(xv_dpy, xv_win, 0, &values);
 
   allocate_xvimage ();
+
+  check();
+  if (start_ontop)
+//net_wm_set_property(xv_win, "_NET_WM_STATE_STAYS_ON_TOP", (xv_ontop^=1));
+  net_wm_set_property(xv_win, "_NET_WM_STATE_ABOVE", (xv_ontop^=1));
 
   return 0;
 }

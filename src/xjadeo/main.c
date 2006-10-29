@@ -91,6 +91,7 @@ long	dispFrame = 0; // global strorage... = (SMPTE+offset) with boundaries to [0
 
 int want_quiet   =0;	/* --quiet, --silent */
 int want_verbose =0;	/* --verbose */
+int start_ontop =0;	/* --ontop // -a */
 int remote_en =0;	/* --remote, -R */
 int remote_mode =0;	/* 0: undirectional ; >0: bidir
 			 * bitwise enable async-messages 
@@ -152,6 +153,7 @@ static struct option const long_options[] =
   {"version", no_argument, 0, 'V'},
   {"try-codec", no_argument, 0, 't'},
   {"info", no_argument, 0, 'i'},
+  {"ontop", no_argument, 0, 'a'},
 #ifdef HAVE_MIDI
   {"midi", required_argument, 0, 'm'},
   {"midifps", required_argument, 0, 'M'},
@@ -179,6 +181,7 @@ decode_switches (int argc, char **argv)
 			   "f:"	/* fps */
 			   "F:"	/* file FPS */
 			   "x:"	/* video-mode */
+			   "a"	/* always on top */
 			   "i:"	/* info - OSD-mode */
 #ifdef HAVE_MIDI
 			   "m:"	/* midi interface */
@@ -248,6 +251,10 @@ decode_switches (int argc, char **argv)
   	  printf("compiled with LIBAVFORMAT_BUILD %i\n", LIBAVFORMAT_BUILD);
 	  exit (0);
 
+	case 'a':
+	  start_ontop=1;
+	  break;
+
 	case 'h':
 	  usage (0);
 
@@ -295,6 +302,8 @@ jack video monitor\n", program_name);
 "                            2: use video file FPS\n" 
 "                            3: resample: videoFPS / MTC \n" 
 #endif /* HAVE_MIDI */
+"  -a, --ontop               stack xjadeo window on top of the desktop.\n"
+"                            requires xv vidmode and EWMH.\n"
 "  -t, --try-codec           checks if the video-file can be played by jadeo.\n"
 "                            exits with code 1 if the file is not supported.\n"
 "			     no window is opened in this mode.\n"

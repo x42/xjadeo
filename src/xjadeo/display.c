@@ -308,11 +308,12 @@ void Xresize (unsigned int x, unsigned int y) {
 	VO[VOutput].resize(x,y);
 }
 
-// defined in display_x11
-void vo_x11_ewmh_fullscreen(int action);
-void Xfullscreen () {
+// prototype defined in display_x11 
+void xv_fullscreen(int action);
+
+void Xfullscreen (int action) {
 	if (VOutput == 1) {
- 		vo_x11_ewmh_fullscreen(2);
+ 		xv_fullscreen(action);
 	}
 }
 

@@ -103,3 +103,10 @@ int render_font (char *fontfile, char *text);
   #define ST_HEIGHT  0
 #endif /* Have_FT */
 
+/* XV only - but defined here since needed in remote.c and display.c
+ * EWMH state actions, see
+	 http://freedesktop.org/Standards/wm-spec/index.html#id2768769 */
+#define _NET_WM_STATE_REMOVE        0    /* remove/unset property */
+#define _NET_WM_STATE_ADD           1    /* add/set property */
+#define _NET_WM_STATE_TOGGLE        2    /* toggle property  */
+

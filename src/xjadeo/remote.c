@@ -233,7 +233,10 @@ void xapi_swinsize(void *d) {
 }
 
 void xapi_fullscreen(void *d) {
-	Xfullscreen();
+	int action=_NET_WM_STATE_TOGGLE;
+	if (!strcmp(d,"on") || atoi(d)==1) action=_NET_WM_STATE_ADD;
+	else if (!strcmp(d,"off") || atoi(d)==0) action=_NET_WM_STATE_REMOVE;
+	Xfullscreen(action);
 }
 
 void xapi_swinpos(void *d) {
@@ -660,7 +663,7 @@ Dcommand cmd_window[] = {
 	{"resize " , "<int>|<int>x<int>: resize window (percent of movie or abs)", NULL, xapi_swinsize, 0 },
 	{"position " , "<int>x<int>: move window to absolute position", NULL, xapi_swinpos, 0 },
 	{"pos " , "<int>x<int>: alias for 'window position'", NULL, xapi_swinpos, 0 },
-	{"fullscreen" , ": toggle fullscreen mode (only XV videomode)", NULL, xapi_fullscreen, 0 },
+	{"fullscreen " , "[on|off|toggle]: en/disable fullscreen (only XV videomode)", NULL, xapi_fullscreen, 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 
