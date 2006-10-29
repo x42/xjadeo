@@ -340,7 +340,7 @@ int my_seek_frame (AVPacket *packet, int timestamp)
   } else if (seekflags==SEEK_KEY) { 
 	rv= av_seek_frame(pFormatCtx, videoStream, timestamp, AVSEEK_FLAG_BACKWARD) ;
 	avcodec_flush_buffers(pCodecCtx);
-  } else /* SEEK_CONTINUOUS */ if (my_avprev > timestamp || ((my_avprev +32) < timestamp) ) { 
+  } else /* SEEK_CONTINUOUS */ if (my_avprev >= timestamp || ((my_avprev +32) < timestamp) ) { 
 	// NOTE: only seek if last-frame is less then 32 frames behind 
 	// else read continuously until we get there :D
 	// FIXME: use keyframes interval of video file or cmd-line-arg as threshold.
