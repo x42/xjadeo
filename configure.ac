@@ -7,7 +7,7 @@ AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
 dnl Every other copy of the package version number gets its value from here
-AM_INIT_AUTOMAKE(xjadeo, 0.3.14)
+AM_INIT_AUTOMAKE(xjadeo, 0.3.15)
 
 dnl create a config.h file (Automake will add -DHAVE_CONFIG_H)
 AM_CONFIG_HEADER(config.h)
@@ -34,7 +34,8 @@ AC_SUBST(ISODATE)
 
 dnl Checks for programs.
 AC_PROG_INSTALL
-AC_PROG_CC
+#AC_PROG_CC
+AM_PROG_CC_C_O
 
 dnl Checks for libraries.
 
@@ -47,8 +48,12 @@ AH_TEMPLATE([HAVE_MIDI], [Define as 1 if you have either alsa or portmidi])
 
 if test "x$enable_gtk" = "xyes"; then
 	REQUIRES='glib >= 1.2.4 gtk+ >= 1.2.4'
-	PKG_CHECK_MODULES(GTK,$REQUIRES)
-	AM_PATH_GTK(1.2.4, [ AC_DEFINE(HAVE_GTK) ])
+	PKG_CHECK_MODULES(GTK,$REQUIRES,  [ AC_DEFINE(HAVE_GTK) ])
+	AC_SUBST(GTK_CFLAGS)
+	AC_SUBST(GTK_LIBS)
+	#PKG_CHECK_MODULES(GDK_PIXBUF, gdk-pixbuf-2.0 >= 0.22.0, [ AC_DEFINE(HAVE_GDK_PIXBUF,1, [Use pixbuf for gtk scaling]) ])
+	#AC_SUBST(GDK_PIXBUF_CFLAGS)
+	#AC_SUBST(GDK_PIXBUF_LIBS)
 	AM_PATH_GDK_PIXBUF(0.22.0, [ AC_DEFINE(HAVE_GDK_PIXBUF,1, [Use pixbuf for gtk scaling]) ])
 fi
 
@@ -91,7 +96,7 @@ fi
 if test "x$enable_imlib" != "xno"; then
 #	AC_CHECK_HEADERS(Imlib.h)
 #	AC_CHECK_LIB([Imlib], [Imlib_init], , [AC_MSG_ERROR(*** IMAGE: You should install imlib-dev first ***)])
-        AM_PATH_IMLIB(1.9.13, [ AC_DEFINE(HAVE_IMLIB) ])
+	AM_PATH_IMLIB(1.9.13, [ AC_DEFINE(HAVE_IMLIB) ])
 fi
 
 if test "x$enable_sdl" != "xno"; then
@@ -147,7 +152,10 @@ fi
 
 # I'm not sure if this is the proper way to escape a #define string.
 # but this allows to specify the default font file
-#FREETYPE_CFLAGS+="-DTTFFONTFILE=\\\"/usr/share/fonts/truetype/msttcorefonts/arial.ttf\\\""
+#FREETYPE_CFLAGS="$FREETYPE_CFLAGS -DTTFFONTFILE=\\\"/usr/share/fonts/truetype/msttcorefonts/arial.ttf\\\""
+#FREETYPE_CFLAGS="$FREETYPE_CFLAGS -DTTFFONTFILE=\\\"/usr/X11R6/lib/X11/fonts/TTF/luxisb.ttf\\\""
+#FREETYPE_CFLAGS="$FREETYPE_CFLAGS -DTTFFONTFILE=\\\"$CONFIGURE_FONT_ARG\\\""
+
 
 AC_SUBST(FREETYPE_CFLAGS)
 AC_SUBST(FREETYPE_LIBS)
@@ -207,7 +215,8 @@ else
 		else
 			FFMPEG_CFLAGS="-I/usr/local/include/ffmpeg"
 		fi
-		FFMPEG_LIBS="-L/usr/local/lib -L/usr/lib -lavformat -lavcodec"
+		FFMPEG_LIBS="-L/usr/local/lib -L/usr/lib -lavformat -lavcodec -lz"
+		#FFMPEG_LIBS="-L/usr/local/lib -L/usr/lib -lavformat -lavcodec -lavutil -lz"
 	fi
 fi
 

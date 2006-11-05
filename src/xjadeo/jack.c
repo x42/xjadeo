@@ -28,9 +28,9 @@
 #include <jack/transport.h>
 
 
-extern double            duration;
+//extern double            duration;
+//extern long              frames;
 extern double            framerate;
-extern long              frames;
 extern int want_quiet;
 
 jack_client_t *jack_client = NULL;
@@ -89,6 +89,8 @@ long jack_poll_frame (void) {
 	jack_transport_query(jack_client, &jack_position);
 	jack_time = jack_position.frame / (double) jack_position.frame_rate;
 //	fprintf(stdout, "jack calculated time: %lf sec\n", jack_time);
-	frame = (long) floor((double) frames * (double) jack_time / (double) duration);
+//	frame = (long) floor((double) frames * (double) jack_time / (double) duration);
+	frame = floor(framerate * jack_time);
+
 	return(frame);
 }

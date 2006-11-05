@@ -80,7 +80,7 @@ int               render_fmt = PIX_FMT_YUV420P;
 /* Video File Info */
 double 	duration = 1;
 double 	framerate = 1;
-long	frames = 1;
+long frames = 1;
 
 
 /* Option flags and variables */
@@ -111,7 +111,7 @@ double 	delay = 0.1; // default update rate 10 Hz
 double 	filefps = -1.0; // if > 0 override autodetected video file frame rate
 int	videomode = 0; // --vo <int>  - default: autodetect
 
-int 	seekflags    = SEEK_CONTINUOUS; 
+int 	seekflags    = SEEK_ANY; 
 
 
 // On screen display
@@ -143,7 +143,7 @@ static struct option const long_options[] =
   {"silent", no_argument, 0, 'q'},
   {"verbose", no_argument, 0, 'v'},
   {"keyframes", no_argument, 0, 'k'},
-  {"anyframe", required_argument, 0, 'K'},
+  {"continuous", required_argument, 0, 'K'},
   {"offset", no_argument, 0, 'o'},
   {"fps", required_argument, 0, 'f'},
   {"filefps", required_argument, 0, 'F'},
@@ -226,8 +226,8 @@ decode_switches (int argc, char **argv)
 	  printf("seeking to keyframes only\n");
 	  break;
 	case 'K':		/* --anyframe */
-	  seekflags=SEEK_ANY;
-	  printf("seeking to any frame.\n");
+	  seekflags=SEEK_CONTINUOUS;
+	  printf("enabled continuous seeking..\n");
 	  break;
 	case 'F':		/* --filefps */
           filefps = atof(optarg);
@@ -281,6 +281,8 @@ jack video monitor\n", program_name);
 "  -R, --remote              remote control (stdin) - implies non verbose&quiet\n"
 "  -f <val>, --fps <val>     video display update fps - default 10.0 fps\n"
 "  -k, --keyframes           seek to keyframes only\n"
+"  -K, --continuous          decode video source continuously. (extra latency\n"
+"                            when seeking to non-key frames.)\n"
 "  -o <int>, --offset <int>  add/subtract <int> video-frames to/from timecode\n"
 "  -x <int>, --vo <int>,     set the video output mode (default: 0 - autodetect\n"
 "      --videomode <int>     -1 prints a list of available modes.\n"
@@ -339,38 +341,21 @@ static void printversion (void) {
 #if HAVE_IMLIB
 		"x11/imlib "
 #endif 
-#if HAVE_MYGTK
+#if (HAVE_GTK && HAVE_GDK_PIXBUF )
 		"gtk "
 #endif 
 		"\n"
 	  );
 }
 
-
-const char fontfile[][128] = {
-	FONT_FILE,
-	"/var/lib/defoma/gs.d/dirs/fonts/FreeMonoBold.ttf"
-	"/usr/share/xplanet/fonts/FreeMonoBold.ttf",
-	"/usr/share/fonts/truetype/freefont/FreeMono.ttf",
-	"/var/lib/defoma/gs.d/dirs/fonts/FreeMono.ttf"
-	"/var/lib/defoma/gs.d/dirs/fonts/Courier_New_Bold.ttf",
-	"/var/lib/defoma/gs.d/dirs/fonts/Courier_New.ttf",
-	"/usr/share/fonts/truetype/msttcorefonts/arial.ttf",
-	"/usr/share/fonts/truetype/vera.ttf",
-	""
-};
-
 void stat_osd_fontfile(void) {
 #ifdef HAVE_FT
 	struct stat s;
-	int i=0;
-	while (fontfile[i][0]!=0) {
-		if ( stat(OSD_fontfile, &s) ==0 ) {
-			strcpy(OSD_fontfile,fontfile[i]);
-   			if (want_verbose) fprintf(stdout,"OSD font file: %s\n",OSD_fontfile);
-			return;
-		}
-		i++;
+	strcpy(OSD_fontfile,FONT_FILE);
+
+	if (stat(OSD_fontfile, &s)==0 ) {
+		if (want_verbose) fprintf(stdout,"OSD font file: %s\n",OSD_fontfile);
+		return;
 	}
    	if (!want_quiet)
 		fprintf(stderr,"no TTF font found. OSD will not be available until you set one.\n");

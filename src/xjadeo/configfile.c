@@ -49,6 +49,14 @@ int parseoption (char *item, char *value) {
 		if (!strncasecmp(value,"yes",3)){
 			want_verbose=1; rv=1;
 		}
+	} else if (!strncasecmp(item,"SEEK",4)) {
+		if (!strncasecmp(value,"any",3)){
+			seekflags=SEEK_ANY; rv=1;
+		} else if (!strncasecmp(value,"cont",4)){
+			seekflags=SEEK_CONTINUOUS; rv=1;
+		} else if (!strncasecmp(value,"key",3)){
+			seekflags=SEEK_KEY; rv=1;
+		}
 	}
 //#ifdef HAVE_FT
 	else if (!strncasecmp(item,"FONTFILE",8)) {

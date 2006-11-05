@@ -1,3 +1,14 @@
+2006-11-05  rgareus  <robin@gareus.org>
+ - added support for LIBAVCODEC_BUILD 4646 (ffmpeg-0.4.9-pre1)
+   old seek code.
+
+2006-11-04  rgareus  <robin@gareus.org>
+ - changed default seek behaviour to SEEK_ANY
+   -k -> seek only to keyframes
+   -K -> continuously decode all frames (starting @ keyframe)
+ - config-file option seek=any|key|cont
+ - removed hardcoded list of font files.
+
 2006-10-28  rgareus  <robin@gareus.org>
  - made -V a little more verbose. and -q a little more quiet :D
 

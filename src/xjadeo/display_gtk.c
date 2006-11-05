@@ -183,13 +183,13 @@ void render_gtk (uint8_t *mybuffer) {
 		pixbuf=  gdk_pixbuf_new_from_data  (mybuffer, GDK_COLORSPACE_RGB, 0, 8, width, height, width*3, NULL, NULL);
 		scaled = gdk_pixbuf_scale_simple (pixbuf, dest_width, dest_height, GDK_INTERP_NEAREST);
 
-		// the old way  gtk-1.2
+#if 1 // the old way  gtk-1.2
 		gdk_pixbuf_render_to_drawable (scaled, gimage->window, gimage->style->fg_gc[gimage->state],
 				0,0,0,0,dest_width, dest_height, GDK_RGB_DITHER_NORMAL,0,0);
-
-		// the new way gtk-2.0
-//		gdk_draw_pixbuf (gimage->window, gimage->style->fg_gc[gimage->state], scaled,
-//				0,0,0,0,dest_width, dest_height, GDK_RGB_DITHER_NORMAL,0,0);
+#else // the new way gtk-2.0
+		gdk_draw_pixbuf (gimage->window, gimage->style->fg_gc[gimage->state], scaled,
+				0,0,0,0,dest_width, dest_height, GDK_RGB_DITHER_NORMAL,0,0);
+#endif
 
 		gdk_pixbuf_unref (scaled);
 		gdk_pixbuf_unref (pixbuf);

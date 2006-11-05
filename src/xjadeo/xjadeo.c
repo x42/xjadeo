@@ -38,7 +38,7 @@
 
 #include <time.h>
 #include <getopt.h>
-
+#include <sys/time.h>
 #include <unistd.h>
 
 
@@ -247,7 +247,9 @@ int open_movie(char* file_name)
 // At LIBAVFORMAT_BUILD==4624 r_frame_rate becomes an AVRational. Before it was an int.
   AVStream *av_stream = pFormatCtx->streams[videoStream];
   if (filefps >0 ) framerate=filefps;
-#if LIBAVFORMAT_BUILD <= 4623
+#if LIBAVFORMAT_BUILD <= 4616
+  else framerate = (double) av_stream->codec.frame_rate / (double) av_stream->codec.frame_rate_base;
+#elif LIBAVFORMAT_BUILD <= 4623 // I'm not sure that this is correct:
   else framerate = (double) av_stream->r_frame_rate / (double) av_stream->r_frame_rate_base;
 #else
   else if(av_stream->r_frame_rate.den && av_stream->r_frame_rate.num) {
@@ -260,7 +262,12 @@ int open_movie(char* file_name)
   else framerate = 1.0/av_q2d(av_stream->time_base);
 #endif
 
-  duration = (double) ( (int64_t) (pFormatCtx->duration - pFormatCtx->start_time) / (int64_t) AV_TIME_BASE);
+#if defined(__ppc__)
+  int64_t dur = (double)  (int64_t) (pFormatCtx->duration - pFormatCtx->start_time);
+  duration = ( ((double) (dur>>32&0xffffffff)) / (double) AV_TIME_BASE );
+#else
+  duration = (double) (((double) (pFormatCtx->duration - pFormatCtx->start_time))/ (double) AV_TIME_BASE);
+#endif
   frames = (long) (framerate * duration);
   
   if (!want_quiet) {
@@ -334,6 +341,9 @@ int my_seek_frame (AVPacket *packet, int timestamp)
   static int ffdebug = 0;
 
   if (videoStream < 0) return (0); // just to be on the safe side.
+#if LIBAVFORMAT_BUILD < 4617
+  rv= av_seek_frame(pFormatCtx, videoStream, timestamp / framerate * 1000000LL); 
+#else
   if (seekflags==SEEK_ANY) { 
 	rv= av_seek_frame(pFormatCtx, videoStream, timestamp, AVSEEK_FLAG_ANY | AVSEEK_FLAG_BACKWARD) ;
 	avcodec_flush_buffers(pCodecCtx);
@@ -353,6 +363,7 @@ int my_seek_frame (AVPacket *packet, int timestamp)
   	rv= av_seek_frame(pFormatCtx, videoStream, timestamp, AVSEEK_FLAG_BACKWARD) ;
 	avcodec_flush_buffers(pCodecCtx);
   } 
+#endif
   my_avprev = timestamp;
   if (rv < 0) return (0); // seek failed.
 
@@ -362,15 +373,14 @@ int my_seek_frame (AVPacket *packet, int timestamp)
   // avcodec_flush_buffers(pCodecCtx);
 
   // Find a video frame.
-  AVStream *v_stream = pFormatCtx->streams[videoStream];
+  // AVStream *v_stream = pFormatCtx->streams[videoStream];
   read_frame:
   if(av_read_frame(pFormatCtx, packet)<0)
   {
     if (!want_quiet) printf("Reached movie end\n");
     return (0);
   }
-//FIXME: maybe we can use av_dup_packet if LIBAVFORMAT_BUILD > 4617 
-#if LIBAVFORMAT_BUILD == 3278080
+#if LIBAVFORMAT_BUILD >=4616
   if (av_dup_packet(packet) < 0) {
     /* ffmpeg - workaround see 
      * http://cekirdek.pardus.org.tr/~ismail/ffmpeg-docs/libavformat_2utils_8c-source.html#l00246
@@ -389,18 +399,21 @@ int my_seek_frame (AVPacket *packet, int timestamp)
 
   /* backwards compatible - no cont. seeking (seekmode ANY or KEY ; cmd-arg: -K, -k)
    * do we want a AVSEEK_FLAG_ANY + SEEK_CONTINUOUS option ?? not now.  */
+#if LIBAVFORMAT_BUILD < 4617
+	return (1);
+#endif
   if (seekflags!=SEEK_CONTINUOUS) return (1);
 
   /* code for continuous seeking */
  
   mtsb = packet->pts;  // FIXME I have no idea what v_stream->time_base is in older versions of ffmpeg
   if (mtsb == AV_NOPTS_VALUE) { 
-  	// mtsb = packet->dts;
-  	mtsb = av_q2d(v_stream->time_base)*packet->dts;
-  	if (ffdebug==0) { ffdebug=1; fprintf(stderr,"WARNING: video file does not report pts information.\n         resorting to ffmpeg decompression timestamps.\n"); }
+  	mtsb = packet->dts;
+  	//mtsb = av_q2d(v_stream->time_base)*packet->dts;
+  	if (ffdebug==0) { ffdebug=1; fprintf(stderr,"WARNING: video file does not report pts information.\n         resorting to ffmpeg decompression timestamps.\n         consider to transcode the file.\n"); }
   }
   if (mtsb == AV_NOPTS_VALUE) { 
-  	if (ffdebug<2) { ffdebug=2; fprintf(stderr,"ERROR: neither the video file nor the ffmpeg decoder were able to\n       provide a video frame timestamp to be used."); }
+  	if (ffdebug<2) { ffdebug=2; fprintf(stderr,"ERROR: neither the video file nor the ffmpeg decoder were able to\n       provide a video frame timestamp."); }
 	av_free_packet(packet);
   	return (0);
   }
@@ -418,7 +431,11 @@ int my_seek_frame (AVPacket *packet, int timestamp)
       }
  //   fprintf(stderr, "seek %i-> %i\n", (int)mtsb, timestamp);
 #if 1
+# if LIBAVFORMAT_BUILD < 4617
+	if (av_seek_frame(pFormatCtx, videoStream, mtsb+1) >= 0) {
+# else
 	if (av_seek_frame(pFormatCtx, videoStream, mtsb+1, AVSEEK_FLAG_ANY) >= 0) {
+# endif
 	    avcodec_flush_buffers(pCodecCtx);
             goto read_frame;
 	}
@@ -489,7 +506,7 @@ void display_frame(int64_t timestamp, int force_update)
 			fprintf( stderr, "read error.\n");
 			 break;
 		}
-#if LIBAVFORMAT_BUILD == 3278080
+#if LIBAVFORMAT_BUILD >=4616
 		if (av_dup_packet(&packet) < 0) {
 		    	printf("can not allocate packet\n");
 			break;
