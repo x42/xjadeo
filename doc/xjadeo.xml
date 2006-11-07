@@ -195,9 +195,9 @@
 
     <para>It's a thighrope walk between audio-helper-application (low profile) and pro-A/V-tool (exact video sync).</para>
 
-    <para>xjadeo started as a collection of example code end is beeing used as that. People use it as code repository to spin-off c based video installations...   Parts of <application>xjadeo</application> have been re-used for various VJ purposes, mainly to synchronize playback on multiple screens (using <ulink url="netjack.sourceforge.net">netjack</ulink> and/or xjadeo remote-ctrl see <xref linkend="sync_remote_commands" /> ). check <ulink url="http://svn.sourceforge.net/viewcvs.cgi/xjadeo/trunk/contrib/">http://svn.sourceforge.net/viewcvs.cgi/xjadeo/trunk/contrib/</ulink> for further additions.</para>
+    <para>xjadeo started as a collection of example code end is being used as that. People use it as code repository to spin-off c based video installations...   Parts of <application>xjadeo</application> have been re-used for various VJ purposes, mainly to synchronize playback on multiple screens (using <ulink url="netjack.sourceforge.net">netjack</ulink> and/or xjadeo remote-ctrl see <xref linkend="sync_remote_commands" /> ). check <ulink url="http://svn.sourceforge.net/viewcvs.cgi/xjadeo/trunk/contrib/">http://svn.sourceforge.net/viewcvs.cgi/xjadeo/trunk/contrib/</ulink> for further additions.</para>
 
-    <para>With a minor modifications xjadeo can read dynamic video-frame-offset lists (EDL) and do the editing during playback. it is unlikeley for this to be merged in the main distribution. video editing, although sometimes handy, is clearly beyond xjadeo's scope.  see our sister projects: <ulink url="http://openmovieeditor.sourceforge.net/">Open Movie Editor</ulink> or use the EDL capabilites of mplayer/mencoder. join the discussion <ulink url="http://openmtes.tomveens.nl/">Openmtes</ulink> </para>
+    <para>With a minor modifications xjadeo can read dynamic video-frame-offset lists (EDL) and do the editing during playback. it is unlikely for this to be merged in the main distribution. video editing, although sometimes handy, is clearly beyond xjadeo's scope.  see our sister projects: <ulink url="http://openmovieeditor.sourceforge.net/">Open Movie Editor</ulink> or use the EDL capabilities of mplayer/mencoder. join the discussion <ulink url="http://openmtes.tomveens.nl/">Openmtes</ulink> </para>
   </section>
 
   </section>
@@ -581,7 +581,7 @@ make install # (requires root privileges) </screen></para>
       <para>xjadeo has not been tested on a 64bit architecture. not sure if we
       ought to expect problems there...</para>
 
-      <para>If you experience unexpected behaviour please file a bug ticket at
+      <para>If you experience unexpected behavior please file a bug ticket at
       <ulink url="http://sourceforge.net/projects/xjadeo/">http://sourceforge.net/projects/xjadeo/</ulink>
       </para>
     </section>
@@ -1287,10 +1287,10 @@ make install # (requires root privileges) </screen></para>
     </section>
 
     <section>
-    <title>Synchronization Accurancy</title>
+    <title>Synchronization Accuracy</title>
     <para>xjadeo does not provide an exact time base for online-editing! Always stop the transport when you need to define an exact sync point!</para>
     <para>There current version of xjadeo decodes the video just in time (as opposed to ahead in time). This introduces a random latency. screen updates are not locked to any time source.</para>
-    <para>xjadeo polls the time source at regular intervalls. Try increasing the update framerate with <option>-f</option> to multiples of the framerate; or drop us a motivating line to code the VSync extension. So far we are perfectly happy editing soundtracks at 10 video frames per second.</para>
+    <para>xjadeo polls the time source at regular intervals. Try increasing the update framerate with <option>-f</option> to multiples of the framerate; or drop us a motivating line to code the VSync extension. So far we are perfectly happy editing soundtracks at 10 video frames per second.</para>
     </section>
 
     <section>
@@ -1300,7 +1300,7 @@ make install # (requires root privileges) </screen></para>
     calculating audio-frame / audio-frame-rate * video-frame-rate and round down to the nearest integer.
     Integer video-frame offsets (<option>-o &lt;integer&gt;</option>are applied afterwards.
     </para>
-    <para>This depends on correctly detecting the framerate of the video file, which can be overriden with <option>-F</option>.</para>
+    <para>This depends on correctly detecting the framerate of the video file, which can be overridden with <option>-F</option>.</para>
     </section>
 
     <section>
@@ -1388,7 +1388,7 @@ make install # (requires root privileges) </screen></para>
             <term><option>-q, --quiet, --silent</option></term>
 
             <listitem>
-              <para>Supresses normal output messages.</para>
+              <para>Suppresses normal output messages.</para>
             </listitem>
           </varlistentry>
 
@@ -1435,7 +1435,7 @@ make install # (requires root privileges) </screen></para>
             <term><option>-K, --continuous </option></term>
 
             <listitem>
-              <para>Decode video frame by frame, particularily only useful to read files where not every frame is a keyframe at cost of CPU usage. Note that this option adds some extra latency when seeking. combine with <option>-f </option>: It makes sense to set xjadeo's framerate to equal the framerate of the video file.</para>
+              <para>Decode video frame by frame, particularly only useful to read files where not every frame is a keyframe at cost of CPU usage. Note that this option adds some extra latency when seeking. combine with <option>-f </option>: It makes sense to set xjadeo's framerate to equal the framerate of the video file.</para>
             </listitem>
           </varlistentry>
 
@@ -1672,10 +1672,10 @@ make install # (requires root privileges) </screen></para>
         <itemizedlist>
           <listitem>
             <para>Resizing the window will resize the movie as well. (CAVEAT:
-            resizing a video frame to make it fit the window is a cpu
+            resizing a video frame to make it fit the window is a CPU
             expensive operation unless you are using hardware overlay. If you
             are not comfortable with the frame size of your movie it is more
-            cpu efficient that you reencode the video file with the desired
+            CPU efficient that you re-encode the video file with the desired
             size beforehand.)</para>
           </listitem>
 
