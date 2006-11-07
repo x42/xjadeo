@@ -1,10 +1,37 @@
 TODO
 ----
+
+* remove SDL and gtk code from xjadeo
+
+* unify shared x11/xv code (callbacks, WM..)
+
+* imlib2 (RGB24 -> RGBA32 code)
+
+* drag-drop: allow to 'drop' file-uri's on the window
+  maybe that's a QT job. X11-dnd can be a real #$?*!
+
+* OS-X portmidi 
+  -> build a portmidi dylib.
+
+* http://lash.nongnu.org/ support
+
+TODO - next major version: (backport xj5 branch)
+------------------------------------------------
+* exact sync
+ decode one frame ahead and use
+ Xv/Xext -> VSYNC raster interrupt to trigger double buffer flip
+
+* optional: don't poll for jack-time but register as jack-audio client
+  -> jack will call xjadeo
+
+* modularize time-sync + video-source
+
+
+TODO - legacy and older ideas
+-----------------------------
   DISPLAY:
 
  - getwindow position 
-
- - fullscreen (windowless mode)
 
  - SDL RGB SWSURFACE (new videomode)
 
@@ -15,17 +42,15 @@ TODO
 
  - freetype font config. outline font? color, xposition.
 
- - proper font selection for on screen display.
-
   MIDI:
 
  - portmidi: error handling (portmidi aborts on error)
 
+ - jack midi 
+
   MAIN:
 
  - config file for our mighty jolly bunch of config options.
-
- - allow to override autodetected framerate for a video file.
 
   REMOTE: 
 

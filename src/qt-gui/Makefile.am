@@ -29,10 +29,10 @@ $(name):	$(name).mak $(sources) $(headers)
 	$(MAKE) -f $(name).mak
 
 install:	$(name)
-	$(INSTALL) $(name) $(bindir)/
+	$(INSTALL) $(name) $(DESTDIR)/$(bindir)/
 
-uninstall:	$(bindir)/$(name)
-	$(DEL_FILE) -vf $(bindir)/$(name)
+uninstall:	$(DESTDIR)/$(bindir)/$(name)
+	$(DEL_FILE) -vf $(DESTDIR)/$(bindir)/$(name)
 
 .PHONY:	clean
 clean:	$(name).mak

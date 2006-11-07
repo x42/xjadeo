@@ -1,3 +1,6 @@
+2006-11-06  rgareus  <robin@gareus.org>
+ - imlib2 support
+
 2006-11-05  rgareus  <robin@gareus.org>
  - added support for LIBAVCODEC_BUILD 4646 (ffmpeg-0.4.9-pre1)
    old seek code.

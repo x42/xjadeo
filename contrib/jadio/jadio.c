@@ -677,7 +677,7 @@ void sampleseek_resample (jack_nframes_t sample) {
  *
  */
 
-#if 0 // buffer + resample
+#if 1 // buffer + resample
 
 jack_nframes_t rs_position;
 jack_nframes_t rs_clock;
@@ -712,7 +712,7 @@ void *resamplethread(void *arg){
 //		if (rs_clock < rs_position )
 		if ((rs_clock > rs_position +11*CACHE_S ) ||
 		    (rs_clock+11*CACHE_S < rs_position )) { 
-		        printf("seek: from  %i to %i (req:%i)\n",rs_clock,((jack_nframes_t) rs_position/CACHE_S*CACHE_S) , rs_position);
+		        // printf("seek: from  %i to %i (req:%i)\n",rs_clock,((jack_nframes_t) rs_position/CACHE_S*CACHE_S) , rs_position);
 			rs_clock= (jack_nframes_t) rs_position/CACHE_S*CACHE_S;
 			clearcache(rs_cache);
 		}

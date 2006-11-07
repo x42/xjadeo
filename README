@@ -43,14 +43,15 @@ BUILD DEPENDANCIES
 you need have the devel packages installed on the system to compile xjadeo:
 see docbook in doc/ for detailed version information.
 
- * ffmpeg-devel  -  ffmpeg (0.4.9-6)
+ * ffmpeg-devel  -  ffmpeg (>= 0.4.9-6) -  latest svn preferred!
  * jack-audio-connection-kit-devel
  * libX11 
 
 optionally you may want to have
- * freetype2
+ * freetype2 
  * gtk
- * imlib         - Imlib (1.9.13-19) or Imlib11-dev (1.9.14-28)
+ * imlib         - Imlib (>=1.9.13) or Imlib11-dev (>=1.9.13)
+ * imlib2 
  * SDL
  * portmidi
  * alsamidi

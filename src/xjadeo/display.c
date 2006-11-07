@@ -172,6 +172,12 @@ const vidout VO[] = {
 #else
 		NULLOUTPUT},
 #endif
+	{ PIX_FMT_RGBA32,   SUP_IMLIB2,   "x11 - ImLib2",
+#if HAVE_IMLIB2
+		&render_imlib2, &open_window_imlib2, &close_window_imlib2, &handle_X_events_imlib2, &newsrc_imlib2, &resize_imlib2, &get_window_size_imlib2, &position_imlib2, &get_window_pos_imlib2},
+#else
+		NULLOUTPUT},
+#endif
 	{ PIX_FMT_RGB24,   SUP_GTK,	"GTK",
 #if HAVE_MYGTK
 		&render_gtk, &open_window_gtk, &close_window_gtk, &handle_X_events_gtk, &newsrc_null, &resize_gtk, &getsize_gtk, &position_null, &getpos_null},

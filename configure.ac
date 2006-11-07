@@ -7,7 +7,7 @@ AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
 dnl Every other copy of the package version number gets its value from here
-AM_INIT_AUTOMAKE(xjadeo, 0.3.15)
+AM_INIT_AUTOMAKE(xjadeo, 0.3.16)
 
 dnl create a config.h file (Automake will add -DHAVE_CONFIG_H)
 AM_CONFIG_HEADER(config.h)
@@ -37,12 +37,15 @@ AC_PROG_INSTALL
 #AC_PROG_CC
 AM_PROG_CC_C_O
 
+# TODO: check for xsltproc, xmllint (+curl?) to write documentation.
+
 dnl Checks for libraries.
 
 AH_TEMPLATE([HAVE_GTK], [Define as 1 if you have gtk])
 AH_TEMPLATE([HAVE_SDL], [Define as 1 if you have libsdl])
 AH_TEMPLATE([HAVE_LIBXV], [Define as 1 if  you have the Xv library (-lXv)])
 AH_TEMPLATE([HAVE_IMLIB], [Define as 1 if you have imlib])
+AH_TEMPLATE([HAVE_IMLIB2], [Define as 1 if you have imlib2])
 AH_TEMPLATE([HAVE_PORTMIDI], [Define as 1 if you have portmidi and asound])
 AH_TEMPLATE([HAVE_MIDI], [Define as 1 if you have either alsa or portmidi])
 
@@ -58,7 +61,7 @@ if test "x$enable_gtk" = "xyes"; then
 fi
 
 
-# FIXME
+# FIXME - needed fi. on osx
 X_LIBS="-L/usr/X11R6/lib/"
 
 if test "x$enable_xv" != "xno"; then
@@ -97,6 +100,9 @@ if test "x$enable_imlib" != "xno"; then
 #	AC_CHECK_HEADERS(Imlib.h)
 #	AC_CHECK_LIB([Imlib], [Imlib_init], , [AC_MSG_ERROR(*** IMAGE: You should install imlib-dev first ***)])
 	AM_PATH_IMLIB(1.9.13, [ AC_DEFINE(HAVE_IMLIB) ])
+	PKG_CHECK_MODULES(IMLIB2,imlib2,  [ AC_DEFINE(HAVE_IMLIB2) ])
+	AC_SUBST(IMLIB2_CFLAGS)
+	AC_SUBST(IMLIB2_LIBS)
 fi
 
 if test "x$enable_sdl" != "xno"; then

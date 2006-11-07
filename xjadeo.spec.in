@@ -17,10 +17,10 @@ License: GPL
 Group: Application/Multimedia
 
 # optional items
-#Vendor: rgareus 
 #Distribution:
 #Icon:
 #URL:
+Vendor: Robin Gareus <robin@gareus.org>, Luis Garrido <luisgarrido@users.sourceforge.net>
 Packager: Luis Garrido luisgarrido@users.sourceforge.net
 
 # source + patches

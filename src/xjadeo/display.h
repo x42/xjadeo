@@ -126,3 +126,32 @@ void handle_X_events_imlib (void);
 void resize_imlib (unsigned int x, unsigned int y);
 void position_imlib (int x, int y);
 
+/*******************************************************************************
+ *
+ * X11 / ImLib2 
+ */
+
+#if HAVE_IMLIB2
+
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/Xos.h>
+#include <X11/Xatom.h>
+
+#include <Imlib2.h>
+
+#define SUP_IMLIB2 1
+#else
+#define SUP_IMLIB2 0
+#endif 
+
+void get_window_size_imlib2 (unsigned int *my_Width, unsigned int *my_Height);
+void get_window_pos_imlib2 (int *x,  int *y);
+int open_window_imlib2 (int *argc, char ***argv);
+void close_window_imlib2(void);
+void render_imlib2 (uint8_t *mybuffer);
+void newsrc_imlib2 (void) ;
+void handle_X_events_imlib2 (void);
+void resize_imlib2 (unsigned int x, unsigned int y);
+void position_imlib2 (int x, int y);
+

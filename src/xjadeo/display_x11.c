@@ -47,7 +47,6 @@
   XvImage      		*xv_image;
 
   Atom 			xv_del_atom;   
-
   char	 		*xv_buffer;
   size_t		xv_len;
   int			xv_one_memcpy = 0; 
@@ -281,8 +280,6 @@ void render_xv (uint8_t *mybuffer) {
 	XFlush(xv_dpy);
 }
 
-
-
 void handle_X_events_xv (void) {
 //	int        old_pic_format;
 	XEvent event;
@@ -294,8 +291,7 @@ void handle_X_events_xv (void) {
 //				fprintf(stdout, "event expose\n");
 				break;
 			case ClientMessage:
-//		         fprintf(stdout, "event client\n");
-				if (event.xclient.data.l[0] == xv_del_atom)
+				if (event.xclient.data.l[0] == xv_del_atom) 
 					loop_flag = 0;
 				break;
 			case ConfigureNotify:
@@ -541,6 +537,7 @@ int open_window_xv (int *argc, char ***argv) {
 		  NULL, 0, &hints, &wmhints, NULL);
 
   XSelectInput(xv_dpy, xv_win, KeyPressMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | StructureNotifyMask);
+
   XMapRaised(xv_dpy, xv_win);
 
   if ((xv_del_atom = XInternAtom(xv_dpy, "WM_DELETE_WINDOW", True)) != None)
@@ -793,3 +790,227 @@ void position_imlib (int x, int y) {
 }
 
 #endif /* HAVE_IMLIB */
+
+
+/*******************************************************************************
+ *
+ * X11 / ImLib2 
+ */
+
+#if HAVE_IMLIB2
+
+	Display   *im_display;
+	Window    im_window;
+	GC        im_gc;
+	int       im_screen_number;
+	int       im_depth;
+	Visual    *im_vis;
+	Colormap  im_cm;
+
+//	ImlibData *imlib2 = NULL;
+//	XImage    *im_image;
+	Pixmap    im_pxm, im_pxmmask;
+	Atom      im_del_atom;           /* WM_DELETE_WINDOW atom   */
+
+
+void get_window_size_imlib2 (unsigned int *my_Width, unsigned int *my_Height) {
+	int dummy0,dummy1;
+	unsigned int dummy_u0, dummy_u1;
+	Window dummy_w;
+	XGetGeometry(im_display, im_window, &dummy_w, &dummy0,&dummy1,my_Width,my_Height,&dummy_u0,&dummy_u1);
+}
+
+void get_window_pos_imlib2 (int *x,  int *y) {
+	unsigned int dummy_u0, dummy_u1;
+	unsigned int dummy_W, dummy_H;
+	Window dummy_w;
+	// FIXME: this returns the position of the video in the window
+	// should return the pos of the window relative to the root.
+	XGetGeometry(im_display, im_window, &dummy_w, x,y, &dummy_W, &dummy_H,&dummy_u0,&dummy_u1);
+}
+
+int open_window_imlib2 (int *argc, char ***argv) {
+  if ( (im_display=XOpenDisplay(NULL)) == NULL )
+  {
+      (void) fprintf( stderr, "Cannot connect to X server\n");
+      exit( -1 );
+  }
+ 
+  // init only once!
+  //imlib2 = Imlib_init(im_display);
+  
+  im_screen_number = DefaultScreen(im_display);
+  im_depth = DefaultDepth(im_display, im_screen_number);
+  im_vis = DefaultVisual(im_display, im_screen_number);
+  im_cm = DefaultColormap(im_display, im_screen_number);
+
+  im_window = XCreateSimpleWindow(
+    im_display, 
+    RootWindow(im_display,im_screen_number),
+    0,             // x
+    0,             // y
+    movie_width,   // width
+    movie_height,  // height
+    0,             // border
+    BlackPixel(im_display, im_screen_number), 
+    WhitePixel(im_display, im_screen_number)
+  );
+
+  XmbSetWMProperties(im_display, im_window, "xjadeo", NULL,
+         NULL, 0, NULL, NULL,
+         NULL);
+     
+  XGCValues values;
+  unsigned long valuemask = 0;
+  im_gc = XCreateGC(im_display, im_window, valuemask, &values);
+  
+  // defined in: /usr/include/X11/X.h  //  | VisibilityChangeMask);
+  XSelectInput(im_display, im_window, KeyPressMask | ExposureMask | ButtonPressMask | ButtonReleaseMask |StructureNotifyMask ); 
+  
+  XMapWindow(im_display, im_window);
+      
+  /* express interest in WM killing this app */
+  if ((im_del_atom = XInternAtom(im_display, "WM_DELETE_WINDOW", True)) != None)
+    XSetWMProtocols(im_display, im_window, &im_del_atom, 1);
+	return 0;
+}
+
+void close_window_imlib2(void)
+{
+	XFreeGC(im_display, im_gc);
+	XCloseDisplay(im_display);
+	//imlib=NULL;
+}
+
+        
+void render_imlib2 (uint8_t *mybuffer) {
+	unsigned int my_Width,my_Height;
+	Imlib_Image im_image, im_scaled;
+	if (!mybuffer) return;
+	im_image = imlib_create_image_using_data(movie_width, movie_height, (DATA32*)buffer);
+
+	imlib_context_set_display(im_display);
+	imlib_context_set_visual(im_vis);
+	imlib_context_set_colormap(im_cm);
+	imlib_context_set_drawable(im_window);
+
+    /* get the current window size */
+	get_window_size_imlib2(&my_Width,&my_Height);
+	if (im_image) {
+		imlib_context_set_image(im_image);
+		im_scaled=imlib_create_cropped_scaled_image(0,0,movie_width, movie_height,my_Width,my_Height);
+		imlib_context_set_image(im_scaled);
+		imlib_render_image_on_drawable(0, 0);
+		imlib_free_image();
+		imlib_context_set_image(im_image);
+		imlib_free_image();
+	}
+
+//       XSync(display, True);     
+}
+
+void newsrc_imlib2 (void) { 
+	; // nothing to do :)
+}
+
+
+void handle_X_events_imlib2 (void) {
+    XEvent event;
+    while(XPending(im_display))
+    {
+      XNextEvent(im_display, &event);
+      switch  (event.type) {
+      case Expose:
+	   render_imlib2(buffer);
+//         fprintf(stdout, "event expose\n");
+        break;
+      case ClientMessage:
+//         fprintf(stdout, "event client\n");
+        if (event.xclient.data.l[0] == im_del_atom)
+            loop_flag = 0;
+        break;
+      case ButtonPress:
+//	fprintf(stdout, "Button %i press event.\n", event.xbutton.button);
+	break;
+      case ButtonRelease:
+//	fprintf(stdout, "Button %i release event.\n", event.xbutton.button);
+	if (event.xbutton.button == 1)
+		// resize to movie size
+		XResizeWindow(im_display, im_window, movie_width, movie_height);
+	else {
+		unsigned int my_Width,my_Height;
+      		get_window_size_imlib2(&my_Width,&my_Height);
+
+		if (event.xbutton.button == 4 && my_Height > 32 && my_Width > 32)  {
+			float step=sqrt((float)my_Height);
+			my_Width-=floor(step*((float)movie_width/(float)movie_height));
+			my_Height-=step;
+			//XResizeWindow(im_display, im_window, my_Width, my_Height);
+		}
+		if (event.xbutton.button == 5) {
+			float step=sqrt((float)my_Height);
+			my_Width+=floor(step*((float)movie_width/(float)movie_height));
+			my_Height+=step;
+		}
+
+		// resize to match movie aspect ratio
+		if( ((float)movie_width/(float)movie_height) < ((float)my_Width/(float)my_Height) )
+			my_Width=floor((float)my_Height * (float)movie_width / (float)movie_height);
+		else my_Height=floor((float)my_Width * (float)movie_height / (float)movie_width);
+
+		XResizeWindow(im_display, im_window, my_Width, my_Height);
+	}
+	break;
+	case KeyPress:
+	{
+		int key;
+		KeySym keySym;
+		char buf[100];
+		static XComposeStatus stat;
+
+		XLookupString(&event.xkey, buf, sizeof(buf), &keySym, &stat);
+		key = ((keySym & 0xff00) != 0 ? ((keySym & 0x00ff) + 256) : (keySym));
+		if (key == (0x1b + 256) ) loop_flag=0;
+	//	printf("X11 key press: '%c'\n",key);
+	//	xjadeo_putkey(key);
+	}
+	break;
+#if 0
+      case VisibilityNotify:
+	if (event.xvisibility.state == VisibilityUnobscured) {
+//		fprintf(stdout, "VisibilityUnobscured!\n");
+		loop_run=1;
+	}
+	else if (event.xvisibility.state == VisibilityPartiallyObscured) {
+//		fprintf(stdout, "Visibility Partly Unobscured!\n");
+		loop_run=1;
+	}
+	else {
+		loop_run=0;
+//		fprintf(stdout, "Visibility Hidden!\n");
+	}
+	break;
+#endif
+      case MapNotify:
+//	fprintf(stdout, "Window (re)mapped - enable Video.\n");
+	loop_run=1;
+	break;
+      case UnmapNotify:
+//	fprintf(stdout, "Window unmapped/minimized - disabled Video.\n");
+	loop_run=0;
+	break;
+      default:
+	; //fprintf(stdout, "unnoticed X event.\n");
+      }
+    }
+}
+
+void resize_imlib2 (unsigned int x, unsigned int y) { 
+	XResizeWindow(im_display, im_window, x, y);
+}
+
+void position_imlib2 (int x, int y) { 
+	XMoveWindow(im_display, im_window, x, y);
+}
+
+#endif /* HAVE_IMLIB2 */

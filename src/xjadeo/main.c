@@ -341,6 +341,9 @@ static void printversion (void) {
 #if HAVE_IMLIB
 		"x11/imlib "
 #endif 
+#if HAVE_IMLIB2
+		"x11/imlib2 "
+#endif 
 #if (HAVE_GTK && HAVE_GDK_PIXBUF )
 		"gtk "
 #endif 
