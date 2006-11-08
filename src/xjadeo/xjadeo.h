@@ -8,6 +8,18 @@
 #include <config.h>
 #endif
 
+#ifdef HAVE_LASH
+#include <lash/lash.h>
+void lash_setup();
+#endif
+
+void lash_process();
+void lcs_str(char *key, char *value);
+void lcs_int(char *key, int value);
+void lcs_long(char *key, long int  value);
+void lcs_dbl(char *key, double value);
+
+
 /* prototypes of fn's in  display.c */
 void newsourcebuffer (void);
 void close_window(void);

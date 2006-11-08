@@ -29,6 +29,8 @@
 #include "xjadeo.h"
 #include "display.h"
 
+#define DND
+
 /*******************************************************************************
  * XV !!!
  */
@@ -47,11 +49,27 @@
   XvImage      		*xv_image;
 
   Atom 			xv_del_atom;   
+#ifdef DND
+  Atom 			xv_a_XdndDrop;   
+  Atom 			xv_a_XdndFinished;   
+  Atom 			xv_a_XdndActionCopy;   
+  Atom 			xv_a_XdndLeave;   
+  Atom 			xv_a_XdndPosition;   
+  Atom 			xv_a_XdndStatus;   
+  Atom 			xv_a_XdndEnter;   
+  Atom 			xv_a_XdndAware;   
+  Atom 			xv_a_XdndTypeList;   
+  Atom 			xv_a_XdndSelection;   
+  Atom			xv_atom;
+  int 			dnd_source;
+  const int 		xdnd_version = 5;
+#endif
   char	 		*xv_buffer;
   size_t		xv_len;
   int			xv_one_memcpy = 0; 
   int			xv_ontop = 0; 
   int			xv_mouse = 0; 
+
 
 // TODO: support other YUV Xv - ffmpeg combinations
 // (depending on hardware and X) Xv can do more than YV12 ...
@@ -280,8 +298,134 @@ void render_xv (uint8_t *mybuffer) {
 	XFlush(xv_dpy);
 }
 
+#ifdef DND
+void HandleEnter(XEvent * xe) {
+	long *l = xe->xclient.data.l;
+    	xv_atom= None;
+	Atom ok = XInternAtom(xv_dpy, "text/uri-list", False);
+
+	int version = (int)(((unsigned long)(l[1])) >> 24);
+	if (version > xdnd_version) return;
+	dnd_source = l[0];
+
+        if (l[1] & 1) {
+		Atom type = 0;
+		int f,ll;
+		unsigned long n, a;
+		unsigned char *data;
+		int offset = 0;
+		a=1;
+      		while(a && xv_atom== None){
+			XGetWindowProperty(xv_dpy, dnd_source, xv_a_XdndTypeList, offset,
+			256, False, XA_ATOM, &type, &f,&n,&a,&data);
+				if(data == NULL || type != XA_ATOM || f != 8*sizeof(Atom)){
+				XFree(data);
+				return;
+			}
+			for (ll=0; ll<n; ll++) {
+				//if (data[ll]!=None)
+				//	printf("DEBUG atom:%s\n", XGetAtomName(xv_dpy,data[ll]));
+				if (data[ll] == ok) {
+					xv_atom= ok;
+					break;
+				}
+			}
+			if (data) XFree(data);
+		}
+	} else {
+		int i;
+		for(i=2; i < 5; i++) {
+			//if(l[i]!=None)
+			//	printf("DEBUG atom:%s\n", XGetAtomName(xv_dpy,l[i]));
+			if (l[i] == ok) xv_atom= ok;
+		}
+	}
+	//printf("!!!!!!!!!!!!!!!! DND ok: %i\n",xv_atom==ok);
+}
+
+void SendStatus (void) {
+	unsigned int my_Width,my_Height;
+	get_window_size_xv(&my_Width,&my_Height);
+	XClientMessageEvent response;
+	response.type = ClientMessage;
+	response.window = xv_win;
+	response.format = 32;
+	response.message_type = xv_a_XdndStatus;
+	response.data.l[0] = xv_win;
+	finished.data.l[1] = (1)?1:0; // flags 3 ?? - TODO: check if we can accept this type.
+	response.data.l[2] = 0; // x, y
+	response.data.l[3] = my_Width<<16 || my_Height&0xFFFFL; // w, h (width<<16 || height&0xFFFFL)
+	response.data.l[4] = xv_a_XdndActionCopy; // action
+
+	XSendEvent(xv_dpy, dnd_source, False, NoEventMask, (XEvent*)&response);
+}
+
+void SendFinished (void) {
+	XClientMessageEvent finished;
+	finished.type = ClientMessage;
+	finished.display = xv_dpy;
+	finished.window = dnd_source; 
+	finished.format = 32;
+	finished.message_type = xv_a_XdndFinished;
+	finished.data.l[0] = xv_win;
+	finished.data.l[1] = (1)?1:0; // flags - isAccepted ? sure.
+	finished.data.l[2] = 0; // action atom
+	finished.data.l[3] = 0; 
+	finished.data.l[4] = 0;
+	XSendEvent(xv_dpy, dnd_source, False, NoEventMask, (XEvent*)&finished);
+}
+
+#define MAX_DND_FILES 64
+void xapi_open(void *d); // command to open movie - TODO: better do movie_open, initibuffer... (remote replies)
+
+void getDragData (XEvent *xe) {
+	Atom type;
+	int f;
+	unsigned long n, a;
+	unsigned char *data;
+
+	XGetWindowProperty(xv_dpy, xe->xselection.requestor,
+            xe->xselection.property, 0, 65536, 
+	    True, xv_atom, &type, &f, &n, &a, &data);
+
+	SendFinished();
+
+	if (!data){
+		fprintf(stderr, "WARNING: drag-n-drop - no data\n"); 
+	}
+
+	/* Handle dropped files */
+	char * retain = (char*)data;
+	char * files[MAX_DND_FILES];
+	int num = 0;
+
+	while(retain < ((char *) data) + n) {
+		int nl = 0;
+		if (!strncmp(retain,"file:",5)) { retain+=5; }
+		files[num++]=retain;
+
+		while(retain < (((char *)data) + n)){
+			if(*retain == '\r' || *retain == '\n'){
+				*retain=0;
+				nl = 1;
+			} else if (nl) break;
+			retain++;
+		}
+
+		if (num >= MAX_DND_FILES)
+			break;
+	}
+
+	for (f=0;f<num;f++) {
+		printf("drag-n-drop: recv: %i '%s'\n",f,files[f]);
+	}
+	if (num>0) xapi_open(files[0]);
+	free(data);
+}
+
+#endif
+
 void handle_X_events_xv (void) {
-//	int        old_pic_format;
 	XEvent event;
 	while(XPending(xv_dpy)) {
 		XNextEvent(xv_dpy, &event);
@@ -290,7 +434,35 @@ void handle_X_events_xv (void) {
 				render_xv(buffer);
 //				fprintf(stdout, "event expose\n");
 				break;
+			case SelectionNotify:
+#ifdef DND
+				getDragData(&event);
+#endif
+				break;
 			case ClientMessage:
+#ifdef DND
+		         	//fprintf(stdout, "event client: %i\n",event.xclient.message_type);
+				if (event.xclient.message_type == xv_a_XdndPosition) {
+					if (xv_atom!= None) 
+						SendStatus();
+			//	} else if (event.xclient.message_type == xv_a_XdndLeave)
+			//		printf("DND LEAVE!\n");
+				} else if (event.xclient.message_type == xv_a_XdndEnter) {
+					HandleEnter(&event);
+					SendStatus();
+				} else if (event.xclient.message_type == xv_a_XdndDrop) {
+					//printf("DROP!\n");
+    					if (xv_atom!= None) {
+						XConvertSelection(xv_dpy, xv_a_XdndSelection, xv_atom, xv_a_XdndSelection, xv_win, CurrentTime);
+					}
+					//XFlush(xv_dpy);
+					//SendFinishedOther();
+				}
+#endif
+				//if (event.xclient.data.l[0] == xv_a_TakeFocus)  {
+				//	;
+				//}
+
 				if (event.xclient.data.l[0] == xv_del_atom) 
 					loop_flag = 0;
 				break;
@@ -329,6 +501,7 @@ void handle_X_events_xv (void) {
 					else my_Height=floor((float)my_Width * (float)movie_height / (float)movie_width);
 
 					XResizeWindow(xv_dpy, xv_win, my_Width, my_Height);
+					lcs_int("window_size",my_Width<<16|my_Height);
 				}
 //				fprintf(stdout, "Button %i release event.\n", event.xbutton.button);
 				render_xv(buffer);
@@ -538,6 +711,25 @@ int open_window_xv (int *argc, char ***argv) {
 
   XSelectInput(xv_dpy, xv_win, KeyPressMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | StructureNotifyMask);
 
+#ifdef DND
+  Atom atm = (Atom)xdnd_version;
+  if ((xv_a_XdndDrop = XInternAtom (xv_dpy, "XdndDrop", True)) != None && 
+      (xv_a_XdndLeave = XInternAtom (xv_dpy, "XdndLeave", True)) != None && 
+      (xv_a_XdndEnter = XInternAtom (xv_dpy, "XdndEnter", True)) != None && 
+/*    (xv_uri_atom = XInternAtom (xv_dpy, "text/uri-list", True)) != None &&  */
+      (xv_a_XdndActionCopy = XInternAtom (xv_dpy, "XdndActionCopy", True)) != None && 
+      (xv_a_XdndFinished = XInternAtom (xv_dpy, "XdndFinished", True)) != None && 
+      (xv_a_XdndPosition = XInternAtom (xv_dpy, "XdndPosition", True)) != None && 
+      (xv_a_XdndStatus = XInternAtom (xv_dpy, "XdndStatus", True)) != None && 
+      (xv_a_XdndTypeList = XInternAtom (xv_dpy, "XdndTypeList", True)) != None && 
+      (xv_a_XdndSelection = XInternAtom (xv_dpy, "XdndSelection", True)) != None && 
+      (xv_a_XdndAware = XInternAtom (xv_dpy, "XdndAware", True)) != None  ) {
+  	printf("enabled drag-DROP support.\n");
+	XChangeProperty(xv_dpy, xv_win, xv_a_XdndAware, XA_ATOM, 32, PropModeReplace, (unsigned char *)&atm, 1);
+     // XDeleteProperty(xv_dpy, xv_win, xv_a_XdndAware);
+  }
+#endif
+
   XMapRaised(xv_dpy, xv_win);
 
   if ((xv_del_atom = XInternAtom(xv_dpy, "WM_DELETE_WINDOW", True)) != None)
@@ -642,7 +834,31 @@ int open_window_imlib (int *argc, char ***argv) {
   XSelectInput(display, window, KeyPressMask | ExposureMask | ButtonPressMask | ButtonReleaseMask |StructureNotifyMask ); 
   
   XMapWindow(display, window);
-      
+ 
+#ifdef DND 
+  /* hack to re-use xv-dnd  for x11/imlib
+   * gonna be resolved with upcoming x11/xv merge/cleanup
+   */
+  xv_win= window;
+  xv_dpy= display;
+  Atom atm = (Atom)xdnd_version;
+  if ((xv_a_XdndDrop = XInternAtom (xv_dpy, "XdndDrop", True)) != None && 
+      (xv_a_XdndLeave = XInternAtom (xv_dpy, "XdndLeave", True)) != None && 
+      (xv_a_XdndEnter = XInternAtom (xv_dpy, "XdndEnter", True)) != None && 
+/*    (xv_uri_atom = XInternAtom (xv_dpy, "text/uri-list", True)) != None &&  */
+      (xv_a_XdndActionCopy = XInternAtom (xv_dpy, "XdndActionCopy", True)) != None && 
+      (xv_a_XdndFinished = XInternAtom (xv_dpy, "XdndFinished", True)) != None && 
+      (xv_a_XdndPosition = XInternAtom (xv_dpy, "XdndPosition", True)) != None && 
+      (xv_a_XdndStatus = XInternAtom (xv_dpy, "XdndStatus", True)) != None && 
+      (xv_a_XdndTypeList = XInternAtom (xv_dpy, "XdndTypeList", True)) != None && 
+      (xv_a_XdndSelection = XInternAtom (xv_dpy, "XdndSelection", True)) != None && 
+      (xv_a_XdndAware = XInternAtom (xv_dpy, "XdndAware", True)) != None  ) {
+  	printf("enabled drag-DROP support.\n");
+	XChangeProperty(xv_dpy, xv_win, xv_a_XdndAware, XA_ATOM, 32, PropModeReplace, (unsigned char *)&atm, 1);
+     // XDeleteProperty(xv_dpy, xv_win, xv_a_XdndAware);
+  }
+#endif
+     
   /* express interest in WM killing this app */
   if ((del_atom = XInternAtom(display, "WM_DELETE_WINDOW", True)) != None)
     XSetWMProtocols(display, window, &del_atom, 1);
@@ -700,8 +916,26 @@ void handle_X_events_imlib (void) {
 	   render_imlib(buffer);
 //         fprintf(stdout, "event expose\n");
         break;
+      case SelectionNotify:
+#ifdef DND
+	   getDragData(&event);
+#endif
+	break;
       case ClientMessage:
-//         fprintf(stdout, "event client\n");
+#ifdef DND
+	//fprintf(stdout, "event client: %i\n",event.xclient.message_type);
+	if (event.xclient.message_type == xv_a_XdndPosition) {
+		if (xv_atom!= None) 
+			SendStatus();
+	} else if (event.xclient.message_type == xv_a_XdndEnter) {
+		HandleEnter(&event);
+		SendStatus();
+	} else if (event.xclient.message_type == xv_a_XdndDrop) {
+		if (xv_atom!= None) {
+			XConvertSelection(xv_dpy, xv_a_XdndSelection, xv_atom, xv_a_XdndSelection, xv_win, CurrentTime);
+		}
+	}
+#endif
         if (event.xclient.data.l[0] == del_atom)
             loop_flag = 0;
         break;
@@ -735,6 +969,7 @@ void handle_X_events_imlib (void) {
 		else my_Height=floor((float)my_Width * (float)movie_height / (float)movie_width);
 
 		XResizeWindow(display, window, my_Width, my_Height);
+		lcs_int("window_size",my_Height);
 	}
 	break;
 	case KeyPress:

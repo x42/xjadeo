@@ -1,3 +1,7 @@
+2006-11-07  rgareus  <robin@gareus.org>
+ - preliminary LASH support - so far only command line args.
+ - preliminary Xv/x11 dnd
+
 2006-11-06  rgareus  <robin@gareus.org>
  - imlib2 support
 

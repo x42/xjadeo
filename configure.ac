@@ -7,7 +7,7 @@ AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
 dnl Every other copy of the package version number gets its value from here
-AM_INIT_AUTOMAKE(xjadeo, 0.3.16)
+AM_INIT_AUTOMAKE(xjadeo, 0.3.17)
 
 dnl create a config.h file (Automake will add -DHAVE_CONFIG_H)
 AM_CONFIG_HEADER(config.h)
@@ -15,6 +15,7 @@ AM_CONFIG_HEADER(config.h)
 AC_ARG_ENABLE(gtk,   AC_HELP_STRING([--enable-gtk],  [Enable use of gtk for display]))
 AC_ARG_ENABLE(xv,    AC_HELP_STRING([--disable-xv],  [Disable use of Xvideo extension for display]))
 AC_ARG_ENABLE(imlib, AC_HELP_STRING([--disable-imlib], [Disable use of imlib for display]))
+AC_ARG_ENABLE(imlib2, AC_HELP_STRING([--disable-imlib2], [Disable use of imlib2 for display]))
 AC_ARG_ENABLE(sdl,   AC_HELP_STRING([--disable-sdl], [Disable use of SDL for display]))
 AC_ARG_ENABLE(midi,  AC_HELP_STRING([--disable-midi],  [disable MTC sync support]))
 AC_ARG_ENABLE(portmidi, AC_HELP_STRING([--disable-portmidi],  [Don't use portmidi - try alsamidi instead]))
@@ -24,6 +25,42 @@ AC_ARG_ENABLE(contrib,  AC_HELP_STRING([--enable-contrib],  [Compile and install
 
 # not supported by xjadeo-SDL yet
 #AC_ARG_ENABLE(ttf,    [  --enable-ttf            Enable TTF font support],,enable_ttf=no) 
+
+
+#lash
+tm_enable_lash="yes"
+AC_ARG_ENABLE(lash, AC_HELP_STRING([--disable-lash],[disable LASH support]),[
+  case "$enableval" in
+    "yes")
+      ;;
+    "no")
+      tm_enable_lash="no"
+      ;;
+    *)
+      AC_MSG_ERROR([must use --enable-lash(=yes/no) or --disable-lash])
+      ;;
+  esac
+])
+
+if test "$tm_enable_lash" = "yes"; then
+  PKG_CHECK_MODULES(LASH, lash-1.0 >= 0.4.0, LASH_FOUND="yes", LASH_FOUND="no")
+  
+  if test "$LASH_FOUND" = "yes"; then
+    AC_DEFINE(HAVE_LASH, 1, [whether or not we are supporting lash])
+    LASH_VERSION=$( pkg-config --modversion lash-1.0 )
+    AC_DEFINE_UNQUOTED(LASH_VERSION, "$LASH_VERSION", [The version of lash we're compiling against])
+    AC_SUBST(LASH_CFLAGS)
+    AC_SUBST(LASH_LIBS)
+  fi
+else
+  AC_MSG_WARN([LASH support is disabled])
+  LASH_FOUND="no"
+fi
+AM_CONDITIONAL(HAVE_LASH, test "$LASH_FOUND" = "yes")
+
+# end LASH
+
+
 
 AC_ARG_WITH(ffmpegprefix, AS_HELP_STRING([--with-ffmpegprefix], [prefix to ffmpeg source, if libavcodec and libavformat are not in . (default=.)]), ffmpegprefix="$withval", ffmpegprefix="ffmpeg")
 
@@ -54,10 +91,13 @@ if test "x$enable_gtk" = "xyes"; then
 	PKG_CHECK_MODULES(GTK,$REQUIRES,  [ AC_DEFINE(HAVE_GTK) ])
 	AC_SUBST(GTK_CFLAGS)
 	AC_SUBST(GTK_LIBS)
-	#PKG_CHECK_MODULES(GDK_PIXBUF, gdk-pixbuf-2.0 >= 0.22.0, [ AC_DEFINE(HAVE_GDK_PIXBUF,1, [Use pixbuf for gtk scaling]) ])
-	#AC_SUBST(GDK_PIXBUF_CFLAGS)
-	#AC_SUBST(GDK_PIXBUF_LIBS)
+	#PKG_CHECK_MODULES(GDK_PIXBUF, gdk-pixbuf >= 0.22.0, [ AC_DEFINE(HAVE_GDK_PIXBUF,1, [Use pixbuf for gtk scaling]) ])
 	AM_PATH_GDK_PIXBUF(0.22.0, [ AC_DEFINE(HAVE_GDK_PIXBUF,1, [Use pixbuf for gtk scaling]) ])
+#	AC_DEFINE(HAVE_GDK_PIXBUF,1, [Use pixbuf for gtk scaling]) ]
+#	GDK_PIXBUF_LIBS="-lgdk_pixbuf "
+#	GDK_PIXBUF_CFLAGS="-I/usr/include/gdk-pixbuf-1.0 -I/usr/include/gtk-1.2 -I/usr/include/glib-1.2 -I/usr/lib/glib/include "
+#	AC_SUBST(GDK_PIXBUF_CFLAGS)
+#	AC_SUBST(GDK_PIXBUF_LIBS)
 fi
 
 
@@ -99,7 +139,11 @@ fi
 if test "x$enable_imlib" != "xno"; then
 #	AC_CHECK_HEADERS(Imlib.h)
 #	AC_CHECK_LIB([Imlib], [Imlib_init], , [AC_MSG_ERROR(*** IMAGE: You should install imlib-dev first ***)])
-	AM_PATH_IMLIB(1.9.13, [ AC_DEFINE(HAVE_IMLIB) ])
+#	AM_PATH_IMLIB(1.9.13, [ AC_DEFINE(HAVE_IMLIB) ])
+	PKG_CHECK_MODULES(IMLIB,imlib,  [ AC_DEFINE(HAVE_IMLIB) ])
+fi
+
+if test "x$enable_imlib2" != "xno"; then
 	PKG_CHECK_MODULES(IMLIB2,imlib2,  [ AC_DEFINE(HAVE_IMLIB2) ])
 	AC_SUBST(IMLIB2_CFLAGS)
 	AC_SUBST(IMLIB2_LIBS)

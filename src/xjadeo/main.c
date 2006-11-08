@@ -107,6 +107,11 @@ char midiid[32] = "-2";	/* --midi # -1: autodetect -2: jack*/
 int midi_clkconvert =0;	/* --midifps [0:MTC|1:VIDEO|2:RESAMPLE] */
 #endif
 
+#ifdef HAVE_LASH
+lash_client_t *lash_client;
+#endif
+
+
 double 	delay = 0.1; // default update rate 10 Hz
 double 	filefps = -1.0; // if > 0 override autodetected video file frame rate
 int	videomode = 0; // --vo <int>  - default: autodetect
@@ -190,9 +195,8 @@ decode_switches (int argc, char **argv)
 #endif
 			   "V",	/* version */
 			   long_options, (int *) 0)) != EOF)
-    {
-      switch (c)
-	{
+  {
+    switch (c) {
 	case 'q':		/* --quiet, --silent */
 	  want_quiet = 1;
 	  want_verbose = 0;
@@ -219,6 +223,7 @@ decode_switches (int argc, char **argv)
 	  break;
 	case 'o':		/* --offset */
 	  ts_offset=atoi(optarg);
+	  //lcs_long("ts_offset",ts_offset);
 	  printf("set time offset to %li frames\n",ts_offset);
 	  break;
 	case 'k':		/* --keyframes */
@@ -262,8 +267,8 @@ decode_switches (int argc, char **argv)
 
 	default:
 	  usage (EXIT_FAILURE);
-	}
     }
+  }
   return optind;
 }
 
@@ -320,18 +325,18 @@ jack video monitor\n", program_name);
 }
 
 static void printversion (void) {
-	  printf ("xjadeo %s\n", VERSION);
-  	  printf("compiled with LIBAVFORMAT_BUILD 0x%x = %i\n", LIBAVFORMAT_BUILD, LIBAVFORMAT_BUILD);
+  printf ("xjadeo %s\n", VERSION);
+  printf("compiled with LIBAVFORMAT_BUILD 0x%x = %i\n", LIBAVFORMAT_BUILD, LIBAVFORMAT_BUILD);
 #ifndef HAVE_MIDI
 	; // jack only
 #else /* have Midi */
 # ifdef HAVE_PORTMIDI
-  	  printf("compiled with portmidi support\n");
+  printf("compiled with portmidi support\n");
 # else /* alsa midi */
-  	  printf("compiled with alsa-midi support\n");
+  printf("compiled with alsa-midi support\n");
 # endif 
 #endif /* HAVE_MIDI */
-  	  printf("video backends: "
+  printf("video backends: "
 #if HAVE_LIBXV
 		"xv "
 #endif 
@@ -348,20 +353,20 @@ static void printversion (void) {
 		"gtk "
 #endif 
 		"\n"
-	  );
+  );
 }
 
 void stat_osd_fontfile(void) {
 #ifdef HAVE_FT
-	struct stat s;
-	strcpy(OSD_fontfile,FONT_FILE);
+  struct stat s;
+  strcpy(OSD_fontfile,FONT_FILE);
 
-	if (stat(OSD_fontfile, &s)==0 ) {
-		if (want_verbose) fprintf(stdout,"OSD font file: %s\n",OSD_fontfile);
-		return;
-	}
-   	if (!want_quiet)
-		fprintf(stderr,"no TTF font found. OSD will not be available until you set one.\n");
+  if (stat(OSD_fontfile, &s)==0 ) {
+    if (want_verbose) fprintf(stdout,"OSD font file: %s\n",OSD_fontfile);
+      return;
+  }
+  if (!want_quiet)
+    fprintf(stderr,"no TTF font found. OSD will not be available until you set one.\n");
 #endif
 }
 
@@ -379,7 +384,23 @@ main (int argc, char **argv)
 
   xjadeorc(); // read config files - default values before parsing cmd line.
 
+#ifdef HAVE_LASH
+  lash_args_t *lash_args = lash_extract_args(&argc, &argv);
+#endif
+
   i = decode_switches (argc, argv);
+
+#ifdef HAVE_LASH
+  lash_client = lash_init (lash_args, PACKAGE_NAME,
+                     0  | LASH_Config_Data_Set  
+                     ,LASH_PROTOCOL (2,0));
+  if (!lash_client) {
+    fprintf(stderr, "could not initialise LASH!\n");
+  } else {
+    lash_setup();
+    if (!want_quiet) printf("Connected to LASH.\n");
+  }
+#endif
 
   if (videomode < 0) vidoutmode(videomode); // dump modes and exit.
 
@@ -407,16 +428,16 @@ main (int argc, char **argv)
 
  // try fallbacks if window open failed in autodetect mode
   if (videomode==0 && getvidmode() ==0) { // re-use cmd-option variable as counter.
-   if (want_verbose) printf("trying video driver fallbacks.\n");
-   while (getvidmode() ==0) { // check if window is open.
-	videomode++;
-	int tv=try_next_vidoutmode(videomode);
-	if (tv<0) break; // no videomode found!
-        if (want_verbose) printf("trying videomode: %i: %s\n",videomode,vidoutname(videomode));
-	if (tv==0) continue; // this mode is not available
-	render_fmt = vidoutmode(videomode);
-	open_window(&argc,&argv); 
-   }
+    if (want_verbose) printf("trying video driver fallbacks.\n");
+    while (getvidmode() ==0) { // check if window is open.
+      videomode++;
+      int tv=try_next_vidoutmode(videomode);
+      if (tv<0) break; // no videomode found!
+      if (want_verbose) printf("trying videomode: %i: %s\n",videomode,vidoutname(videomode));
+      if (tv==0) continue; // this mode is not available
+      render_fmt = vidoutmode(videomode);
+      open_window(&argc,&argv); 
+    }
   }
 
   if (getvidmode() ==0) {
@@ -462,3 +483,5 @@ main (int argc, char **argv)
 
   exit (0);
 }
+
+/* vi:set ts=8 sts=2 sw=2: */

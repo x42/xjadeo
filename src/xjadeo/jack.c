@@ -32,6 +32,10 @@
 //extern long              frames;
 extern double            framerate;
 extern int want_quiet;
+extern int want_quiet;
+#ifdef HAVE_LASH
+extern lash_client_t *lash_client;
+#endif
 
 jack_client_t *jack_client = NULL;
 char jackid[16];
@@ -68,6 +72,9 @@ void open_jack(void )
 		jack_on_shutdown (jack_client, jack_shutdown, 0);
 		if (!want_quiet) 
 			fprintf(stdout, "connected as jack client '%s'\n",jackid);
+#ifdef HAVE_LASH
+		lash_jack_client_name(lash_client, jackid);
+#endif
 	}
 }
 

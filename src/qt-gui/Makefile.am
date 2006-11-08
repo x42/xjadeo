@@ -23,7 +23,7 @@ $(name).mak:	$(name).pro
 	 $(COPY) -f qjadeo.cpp qjadeo.h mainwindow.ui qt3; \
 	 $(qt3to4) -alwaysOverwrite $(name).pro; \
 	fi
-	$(qmake) -o $(name).mak "DEFINES += BINDIR=\\\"$(bindir)\\\"" $(name).pro
+	$(qmake) -o $(name).mak 'DEFINES += BINDIR=\\\"$(DESTDIR)/$(bindir)\\\"' $(name).pro
 
 $(name):	$(name).mak $(sources) $(headers)
 	$(MAKE) -f $(name).mak

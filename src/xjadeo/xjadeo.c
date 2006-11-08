@@ -41,7 +41,6 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-
 //------------------------------------------------
 // extern Globals (main.c)
 //------------------------------------------------
@@ -121,6 +120,7 @@ void event_loop(void)
      // do not update frame 
       select_sleep(2e5L);
       handle_X_events();
+      lash_process();
       continue;
     }
     
@@ -148,7 +148,7 @@ void event_loop(void)
     }
 
     handle_X_events();
-
+    lash_process();
     
     clock2 = clock();
     elapsed_time = ((double) (clock2 - clock1)) / CLOCKS_PER_SEC;
@@ -328,6 +328,7 @@ int open_movie(char* file_name)
       return(-1);
   }
   current_file=strdup(file_name);
+  lcs_str("current_file",current_file);
   return( 0 );
 }
 
