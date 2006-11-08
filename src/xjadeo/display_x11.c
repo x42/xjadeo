@@ -352,7 +352,7 @@ void SendStatus (void) {
 	response.format = 32;
 	response.message_type = xv_a_XdndStatus;
 	response.data.l[0] = xv_win;
-	finished.data.l[1] = (1)?1:0; // flags 3 ?? - TODO: check if we can accept this type.
+	response.data.l[1] = (1)?1:0; // flags 3 ?? - TODO: check if we can accept this type.
 	response.data.l[2] = 0; // x, y
 	response.data.l[3] = my_Width<<16 || my_Height&0xFFFFL; // w, h (width<<16 || height&0xFFFFL)
 	response.data.l[4] = xv_a_XdndActionCopy; // action
@@ -1103,7 +1103,32 @@ int open_window_imlib2 (int *argc, char ***argv) {
   XSelectInput(im_display, im_window, KeyPressMask | ExposureMask | ButtonPressMask | ButtonReleaseMask |StructureNotifyMask ); 
   
   XMapWindow(im_display, im_window);
-      
+       
+#ifdef DND 
+  /* hack to re-use xv-dnd  for x11/imlib2
+   * gonna be resolved with upcoming x11/xv merge/cleanup
+   */
+  xv_win= im_window;
+  xv_dpy= im_display;
+  Atom atm = (Atom)xdnd_version;
+  if ((xv_a_XdndDrop = XInternAtom (xv_dpy, "XdndDrop", True)) != None && 
+      (xv_a_XdndLeave = XInternAtom (xv_dpy, "XdndLeave", True)) != None && 
+      (xv_a_XdndEnter = XInternAtom (xv_dpy, "XdndEnter", True)) != None && 
+/*    (xv_uri_atom = XInternAtom (xv_dpy, "text/uri-list", True)) != None &&  */
+      (xv_a_XdndActionCopy = XInternAtom (xv_dpy, "XdndActionCopy", True)) != None && 
+      (xv_a_XdndFinished = XInternAtom (xv_dpy, "XdndFinished", True)) != None && 
+      (xv_a_XdndPosition = XInternAtom (xv_dpy, "XdndPosition", True)) != None && 
+      (xv_a_XdndStatus = XInternAtom (xv_dpy, "XdndStatus", True)) != None && 
+      (xv_a_XdndTypeList = XInternAtom (xv_dpy, "XdndTypeList", True)) != None && 
+      (xv_a_XdndSelection = XInternAtom (xv_dpy, "XdndSelection", True)) != None && 
+      (xv_a_XdndAware = XInternAtom (xv_dpy, "XdndAware", True)) != None  ) {
+  	printf("enabled drag-DROP support.\n");
+	XChangeProperty(xv_dpy, xv_win, xv_a_XdndAware, XA_ATOM, 32, PropModeReplace, (unsigned char *)&atm, 1);
+     // XDeleteProperty(xv_dpy, xv_win, xv_a_XdndAware);
+  }
+#endif
+     
+
   /* express interest in WM killing this app */
   if ((im_del_atom = XInternAtom(im_display, "WM_DELETE_WINDOW", True)) != None)
     XSetWMProtocols(im_display, im_window, &im_del_atom, 1);
@@ -1159,8 +1184,27 @@ void handle_X_events_imlib2 (void) {
 	   render_imlib2(buffer);
 //         fprintf(stdout, "event expose\n");
         break;
+      case SelectionNotify:
+#ifdef DND
+	   getDragData(&event);
+#endif
+	break;
       case ClientMessage:
-//         fprintf(stdout, "event client\n");
+#ifdef DND
+	//fprintf(stdout, "event client: %i\n",event.xclient.message_type);
+	if (event.xclient.message_type == xv_a_XdndPosition) {
+		if (xv_atom!= None) 
+			SendStatus();
+	} else if (event.xclient.message_type == xv_a_XdndEnter) {
+		HandleEnter(&event);
+		SendStatus();
+	} else if (event.xclient.message_type == xv_a_XdndDrop) {
+		if (xv_atom!= None) {
+			XConvertSelection(xv_dpy, xv_a_XdndSelection, xv_atom, xv_a_XdndSelection, xv_win, CurrentTime);
+		}
+	}
+#endif
+	//fprintf(stdout, "event client: %i\n",event.xclient.message_type);
         if (event.xclient.data.l[0] == im_del_atom)
             loop_flag = 0;
         break;
