@@ -391,7 +391,7 @@ main (int argc, char **argv)
   xjadeorc(); // read config files - default values before parsing cmd line.
 
 #ifdef HAVE_LASH
-  for (i=0;i<argc;i++) if (strncmp(argv[i],"--lash-id",9)) lashed=1;
+  for (i=0;i<argc;i++) if (!strncmp(argv[i],"--lash-id",9)) lashed=1;
   lash_args_t *lash_args = lash_extract_args(&argc, &argv);
 #endif
 
