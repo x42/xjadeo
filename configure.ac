@@ -7,65 +7,68 @@ AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
 dnl Every other copy of the package version number gets its value from here
-AM_INIT_AUTOMAKE(xjadeo, 0.3.17)
+AM_INIT_AUTOMAKE(xjadeo, 0.3.18)
 
 dnl create a config.h file (Automake will add -DHAVE_CONFIG_H)
 AM_CONFIG_HEADER(config.h)
 
-AC_ARG_ENABLE(gtk,   AC_HELP_STRING([--enable-gtk],  [Enable use of gtk for display]))
-AC_ARG_ENABLE(xv,    AC_HELP_STRING([--disable-xv],  [Disable use of Xvideo extension for display]))
+AC_ARG_ENABLE(xv,    AC_HELP_STRING([--disable-xv],  [Disable Xvideo extension ]))
 AC_ARG_ENABLE(imlib, AC_HELP_STRING([--disable-imlib], [Disable use of imlib for display]))
 AC_ARG_ENABLE(imlib2, AC_HELP_STRING([--disable-imlib2], [Disable use of imlib2 for display]))
-AC_ARG_ENABLE(sdl,   AC_HELP_STRING([--disable-sdl], [Disable use of SDL for display]))
-AC_ARG_ENABLE(midi,  AC_HELP_STRING([--disable-midi],  [disable MTC sync support]))
-AC_ARG_ENABLE(portmidi, AC_HELP_STRING([--disable-portmidi],  [Don't use portmidi - try alsamidi instead]))
-AC_ARG_ENABLE(ft,    AC_HELP_STRING([--disable-ft],  [Disable freetype On Screen Display support]))
+AC_ARG_ENABLE(sdl,   AC_HELP_STRING([--enable-sdl], [Enable use of SDL for display]))
+#AC_ARG_ENABLE(midi,  AC_HELP_STRING([--disable-midi],  [Disable MTC sync support]))
+#AC_ARG_ENABLE(portmidi, AC_HELP_STRING([--disable-portmidi],  [Don't use portmidi - try alsamidi instead]))
+AC_ARG_ENABLE(ft,    AC_HELP_STRING([--disable-ft],  [Disable freetype On-Screen.Display support]))
 AC_ARG_ENABLE(qtgui, AC_HELP_STRING([--disable-qtgui],[Don't build the Qt GUI controller]))
 AC_ARG_ENABLE(contrib,  AC_HELP_STRING([--enable-contrib],  [Compile and install code in contrib folder]))
-
-# not supported by xjadeo-SDL yet
-#AC_ARG_ENABLE(ttf,    [  --enable-ttf            Enable TTF font support],,enable_ttf=no) 
+AC_ARG_ENABLE(lash, AC_HELP_STRING([--disable-lash],[disable LASH support]))
 
 
-#lash
-tm_enable_lash="yes"
-AC_ARG_ENABLE(lash, AC_HELP_STRING([--disable-lash],[disable LASH support]),[
-  case "$enableval" in
-    "yes")
-      ;;
-    "no")
-      tm_enable_lash="no"
-      ;;
-    *)
-      AC_MSG_ERROR([must use --enable-lash(=yes/no) or --disable-lash])
-      ;;
+dnl FPU emulation core.
+AC_ARG_ENABLE(midi, AC_HELP_STRING([--enable-midi=auto], [select MTC support: auto,alsa,portmidi,off]),
+[ case "$enableval" in
+	auto)		MIDI=yes PORTMIDI=yes ALSAMIDI=yes ;;
+	pm)		MIDI=yes PORTMIDI=yes ALSAMIDI=no ;;
+	portmidi)	MIDI=yes PORTMIDI=yes ALSAMIDI=no ;;
+	alsamidi)	MIDI=yes PORTMIDI=no  ALSAMIDI=yes ;;
+	alsa)		MIDI=yes PORTMIDI=no  ALSAMIDI=yes ;;
+	off)		MIDI=no  PORTMIDI=no  ALSAMIDI=no ;;
+	*)		AC_MSG_ERROR([--enable-midi takes only one of the following values: auto, portmidi, alsa, off]);;
   esac
-])
+], [ MIDI=yes PORTMIDI=yes ALSAMIDI=yes])
 
-if test "$tm_enable_lash" = "yes"; then
-  PKG_CHECK_MODULES(LASH, lash-1.0 >= 0.4.0, LASH_FOUND="yes", LASH_FOUND="no")
-  
-  if test "$LASH_FOUND" = "yes"; then
-    AC_DEFINE(HAVE_LASH, 1, [whether or not we are supporting lash])
-    LASH_VERSION=$( pkg-config --modversion lash-1.0 )
-    AC_DEFINE_UNQUOTED(LASH_VERSION, "$LASH_VERSION", [The version of lash we're compiling against])
-    AC_SUBST(LASH_CFLAGS)
-    AC_SUBST(LASH_LIBS)
-  fi
-else
-  AC_MSG_WARN([LASH support is disabled])
-  LASH_FOUND="no"
-fi
-AM_CONDITIONAL(HAVE_LASH, test "$LASH_FOUND" = "yes")
+AC_ARG_WITH(fontfile, AS_HELP_STRING([--with-fontfile], [specify an absolte path to a truetype font file to be used as default OSD font.]), fontfile="$withval", fontfile="")
 
-# end LASH
+AC_ARG_WITH(portmidiprefix, AS_HELP_STRING([--with-portmidiprefix], [specifyprefix to portmidi source)]), portmidiprefix="$withval", portmidiprefix="")
+
+AC_ARG_WITH(ffmpegprefix, AS_HELP_STRING([--with-ffmpegprefix], [prefix to ffmpeg source, if libavcodec and libavformat are not in the default path.)]), ffmpegprefix="$withval", ffmpegprefix="")
+
+LIBPREF=lib
+LIBSUF=.a
 
 
+case $host in
+	ia32|x86|i386*|i486*|i586*|i686*) ARCH=ia32 ;;
+	ia64*) ARCH=ia64 ;;
+	powerpc64*|ppc64*) ARCH=powerpc64 ;;
+	powerpc*) ARCH=powerpc ;;
+	arm*) ARCH=arm ;;
+	amd64*) ARCH=amd64 ;;
+	mips64*) ARCH=mips64 ;;
+	alpha*) ARCH=alpha ;;
+	*) AC_MSG_ERROR([
+	Unknown hardware architecture: $HOST.
+	Please specify hardware architecture using --host=ARCH.
+	]);;
+esac
 
-AC_ARG_WITH(ffmpegprefix, AS_HELP_STRING([--with-ffmpegprefix], [prefix to ffmpeg source, if libavcodec and libavformat are not in . (default=.)]), ffmpegprefix="$withval", ffmpegprefix="ffmpeg")
+case $ARCH in
+  powerpc*) PM_OS=mac ;;
+  *) PM_OS="linux";
+  	AC_DEFINE([IMLIB2RGBA], [], [use native RGB32 ffmpeg -> imlib.])
+esac
 
 AC_SUBST(VERSION)
-
 ISODATE=`date +%Y-%m-%d`
 AC_SUBST(ISODATE)
 
@@ -74,155 +77,23 @@ AC_PROG_INSTALL
 #AC_PROG_CC
 AM_PROG_CC_C_O
 
-# TODO: check for xsltproc, xmllint (+curl?) to write documentation.
+# TODO: check for xsltproc, xmllint to write documentation. ?!
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS(time.h string.h jack/jack.h jack/transport.h)
 
 dnl Checks for libraries.
 
-AH_TEMPLATE([HAVE_GTK], [Define as 1 if you have gtk])
 AH_TEMPLATE([HAVE_SDL], [Define as 1 if you have libsdl])
 AH_TEMPLATE([HAVE_LIBXV], [Define as 1 if  you have the Xv library (-lXv)])
 AH_TEMPLATE([HAVE_IMLIB], [Define as 1 if you have imlib])
 AH_TEMPLATE([HAVE_IMLIB2], [Define as 1 if you have imlib2])
 AH_TEMPLATE([HAVE_PORTMIDI], [Define as 1 if you have portmidi and asound])
 AH_TEMPLATE([HAVE_MIDI], [Define as 1 if you have either alsa or portmidi])
-
-if test "x$enable_gtk" = "xyes"; then
-	REQUIRES='glib >= 1.2.4 gtk+ >= 1.2.4'
-	PKG_CHECK_MODULES(GTK,$REQUIRES,  [ AC_DEFINE(HAVE_GTK) ])
-	AC_SUBST(GTK_CFLAGS)
-	AC_SUBST(GTK_LIBS)
-	#PKG_CHECK_MODULES(GDK_PIXBUF, gdk-pixbuf >= 0.22.0, [ AC_DEFINE(HAVE_GDK_PIXBUF,1, [Use pixbuf for gtk scaling]) ])
-	AM_PATH_GDK_PIXBUF(0.22.0, [ AC_DEFINE(HAVE_GDK_PIXBUF,1, [Use pixbuf for gtk scaling]) ])
-#	AC_DEFINE(HAVE_GDK_PIXBUF,1, [Use pixbuf for gtk scaling]) ]
-#	GDK_PIXBUF_LIBS="-lgdk_pixbuf "
-#	GDK_PIXBUF_CFLAGS="-I/usr/include/gdk-pixbuf-1.0 -I/usr/include/gtk-1.2 -I/usr/include/glib-1.2 -I/usr/lib/glib/include "
-#	AC_SUBST(GDK_PIXBUF_CFLAGS)
-#	AC_SUBST(GDK_PIXBUF_LIBS)
-fi
+AH_TEMPLATE([HAVE_LASH], [Define as 1 if you have lash])
 
 
-# FIXME - needed fi. on osx
-X_LIBS="-L/usr/X11R6/lib/"
-
-if test "x$enable_xv" != "xno"; then
-	AC_CHECK_LIB(Xv, XvQueryAdaptors, [AC_DEFINE(HAVE_LIBXV) AC_SUBST(XV_LIBS) XV_LIBS='-lXv' ], [AC_MSG_ERROR([Could not find Xv Lib])], $X_LIBS)
-fi
-
-if test "x$enable_midi" != "xno"; then
-	if test "x$enable_portmidi" != "xno"; then
-	    AC_CHECK_HEADERS(portmidi.h porttime.h , [FOUND_H_PORTMIDI=yes])
-	    BACKUPLIBS="$LIBS"
-	    LIBS="$LIBS -lporttime"
-	    AC_CHECK_LIB([portmidi], [Pm_CountDevices], [FOUND_L_PORTMIDI=yes])
-	    LIBS="$BACKUPLIBS"
-	fi
-
-	if test "x$FOUND_H_PORTMIDI$FOUND_H_PORTMIDI" = "xyesyes"; then
-	    AC_DEFINE(HAVE_MIDI) 
-	    AC_DEFINE(HAVE_PORTMIDI) 
-	    MIDI_LIBS="-lportmidi -lporttime"
-	    AC_SUBST(MIDI_LIBS)
-	else 
-	    AC_CHECK_HEADERS(alsa/asoundlib.h, [FOUND_H_ALSAMIDI=yes])
-	    AC_CHECK_HEADERS(pthread.h, [FOUND_H_PTHREAD=yes])
-	    BACKUPLIBS="$LIBS"
-	    AC_CHECK_LIB([asound], [snd_rawmidi_open], [FOUND_L_ALSAMIDI=yes])
-
-	    if test "x$FOUND_H_ALSAMIDI$FOUND_H_ALSAMIDI$FOUND_H_PTHREAD" = "xyesyesyes"; then
-		AC_DEFINE(HAVE_MIDI) 
-		MIDI_LIBS="-lasound"
-		AC_SUBST(MIDI_LIBS)
-	    fi
-	fi
-fi
-
-if test "x$enable_imlib" != "xno"; then
-#	AC_CHECK_HEADERS(Imlib.h)
-#	AC_CHECK_LIB([Imlib], [Imlib_init], , [AC_MSG_ERROR(*** IMAGE: You should install imlib-dev first ***)])
-#	AM_PATH_IMLIB(1.9.13, [ AC_DEFINE(HAVE_IMLIB) ])
-	PKG_CHECK_MODULES(IMLIB,imlib,  [ AC_DEFINE(HAVE_IMLIB) ])
-fi
-
-if test "x$enable_imlib2" != "xno"; then
-	PKG_CHECK_MODULES(IMLIB2,imlib2,  [ AC_DEFINE(HAVE_IMLIB2) ])
-	AC_SUBST(IMLIB2_CFLAGS)
-	AC_SUBST(IMLIB2_LIBS)
-fi
-
-if test "x$enable_sdl" != "xno"; then
-        AM_PATH_SDL(1.1.6, [ AC_DEFINE(HAVE_SDL) ])
-        #AM_PATH_SDL(1.2.9, [ AC_DEFINE(HAVE_SDL) ])
-
-	# SDL TTF detect
-
-	AC_CHECK_LIB(SDL_ttf, TTF_Init, HAVESDLTTF=yes, HAVESDLTTF=no)
-	BACKUPCFLAGS="$CFLAGS"
-	CFLAGS="$CFLAGS $SDL_CFLAGS" # `sdl-config --cflags`
-	AC_CHECK_HEADER(SDL_ttf.h, HAVESDLTTF=yes, HAVESDLTTF=no)
-	CFLAGS="$BACKUPCFLAGS"
-
-fi
-
-if test "x$HAVESDLTTF" = "xyes"; then
-    if test "x$enable_ttf" = "xyes"; then
-        AC_MSG_RESULT(yes)
-        AC_DEFINE(USE_SDLTTF, 1, [Use SDL_ttf])
-        LIBS="$LIBS -lSDL_ttf"
-    fi
-fi
-
-
-
-dnl Check for freetype headers
-FREETYPE_LIBS=
-FREETYPE_CFLAGS=
-
-PKG_CHECK_MODULES(FREETYPE, freetype2,
-	  [freetype_pkgconfig=yes], [freetype_pkgconfig=no])
-
-if test "x$freetype_pkgconfig" = "xyes"; then
-	if test ! "x$enable_ft" = "xno"; then
-	  AC_DEFINE(HAVE_FREETYPE_H, 1, [Have FreeType2 include files])
-	  AC_DEFINE(HAVE_FT, 1, [Use freetype for OSD])
-	else
-		FREETYPE_LIBS=
-		FREETYPE_CFLAGS=
-	fi
-else
-	AC_PATH_PROG(FREETYPE_CONFIG, freetype-config, no)
-	if test "x$FREETYPE_CONFIG" != "xno" ; then
-	    if test ! "x$enable_ft" = "xno"; then
-		FREETYPE_CFLAGS=`$FREETYPE_CONFIG --cflags`
-		FREETYPE_LIBS=`$FREETYPE_CONFIG --libs`
-		AC_DEFINE(HAVE_FREETYPE_H, 1, [Have FreeType2 include files])
-		AC_DEFINE(HAVE_FT, 1, [Use freetype for OSD])
-	    fi
-	fi
-fi
-
-# I'm not sure if this is the proper way to escape a #define string.
-# but this allows to specify the default font file
-#FREETYPE_CFLAGS="$FREETYPE_CFLAGS -DTTFFONTFILE=\\\"/usr/share/fonts/truetype/msttcorefonts/arial.ttf\\\""
-#FREETYPE_CFLAGS="$FREETYPE_CFLAGS -DTTFFONTFILE=\\\"/usr/X11R6/lib/X11/fonts/TTF/luxisb.ttf\\\""
-#FREETYPE_CFLAGS="$FREETYPE_CFLAGS -DTTFFONTFILE=\\\"$CONFIGURE_FONT_ARG\\\""
-
-
-AC_SUBST(FREETYPE_CFLAGS)
-AC_SUBST(FREETYPE_LIBS)
-
-
-
-dnl used in Makefile.am
-AC_SUBST(GTK_CFLAGS)
-AC_SUBST(GTK_LIBS)
-
-
-dnl Checks for header files.
-AC_HEADER_STDC
-AC_CHECK_HEADERS(time.h string.h jack/jack.h jack/transport.h)
-
-
-#jm_CHECK_TYPE_STRUCT_UTIMBUF
 AC_HEADER_MAJOR
 AC_FUNC_ALLOCA
 AC_STRUCT_TM
@@ -231,47 +102,216 @@ AC_STRUCT_TM
 #AC_CHECK_FUNCS(mkfifo)
 #AC_CHECK_FUNC(mknod)
 
-dnl Checks for typedefs, structures, and compiler characteristics.
 
-dnl Checks for library functions.
-
+# FIXME - needed fi. on osx
 LIBS="$LIBS -L/usr/X11R6/lib"
+#X_LIBS="-L/usr/X11R6/lib/"
 
-AC_CHECK_LIB([X11], [XOpenDisplay], , [AC_MSG_ERROR(*** X11: You need libx11-dev installed ***)])
+AC_CHECK_LIB([jack], [jack_client_new], , [AC_MSG_ERROR(*** AUDIO: You need to have the JACK audio development kit. ***)])
 
-AC_CHECK_LIB([jack], [jack_client_new], , [AC_MSG_ERROR(*** AUDIO: You need JACK audio library (libjack-dev) installed.  http://jackit.sourceforge.net/ ***)])
+AC_CHECK_LIB([X11], [XOpenDisplay], , [AC_MSG_ERROR(*** X11: You need to install the X11 development package: libx11-dev ***)])
 
-AC_CHECK_PROG(HAVE_FFMPEG_CONFIG, ffmpeg-config, yes)
-if test "x$HAVE_FFMPEG_CONFIG" == xyes; then
+if test "x$enable_xv" != "xno"; then
+	AC_CHECK_LIB(Xv, XvQueryAdaptors, [AC_DEFINE(HAVE_LIBXV) AC_SUBST(XV_LIBS) XV_LIBS='-lXv' HAVE_LIBXV=1 ], [AC_MSG_ERROR([Could not find XVideo Lib (libXv])], $X_LIBS)
+fi
+
+dnl ----------------------------------------------
+dnl alsamidi/portmidi 
+dnl ----------------------------------------------
+if test "x$MIDI" != "xno"; then
+	MIDI_CFLAGS=""
+	MIDI_CFLAGS=""
+	if test "x$PORTMIDI" != "xno" -a -z "$portmidiprefix" ; then
+		AC_CHECK_HEADERS(portmidi.h porttime.h , [FOUND_H_PORTMIDI=yes])
+		BACKUPLIBS="$LIBS"
+		LIBS="$LIBS -lporttime"
+		AC_CHECK_LIB([portmidi], [Pm_CountDevices], [FOUND_L_PORTMIDI=yes])
+		LIBS="$BACKUPLIBS"
+		MIDI_LIBS="-lportmidi -lporttime"
+	fi
+
+	if test "x$PORTMIDI" != "xno" -a -n "$portmidiprefix" -a -n "$PM_OS"; then
+		AC_CHECK_FILES([$portmidiprefix/porttime/porttime.h $portmidiprefix/pm_common/portmidi.h],[FOUND_H_PORTMIDI=yes])
+	# magic ppc-portmidi :  cc -dynamiclib pm_mac/*.o porttime/*.o -flat_namespace -undefined suppress -o portmidi.dylib
+
+		AC_CHECK_FILES([$portmidiprefix/porttime/${LIBPREF}porttime$LIBSUF $portmidiprefix/pm_${PM_OS}/${LIBPREF}portmidi$LIBSUF],[FOUND_L_PORTMIDI=yes MIDI_LIBS="$portmidiprefix/porttime/${LIBPREF}porttime$LIBSUF $portmidiprefix/pm_${PM_OS}/${LIBPREF}portmidi$LIBSUF"])
+		AC_CHECK_FILES([$portmidiprefix/pm_${PM_OS}/build/${LIBPREF}portmidi$LIBSUF],[FOUND_L_PORTMIDI=yes MIDI_LIBS="$portmidiprefix/pm_${PM_OS}/build/${LIBPREF}portmidi$LIBSUF"])
+		if test $PM_OS = "mac" ; then MIDI_LIBS="$MIDI_LIBS -framework CoreMIDI -framework CoreFoundation -framework CoreAudio"; fi
+
+		MIDI_CFLAGS="-I$portmidiprefix/porttime/ -I$portmidiprefix/pm_common/"
+	fi
+
+	if test "x$ALSAMIDI" != "xno"; then
+		AC_CHECK_HEADERS(alsa/asoundlib.h, [FOUND_H_ALSAMIDI=yes])
+		AC_CHECK_HEADERS(pthread.h, [FOUND_H_PTHREAD=yes])
+		AC_CHECK_LIB([asound], [snd_rawmidi_open], [FOUND_L_ALSAMIDI=yes])
+	fi
+
+	if test "x$FOUND_H_ALSAMIDI$FOUND_L_ALSAMIDI$FOUND_H_PTHREAD" = "xyesyesyes"; then
+		AC_DEFINE(HAVE_MIDI) 
+		HAVE_MIDI=1
+		MIDI_LIBS="-lasound"
+	elif test "x$FOUND_H_PORTMIDI$FOUND_L_PORTMIDI" = "xyesyes"; then
+		AC_DEFINE(HAVE_MIDI) 
+		AC_DEFINE(HAVE_PORTMIDI) 
+		HAVE_MIDI=1
+		HAVE_PORTMIDI=1
+	else 
+		MIDI_LIBS=""
+		MIDI_MIDI=""
+		MIDI_CFLAGS=""
+	fi
+fi
+
+AC_SUBST(MIDI_LIBS)
+AC_SUBST(MIDI_CFLAGS)
+
+dnl ----------------------------------------------
+dnl Check for ffmpeg: avformat/avcodec 
+dnl ----------------------------------------------
+
+
+if test -z "$ffmpegprefix" ; then
+
+#check for local ffmpeg ./ffmpeg copy
+PKG_CONFIG_PATH=./ffmpeg:$PKG_CONFIG_PATH
+PKG_CHECK_MODULES(FFMPEG, libavformat libavcodec, HAVE_FFMPEG=yes, 
+        AC_MSG_WARN([
+	Could not find ffmpeg package. please update PKG_CONFIG_PATH to point to a
+	ffmpegs source folder.
+	])) 
+fi 
+
+if test "x$HAVE_FFMPEG" != "xyes" ; then 
+	AC_CHECK_PROG(HAVE_FFMPEG_CONFIG, ffmpeg-config, yes)
+fi
+
+if test -z "$ffmpegprefix" -a "x$HAVE_FFMPEG_CONFIG" == xyes; then
 	FFMPEG_CFLAGS=`ffmpeg-config --cflags`
 	FFMPEG_LIBS=`ffmpeg-config --libs avformat`
-else
-	if test "$ffmpegprefix" == ffmpeg; then
+	HAVE_FFMPEG = yes
+        AC_MSG_NOTICE([
+	located a ffmpeg installation without pkg-information.
+	])
+fi
+
+if test  "x$HAVE_FFMPEG" != "xyes" -a -z "$ffmpegprefix" ; then
 		AC_CHECK_HEADER(ffmpeg/avcodec.h,[HAVE_SHARED_AVCODEC=yes])
 		AC_CHECK_HEADER(ffmpeg/avformat.h, [HAVE_SHARED_AVFORMAT=yes])
 		AC_CHECK_FILE(/usr/local/include/ffmpeg, [HAVE_FFMPEG_LOCAL=yes])
-	fi
-	if test "x$HAVE_SHARED_AVCODEC$HAVE_SHARED_AVCODEC" != xyesyes; then
+fi
+
+if test  "x$HAVE_FFMPEG" != "xyes" -a -n "$ffmpegprefix" ; then
+		AC_CHECK_FILES([$ffmpegprefix/libavcodec/${LIBPREF}avcodec$LIBSUF $ffmpegprefix/libavformat/${LIBPREF}avformat$LIBSUF],[HAVE_SHARED_AVCODEC=yes HAVE_SHARED_AVFORMAT=yes])
+fi
+
+if test  "x$HAVE_FFMPEG" != "xyes" -a "x$HAVE_SHARED_AVCODEC$HAVE_SHARED_AVCODEC" != xyesyes; then
 		AC_MSG_ERROR([
-	you need libavcodec and libavformat from ffmpeg cvs
-	to get it run get_ffmpeg_cvs.sh or point configure to
-	your local copy with i.e.
+	libavcodec and libavformat from ffmpeg are required.
+	If you are sure that ffmpeg is installed, point
+	configure to your local copy with f.i.
 	./configure --with-ffmpegprefix=/usr/local/src/ffmpeg
-	(see INSTALL for more information)
 	])
+fi
+
+if test  "x$HAVE_FFMPEG" != "xyes"; then
+	FFMPEG_LIBS="-L/usr/local/lib -L/usr/lib -lavformat -lavcodec -lz"
+	if test -n "$ffmpegprefix" ; then
+		FFMPEG_CFLAGS="-I$ffmpegprefix/libavcodec -I$ffmpegprefix/libavformat"
+		## FIXME add libavutil.a if present!
+		FFMPEG_LIBS="$ffmpegprefix/libavcodec/${LIBPREF}avcodec$LIBSUF $ffmpegprefix/libavformat/${LIBPREF}avformat$LIBSUF -lz" 
+		AC_CHECK_FILES([$ffmpegprefix/libavutil/${LIBPREF}avutil$LIBSUF],[FFMPEG_LIBS="$FFMPEG_LIBS $ffmpegprefix/libavutil/${LIBPREF}avutil$LIBSUF"])
+	elif test "x$HAVE_FFMPEG_LOCAL" != xyes; then
+		FFMPEG_CFLAGS="-I$/usr/include/ffmpeg"
 	else
-		if test "x$HAVE_FFMPEG_LOCAL" != xyes; then
-			FFMPEG_CFLAGS="-I/usr/include/ffmpeg"
-		else
-			FFMPEG_CFLAGS="-I/usr/local/include/ffmpeg"
-		fi
-		FFMPEG_LIBS="-L/usr/local/lib -L/usr/lib -lavformat -lavcodec -lz"
-		#FFMPEG_LIBS="-L/usr/local/lib -L/usr/lib -lavformat -lavcodec -lavutil -lz"
+		FFMPEG_CFLAGS="-I/usr/local/include/ffmpeg"
 	fi
+	HAVE_FFMPEG=yes
+        AC_MSG_NOTICE([
+	located a ffmpeg installation without pkg-information.
+	])
 fi
 
 AC_SUBST(FFMPEG_CFLAGS)
 AC_SUBST(FFMPEG_LIBS)
+
+dnl ----------------------------------------------
+dnl Check for freetype 
+dnl ----------------------------------------------
+
+FREETYPE_LIBS=
+FREETYPE_CFLAGS=
+
+PKG_CHECK_MODULES(FREETYPE, freetype2, [freetype_pkgconfig=yes], [freetype_pkgconfig=no])
+
+if test "x$freetype_pkgconfig" = "xyes"; then
+	if test ! "x$enable_ft" = "xno"; then
+	  AC_DEFINE(HAVE_FREETYPE_H, 1, [Have FreeType2 include files])
+	  AC_DEFINE(HAVE_FT, 1, [Use freetype for OSD])
+	  HAVE_FT=1
+	else
+		FREETYPE_LIBS=
+		FREETYPE_CFLAGS=
+	fi
+else
+	AC_PATH_PROG(FREETYPE_CONFIG, freetype-config, no)
+	if test "x$FREETYPE_CONFIG" != "xno" -a ! "x$enable_ft" = "xno"; then
+		FREETYPE_CFLAGS=`$FREETYPE_CONFIG --cflags`
+		FREETYPE_LIBS=`$FREETYPE_CONFIG --libs`
+		AC_DEFINE(HAVE_FREETYPE_H, 1, [Have FreeType2 include files])
+		AC_DEFINE(HAVE_FT, 1, [Use freetype for OSD])
+		HAVE_FT=1
+	fi
+fi
+
+#if test -z "$fontfile" ; then
+	# TODO try some arch-typical font files here ?
+	# PPC: "/usr/X11R6/lib/X11/fonts/TTF/luxisb.ttf"
+	# Debian: "/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf"
+#fi
+
+if test -n "$fontfile" ; then
+	# I'm not sure if this is the proper way to escape a #define string.
+	# better use AC_DEFINE ?
+	FREETYPE_CFLAGS="$FREETYPE_CFLAGS -DTTFFONTFILE=\\\"$fontfile\\\""
+fi
+
+AC_SUBST(FREETYPE_CFLAGS)
+AC_SUBST(FREETYPE_LIBS)
+
+dnl ----------------------------------------------
+dnl PKG checks - video display libraries
+dnl ----------------------------------------------
+
+if test "x${enable_imlib}" != "xno"; then
+	PKG_CHECK_MODULES(IMLIB,imlib,  [ AC_DEFINE(HAVE_IMLIB) HAVE_IMLIB=1 ], [ NULL=0 ])
+fi
+
+if test "x${enable_imlib2}" != "xno"; then
+	PKG_CHECK_MODULES(IMLIB2, imlib2 >= 1.3.0,  [ AC_DEFINE(HAVE_IMLIB2) HAVE_IMLIB2=1 ], [ NULL=0 ])
+fi
+
+if test "x$enable_sdl" = "xyes"; then
+	PKG_CHECK_MODULES(SDL, sdl, [ AC_DEFINE(HAVE_SDL) HAVE_SDL=1 ], [ NULL=0 ])
+        #AM_PATH_SDL(1.1.6, [ AC_DEFINE(HAVE_SDL) ])
+        #AM_PATH_SDL(1.2.9, [ AC_DEFINE(HAVE_SDL) ])
+fi
+
+dnl ----------------------------------------------
+dnl http://lash.nongnu.org
+dnl ----------------------------------------------
+if test "x$enable_lash" != "xno"; then
+  PKG_CHECK_MODULES(LASH, lash-1.0 >= 0.4.0, LASH_FOUND="yes", [ NULL=0 ])
+  
+  if test "x$LASH_FOUND" = "xyes"; then
+    AC_DEFINE(HAVE_LASH)
+    HAVE_LASH=1;
+    #LASH_VERSION=$( pkg-config --modversion lash-1.0 )
+    #AC_DEFINE_UNQUOTED(LASH_VERSION, "$LASH_VERSION", [The version of lash we're compiling against])
+    AC_SUBST(LASH_CFLAGS)
+    AC_SUBST(LASH_LIBS)
+  fi
+fi
 
 dnl ----------------------------------------------
 dnl Qt GUI stuff
@@ -282,7 +322,8 @@ if test "x$enable_qtgui" != "xno"; then
  # Check for Qt qmake utility.
  AC_PATH_PROG(ac_qmake, qmake, [no], $QTDIR/bin:${PATH})
  if test "x$ac_qmake" = "xno"; then
-    AC_MSG_ERROR([qmake not found: install the Qt development package of your distribution])
+    AC_MSG_ERROR([qmake not found: please install the Qt development
+    package of your distribution (either QT3 or QT4+qt3compat)])
  fi
  AC_SUBST(ac_qmake)
 
@@ -313,6 +354,7 @@ EOF
  else
   make -s -f conftest.mak distclean &>/dev/null
   AC_MSG_NOTICE([Found Qt >= 3])
+  HAVE_QT3=1
  fi
 
  # AC removes conftest*
@@ -350,6 +392,7 @@ EOF
      AC_MSG_ERROR([qt3to4 not found: install Qt3Support, the Qt 3 compatibility module for Qt 4])
   fi
   AC_SUBST(ac_qt3to4)
+  HAVE_QT4=1
  fi
 
  ac_qtgui_dir="qt-gui"
@@ -366,32 +409,53 @@ AC_SUBST(ac_qtgui_dir)
 dnl ---------- End of Qt GUI stuff ---------------
 
 
-#AC_CHECK_LIB([Imlib2], [Imlib_init], foundimlib=yes , foundimlib=no) 
-#
-#if test "x$foundimlib" = "xyes"; then
-# LIBS="$LIBS -lImlib2"
-#else 
-# AC_CHECK_LIB([Imlib], [Imlib_init], foundimlib=yes , foundimlib=no) 
-# if test "x$foundimlib" = "xyes"; then
-#  LIBS="$LIBS -lImlib"
-# else
-#  AC_MSG_ERROR(*** IMAGE: You should install imlib-dev first ***)
-# fi
-#fi
-
-
-if test "x$enable_gtk" = "xyes"; then
+if test "x$enable_contrib" = "xyes"; then
   ac_contrib_dir="contrib/cli-remote/"
 else 
   ac_contrib_dir=""
 fi
-
 AC_SUBST(ac_contrib_dir)
 
-if test "x$enable_gtk" = "xyes"; then
+if test "x$enable_contrib" = "xyes"; then
   AC_CONFIG_FILES([contrib/cli-remote/Makefile])
 fi
 
 AC_CONFIG_FILES([Makefile src/Makefile src/xjadeo/Makefile xjadeo.lsm xjadeo.spec])
 
 AC_OUTPUT
+
+echo " "
+echo "------------------------------------------------------------------------"
+echo "  $PACKAGE $VERSION  - Configuration Summary"
+echo "------------------------------------------------------------------------"
+echo " "
+echo    " Installation Path: $prefix"
+echo    " Video Displays"
+echo -n "   - libxv:         ";	if test -n "$HAVE_LIBXV"; then echo "ok"; else echo "not avail."; fi
+echo -n "   - libsdl:        ";	if test -n "$HAVE_SDL"; then echo "ok"; else echo "not avail."; fi
+echo -n "   - libx11/imlib:  ";	if test -n "$HAVE_IMLIB"; then echo "ok"; else echo "not avail."; fi
+echo -n "   - libx11/imlib2: ";	if test -n "$HAVE_IMLIB2"; then echo "ok"; else echo "not avail."; fi
+echo -n " MIDI:              ";
+if test -n "$HAVE_PORTMIDI"; then echo "portmidi";
+else if test -n "$HAVE_MIDI"; then echo "alsa"
+     else echo "disabled."; fi
+fi
+echo -n " LASH:              ";	if test -n "$HAVE_LASH"; then echo "ok"; else echo "not avail."; fi
+echo -n " On screen display: ";
+if test -z "$HAVE_FT"; then 
+echo "disabled";
+else echo 
+echo    "   - freetype:      ok";
+echo -n "   - default font:  ";	if test -n "$fontfile" ; then echo "$fontfile"; else echo " - "; fi
+fi
+echo -n " GUI:               ";	
+if test -n "$HAVE_QT4"; then echo "QT4";
+else if test -n "$HAVE_QT3"; then echo "QT3"
+     else echo "none"; fi
+fi
+#echo -n " build contib/*:    ";	if test "x$enable_contrib" = "xyes"; then echo "yes."; else echo "no."; fi
+echo " "
+echo "now type 'make'; followed by 'make install' as root."
+echo " "
+
+

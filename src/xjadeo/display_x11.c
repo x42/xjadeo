@@ -34,22 +34,10 @@
 /*******************************************************************************
  * XV !!!
  */
-
-#if HAVE_LIBXV
-
+#if (HAVE_LIBXV || HAVE_IMLIB || HAVE_IMLIB2)
   Display      		*xv_dpy;
-  Screen       		*xv_scn;
   Window		xv_rwin, xv_win;
-  int          		xv_dwidth, xv_dheight, xv_swidth, xv_sheight, xv_pic_format;
-
-  GC           		xv_gc;
-  XEvent       		xv_event;
-  XvPortID    	 	xv_port;
-  XShmSegmentInfo  	xv_shminfo;
-  XvImage      		*xv_image;
-
-  Atom 			xv_del_atom;   
-#ifdef DND
+# ifdef DND // re-used by imlibs 
   Atom 			xv_a_XdndDrop;   
   Atom 			xv_a_XdndFinished;   
   Atom 			xv_a_XdndActionCopy;   
@@ -63,7 +51,151 @@
   Atom			xv_atom;
   int 			dnd_source;
   const int 		xdnd_version = 5;
+
+void HandleEnter(XEvent * xe) {
+	long *l = xe->xclient.data.l;
+    	xv_atom= None;
+	Atom ok = XInternAtom(xv_dpy, "text/uri-list", False);
+
+	int version = (int)(((unsigned long)(l[1])) >> 24);
+	if (version > xdnd_version) return;
+	dnd_source = l[0];
+
+        if (l[1] & 1) {
+		Atom type = 0;
+		int f,ll;
+		unsigned long n, a;
+		unsigned char *data;
+		int offset = 0;
+		a=1;
+      		while(a && xv_atom== None){
+			XGetWindowProperty(xv_dpy, dnd_source, xv_a_XdndTypeList, offset,
+			256, False, XA_ATOM, &type, &f,&n,&a,&data);
+				if(data == NULL || type != XA_ATOM || f != 8*sizeof(Atom)){
+				XFree(data);
+				return;
+			}
+			for (ll=0; ll<n; ll++) {
+				//if (data[ll]!=None)
+				//	printf("DEBUG atom:%s\n", XGetAtomName(xv_dpy,data[ll]));
+				if (data[ll] == ok) {
+					xv_atom= ok;
+					break;
+				}
+			}
+			if (data) XFree(data);
+		}
+	} else {
+		int i;
+		for(i=2; i < 5; i++) {
+			//if(l[i]!=None)
+			//	printf("DEBUG atom:%s\n", XGetAtomName(xv_dpy,l[i]));
+			if (l[i] == ok) xv_atom= ok;
+		}
+	}
+	//printf("!!!!!!!!!!!!!!!! DND ok: %i\n",xv_atom==ok);
+}
+
+void SendStatus (void) {
+	unsigned int my_Width,my_Height;
+#ifdef HAVE_XV	
+	get_window_size_xv(&my_Width,&my_Height);
+#else 
+	my_Width=0; my_Height=0; // FIXME.
 #endif
+	XClientMessageEvent response;
+	response.type = ClientMessage;
+	response.window = xv_win;
+	response.format = 32;
+	response.message_type = xv_a_XdndStatus;
+	response.data.l[0] = xv_win;
+	response.data.l[1] = (1)?1:0; // flags 3 ?? - TODO: check if we can accept this type.
+	response.data.l[2] = 0; // x, y
+	response.data.l[3] = my_Width<<16 || my_Height&0xFFFFL; // w, h (width<<16 || height&0xFFFFL)
+	response.data.l[4] = xv_a_XdndActionCopy; // action
+
+	XSendEvent(xv_dpy, dnd_source, False, NoEventMask, (XEvent*)&response);
+}
+
+void SendFinished (void) {
+	XClientMessageEvent finished;
+	finished.type = ClientMessage;
+	finished.display = xv_dpy;
+	finished.window = dnd_source; 
+	finished.format = 32;
+	finished.message_type = xv_a_XdndFinished;
+	finished.data.l[0] = xv_win;
+	finished.data.l[1] = (1)?1:0; // flags - isAccepted ? sure.
+	finished.data.l[2] = 0; // action atom
+	finished.data.l[3] = 0; 
+	finished.data.l[4] = 0;
+	XSendEvent(xv_dpy, dnd_source, False, NoEventMask, (XEvent*)&finished);
+}
+
+#define MAX_DND_FILES 64
+void xapi_open(void *d); // command to open movie - TODO: better do movie_open, initibuffer... (remote replies)
+
+void getDragData (XEvent *xe) {
+	Atom type;
+	int f;
+	unsigned long n, a;
+	unsigned char *data;
+
+	XGetWindowProperty(xv_dpy, xe->xselection.requestor,
+            xe->xselection.property, 0, 65536, 
+	    True, xv_atom, &type, &f, &n, &a, &data);
+
+	SendFinished();
+
+	if (!data){
+		fprintf(stderr, "WARNING: drag-n-drop - no data\n"); 
+	}
+
+	/* Handle dropped files */
+	char * retain = (char*)data;
+	char * files[MAX_DND_FILES];
+	int num = 0;
+
+	while(retain < ((char *) data) + n) {
+		int nl = 0;
+		if (!strncmp(retain,"file:",5)) { retain+=5; }
+		files[num++]=retain;
+
+		while(retain < (((char *)data) + n)){
+			if(*retain == '\r' || *retain == '\n'){
+				*retain=0;
+				nl = 1;
+			} else if (nl) break;
+			retain++;
+		}
+
+		if (num >= MAX_DND_FILES)
+			break;
+	}
+
+	for (f=0;f<num;f++) {
+		printf("drag-n-drop: recv: %i '%s'\n",f,files[f]);
+	}
+	if (num>0) xapi_open(files[0]);
+	free(data);
+}
+
+# endif /* DND */
+#endif /* HAVE any of xv, imlib* */
+
+#if HAVE_LIBXV
+//Display      		*xv_dpy;
+  Screen       		*xv_scn;
+//Window		xv_rwin, xv_win;
+  int          		xv_dwidth, xv_dheight, xv_swidth, xv_sheight, xv_pic_format;
+
+  GC           		xv_gc;
+  XEvent       		xv_event;
+  XvPortID    	 	xv_port;
+  XShmSegmentInfo  	xv_shminfo;
+  XvImage      		*xv_image;
+
+  Atom 			xv_del_atom;   
   char	 		*xv_buffer;
   size_t		xv_len;
   int			xv_one_memcpy = 0; 
@@ -298,133 +430,6 @@ void render_xv (uint8_t *mybuffer) {
 	XFlush(xv_dpy);
 }
 
-#ifdef DND
-void HandleEnter(XEvent * xe) {
-	long *l = xe->xclient.data.l;
-    	xv_atom= None;
-	Atom ok = XInternAtom(xv_dpy, "text/uri-list", False);
-
-	int version = (int)(((unsigned long)(l[1])) >> 24);
-	if (version > xdnd_version) return;
-	dnd_source = l[0];
-
-        if (l[1] & 1) {
-		Atom type = 0;
-		int f,ll;
-		unsigned long n, a;
-		unsigned char *data;
-		int offset = 0;
-		a=1;
-      		while(a && xv_atom== None){
-			XGetWindowProperty(xv_dpy, dnd_source, xv_a_XdndTypeList, offset,
-			256, False, XA_ATOM, &type, &f,&n,&a,&data);
-				if(data == NULL || type != XA_ATOM || f != 8*sizeof(Atom)){
-				XFree(data);
-				return;
-			}
-			for (ll=0; ll<n; ll++) {
-				//if (data[ll]!=None)
-				//	printf("DEBUG atom:%s\n", XGetAtomName(xv_dpy,data[ll]));
-				if (data[ll] == ok) {
-					xv_atom= ok;
-					break;
-				}
-			}
-			if (data) XFree(data);
-		}
-	} else {
-		int i;
-		for(i=2; i < 5; i++) {
-			//if(l[i]!=None)
-			//	printf("DEBUG atom:%s\n", XGetAtomName(xv_dpy,l[i]));
-			if (l[i] == ok) xv_atom= ok;
-		}
-	}
-	//printf("!!!!!!!!!!!!!!!! DND ok: %i\n",xv_atom==ok);
-}
-
-void SendStatus (void) {
-	unsigned int my_Width,my_Height;
-	get_window_size_xv(&my_Width,&my_Height);
-	XClientMessageEvent response;
-	response.type = ClientMessage;
-	response.window = xv_win;
-	response.format = 32;
-	response.message_type = xv_a_XdndStatus;
-	response.data.l[0] = xv_win;
-	response.data.l[1] = (1)?1:0; // flags 3 ?? - TODO: check if we can accept this type.
-	response.data.l[2] = 0; // x, y
-	response.data.l[3] = my_Width<<16 || my_Height&0xFFFFL; // w, h (width<<16 || height&0xFFFFL)
-	response.data.l[4] = xv_a_XdndActionCopy; // action
-
-	XSendEvent(xv_dpy, dnd_source, False, NoEventMask, (XEvent*)&response);
-}
-
-void SendFinished (void) {
-	XClientMessageEvent finished;
-	finished.type = ClientMessage;
-	finished.display = xv_dpy;
-	finished.window = dnd_source; 
-	finished.format = 32;
-	finished.message_type = xv_a_XdndFinished;
-	finished.data.l[0] = xv_win;
-	finished.data.l[1] = (1)?1:0; // flags - isAccepted ? sure.
-	finished.data.l[2] = 0; // action atom
-	finished.data.l[3] = 0; 
-	finished.data.l[4] = 0;
-	XSendEvent(xv_dpy, dnd_source, False, NoEventMask, (XEvent*)&finished);
-}
-
-#define MAX_DND_FILES 64
-void xapi_open(void *d); // command to open movie - TODO: better do movie_open, initibuffer... (remote replies)
-
-void getDragData (XEvent *xe) {
-	Atom type;
-	int f;
-	unsigned long n, a;
-	unsigned char *data;
-
-	XGetWindowProperty(xv_dpy, xe->xselection.requestor,
-            xe->xselection.property, 0, 65536, 
-	    True, xv_atom, &type, &f, &n, &a, &data);
-
-	SendFinished();
-
-	if (!data){
-		fprintf(stderr, "WARNING: drag-n-drop - no data\n"); 
-	}
-
-	/* Handle dropped files */
-	char * retain = (char*)data;
-	char * files[MAX_DND_FILES];
-	int num = 0;
-
-	while(retain < ((char *) data) + n) {
-		int nl = 0;
-		if (!strncmp(retain,"file:",5)) { retain+=5; }
-		files[num++]=retain;
-
-		while(retain < (((char *)data) + n)){
-			if(*retain == '\r' || *retain == '\n'){
-				*retain=0;
-				nl = 1;
-			} else if (nl) break;
-			retain++;
-		}
-
-		if (num >= MAX_DND_FILES)
-			break;
-	}
-
-	for (f=0;f<num;f++) {
-		printf("drag-n-drop: recv: %i '%s'\n",f,files[f]);
-	}
-	if (num>0) xapi_open(files[0]);
-	free(data);
-}
-
-#endif
-
 void handle_X_events_xv (void) {
 	XEvent event;
 	while(XPending(xv_dpy)) {
@@ -553,7 +558,7 @@ void newsrc_xv (void) {
 int open_window_xv (int *argc, char ***argv) {
   char *w_name ="xjadeo";
   char *i_name ="xjadeo";
-  size_t 	ad_cnt;
+  unsigned int 	ad_cnt;
   int		scn_id,
                 fmt_cnt,
                 got_port, 
@@ -1128,6 +1133,10 @@ int open_window_imlib2 (int *argc, char ***argv) {
   }
 #endif
      
+  imlib_context_set_display(im_display);
+  imlib_context_set_visual(im_vis);
+  imlib_context_set_colormap(im_cm);
+  imlib_context_set_drawable(im_window);
 
   /* express interest in WM killing this app */
   if ((im_del_atom = XInternAtom(im_display, "WM_DELETE_WINDOW", True)) != None)
@@ -1141,36 +1150,91 @@ void close_window_imlib2(void)
 	XCloseDisplay(im_display);
 	//imlib=NULL;
 }
+#define IMC
+int realloc_imlib2=0;
 
-        
 void render_imlib2 (uint8_t *mybuffer) {
 	unsigned int my_Width,my_Height;
-	Imlib_Image im_image, im_scaled;
+	static Imlib_Image im_image = NULL;
+	Imlib_Image im_scaled = NULL;
 	if (!mybuffer) return;
-	im_image = imlib_create_image_using_data(movie_width, movie_height, (DATA32*)buffer);
 
-	imlib_context_set_display(im_display);
-	imlib_context_set_visual(im_vis);
-	imlib_context_set_colormap(im_cm);
-	imlib_context_set_drawable(im_window);
+#ifdef IMC
+	DATA32 *data;
+	if (realloc_imlib2 && im_image) {
+		imlib_context_set_image(im_image);
+		imlib_free_image();
+		im_image = NULL;
+	}
+	if (!im_image) im_image = imlib_create_image(movie_width, movie_height);
+	imlib_context_set_image(im_image);
+	data=imlib_image_get_data();
+#endif /*IMC*/
+#ifdef IMLIB2RGBA
+# ifndef IMC
+	uint8_t * rgbabuf = mybuffer;
+# else
+	memcpy(data,mybuffer,4*sizeof(uint8_t)*movie_width*movie_height);
+# endif /*IMC*/
+#else
+# ifndef IMC
+	uint8_t * rgbabuf = malloc(4*sizeof(uint8_t)*movie_width*movie_height);
+# endif
+# if defined(__BIG_ENDIAN__)
+#  ifndef IMC
+	rgb2argb( rgbabuf, mybuffer, movie_width, movie_height);
+#  else
+	rgb2argb( (uint8_t*) data, mybuffer, movie_width, movie_height);
+#  endif /*IMC*/
+# else
+#  ifndef IMC
+	rgb2abgr( rgbabuf, mybuffer, movie_width, movie_height);
+#  else
+	rgb2abgr( (uint8_t*) data, mybuffer, movie_width, movie_height);
+#  endif /*IMC*/
+# endif
+#endif
+
+#ifdef IMC
+	imlib_image_put_back_data(data);
+#else
+	//im_image = imlib_create_image_using_data(movie_width, movie_height, (DATA32*)rgbabuf);
+	im_image = imlib_create_image_using_copied_data(movie_width, movie_height, (DATA32*)rgbabuf);
+#endif
+
+//	imlib_context_set_display(im_display);
+//	imlib_context_set_visual(im_vis);
+//	imlib_context_set_colormap(im_cm);
+//	imlib_context_set_drawable(im_window);
 
     /* get the current window size */
 	get_window_size_imlib2(&my_Width,&my_Height);
 	if (im_image) {
 		imlib_context_set_image(im_image);
-		im_scaled=imlib_create_cropped_scaled_image(0,0,movie_width, movie_height,my_Width,my_Height);
-		imlib_context_set_image(im_scaled);
-		imlib_render_image_on_drawable(0, 0);
-		imlib_free_image();
+		if (movie_width == my_Width && movie_height== my_Height)  {
+			imlib_render_image_on_drawable(0, 0);
+		} else {
+			im_scaled=imlib_create_cropped_scaled_image(0,0,movie_width, movie_height,my_Width,my_Height);
+			imlib_context_set_image(im_scaled);
+			imlib_render_image_on_drawable(0, 0);
+			imlib_free_image();
+		}
+#ifndef IMC
 		imlib_context_set_image(im_image);
 		imlib_free_image();
+#endif
 	}
-
-//       XSync(display, True);     
+#ifndef IMLIB2RGBA
+# ifndef IMC
+	free(rgbabuf);
+# endif
+#endif
 }
 
 void newsrc_imlib2 (void) { 
-	; // nothing to do :)
+#ifdef IMC
+	
+#endif
 }
 
 

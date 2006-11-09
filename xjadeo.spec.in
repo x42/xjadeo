@@ -43,7 +43,7 @@ Summary: jack video monitor
 %description
 jack video monitor
 @configure_input@
-xjadeo is a very simple video player that gets sync from jack.
+xjadeo is a simple video player that gets sync from jack.
 When a jack-client (like Muse, Rosegarden or Ardour) acts as a timebase master, xjadeo will display the video frame in sync with jack transport.
 %prep
 %setup -q

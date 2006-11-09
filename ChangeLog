@@ -1,3 +1,10 @@
+2006-11-09  rgareus  <robin@gareus.org>
+ - on LASH resume -> ignore '-R' remote-mode 
+ - imlib2 - RGB24+RGBA32
+ - dropped gdk/gtk 
+ - revamped configure.ac
+ - fixed continuous seeking (was in debug mode)
+
 2006-11-07  rgareus  <robin@gareus.org>
  - preliminary LASH support - so far only command line args.
  - preliminary Xv/x11 dnd

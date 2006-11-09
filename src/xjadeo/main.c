@@ -325,32 +325,37 @@ jack video monitor\n", program_name);
 }
 
 static void printversion (void) {
-  printf ("xjadeo %s\n", VERSION);
-  printf("compiled with LIBAVFORMAT_BUILD 0x%x = %i\n", LIBAVFORMAT_BUILD, LIBAVFORMAT_BUILD);
+  printf ("xjadeo version %s [ ", VERSION);
 #ifndef HAVE_MIDI
-	; // jack only
+  printf("no MIDI ");
 #else /* have Midi */
 # ifdef HAVE_PORTMIDI
-  printf("compiled with portmidi support\n");
+  printf("portmidi ");
 # else /* alsa midi */
-  printf("compiled with alsa-midi support\n");
+  printf("alsa-midi ");
 # endif 
+# ifdef HAVE_LASH
+  printf("LASH ");
+# endif 
+  printf("]\n compiled with LIBAVFORMAT_BUILD 0x%x = %i\n", LIBAVFORMAT_BUILD, LIBAVFORMAT_BUILD);
 #endif /* HAVE_MIDI */
-  printf("video backends: "
+  printf(" displays: "
 #if HAVE_LIBXV
-		"xv "
+		"Xv "
 #endif 
 #if HAVE_SDL
 		"SDL "
 #endif 
 #if HAVE_IMLIB
-		"x11/imlib "
+		"X11/imlib "
 #endif 
 #if HAVE_IMLIB2
-		"x11/imlib2 "
-#endif 
-#if (HAVE_GTK && HAVE_GDK_PIXBUF )
-		"gtk "
+		"X11/imlib2"
+# ifdef IMLIB2RGBA
+		"(RGBA32) "
+# else 
+		"(RGB24) "
+# endif 
 #endif 
 		"\n"
   );
@@ -378,6 +383,7 @@ int
 main (int argc, char **argv)
 {
   int i;
+  int lashed = 0; // did we get started by lashd ?
   char*   movie= NULL;
 
   program_name = argv[0];
@@ -385,6 +391,7 @@ main (int argc, char **argv)
   xjadeorc(); // read config files - default values before parsing cmd line.
 
 #ifdef HAVE_LASH
+  for (i=0;i<argc;i++) if (strncmp(argv[i],"--lash-id",9)) lashed=1;
   lash_args_t *lash_args = lash_extract_args(&argc, &argv);
 #endif
 
@@ -409,6 +416,11 @@ main (int argc, char **argv)
   else usage (EXIT_FAILURE);
 
   if (want_verbose) printf ("xjadeo %s\n", VERSION);
+
+  if (lashed==1 && remote_en) {
+    printf("xjadeo remote-ctrl disabled (resuming a LASH session).\n");
+    remote_en=0;
+  }
 
   stat_osd_fontfile();
     

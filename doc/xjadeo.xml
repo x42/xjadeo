@@ -52,7 +52,7 @@
   <section>
     <title>NEWS</title>
 
-    <para><application>xjadeo v0.4</application> is a oven-fresh rewrite. Some
+    <para><application>xjadeo v0.4-rc1</application> is a oven-fresh rewrite. Some
     of the documentation is still so hot that is not readably rendered.
     If you're already interested, see the NEWS and Changelog files
     provided with the source. This manual is work in progress...</para>
@@ -100,10 +100,6 @@
             </listitem>
 
             <listitem>
-              <para>gtk - probably deprecated soon.</para>
-            </listitem>
-
-            <listitem>
               <para>imlib2/X11</para>
             </listitem>
 
@@ -135,6 +131,10 @@
       <listitem>
         <para>Remote control interface allows to query and modify all of
         <application>xjadeo</application>'s settings and parameters via standard I/O.</para>
+      </listitem>
+
+      <listitem>
+        <para>LASH - session management.</para>
       </listitem>
 
       <listitem>
@@ -246,10 +246,10 @@ deb-src http://www.debian-multimedia.org sid main</screen>
       <para>Mandatory Libraries:
         <itemizedlist>
           <listitem>
-            <para>jack-audio-connection-kit</para>
+            <para><ulink url="http://jackaudio.org/">jack-audio-connection-kit</ulink></para>
           </listitem>
           <listitem>
-            <para>ffmpeg (libavcodec, libavformat/libavutil)</para>
+            <para><ulink url="http://ffmpeg.mplayerhq.hu/">ffmpeg</ulink> (libavcodec, libavformat/libavutil)</para>
           </listitem>
 	 </itemizedlist>
      </para>
@@ -257,19 +257,16 @@ deb-src http://www.debian-multimedia.org sid main</screen>
      <para>Video Display Libraries. (you need at least one of the following)
         <itemizedlist>
           <listitem>
-            <para>IMlib &ge; 1.9.13</para>
+            <para><ulink url="http://www.enlightenment.org/Libraries/Imlib/">IMlib &ge; 1.9.13</ulink></para>
           </listitem>
           <listitem>
-            <para>IMlib2</para>
+            <para><ulink url="http://www.enlightenment.org/Libraries/Imlib2/">IMlib2</ulink></para>
           </listitem>
           <listitem>
-            <para>SDL 1.2</para>
+            <para><ulink url="http://www.libsdl.org">SDL 1.2</ulink></para>
           </listitem>
           <listitem>
-            <para>libXV</para>
-          </listitem>
-          <listitem>
-            <para>gtk &ge; 1.2.4</para>
+            <para><ulink url="http://xorg.freedesktop.org">libXV</ulink></para>
           </listitem>
 	 </itemizedlist>
       </para>
@@ -277,19 +274,19 @@ deb-src http://www.debian-multimedia.org sid main</screen>
       <para>Optional libraries:
         <itemizedlist>
           <listitem>
-            <para>Freetype 2 (actually libfreetype6_2) - for On Screen display.</para>
+            <para><ulink url="http://freetype.org">Freetype 2</ulink> (actually libfreetype6_2) - for On Screen display.</para>
           </listitem>
           <listitem>
-            <para>portmidi - Midi Clock</para>
+            <para><ulink url="http://www.cs.cmu.edu/~music/portmusic/portmidi/">portmidi</ulink> - Midi Clock</para>
           </listitem>
           <listitem>
-            <para>ALSA (alsa-lib, libasound) - alternate Midi Time Clock</para>
+            <para><ulink url="http://www.alsa-project.org/">ALSA</ulink> (alsa-lib, libasound) - alternate Midi Time Clock</para>
           </listitem>
           <listitem>
-            <para>QT3 - qjadeo Graphical User Interface</para>
+            <para><ulink url="http://www.trolltech.com/products/qt/qt3">QT3</ulink> - qjadeo Graphical User Interface</para>
           </listitem>
           <listitem>
-            <para>QT4 + qt3compat - new qjadeo GUI</para>
+            <para><ulink url="http://www.trolltech.com/products/qt/downloads">QT4</ulink> + qt3compat - new qjadeo GUI</para>
           </listitem>
 	 </itemizedlist>
       </para>
@@ -323,33 +320,23 @@ make install # (requires root privileges) </screen></para>
       supported features. However you might want to consider using some of the
       compile time options. use <command>./configure --help</command> for a
       full list of available options. Per default the configure script tries
-      to autodetect XV,SDL and IMlib as well as the midi libraries. <variablelist>
+      to autodetect all available libraries. <variablelist>
           <varlistentry>
-            <term><option>--enable-gtk</option></term>
+            <term><option>--enable-midi=auto</option></term>
 
             <listitem>
-              <para>autodetects gtk and if available build gtk display support into xjadeo.
-              Note: gtk is not enabled by default, because the current xjadeo-gtk does not support all features yet (eg. resizing and  positioning the window via remote ctrl is not implemented.)</para>
+              <para>Choose midi library to use. good values are <option>auto</option>
+	      <option>portmidi</option>, <option>alsamidi</option>, <option>none</option>.
+              The current default is to to use alsa-midi
+              if available and fall back to using portmidi.</para>
             </listitem>
           </varlistentry>
 
           <varlistentry>
-            <term><option>--disable-midi</option></term>
+            <term><option>--with-fontfile=/path/to/font.ttf</option></term>
 
             <listitem>
-              <para>Disables to probe for midi libraries. xjadeo will be build
-              without midi support. The current default is to to use portmidi
-              if available and fall back to using alsa-midi else.</para>
-            </listitem>
-          </varlistentry>
-
-          <varlistentry>
-            <term><option>--disable-portmidi</option></term>
-
-            <listitem>
-              <para>Disables to check for portmidi library. This will force
-              xjadeo to compile with the ALSA driver even if portmidi is
-              available.</para>
+              <para>Set the default (hardcoded) true type font file to use for OSD.</para>
             </listitem>
           </varlistentry>
 
@@ -371,13 +358,6 @@ make install # (requires root privileges) </screen></para>
           </varlistentry>
         </variablelist></para>
 
-    </section>
-    <section>
-      <title>Packacking</title>
-       <para>You can use the .spec file generated by
-      <application>configure</application> to build an RPM (eg. <command>rpm -ba xjadeo.spec</command>).
-      The debian rules have been removed from the source in favor of the having them maintained in
-      the debian-marillat archive.</para>
     </section>
   </section>
 
@@ -575,8 +555,6 @@ make install # (requires root privileges) </screen></para>
       out if it fails to connect or encounters a MIDI buffer overflow. This is
       in fact a feature of portmidi but could also be considered a bug in
       <application>xjadeo</application>.</para>
-
-      <para>The gtk display works but issues GTK warnings...</para>
 
       <para>xjadeo has not been tested on a 64bit architecture. not sure if we
       ought to expect problems there...</para>
@@ -1621,20 +1599,17 @@ make install # (requires root privileges) </screen></para>
 
         <itemizedlist>
           <listitem>
-            <para>xv hardware overlay.</para>
+            <para>xv (YUV / YV12)</para>
           </listitem>
 
           <listitem>
-            <para>SDL hardware overlay.</para>
+            <para>SDL (YUV / YV12)</para>
           </listitem>
 
           <listitem>
-            <para>ImLib.</para>
+            <para>ImLib (RGB / RGBA)</para>
           </listitem>
 
-          <listitem>
-            <para>GTK.</para>
-          </listitem>
         </itemizedlist>
       </refsect1>
 

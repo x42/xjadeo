@@ -19,31 +19,8 @@
 
 
   inline void stride_memcpy(void * dst, const void * src, int width, int height, int dstStride, int srcStride);
-
-/*******************************************************************************
- * GTK
- */
-
-#define HAVE_MYGTK (HAVE_GTK && HAVE_GDK_PIXBUF )
-
-#if HAVE_MYGTK
-#include <gtk/gtk.h>
-#include <gdk-pixbuf/gdk-pixbuf.h>
-#include <gdk/gdkkeysyms.h>
-
-#define SUP_GTK 1
-#else
-#define SUP_GTK 0
-#endif
-
-void resize_gtk (unsigned int x, unsigned int y);
-void getsize_gtk (unsigned int *x, unsigned int *y);
-void position_gtk (int x, int y);
-int open_window_gtk(int *argc, char ***argv);
-void close_window_gtk(void);
-void render_gtk (uint8_t *mybuffer);
-void handle_X_events_gtk (void);
-
+  void rgb2argb (uint8_t *rgbabuffer, uint8_t *rgbbuffer, int width, int height);
+  void rgb2abgr (uint8_t *rgbabuffer, uint8_t *rgbbuffer, int width, int height);
 
 /*******************************************************************************
  * SDL
@@ -76,6 +53,7 @@ void handle_X_events_sdl (void) ;
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
+#include <X11/Xatom.h>
 #include <X11/extensions/XShm.h>
 #include <X11/extensions/Xvlib.h>
 

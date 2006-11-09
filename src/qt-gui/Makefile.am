@@ -56,3 +56,7 @@ maintainer-clean:	clean
 	$(DEL_FILE) -f Makefile.in
 	$(DEL_FILE) -f $(name).pro
 
+.PHONY:	revert
+revert:
+	svn revert qjadeo.cpp
+	rm -f qjadeo.pro

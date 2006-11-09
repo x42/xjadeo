@@ -262,9 +262,13 @@ int open_movie(char* file_name)
   else framerate = 1.0/av_q2d(av_stream->time_base);
 #endif
 
-#if defined(__ppc__)
-  int64_t dur = (double)  (int64_t) (pFormatCtx->duration - pFormatCtx->start_time);
-  duration = ( ((double) (dur>>32&0xffffffff)) / (double) AV_TIME_BASE );
+#if defined(__BIG_ENDIAN__) //  (__ppc__) ?
+// this cast is weird, but it works.. the bytes seem to be in 'correct' order, but the two
+// 4byte-words are swapped. ?!
+// I wonder how this behaves on a 64bit arch 
+// - maybe it's bug in ffmpeg or all video files I tried had a bad header :D
+  int64_t dur = (int64_t) (pFormatCtx->duration - pFormatCtx->start_time);
+  duration = ( ((double) (((dur&0xffffffff)<<32)|((dur>>32)&0xffffffff))) / (double) AV_TIME_BASE );
 #else
   duration = (double) (((double) (pFormatCtx->duration - pFormatCtx->start_time))/ (double) AV_TIME_BASE);
 #endif
@@ -337,6 +341,7 @@ int my_seek_frame (AVPacket *packet, int timestamp)
 {
   // TODO: assert  timestamp + ts_offset >0 && < length   
   int rv=1;
+  int nolivelock = 0;
   int64_t mtsb = 0;
   static int my_avprev = 0; // last recent seeked timestamp
   static int ffdebug = 0;
@@ -376,6 +381,7 @@ int my_seek_frame (AVPacket *packet, int timestamp)
   // Find a video frame.
   // AVStream *v_stream = pFormatCtx->streams[videoStream];
   read_frame:
+  nolivelock++;
   if(av_read_frame(pFormatCtx, packet)<0)
   {
     if (!want_quiet) printf("Reached movie end\n");
@@ -405,8 +411,6 @@ int my_seek_frame (AVPacket *packet, int timestamp)
 #endif
   if (seekflags!=SEEK_CONTINUOUS) return (1);
 
-  /* code for continuous seeking */
- 
   mtsb = packet->pts;  // FIXME I have no idea what v_stream->time_base is in older versions of ffmpeg
   if (mtsb == AV_NOPTS_VALUE) { 
   	mtsb = packet->dts;
@@ -431,16 +435,17 @@ int my_seek_frame (AVPacket *packet, int timestamp)
       	goto read_frame;
       }
  //   fprintf(stderr, "seek %i-> %i\n", (int)mtsb, timestamp);
-#if 1
+#if 0 
 # if LIBAVFORMAT_BUILD < 4617
 	if (av_seek_frame(pFormatCtx, videoStream, mtsb+1) >= 0) {
 # else
 	if (av_seek_frame(pFormatCtx, videoStream, mtsb+1, AVSEEK_FLAG_ANY) >= 0) {
 # endif
 	    avcodec_flush_buffers(pCodecCtx);
-            goto read_frame;
+	    if (nolivelock < 250) goto read_frame;
 	}
-#else // possible deadlock. - but avoids seek+bufferflush 
+#else 
+	if (nolivelock < 250) 
             goto read_frame;
 #endif 
  	return (0); // seek failed.

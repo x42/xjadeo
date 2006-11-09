@@ -82,14 +82,14 @@ void handle_config(lash_config_t* conf) {
 	key      = lash_config_get_key(conf);
 	//val      = lash_config_get_value(conf);
 	if (!strcmp(key,"current_file")) {
-		printf("LASH action: open movie\n");
+		printf("LASH config: open movie\n");
 	   	xapi_open(lash_config_get_value_string (conf));
 	} else if (!strcmp(key,"window_size")) {
-		printf("LASH action: window size %ix%i\n",
+		printf("LASH config: window size %ix%i\n",
 		(lash_config_get_value_int(conf)>>16)&0xffff,lash_config_get_value_int(conf)&0xffff);
 		Xresize((lash_config_get_value_int(conf)>>16)&0xffff,lash_config_get_value_int(conf)&0xffff);
 //	} else if (!strcmp(key,"offset")) {
-//		printf("LASH action: change offset\n");
+//		printf("LASH config: change offset\n");
 //		ts_offset=(long int) lash_config_get_value(conf);
 	} else {
 		unsigned long val_size = lash_config_get_value_size(conf);

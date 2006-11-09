@@ -5,15 +5,18 @@ TODO
 
 * unify shared x11/xv code (callbacks, WM..)
 
-* imlib2 (RGB24 -> RGBA32 code)
-
-* drag-drop: allow to 'drop' file-uri's on the window
-  maybe that's a QT job. X11-dnd can be a real #$?*!
-
-* OS-X portmidi 
-  -> build a portmidi dylib.
+* imlib2 - cache image
 
 * http://lash.nongnu.org/ support
+  - fix , ignore '-R' when started by lash
+    and think of a way to re-connect a remote session
+
+  - qt-gui + LASH
+
+  - save internal states (offset, fps, file-fps, etc.) 
+    that can be changed via remote to lash.
+  
+  - remember window size + position
 
 TODO - next major version: (backport xj5 branch)
 ------------------------------------------------
@@ -25,6 +28,11 @@ TODO - next major version: (backport xj5 branch)
   -> jack will call xjadeo
 
 * modularize time-sync + video-source
+
+* get rid of the goto's
+
+* struct video-file-options;
+  struct program-options;
 
 
 TODO - legacy and older ideas
@@ -51,6 +59,8 @@ TODO - legacy and older ideas
   MAIN:
 
  - config file for our mighty jolly bunch of config options.
+
+ - SMPTE support drop frames 
 
   REMOTE: 
 

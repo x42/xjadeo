@@ -83,7 +83,7 @@ void OSD_renderYUV (uint8_t *mybuffer, char *text, int xpos, int yperc) {
 	yalign= (movie_height - ST_HEIGHT) * yperc /100.0;
 
 	for (x=0; x<ST_rightend && (x+xalign) < movie_width ;x++)
-		for (y=0; y<ST_HEIGHT && (y+yalign) < movie_width;y++) {
+		for (y=0; y<ST_HEIGHT && (y+yalign) < movie_height;y++) {
 			int dx=(x+xalign);
 			int dy=(y+yalign);
 
@@ -98,7 +98,7 @@ void OSD_renderYUV (uint8_t *mybuffer, char *text, int xpos, int yperc) {
 	}
 }
 
-void OSD_renderRGB (uint8_t *mybuffer, char *text, int xpos, int yperc) {
+void OSD_renderRGB (int bpp, uint8_t *mybuffer, char *text, int xpos, int yperc) {
 	int x,y, xalign, yalign;
 
 	if ( render_font(OSD_fontfile, text) ) return;
@@ -110,10 +110,10 @@ void OSD_renderRGB (uint8_t *mybuffer, char *text, int xpos, int yperc) {
 	yalign= (movie_height - ST_HEIGHT) * yperc /100.0;
 
 	for (x=0; x<ST_rightend && (x+xalign) < movie_width ;x++)
-		for (y=0; y<ST_HEIGHT && (y+yalign) < movie_width;y++) {
+		for (y=0; y<ST_HEIGHT && (y+yalign) < movie_height;y++) {
 			int dx=(x+xalign);
 			int dy=(y+yalign);
-			int pos=3*(dx+movie_width*dy);
+			int pos=bpp*(dx+movie_width*dy);
 
 			if (ST_image[y][x]>= ST_BG){
 				mybuffer[pos]=ST_image[y][x];
@@ -123,6 +123,31 @@ void OSD_renderRGB (uint8_t *mybuffer, char *text, int xpos, int yperc) {
 	}
 }
 
+void rgb2argb (uint8_t *rgbabuffer, uint8_t *rgbbuffer, int width, int height) {
+	int x,y,p3,p4;
+	for (x=0; x< width ;x++)
+		for (y=0; y< height;y++) {
+			p3=3*(x+movie_width*y);
+			p4=4*(x+movie_width*y);
+			rgbabuffer[p4+0] = 255;
+			rgbabuffer[p4+1] = rgbbuffer[p3];
+			rgbabuffer[p4+2] = rgbbuffer[p3+1];
+			rgbabuffer[p4+3] = rgbbuffer[p3+2];
+	}
+}
+
+void rgb2abgr (uint8_t *rgbabuffer, uint8_t *rgbbuffer, int width, int height) {
+	int x,y,p3,p4;
+	for (x=0; x< width ;x++)
+		for (y=0; y< height;y++) {
+			p3=3*(x+movie_width*y);
+			p4=4*(x+movie_width*y);
+			rgbabuffer[p4+3] = 255;
+			rgbabuffer[p4+2] = rgbbuffer[p3];
+			rgbabuffer[p4+1] = rgbbuffer[p3+1];
+			rgbabuffer[p4+0] = rgbbuffer[p3+2];
+	}
+}
 
 /*******************************************************************************
  *
@@ -172,15 +197,13 @@ const vidout VO[] = {
 #else
 		NULLOUTPUT},
 #endif
-	{ PIX_FMT_RGBA32,   SUP_IMLIB2,   "x11 - ImLib2",
+#ifdef IMLIB2RGBA
+	{ PIX_FMT_RGBA32,   SUP_IMLIB2,   "x11 - ImLib2 (RGBA32)",
+#else
+	{ PIX_FMT_RGB24,   SUP_IMLIB2,   "x11 - ImLib2 (RGB24)",
+#endif
 #if HAVE_IMLIB2
 		&render_imlib2, &open_window_imlib2, &close_window_imlib2, &handle_X_events_imlib2, &newsrc_imlib2, &resize_imlib2, &get_window_size_imlib2, &position_imlib2, &get_window_pos_imlib2},
-#else
-		NULLOUTPUT},
-#endif
-	{ PIX_FMT_RGB24,   SUP_GTK,	"GTK",
-#if HAVE_MYGTK
-		&render_gtk, &open_window_gtk, &close_window_gtk, &handle_X_events_gtk, &newsrc_null, &resize_gtk, &getsize_gtk, &position_null, &getpos_null},
 #else
 		NULLOUTPUT},
 #endif
@@ -256,19 +279,19 @@ int vidoutmode(int user_req) {
 	return VO[VOutput].render_fmt;
 }
 
+void OSD_render (uint8_t *mybuffer, char *text, int xpos, int yperc) {
+	if (VO[VOutput].render_fmt == PIX_FMT_YUV420P) OSD_renderYUV (mybuffer, text, xpos, yperc);
+	else if (VO[VOutput].render_fmt == PIX_FMT_RGB24) OSD_renderRGB (3,mybuffer, text, xpos, yperc);
+	else if (VO[VOutput].render_fmt == PIX_FMT_RGBA32) OSD_renderRGB (4,mybuffer, text, xpos, yperc);
+}
+
 void render_buffer (uint8_t *mybuffer) {
 	if (!mybuffer) return;
 
 	// render OSD on buffer 
-	if (OSD_mode&OSD_FRAME && VO[VOutput].render_fmt == PIX_FMT_YUV420P) OSD_renderYUV (mybuffer, OSD_frame, OSD_fx, OSD_fy);
-	if (OSD_mode&OSD_FRAME && VO[VOutput].render_fmt == PIX_FMT_RGB24) OSD_renderRGB (mybuffer, OSD_frame, OSD_fx, OSD_fy);
-
-	if (OSD_mode&OSD_SMPTE && VO[VOutput].render_fmt == PIX_FMT_YUV420P) OSD_renderYUV (mybuffer, OSD_smpte, OSD_sx, OSD_sy);
-	if (OSD_mode&OSD_SMPTE && VO[VOutput].render_fmt == PIX_FMT_RGB24) OSD_renderRGB (mybuffer, OSD_smpte, OSD_sx, OSD_sy);
-
-	if (OSD_mode&OSD_TEXT && VO[VOutput].render_fmt == PIX_FMT_YUV420P) OSD_renderYUV (mybuffer, OSD_text, OSD_tx, OSD_ty);
-	if (OSD_mode&OSD_TEXT && VO[VOutput].render_fmt == PIX_FMT_RGB24) OSD_renderRGB (mybuffer, OSD_text, OSD_tx, OSD_ty);
-
+	if (OSD_mode&OSD_FRAME) OSD_render (mybuffer, OSD_frame, OSD_fx, OSD_fy);
+	if (OSD_mode&OSD_SMPTE) OSD_render (mybuffer, OSD_smpte, OSD_sx, OSD_sy);
+	if (OSD_mode&OSD_TEXT ) OSD_render (mybuffer, OSD_text, OSD_tx, OSD_ty);
 	VO[VOutput].render(buffer); // buffer = mybuffer (so far no share mem or sth)
 }
 
@@ -315,11 +338,14 @@ void Xresize (unsigned int x, unsigned int y) {
 }
 
 // prototype defined in display_x11 
+#ifdef HAVE_XV
 void xv_fullscreen(int action);
-
+#endif
 void Xfullscreen (int action) {
 	if (VOutput == 1) {
+#ifdef HAVE_XV
  		xv_fullscreen(action);
+#endif
 	}
 }
 
