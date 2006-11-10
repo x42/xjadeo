@@ -20,10 +20,16 @@
 */
 #include <config.h>
 
-#ifndef HAVE_MQ 
+//#ifndef HAVE_MQ 
+#if 1
 
 int main() {
-	printf("this xjadeo was compiled without POSIX mqueue messages\n");
+//	printf("this xjadeo was compiled without POSIX mqueue messages\n");
+	printf(" ** xjadeo does not yet support POSIX message queues\n");
+	printf(" ** this code is for development purpose only.\n");
+	printf(" xjremote is going to a tool that allows to change the\n");
+	printf(" running-configuration of xjadeo(1)\n");
+
 	exit(1);
 }
 #else 
