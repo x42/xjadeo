@@ -1,3 +1,12 @@
+2006-11-10  rgareus  <robin@gareus.org>
+ - icon
+
+2006-11-09  rgareus  <robin@gareus.org>
+ - display_x11 cleanup part one.
+ - docs description update
+ - seek timeout.
+ - re-indented sources (!)
+
 2006-11-09  rgareus  <robin@gareus.org>
  - on LASH resume -> ignore '-R' remote-mode 
  - imlib2 - RGB24+RGBA32

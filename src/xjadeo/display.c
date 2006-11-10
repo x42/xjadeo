@@ -29,15 +29,16 @@ extern int want_verbose;
  * NULL Video Output 
  */ 
 
-int open_window_null (int *argc, char ***argv) { return (1); }
+int open_window_null (void) { return (1); }
 void close_window_null (void) { ; }
 void render_null (uint8_t *mybuffer) { ; }
 void handle_X_events_null (void) { ; }
 void newsrc_null (void) { ; }
 void resize_null (unsigned int x, unsigned int y) { ; }
-void getsize_null (unsigned int *x, unsigned int *y) { if(x)*x=0; if(y)*y=0; }
+void getsize_null (unsigned int *x, unsigned int *y) { if(x)*x=1; if(y)*y=1; }
 void position_null (int x, int y) { ; }
-void getpos_null (int *x, int *y) { if(x)*x=0; if(y)*y=0; }
+void getpos_null (int *x, int *y) { if(x)*x=1; if(y)*y=1; }
+void fullscreen_null (int a) { ; }
 
 /*******************************************************************************
  * strided memcopy - convert pitches of video buffer
@@ -158,42 +159,25 @@ void rgb2abgr (uint8_t *rgbabuffer, uint8_t *rgbbuffer, int width, int height) {
 #include <ffmpeg/avcodec.h> // needed for PIX_FMT 
 #include <ffmpeg/avformat.h>
 
-typedef struct {
-	int render_fmt; // the format ffmpeg should write to the shared buffer
-	int supported; // 1: format compiled in -- 0: not supported 
-	const char *name; // 
-	void (*render)(uint8_t *mybuffer);
-	int (*open)(int *argc, char ***argv);
-	void (*close)(void);
-	void (*eventhandler)(void);
-	void (*newsrc)(void);
-	void (*resize)(unsigned int x, unsigned int y);
-	void (*getsize)(unsigned int *x, unsigned int *y);
-	void (*position)(int x, int y);
-	void (*getpos)(int *x, int *y);
-}vidout;
-
-// make sure the video modes are numbered the same on every system,
-// until we switch to named --vo :)
-#define NULLOUTPUT &render_null, &open_window_null, &close_window_null, &handle_X_events_null, &newsrc_null, &resize_null, &getsize_null, &position_null, &getpos_null
+#define NULLOUTPUT &render_null, &open_window_null, &close_window_null, &handle_X_events_null, &newsrc_null, &resize_null, &getsize_null, &position_null, &getpos_null, &fullscreen_null
 
 const vidout VO[] = {
 	{ PIX_FMT_RGB24,   1, 		"NULL", NULLOUTPUT}, // NULL is --vo 0 -> autodetect 
 	{ PIX_FMT_YUV420P, SUP_LIBXV,	"XV - X11 video extension",
 #if HAVE_LIBXV
-		&render_xv, &open_window_xv, &close_window_xv, &handle_X_events_xv, &newsrc_xv, &resize_xv, &get_window_size_xv, &position_xv, get_window_pos_xv},
+		&render_xv, &open_window_xv, &close_window_xv, &handle_X_events_xv, &newsrc_xv, &resize_xv, &get_window_size_xv, &position_xv, get_window_pos_xv, &xj_set_fullscreen},
 #else
 		NULLOUTPUT},
 #endif
 	{ PIX_FMT_YUV420P, SUP_SDL,	"SDL", 
 #if HAVE_SDL
-		&render_sdl, &open_window_sdl, &close_window_sdl, &handle_X_events_sdl, &newsrc_sdl, &resize_sdl, &getsize_sdl, &position_sdl, &getpos_null},
+		&render_sdl, &open_window_sdl, &close_window_sdl, &handle_X_events_sdl, &newsrc_sdl, &resize_sdl, &getsize_sdl, &position_sdl, &getpos_null, &fullscreen_null},
 #else
 		NULLOUTPUT},
 #endif
 	{ PIX_FMT_RGB24,   SUP_IMLIB,   "x11 - ImLib",
 #if HAVE_IMLIB
-		&render_imlib, &open_window_imlib, &close_window_imlib, &handle_X_events_imlib, &newsrc_imlib, &resize_imlib, &get_window_size_imlib, &position_imlib, &get_window_pos_imlib},
+		&render_imlib, &open_window_imlib, &close_window_imlib, &handle_X_events_imlib, &newsrc_imlib, &resize_imlib, &get_window_size_imlib, &position_imlib, &get_window_pos_imlib, &xj_set_fullscreen},
 #else
 		NULLOUTPUT},
 #endif
@@ -203,13 +187,12 @@ const vidout VO[] = {
 	{ PIX_FMT_RGB24,   SUP_IMLIB2,   "x11 - ImLib2 (RGB24)",
 #endif
 #if HAVE_IMLIB2
-		&render_imlib2, &open_window_imlib2, &close_window_imlib2, &handle_X_events_imlib2, &newsrc_imlib2, &resize_imlib2, &get_window_size_imlib2, &position_imlib2, &get_window_pos_imlib2},
+		&render_imlib2, &open_window_imlib2, &close_window_imlib2, &handle_X_events_imlib2, &newsrc_imlib2, &resize_imlib2, &get_window_size_imlib2, &position_imlib2, &get_window_pos_imlib2, &xj_set_fullscreen},
 #else
 		NULLOUTPUT},
 #endif
-	{-1,-1,NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL} // the end.
+	{-1,-1,NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL} // the end.
 };
-
 
 int VOutput = 0;
 
@@ -300,7 +283,7 @@ void open_window(int *argc, char ***argv) {
 	loop_run=1;
 	if (!want_quiet)
 		printf("Video output: %s\n",VO[VOutput].name);
-	if ( VO[VOutput].open(argc,argv) ) { 
+	if (VO[VOutput].open() ) { 
 		fprintf(stderr,"Could not open video output.\n");
 		VOutput=0;
 		loop_run=0;
@@ -337,16 +320,9 @@ void Xresize (unsigned int x, unsigned int y) {
 	VO[VOutput].resize(x,y);
 }
 
-// prototype defined in display_x11 
-#ifdef HAVE_XV
-void xv_fullscreen(int action);
-#endif
-void Xfullscreen (int action) {
-	if (VOutput == 1) {
-#ifdef HAVE_XV
- 		xv_fullscreen(action);
-#endif
-	}
+
+void Xfullscreen (int a) {
+	VO[VOutput].fullscreen(a);
 }
 
 void Xposition (int x, int y) {

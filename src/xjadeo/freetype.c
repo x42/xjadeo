@@ -137,10 +137,13 @@ int render_font (char *fontfile, char *text)
 
   return 0;
 }
-#else 
+
+#else  /* No freetype */
 
 unsigned char ST_image[1][1];
 int ST_rightend = 0;
 int render_font (char *fontfile, char *text) {return -1;};
 
 #endif /* HAVE_FT*/
+
+/* vi:set ts=8 sts=2 sw=2: */

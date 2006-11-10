@@ -9,6 +9,7 @@ EXTRA_DIST= \
  xjadeo.lsm.in xjadeo.spec.in xjadeo.spec \
  doc/xjadeo.xml doc/Makefile doc/html.xsl doc/man.xsl \
  doc/xjadeo.1 doc/qjadeo.1 \
+ src/xjadeo/xjadeo.bitmap src/xjadeo/xjadeo_mask.xbm \
  contrib/cli-remote/jadeo.c \
  contrib/cli-remote/Makefile.am \
  contrib/cli-remote/README \

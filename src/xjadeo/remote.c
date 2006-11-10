@@ -169,7 +169,8 @@ void xapi_set_videomode(void *d) {
 		open_movie(fn);
 		free(fn);
 	} else {
-	  if(buffer) free(buffer);
+		if(buffer) free(buffer); buffer=NULL;
+		// set videomode to 0 or loop_flag=0?
 	}
 	init_moviebuffer();
 }

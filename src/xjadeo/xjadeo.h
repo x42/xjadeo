@@ -5,20 +5,62 @@
 #include <string.h> 	/* memcpy */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+# include <config.h>
 #endif
 
 #ifdef HAVE_LASH
-#include <lash/lash.h>
-void lash_setup();
+# include <lash/lash.h>
 #endif
 
+
+/* xjadeo seek modes */
+enum { 	SEEK_ANY, ///< directly seek to givenvideo frame 
+	SEEK_KEY, ///< seek to next keyframe after given frame.
+	SEEK_CONTINUOUS }; ///< seek to keframe before this frame and advance to current frame.
+
+/* freetype - On screen display */
+enum { OSD_LEFT=-1, OSD_CENTER=-2, OSD_RIGHT=-3 }; ///< use positive values as percent or pixel.
+
+#define OSD_FRAME (1)
+#define OSD_SMPTE (2)
+#define OSD_TEXT (64)
+#define OSD_BOX (256)
+
+#ifdef TTFFONTFILE
+# define FONT_FILE TTFFONTFILE
+#else 
+# define FONT_FILE       "/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf"
+#endif
+
+/* define maximum size for OSD in pixel */
+#ifdef HAVE_FT
+# define ST_WIDTH   (1024)
+# define ST_HEIGHT  (30)
+#else 
+# define ST_WIDTH   (0)
+# define ST_HEIGHT  (0)
+#endif 
+
+#define ST_PADDING  (10)
+
+
+/* X11 only - but defined here since needed in remote.c and display.c
+ * EWMH state actions, see
+	 http://freedesktop.org/Standards/wm-spec/index.html#id2768769 */
+#define _NET_WM_STATE_REMOVE        0    /* remove/unset property */
+#define _NET_WM_STATE_ADD           1    /* add/set property */
+#define _NET_WM_STATE_TOGGLE        2    /* toggle property  */
+
+/* prototypes in lash.c */
 void lash_process();
 void lcs_str(char *key, char *value);
 void lcs_int(char *key, int value);
 void lcs_long(char *key, long int  value);
 void lcs_dbl(char *key, double value);
 
+#ifdef HAVE_LASH
+  void lash_setup();
+#endif
 
 /* prototypes of fn's in  display.c */
 void newsourcebuffer (void);
@@ -48,11 +90,6 @@ int remote_read(void);
 void remote_printf(int val, const char *format, ...);
 
 /* xjadeo.c */
-
-enum { 	SEEK_ANY, // < directly seek to givenvideo frame 
-	SEEK_KEY, // < seek to next keyframe after given frame.
-	SEEK_CONTINUOUS }; // < seek to keframe before this frame and advance to current frame.
-
 void display_frame(int64_t timestamp, int force_update);
 int open_movie(char* file_name);
 int close_movie();
@@ -61,14 +98,13 @@ void init_moviebuffer(void);
 void event_loop(void);
 void do_try_this_file_and_exit(char *movie);
 
-/* jack.c function prototype */
+/* jack.c function prototypes */
 long jack_poll_frame (void);
 void open_jack(void );
 void close_jack(void);
 int jack_connected(void);
 
 /* smpte.c prototypes */
-
 long int smptestring_to_frame (char *str);
 void frame_to_smptestring(char *smptestring, long int frame);
 
@@ -84,41 +120,5 @@ int midi_connected(void);
 void xjadeorc (void);
 
 /* freetype - On screen display */
-enum { OSD_LEFT=-1, OSD_CENTER=-2, OSD_RIGHT=-3 }; // use positive values as percent or pixel.
-
-#define OSD_BOX (256)
-#define OSD_FRAME (1)
-#define OSD_SMPTE (2)
-#define OSD_TEXT (64)
-
-#define ST_PADDING (10)
-
-/* the default font file (first in the list of fontfiles to search)
- * can be specified at compile time with...
- * -DTTFFONTFILE=\"/path/to/file.ttf\"
- *
- * dont set to "" - or no fontfiles will be checked.
- * full list in main.c fontfile[]
- */
-#ifdef TTFFONTFILE
-#define FONT_FILE TTFFONTFILE
-#else 
-#define FONT_FILE       "/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf"
-#endif
-
 int render_font (char *fontfile, char *text);
-#ifdef HAVE_FT
-  #define ST_WIDTH   1024
-  #define ST_HEIGHT  30
-#else  /* Have_FT */
-  #define ST_WIDTH   0
-  #define ST_HEIGHT  0
-#endif /* Have_FT */
-
-/* XV only - but defined here since needed in remote.c and display.c
- * EWMH state actions, see
-	 http://freedesktop.org/Standards/wm-spec/index.html#id2768769 */
-#define _NET_WM_STATE_REMOVE        0    /* remove/unset property */
-#define _NET_WM_STATE_ADD           1    /* add/set property */
-#define _NET_WM_STATE_TOGGLE        2    /* toggle property  */
 

@@ -1,11 +1,10 @@
 TODO
 ----
 
-* remove SDL and gtk code from xjadeo
+* fix X11 - buffer when re-opening window.
+  free (buffers) when closing window. (leak!)
 
-* unify shared x11/xv code (callbacks, WM..)
-
-* imlib2 - cache image
+* ratain aspect ratio  - letterbox option
 
 * http://lash.nongnu.org/ support
   - fix , ignore '-R' when started by lash

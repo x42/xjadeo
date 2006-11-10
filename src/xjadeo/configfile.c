@@ -15,6 +15,7 @@
 
 #include <xjadeo.h>
 
+/* test if file exists and is a regular file - returns 1 if ok */
 int testfile (char *filename) {
 	struct stat s;
 	int result= stat(filename, &s);
@@ -25,7 +26,6 @@ int testfile (char *filename) {
 
 
 #define OPTSTR(arg) if (arg) free(arg); arg=strdup(value); rv=1;
-
 
 extern char OSD_fontfile[1024]; 
 extern double 		delay;
@@ -58,12 +58,10 @@ int parseoption (char *item, char *value) {
 			seekflags=SEEK_KEY; rv=1;
 		}
 	}
-//#ifdef HAVE_FT
 	else if (!strncasecmp(item,"FONTFILE",8)) {
 		strncpy(OSD_fontfile,value,1023);rv=1;
 		OSD_fontfile[1023]=0; // just to be sure.
 	}
-//#endif
 	return (rv);
 }
 

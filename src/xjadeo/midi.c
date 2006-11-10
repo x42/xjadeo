@@ -252,119 +252,117 @@ PmQueue *main_to_midi;
 /* timer interrupt for processing midi data */
 void process_midi(PtTimestamp timestamp, void *userData)
 {
-    PmError result;
-    PmEvent buffer; /* just one message at a time */
-    smpte msg;
+	PmError result;
+	PmEvent buffer; /* just one message at a time */
+	smpte msg;
 
-    if (!active) return;
+	if (!active) return;
 
-    /* check for messages */
-    do { 
-        result = Pm_Dequeue(main_to_midi, &msg); 
-        if (result) {
-		if (msg.frame == 0xaffe) {  
-			// stop thread
-                	Pm_Enqueue(midi_to_main, &msg);
-			active= FALSE;
-			return;
+	/* check for messages */
+	do { 
+		result = Pm_Dequeue(main_to_midi, &msg); 
+		if (result) {
+				if (msg.frame == 0xaffe) {  
+				// stop thread
+				Pm_Enqueue(midi_to_main, &msg);
+				active= FALSE;
+				return;
+			}
+			memcpy(&msg,&last_tc,sizeof(smpte));
+			Pm_Enqueue(midi_to_main, &msg);
 		}
-		memcpy(&msg,&last_tc,sizeof(smpte));
-                Pm_Enqueue(midi_to_main, &msg);
-        }
-    } while (result);
+	} while (result);
      
-    /* see if there is any midi input to process */
-    do {
-	result = Pm_Poll(midi);
-        if (result) {
-	    int shift,data;
-	    shift=data=0;
+	/* see if there is any midi input to process */
+	do {
+		result = Pm_Poll(midi);
+		if (result) {
+			int shift,data;
+			shift=data=0;
 
-            if (Pm_Read(midi, &buffer, 1) == pmBufferOverflow) continue;
+			if (Pm_Read(midi, &buffer, 1) == pmBufferOverflow) continue;
 
-	    /* parse only MTC relevant messages */
-	    if (Pm_MessageStatus(buffer.message) == 0xf1)
-		parse_timecode (Pm_MessageData1(buffer.message));
+			/* parse only MTC relevant messages */
+			if (Pm_MessageStatus(buffer.message) == 0xf1)
+				parse_timecode (Pm_MessageData1(buffer.message));
 
-	    for (shift = 0; shift < 32 && (data != MIDI_EOX); shift += 8) {
-		data = (buffer.message >> shift) & 0xFF;
+			for (shift = 0; shift < 32 && (data != MIDI_EOX); shift += 8) {
+				data = (buffer.message >> shift) & 0xFF;
 
-		/* if this is a status byte that's not MIDI_EOX, the sysex
-		 * message is incomplete and there is no more sysex data */
-		if (data & 0x80 && data != MIDI_EOX && data != MIDI_SOX) {
-			sysex_state=-1;
-			break;
+				/* if this is a status byte that's not MIDI_EOX, the sysex
+				 * message is incomplete and there is no more sysex data */
+				if (data & 0x80 && data != MIDI_EOX && data != MIDI_SOX) {
+					sysex_state=-1;
+					break;
+				}
+				/* sysex- universal  real time message f0 7f ... f7  */
+				if (data == 0xf7) { sysex_state=-1;}
+				else if (sysex_state < 0 && data == 0xf0) { sysex_state=0; sysex_type=0; }
+				else if (sysex_state>=0) {
+					sysex_type = parse_sysex_urtm (data,sysex_state,sysex_type);
+					sysex_state++;
+				}
+			}
 		}
-
-		// sysex- universal  real time message f0 7f ... f7 
-	    	if (data == 0xf7) { sysex_state=-1;}
-		else if (sysex_state < 0 && data == 0xf0) { sysex_state=0; sysex_type=0; }
-		else if (sysex_state>=0) {
-			sysex_type = parse_sysex_urtm (data,sysex_state,sysex_type);
-			sysex_state++;
-		}
-	    }
-        }
-    } while (result);
+	} while (result);
 }
 
 
 void midi_open(char *midiid) {
-    int midi_input;
-    if (midi) return;
+	int midi_input;
+	if (midi) return;
 
-    midi_input = atoi(midiid);
-    if (want_verbose && midi_input < 0) midi_input = midi_detectdevices(1);
-    else if (midi_input <0 ) midi_input = midi_detectdevices(0);
+	midi_input = atoi(midiid);
+	if (want_verbose && midi_input < 0) midi_input = midi_detectdevices(1);
+	else if (midi_input <0 ) midi_input = midi_detectdevices(0);
 
-    if (midi_check(midi_input)) return ;
+	if (midi_check(midi_input)) return ;
 
-    // init smpte
-    tc.type=tc.min=tc.frame=tc.sec=tc.hour=0;
-    last_tc.type=last_tc.min=last_tc.frame=last_tc.sec=last_tc.hour=0;
-    sysex_state = -1;
+	// init smpte
+	tc.type=tc.min=tc.frame=tc.sec=tc.hour=0;
+	last_tc.type=last_tc.min=last_tc.frame=last_tc.sec=last_tc.hour=0;
+	sysex_state = -1;
 
-    midi_to_main = Pm_QueueCreate(2, sizeof(smpte));
-    main_to_midi = Pm_QueueCreate(2, sizeof(smpte));
-    if (!midi_to_main || !main_to_midi ) {
-	    fprintf(stderr, "Could not create portmidi queues\n");
-	    return;
-    }
-    
-    PmEvent buffer[1];
-    Pt_Start(1, &process_midi, 0); /* timer started w/millisecond accuracy */
+	midi_to_main = Pm_QueueCreate(2, sizeof(smpte));
+	main_to_midi = Pm_QueueCreate(2, sizeof(smpte));
+	if (!midi_to_main || !main_to_midi ) {
+		fprintf(stderr, "Could not create portmidi queues\n");
+		return;
+	}
 
-    Pm_Initialize();
+	PmEvent buffer[1];
+	Pt_Start(1, &process_midi, 0); /* timer started w/millisecond accuracy */
 
-    /* open input device */
-    Pm_OpenInput(&midi, midi_input, NULL, INPUT_BUFFER_SIZE, NULL, NULL);
+	Pm_Initialize();
 
-    if (!want_quiet) printf("Midi Input opened.\n");
+	/* open input device */
+	Pm_OpenInput(&midi, midi_input, NULL, INPUT_BUFFER_SIZE, NULL, NULL);
 
-    Pm_SetFilter(midi, PM_FILT_ACTIVE | PM_FILT_CLOCK);
-    /* flush the buffer after setting filter, just in case anything got through */
-    while (Pm_Poll(midi)) { Pm_Read(midi, buffer, 1); }
+	if (!want_quiet) printf("Midi Input opened.\n");
 
-    active = TRUE; 
+	Pm_SetFilter(midi, PM_FILT_ACTIVE | PM_FILT_CLOCK);
+	/* flush the buffer after setting filter, just in case anything got through */
+	while (Pm_Poll(midi)) { Pm_Read(midi, buffer, 1); }
 
+	active = TRUE; 
 }
 
 void midi_close(void) {
-    smpte cmd;
+	smpte cmd;
 
-    if (!want_quiet) printf("closing midi...");
-    if(!midi) return;
+	if (!want_quiet) printf("closing midi...");
+	if(!midi) return;
 
-    cmd.frame=0xaffe; // shutdown CMD 
-    Pm_Enqueue(main_to_midi, &cmd); 
-    while (Pm_Dequeue(midi_to_main, &cmd)==0) ; // spin 
+	cmd.frame=0xaffe; // shutdown CMD 
+	Pm_Enqueue(main_to_midi, &cmd); 
+	while (Pm_Dequeue(midi_to_main, &cmd)==0) ; // spin 
 
-    Pt_Stop(); /* stop the timer */
-    Pm_QueueDestroy(midi_to_main);
-    Pm_QueueDestroy(main_to_midi);
+	Pt_Stop(); /* stop the timer */
+	Pm_QueueDestroy(midi_to_main);
+	Pm_QueueDestroy(main_to_midi);
 
-    Pm_Close(midi);
-    midi=NULL;
+	Pm_Close(midi);
+	midi=NULL;
 }
 
 int midi_connected(void) {
@@ -442,10 +440,10 @@ void amidi_open(char *port_name) {
 }
 
 void amidi_close(void) {
-    if (!want_quiet) printf("closing alsa midi...");
-    if(!amidi) return;
-    snd_rawmidi_close(amidi);
-    amidi=NULL;
+	if (!want_quiet) printf("closing alsa midi...");
+	if(!amidi) return;
+	snd_rawmidi_close(amidi);
+	amidi=NULL;
 }
  // TODO increase buffer size ( avg: 15Hz * 8 msgs )
  // better: standalone thread
@@ -572,10 +570,10 @@ int sysex_type = 0;
 int aseq_stop=0; // only modify in main thread. 
 
 void aseq_close(void) {
-    if(!seq) return;
-    if (!want_quiet) printf("closing alsa midi...");
-    snd_seq_close(seq);
-    seq=NULL;
+	if(!seq) return;
+	if (!want_quiet) printf("closing alsa midi...");
+	snd_seq_close(seq);
+	seq=NULL;
 }
 
 void aseq_open(char *port_name) {

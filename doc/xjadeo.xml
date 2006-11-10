@@ -29,8 +29,11 @@
      <abstract>
 
     <para><application>xjadeo</application> is a program that displays a video
-    clip in sync with an external time source. It is a handy tool to help
-    synchronizing the soundtrack of a video file.</para>
+    clip in sync with an external time source, which comes quite handy when you want to create a
+    soundtrack for a movie.</para>
+    
+    <para>It has applications in soundtrack creation, video monitoring or 
+    any task that requires to associate movie frames with audio events.</para>
 
     <para><application>xjadeo</application> supports different video file
     formats, display libraries and sync sources. It includes an optional
@@ -39,8 +42,7 @@
     instance.</para>
 
     <para><application>xjadeo</application> is being developed on the
-    GNU/Linux operating system, but should not be limited to it. There are
-    some low priority efforts to build a Mac OS X binary.</para>
+    GNU/Linux operating system, but not limited to it. </para>
   
      </abstract>
 
@@ -55,7 +57,7 @@
     <para><application>xjadeo v0.4-rc1</application> is a oven-fresh rewrite. Some
     of the documentation is still so hot that is not readably rendered.
     If you're already interested, see the NEWS and Changelog files
-    provided with the source. This manual is work in progress...</para>
+    provided with the source. This manual (as well as xjadeo itself) is work in progress...</para>
   </section>
 
   <section>
@@ -558,6 +560,18 @@ make install # (requires root privileges) </screen></para>
 
       <para>xjadeo has not been tested on a 64bit architecture. not sure if we
       ought to expect problems there...</para>
+
+      <para>X11 / nvidia might not work properly with the <ulink url="http://download.nvidia.com/XFree86/Linux-x86_64/1.0-8762/README/appendix-s.html">Composite Extension</ulink> as reported in the <ulink url="http://sourceforge.net/forum/forum.php?thread_id=1437336?forum_id=447923">Forum</ulink>.
+	Temporarily disable this extension 
+	<command>nvidia-xconfig --composite</command>
+	<command>nvidia-xconfig --no-composite</command>
+      or permanently disable it in your X configuration: 
+      <screen>
+      Section "Extensions" 
+	      Option "Composite" "Disable" 
+      EndSection 
+      </screen>
+      </para>
 
       <para>If you experience unexpected behavior please file a bug ticket at
       <ulink url="http://sourceforge.net/projects/xjadeo/">http://sourceforge.net/projects/xjadeo/</ulink>

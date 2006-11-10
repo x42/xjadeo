@@ -90,6 +90,7 @@ long	userFrame = 0; // seek to this frame if jack and midi are N/A
 long	dispFrame = 0; // global strorage... = (SMPTE+offset) with boundaries to [0..movie_file_frames]
 
 int want_quiet   =0;	/* --quiet, --silent */
+int want_debug   =0;	/* --debug */
 int want_verbose =0;	/* --verbose */
 int start_ontop =0;	/* --ontop // -a */
 int remote_en =0;	/* --remote, -R */
@@ -164,6 +165,7 @@ static struct option const long_options[] =
   {"midi", required_argument, 0, 'm'},
   {"midifps", required_argument, 0, 'M'},
 #endif
+  {"debug", no_argument, 0, 'D'},
   {NULL, 0, NULL, 0}
 };
 
@@ -193,6 +195,7 @@ decode_switches (int argc, char **argv)
 			   "m:"	/* midi interface */
 			   "M:"	/* midi clk convert */
 #endif
+			   "D"	/* debug */
 			   "V",	/* version */
 			   long_options, (int *) 0)) != EOF)
   {
@@ -200,6 +203,9 @@ decode_switches (int argc, char **argv)
 	case 'q':		/* --quiet, --silent */
 	  want_quiet = 1;
 	  want_verbose = 0;
+	  break;
+	case 'D':		/* --debug */
+	  want_debug = 1;
 	  break;
 	case 'v':		/* --verbose */
 	  want_verbose = !remote_en;
@@ -232,7 +238,11 @@ decode_switches (int argc, char **argv)
 	  break;
 	case 'K':		/* --anyframe */
 	  seekflags=SEEK_CONTINUOUS;
+#if LIBAVFORMAT_BUILD < 4617
+	  printf("libavformat (ffmpeg) does not support continuous seeking...\n uprade your ffmpeg library and recompile xjadeo!\n");
+#else
 	  printf("enabled continuous seeking..\n");
+#endif
 	  break;
 	case 'F':		/* --filefps */
           filefps = atof(optarg);
