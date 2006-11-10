@@ -23,9 +23,9 @@ $(name).mak:	$(name).pro
 	 $(COPY) -f qjadeo.cpp qjadeo.h mainwindow.ui qt3; \
 	 $(qt3to4) -alwaysOverwrite $(name).pro; \
 	fi
-	$(qmake) -o $(name).mak 'DEFINES += BINDIR=\\\"$(DESTDIR)/$(bindir)\\\"' $(name).pro
+	$(qmake) -o $(name).mak $(name).pro
 
-$(name):	$(name).mak $(sources) $(headers)
+$(name):	$(name).mak $(sources) $(headers) bindir.h
 	$(MAKE) -f $(name).mak
 
 install:	$(name)
@@ -60,3 +60,6 @@ maintainer-clean:	clean
 revert:
 	svn revert qjadeo.cpp
 	rm -f qjadeo.pro
+
+bindir.h: Makefile
+	echo '#define BINDIR "$(DESTDIR)/$(bindir)"' >$@

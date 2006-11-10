@@ -10,7 +10,7 @@
 #include <qdesktopwidget.h>
 
 #include "qjadeo.h"
-
+#include "bindir.h"
 // Global variables
 
 QProcess xjadeo;
