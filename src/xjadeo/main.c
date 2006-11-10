@@ -93,6 +93,7 @@ int want_quiet   =0;	/* --quiet, --silent */
 int want_debug   =0;	/* --debug */
 int want_verbose =0;	/* --verbose */
 int start_ontop =0;	/* --ontop // -a */
+int avoid_lash   =0;	/* --nolash */
 int remote_en =0;	/* --remote, -R */
 int remote_mode =0;	/* 0: undirectional ; >0: bidir
 			 * bitwise enable async-messages 
@@ -161,6 +162,7 @@ static struct option const long_options[] =
   {"try-codec", no_argument, 0, 't'},
   {"info", no_argument, 0, 'i'},
   {"ontop", no_argument, 0, 'a'},
+  {"nolash", no_argument, 0, 'L'},
 #ifdef HAVE_MIDI
   {"midi", required_argument, 0, 'm'},
   {"midifps", required_argument, 0, 'M'},
@@ -196,6 +198,7 @@ decode_switches (int argc, char **argv)
 			   "M:"	/* midi clk convert */
 #endif
 			   "D"	/* debug */
+			   "L"	/* no lash */
 			   "V",	/* version */
 			   long_options, (int *) 0)) != EOF)
   {
@@ -214,6 +217,9 @@ decode_switches (int argc, char **argv)
 	  remote_en = 1;
 	  want_quiet = 1;
 	  want_verbose = 0;
+	  break;
+	case 'L':		/* --nolash */
+	  avoid_lash = 1;
 	  break;
 	case 't':		/* --try */
 	  try_codec = 1;
@@ -407,6 +413,7 @@ main (int argc, char **argv)
   i = decode_switches (argc, argv);
 
 #ifdef HAVE_LASH
+//  if (!lashed && avoid_lash == 0)  {
   lash_client = lash_init (lash_args, PACKAGE_NAME,
                      0  | LASH_Config_Data_Set  
                      ,LASH_PROTOCOL (2,0));

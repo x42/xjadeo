@@ -1,6 +1,5 @@
 TODO
 ----
-
 * fix X11 - buffer when re-opening window.
   free (buffers) when closing window. (leak!)
 

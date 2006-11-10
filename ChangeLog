@@ -1,5 +1,8 @@
 2006-11-10  rgareus  <robin@gareus.org>
  - icon
+ - fixed qt BINDIR define (again)
+ - prepared remote stdio replacement: mqueues
+   prereq. for proper lash + gui 
 
 2006-11-09  rgareus  <robin@gareus.org>
  - display_x11 cleanup part one.

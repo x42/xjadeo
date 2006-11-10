@@ -7,7 +7,9 @@ AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
 dnl Every other copy of the package version number gets its value from here
+#AM_INIT_AUTOMAKE(xjadeo, [0.4.]esyscmd((svnversion . /trunk||echo 0)|tr : _|tr -d \\012))
 AM_INIT_AUTOMAKE(xjadeo, 0.3.19)
+AC_REVISION([$Id: configure.ac $])
 
 dnl create a config.h file (Automake will add -DHAVE_CONFIG_H)
 AM_CONFIG_HEADER(config.h)
@@ -16,13 +18,13 @@ AC_ARG_ENABLE(xv,    AC_HELP_STRING([--disable-xv],  [Disable Xvideo extension ]
 AC_ARG_ENABLE(imlib, AC_HELP_STRING([--disable-imlib], [Disable use of imlib for display]))
 AC_ARG_ENABLE(imlib2, AC_HELP_STRING([--disable-imlib2], [Disable use of imlib2 for display]))
 AC_ARG_ENABLE(sdl,   AC_HELP_STRING([--enable-sdl], [Enable use of SDL for display]))
-#AC_ARG_ENABLE(midi,  AC_HELP_STRING([--disable-midi],  [Disable MTC sync support]))
-#AC_ARG_ENABLE(portmidi, AC_HELP_STRING([--disable-portmidi],  [Don't use portmidi - try alsamidi instead]))
 AC_ARG_ENABLE(ft,    AC_HELP_STRING([--disable-ft],  [Disable freetype On-Screen.Display support]))
 AC_ARG_ENABLE(qtgui, AC_HELP_STRING([--disable-qtgui],[Don't build the Qt GUI controller]))
 AC_ARG_ENABLE(contrib,  AC_HELP_STRING([--enable-contrib],  [Compile and install code in contrib folder]))
 AC_ARG_ENABLE(lash, AC_HELP_STRING([--disable-lash],[disable LASH support]))
 
+# TODO: disable posix-mq detection 
+#AC_ARG_ENABLE(mq, AC_HELP_STRING([--disable-mq],[disable mq remote support]))
 
 dnl FPU emulation core.
 AC_ARG_ENABLE(midi, AC_HELP_STRING([--enable-midi=auto], [select MTC support: auto,alsa,portmidi,off]),
@@ -72,15 +74,29 @@ AC_SUBST(VERSION)
 ISODATE=`date +%Y-%m-%d`
 AC_SUBST(ISODATE)
 
+dnl support old old automake-1.4
+#AC_SUBST(PACKAGE,[$PACKAGE_NAME])
+#AC_SUBST(VERSION,[$PACKAGE_VERSION])
+
 dnl Checks for programs.
 AC_PROG_INSTALL
 #AC_PROG_CC
 AM_PROG_CC_C_O
 
-# TODO: check for xsltproc, xmllint to write documentation. ?!
+# TODO: check for xsltproc, xmllint and 
+# automatically build documentation...
+
+#AC_C_VOLATILE
+AC_C_CONST
+AC_C_BIGENDIAN
 
 dnl Checks for header files.
 AC_HEADER_STDC
+#AC_HEADER_TIME
+AC_CHECK_SIZEOF(float)
+AC_CHECK_SIZEOF(double)
+AC_CHECK_SIZEOF(long)
+AC_CHECK_SIZEOF(unsigned long)
 AC_CHECK_HEADERS(time.h string.h jack/jack.h jack/transport.h)
 
 dnl Checks for libraries.
@@ -92,6 +108,7 @@ AH_TEMPLATE([HAVE_IMLIB2], [Define as 1 if you have imlib2])
 AH_TEMPLATE([HAVE_PORTMIDI], [Define as 1 if you have portmidi and asound])
 AH_TEMPLATE([HAVE_MIDI], [Define as 1 if you have either alsa or portmidi])
 AH_TEMPLATE([HAVE_LASH], [Define as 1 if you have lash])
+AH_TEMPLATE([HAVE_MQ], [Define as 1 if you have POSIX message queues (libc, librt)])
 
 
 AC_HEADER_MAJOR
@@ -108,6 +125,10 @@ LIBS="$LIBS -L/usr/X11R6/lib"
 #X_LIBS="-L/usr/X11R6/lib/"
 
 AC_CHECK_LIB([jack], [jack_client_new], , [AC_MSG_ERROR(*** AUDIO: You need to have the JACK audio development kit. ***)])
+
+MQ_LIBS=""
+AC_SEARCH_LIBS( mq_open, rt, AC_DEFINE(HAVE_MQ) MQ_LIBS="-lrt" HAVE_MQ=1 )
+AC_SUBST(MQ_LIBS)
 
 AC_CHECK_LIB([X11], [XOpenDisplay], , [AC_MSG_ERROR(*** X11: You need to install the X11 development package: libx11-dev ***)])
 
@@ -426,13 +447,19 @@ AC_OUTPUT
 
 echo " "
 echo "------------------------------------------------------------------------"
-echo "  $PACKAGE $VERSION  - Configuration Summary"
+echo "  $PACKAGE $VERSION  - Configuration Report"
 echo "------------------------------------------------------------------------"
 echo " "
 echo    " Installation Path: $prefix"
 echo    " Video Displays"
 echo -n "   - libxv:         ";	if test -n "$HAVE_LIBXV"; then echo "ok"; else echo "not avail."; fi
-echo -n "   - libsdl:        ";	if test -n "$HAVE_SDL"; then echo "ok"; else echo "not avail."; fi
+echo -n "   - libsdl:        ";	if test -n "$HAVE_SDL"; then echo "ok"; else 
+    if test "x$enable_sdl" = "xyes"; then
+	echo "not avail."; 
+    else 
+	echo "disabled. configure with --enable-sdl"; 
+    fi
+fi
 echo -n "   - libx11/imlib:  ";	if test -n "$HAVE_IMLIB"; then echo "ok"; else echo "not avail."; fi
 echo -n "   - libx11/imlib2: ";	if test -n "$HAVE_IMLIB2"; then echo "ok"; else echo "not avail."; fi
 echo -n " MIDI:              ";
@@ -441,6 +468,7 @@ else if test -n "$HAVE_MIDI"; then echo "alsa"
      else echo "disabled."; fi
 fi
 echo -n " LASH:              ";	if test -n "$HAVE_LASH"; then echo "ok"; else echo "not avail."; fi
+echo -n " POSIX msg queue:   ";	if test -n "$HAVE_MQ"; then echo "ok"; else echo "not avail."; fi
 echo -n " On screen display: ";
 if test -z "$HAVE_FT"; then 
 echo "disabled";

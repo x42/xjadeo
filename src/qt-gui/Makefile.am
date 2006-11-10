@@ -48,6 +48,7 @@ clean:	$(name).mak
 	$(DEL_FILE) -rf .moc
 	$(DEL_FILE) -f portinglog.txt
 	$(DEL_FILE) -rf .tmp
+	$(DEL_FILE) -f bindir.h
 
 distclean:	clean
 
