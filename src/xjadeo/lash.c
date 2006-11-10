@@ -1,4 +1,4 @@
-/* xjadeo - jack video monitor
+/* xjadeo -  lash interface
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
  *  Robin Gareus <robin@gareus.org>
  *  Luis Garrido <luisgarrido@users.sourceforge.net>
  *
+ * $Rev: $
+ * $Rev  $
  */
 
 #include "xjadeo.h"
@@ -34,6 +36,7 @@ extern long	ts_offset;
 extern long	userFrame;
 extern long	dispFrame;
 extern int want_quiet;
+extern int want_debug;
 extern int want_verbose;
 extern int remote_en;
 extern int remote_mode;
@@ -58,6 +61,16 @@ extern char jackid[16];
 
 extern lash_client_t *lash_client;
 
+void xapi_open(void *d); // command to open movie - TODO: better do movie_open, initbuffer... (remote replies)
+
+long int lash_config_get_value_long (const lash_config_t * config) {
+	const void *data = lash_config_get_value(config);
+	return(*((long*) data));
+}
+
+/*************************
+ * private lash functions
+ */
 void handle_event(lash_event_t* ev) {
 	int type = lash_event_get_type(ev);
 	const char*	str = lash_event_get_string(ev);
@@ -65,15 +78,18 @@ void handle_event(lash_event_t* ev) {
 	
 	if (type == LASH_Restore_Data_Set) {
 		// FIXME - send this AFTER recv. config
-		printf("LASH restore data set\n");
+		if (!want_quiet)
+			printf("LASH restore data set\n");
 		//lash_send_event(lash_client, lash_event_new_with_type(LASH_Restore_Data_Set));
 	} else if (type == LASH_Save_Data_Set) {
-		printf("LASH saving data set\n");
+		if (!want_quiet)
+			printf("LASH saving data set\n");
 		lash_send_event(lash_client, lash_event_new_with_type(LASH_Save_Data_Set));
 	} else if (type == LASH_Quit) {
 		loop_flag=0;
 	} else 
-		printf ("WARNING: unhandled LASH Event t:%i s:'%s'\n",type,str);
+		if (want_debug)
+			printf ("WARNING: unhandled LASH Event t:%i s:'%s'\n",type,str);
 }
 
 void handle_config(lash_config_t* conf) {
@@ -83,19 +99,24 @@ void handle_config(lash_config_t* conf) {
 	//val      = lash_config_get_value(conf);
 	if (!strcmp(key,"current_file")) {
 		printf("LASH config: open movie\n");
-	   	xapi_open(lash_config_get_value_string (conf));
+	   	xapi_open((char *) lash_config_get_value_string (conf));
 	} else if (!strcmp(key,"window_size")) {
-		printf("LASH config: window size %ix%i\n",
-		(lash_config_get_value_int(conf)>>16)&0xffff,lash_config_get_value_int(conf)&0xffff);
+	//	printf("LASH config: window size %ix%i\n", (lash_config_get_value_int(conf)>>16)&0xffff,lash_config_get_value_int(conf)&0xffff);
 		Xresize((lash_config_get_value_int(conf)>>16)&0xffff,lash_config_get_value_int(conf)&0xffff);
-//	} else if (!strcmp(key,"offset")) {
-//		printf("LASH config: change offset\n");
-//		ts_offset=(long int) lash_config_get_value(conf);
+	} else if (!strcmp(key,"ts_offset")) {
+		ts_offset= lash_config_get_value_long(conf);
+	//	printf("LASH config: change offset to: %li\n",ts_offset);
 	} else {
 		unsigned long val_size = lash_config_get_value_size(conf);
+	//	if (want_debug)
 		printf ("WARNING: unhandled LASH Config.  Key = %s size: %ld\n",key,val_size);
 	}
 }
+
+
+/*************************
+ *  public lash functions
+ */
 
 void lash_setup() {
 	lash_event_t *event;
@@ -108,7 +129,7 @@ void lash_setup() {
 	lash_config_set_value_string (lc, current_file);
 	lash_send_config(lash_client, lc);
 
-	lc = lash_config_new_with_key("offset");
+	lc = lash_config_new_with_key("ts_offset");
 	lash_config_set_value_int (lc, ts_offset);
 	lash_send_config(lash_client, lc);
 
@@ -118,6 +139,21 @@ void lash_setup() {
 */
 }
 #endif
+
+void lash_process() {
+#ifdef HAVE_LASH
+	lash_event_t*  ev = NULL;
+	lash_config_t* conf = NULL;
+	while ((ev = lash_get_event(lash_client)) != NULL) {
+		handle_event(ev);
+		lash_event_destroy(ev);
+	}
+	while ((conf = lash_get_config(lash_client)) != NULL) {
+		handle_config(conf);
+		lash_config_destroy(conf);
+	}
+#endif
+}
 
 
 void lcs_str(char *key, char *value) {
@@ -142,7 +178,7 @@ void lcs_int(char *key, int value) {
 	lc = lash_config_new_with_key(key);
 	lash_config_set_value_int (lc, value);
 	lash_send_config(lash_client, lc);
-	//printf("DEBUG - LASH config %s -> %i\n",key,value);
+	//printf("DEBUG - LASH config int %s -> %i\n",key,value);
 #endif
 }
 
@@ -152,21 +188,7 @@ void lcs_dbl(char *key, double value) {
 	lc = lash_config_new_with_key(key);
 	lash_config_set_value_double (lc, value);
 	lash_send_config(lash_client, lc);
-#endif
-}
-
-void lash_process() {
-#ifdef HAVE_LASH
-	lash_event_t*  ev = NULL;
-	lash_config_t* conf = NULL;
-	while ((ev = lash_get_event(lash_client)) != NULL) {
-		handle_event(ev);
-		lash_event_destroy(ev);
-	}
-	while ((conf = lash_get_config(lash_client)) != NULL) {
-		handle_config(conf);
-		lash_config_destroy(conf);
-	}
+	//printf("DEBUG - LASH config dbl %s -> %i\n",key,value);
 #endif
 }
 

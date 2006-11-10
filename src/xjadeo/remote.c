@@ -322,6 +322,7 @@ void xapi_soffset(void *d) {
 //	long int new = atol((char*)d);
 	long int new = smptestring_to_frame((char*)d);
 	ts_offset= (int64_t) new;
+	lcs_long("ts_offset",ts_offset);
 	remote_printf(101,"offset=%li",(long int) ts_offset);
 }
 
