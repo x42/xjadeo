@@ -8,7 +8,7 @@ AC_CANONICAL_TARGET
 
 dnl Every other copy of the package version number gets its value from here
 #AM_INIT_AUTOMAKE(xjadeo, [0.4.]esyscmd((svnversion . /trunk||echo 0)|tr : _|tr -d \\012))
-AM_INIT_AUTOMAKE(xjadeo, 0.3.19)
+AM_INIT_AUTOMAKE(xjadeo, 0.3.20)
 AC_REVISION([$Id: configure.ac $])
 
 dnl create a config.h file (Automake will add -DHAVE_CONFIG_H)
@@ -108,6 +108,7 @@ AH_TEMPLATE([HAVE_IMLIB2], [Define as 1 if you have imlib2])
 AH_TEMPLATE([HAVE_PORTMIDI], [Define as 1 if you have portmidi and asound])
 AH_TEMPLATE([HAVE_MIDI], [Define as 1 if you have either alsa or portmidi])
 AH_TEMPLATE([HAVE_LASH], [Define as 1 if you have lash])
+AH_TEMPLATE([HAVE_XPM], [Define as 1 if you have libXpm])
 AH_TEMPLATE([HAVE_MQ], [Define as 1 if you have POSIX message queues (libc, librt)])
 
 
@@ -129,6 +130,10 @@ AC_CHECK_LIB([jack], [jack_client_new], , [AC_MSG_ERROR(*** AUDIO: You need to h
 MQ_LIBS=""
 AC_SEARCH_LIBS( mq_open, rt, AC_DEFINE(HAVE_MQ) MQ_LIBS="-lrt" HAVE_MQ=1 )
 AC_SUBST(MQ_LIBS)
+AC_DEFINE(MQLEN, 512, [ max length of a remote control line. ])
+
+#AC_SEARCH_LIBS( XpmCreatePixmapFromData, Xpm, AC_DEFINE(HAVE_XPM) XPM_LIBS="-lXpm" HAVE_XPM=1 )
+##AC_SUBST(XPM_LIBS)
 
 AC_CHECK_LIB([X11], [XOpenDisplay], , [AC_MSG_ERROR(*** X11: You need to install the X11 development package: libx11-dev ***)])
 
@@ -304,6 +309,8 @@ dnl ----------------------------------------------
 dnl PKG checks - video display libraries
 dnl ----------------------------------------------
 
+#PKG_CHECK_MODULES(Xpm, xpm, [ AC_DEFINE(HAVE_XPM) HAVE_XPM=1 ], [ NULL=0] )
+
 if test "x${enable_imlib}" != "xno"; then
 	PKG_CHECK_MODULES(IMLIB,imlib,  [ AC_DEFINE(HAVE_IMLIB) HAVE_IMLIB=1 ], [ NULL=0 ])
 fi
@@ -457,7 +464,7 @@ echo -n "   - libsdl:        ";	if test -n "$HAVE_SDL"; then echo "ok"; else
     if test "x$enable_sdl" = "xyes"; then
 	echo "not avail."; 
     else 
-	echo "disabled. configure with --enable-sdl"; 
+	echo "disabled. (use --enable-sdl to enable)"; 
     fi
 fi
 echo -n "   - libx11/imlib:  ";	if test -n "$HAVE_IMLIB"; then echo "ok"; else echo "not avail."; fi
@@ -468,6 +475,7 @@ else if test -n "$HAVE_MIDI"; then echo "alsa"
      else echo "disabled."; fi
 fi
 echo -n " LASH:              ";	if test -n "$HAVE_LASH"; then echo "ok"; else echo "not avail."; fi
+#echo -n " Xpm:              ";	if test -n "$HAVE_XPM"; then echo "ok"; else echo "not avail."; fi
 echo -n " POSIX msg queue:   ";	if test -n "$HAVE_MQ"; then echo "ok"; else echo "not avail."; fi
 echo -n " On screen display: ";
 if test -z "$HAVE_FT"; then 

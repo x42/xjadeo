@@ -165,19 +165,28 @@ const vidout VO[] = {
 	{ PIX_FMT_RGB24,   1, 		"NULL", NULLOUTPUT}, // NULL is --vo 0 -> autodetect 
 	{ PIX_FMT_YUV420P, SUP_LIBXV,	"XV - X11 video extension",
 #if HAVE_LIBXV
-		&render_xv, &open_window_xv, &close_window_xv, &handle_X_events_xv, &newsrc_xv, &resize_xv, &get_window_size_xv, &position_xv, get_window_pos_xv, &xj_set_fullscreen},
+		&render_xv, &open_window_xv, &close_window_xv,
+		&handle_X_events_xv, &newsrc_xv, &resize_xv,
+		&get_window_size_xv, &position_xv, get_window_pos_xv,
+		&xj_set_fullscreen},
 #else
 		NULLOUTPUT},
 #endif
 	{ PIX_FMT_YUV420P, SUP_SDL,	"SDL", 
 #if HAVE_SDL
-		&render_sdl, &open_window_sdl, &close_window_sdl, &handle_X_events_sdl, &newsrc_sdl, &resize_sdl, &getsize_sdl, &position_sdl, &getpos_null, &fullscreen_null},
+		&render_sdl, &open_window_sdl, &close_window_sdl,
+		&handle_X_events_sdl, &newsrc_sdl, &resize_sdl,
+		&getsize_sdl, &position_sdl, &getpos_null,
+		&fullscreen_null},
 #else
 		NULLOUTPUT},
 #endif
 	{ PIX_FMT_RGB24,   SUP_IMLIB,   "x11 - ImLib",
 #if HAVE_IMLIB
-		&render_imlib, &open_window_imlib, &close_window_imlib, &handle_X_events_imlib, &newsrc_imlib, &resize_imlib, &get_window_size_imlib, &position_imlib, &get_window_pos_imlib, &xj_set_fullscreen},
+		&render_imlib, &open_window_imlib, &close_window_imlib,
+		&handle_X_events_imlib, &newsrc_imlib, &resize_imlib,
+		&get_window_size_imlib, &position_imlib, &get_window_pos_imlib,
+		&xj_set_fullscreen},
 #else
 		NULLOUTPUT},
 #endif
@@ -187,7 +196,10 @@ const vidout VO[] = {
 	{ PIX_FMT_RGB24,   SUP_IMLIB2,   "x11 - ImLib2 (RGB24)",
 #endif
 #if HAVE_IMLIB2
-		&render_imlib2, &open_window_imlib2, &close_window_imlib2, &handle_X_events_imlib2, &newsrc_imlib2, &resize_imlib2, &get_window_size_imlib2, &position_imlib2, &get_window_pos_imlib2, &xj_set_fullscreen},
+		&render_imlib2, &open_window_imlib2, &close_window_imlib2,
+		&handle_X_events_imlib2, &newsrc_imlib2, &resize_imlib2,
+		&get_window_size_imlib2, &position_imlib2, &get_window_pos_imlib2,
+		&xj_set_fullscreen},
 #else
 		NULLOUTPUT},
 #endif

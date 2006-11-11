@@ -227,7 +227,6 @@ void xapi_swinsize(void *d) {
 			y*= percent; y/=100;
 		}
 	}
-			
 
 	remote_printf(100,"resizing window to %ux%u",x,y);
 	Xresize(x,y);
@@ -308,6 +307,7 @@ void xapi_sseekmode (void *d) {
 		remote_printf(422,"invalid argument (1-3 or 'continuous', 'any', 'key')");
 		return;
 	}
+	lcs_int("seekflags",seekflags);
 	xapi_pseekmode(NULL);
 }
 
@@ -340,6 +340,7 @@ void xapi_seek(void *d) {
 //	long int new = atol((char*)d);
 	long int new = smptestring_to_frame((char*)d);
 	userFrame= (int64_t) new;
+	lcs_long("userFrame",userFrame);
 	remote_printf(101,"defaultseek=%li",userFrame);
 }
 
@@ -350,6 +351,7 @@ void xapi_pfps(void *d) {
 void xapi_sfps(void *d) {
 	char *off= (char*)d;
         delay = 1.0 / atof(off);
+	lcs_dbl("update_fps",delay);
 	remote_printf(101,"updatefps=%i",(int) rint(1/delay));
 }
 
@@ -357,12 +359,13 @@ void xapi_sframerate(void *d) {
 	char *off= (char*)d;
         filefps= atof(off);
        	framerate = filefps;
+	lcs_dbl("file_fps",filefps);
 //	if (filefps > 0) { 
 //        	framerate = filefps;
 //	} else { // reset framerate according to av_stream
 //		framerate = av_q2d(pFormatCtx->streams[videoStream]->r_frame_rate);
 //	}
-  	frames = (long) (framerate * duration);
+  	frames = (long) (framerate * duration); ///< TODO: check if we want that 
 
 	remote_printf(202, "framerate=%g", framerate);
 }
@@ -400,6 +403,9 @@ void xapi_osd_smpte(void *d) {
 		remote_printf(100,"rendering smpte on position y:%i%%",y);
 	} else 
 		remote_printf(422,"invalid argument (range -1..100)");
+	lcs_int("OSD_mode",OSD_mode);
+//	lcs_int("OSD_sx",OSD_sx);
+	lcs_int("OSD_sy",OSD_sy);
 	display_frame((int64_t)(dispFrame),1); // update OSD
 }
 
@@ -414,39 +420,49 @@ void xapi_osd_frame(void *d) {
 		remote_printf(100,"rendering frame on position y:%i%%",y);
 	} else 
 		remote_printf(422,"invalid argument (range -1..100)");
+	lcs_int("OSD_mode",OSD_mode);
+//	lcs_int("OSD_fx",OSD_fx);
+	lcs_int("OSD_fy",OSD_fy);
 	display_frame((int64_t)(dispFrame),1); // update OSD
 }
 
 void xapi_osd_off(void *d) {
 	OSD_mode&=~OSD_TEXT;
 	remote_printf(100,"hiding OSD");
+	lcs_int("OSD_mode",OSD_mode);
 	display_frame((int64_t)(dispFrame),1); // update OSD
 }
 
 void xapi_osd_on(void *d) {
 	OSD_mode|=OSD_TEXT;
 	remote_printf(100,"rendering OSD");
+	lcs_int("OSD_mode",OSD_mode);
 	display_frame((int64_t)(dispFrame),1); // update OSD
 }
 
 void xapi_osd_text(void *d) {
 	snprintf(OSD_text,128,"%s",(char*)d);
+	lcs_str("OSD_text",OSD_text);
+	display_frame((int64_t)(dispFrame),1); // update OSD
 	xapi_osd_on(NULL);
 }
 
 void xapi_osd_font(void *d) {
 	snprintf(OSD_fontfile,1024,"%s",(char*)d);
+	lcs_str("OSD_fontfile",OSD_fontfile);
 	xapi_osd_on(NULL);
 }
 
 void xapi_osd_nobox(void *d) {
 	OSD_mode&=~OSD_BOX;
+	lcs_int("OSD_mode",OSD_mode);
 	remote_printf(100,"OSD transparent background");
 	display_frame((int64_t)(dispFrame),1); // update OSD
 }
 
 void xapi_osd_box(void *d) {
 	OSD_mode|=OSD_BOX;
+	lcs_int("OSD_mode",OSD_mode);
 	remote_printf(100,"OSD black box background");
 	display_frame((int64_t)(dispFrame),1); // update OSD
 }
@@ -477,6 +493,8 @@ void xapi_osd_pos(void *d) {
 	}  else {
 		remote_printf(421,"invalid  argument (example 1 95)");
 	}
+	lcs_int("OSD_tx",OSD_tx);
+	lcs_int("OSD_ty",OSD_ty);
 	display_frame((int64_t)(dispFrame),1); // update OSD
 }
 
@@ -489,6 +507,7 @@ void xapi_midi_status(void *d) {
 		remote_printf(100,"midi connected.");
 	else
 		remote_printf(199,"midi not connected.");
+	// TODO : lcs_str("MIDI_ID",midiid);
 #else
 	remote_printf(499,"midi not available.");
 #endif
@@ -551,6 +570,7 @@ void xapi_smidisync(void *d) {
 #ifdef HAVE_MIDI
         midi_clkconvert = atoi((char*)d);
 	remote_printf(101,"midisync=%i", midi_clkconvert);
+	lcs_int("MIDI_clkconvert",midi_clkconvert);
 #else
 	remote_printf(499,"midi not available.");
 #endif
@@ -569,6 +589,10 @@ void xapi_bidir_loop(void *d) {
 void xapi_bidir_frame(void *d) {
 	remote_printf(100,"enabled frame notify.");
 	remote_mode|=2;
+}
+
+void xapi_ping(void *d) {
+	remote_printf(100,"pong.");
 }
 
 void xapi_null(void *d) {
@@ -693,6 +717,7 @@ Dcommand cmd_root[] = {
 	{"midi", " .. : midi commands", cmd_midi, NULL, 0 },
 
 	{"list videomodes" , ": displays a list of possible video modes", NULL, xapi_lvideomodes, 0 },
+	{"ping", ": claim a pong", NULL , xapi_ping, 0 },
 	{"help", ": show a quick help", NULL , api_help, 0 },
 	{"quit", ": quit xjadeo", NULL , xapi_quit, 0 },
 	{NULL, NULL, NULL , NULL, 0},
@@ -742,8 +767,20 @@ void exec_remote_cmd_recursive (Dcommand *leave, char *cmd) {
 		remote_printf(401,"command not implemented.");
 }
 
+#ifndef HAVE_MQ
+#ifdef HAVE_LASH
+#warning 
+#warning 
+#warning LASH support - but no POSIX message queues!
+#warning 
+#warning This xjadeo will not be able to (re)connect 
+#warning to a GUI when launched by lashd!"
+#warning 
+#warning 
+#endif
+
 //--------------------------------------------
-// remote control
+// remote control - STDIO 
 //--------------------------------------------
 
 
@@ -753,7 +790,6 @@ typedef struct {
 }remotebuffer;
 
 remotebuffer *inbuf;
-
 
 int remote_read(void) {
 	int rx;
@@ -807,3 +843,54 @@ int remote_fd_set(fd_set *fd) {
 	FD_SET(REMOTE_RX,fd);
 	return( REMOTE_RX+1);
 }
+
+#else  /* POSIX message queeue */
+
+// prototypes in mqueue.c
+void mymq_reply(int rv, char *str);
+int mymq_read(char *data);
+void mymq_close(void);
+void mymq_init(char *id);
+
+
+// wrapper functions - TODO declare inline or #DEFINE ??
+
+/* MQ replacement for remote_printf() */
+void remote_printf(int rv, const char *format, ...) {
+	va_list arglist;
+	char text[MQLEN];
+
+	va_start(arglist, format);
+	vsnprintf(text, MQLEN, format, arglist);
+	va_end(arglist);
+
+	text[MQLEN -1] =0; // just to be safe :)
+	mymq_reply(rv,text);
+}
+
+int remote_read(void) {
+	int rx;
+	char data[MQLEN];
+	char *t;
+
+	while ((rx=mymq_read(data)) > 0 ) { 
+		if ((t =  strchr(data, '\n'))) *t='\0';
+		exec_remote_cmd_recursive(cmd_root,data);
+	}
+	return(0);
+}
+
+void open_remote_ctrl (void) {
+	mymq_init(NULL);
+	remote_printf(800, "xjadeo - remote control (type 'help<enter>' for info)");
+}
+
+void close_remote_ctrl (void) {
+	remote_printf(100, "quit.");
+	mymq_close();
+}
+int remote_fd_set(fd_set *fd) {
+	return (0);
+}
+
+#endif

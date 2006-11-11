@@ -33,6 +33,7 @@ extern int		videomode;
 extern int 		seekflags;
 extern int want_quiet;
 extern int want_verbose;
+extern int remote_en;
 
 int parseoption (char *item, char *value) {
 	int rv =0;
@@ -57,14 +58,15 @@ int parseoption (char *item, char *value) {
 		} else if (!strncasecmp(value,"key",3)){
 			seekflags=SEEK_KEY; rv=1;
 		}
-	}
-	else if (!strncasecmp(item,"FONTFILE",8)) {
+	} else if (!strncasecmp(item,"REMOTE",6)) {
+		if (!strncasecmp(value,"yes",3))
+			remote_en = 1; rv=1;
+	} else if (!strncasecmp(item,"FONTFILE",8)) {
 		strncpy(OSD_fontfile,value,1023);rv=1;
 		OSD_fontfile[1023]=0; // just to be sure.
 	}
 	return (rv);
 }
-
 
 int readconfig (char *fn) {
        	FILE* config_fp;

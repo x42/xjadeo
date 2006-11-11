@@ -109,8 +109,13 @@ static void net_wm_set_property(Window window, char *atom, int state) {
         }
 }
 
+#ifdef HAVE_XPM
+#include <X11/xpm.h>
+#include "xjadeo-color.xpm"
+#else 
 #include "xjadeo.bitmap"
 #include "xjadeo_mask.xbm"
+#endif
 
 void xj_set_hints (void) {
 	XTextProperty	x_wname, x_iname;
@@ -129,8 +134,12 @@ void xj_set_hints (void) {
 	hints.max_height = 2048;
 
 	wmhints.input = True;
+#ifdef HAVE_XPM
+	XpmCreatePixmapFromData(xj_dpy, xj_rwin, xjadeo_color_xpm, &wmhints.icon_pixmap, &wmhints.icon_mask, NULL);
+#else
 	wmhints.icon_pixmap = XCreateBitmapFromData(xj_dpy, xj_rwin, (char *)xjadeo_bits , xjadeo_width, xjadeo_height);
 	wmhints.icon_mask  = XCreateBitmapFromData(xj_dpy, xj_rwin, (char *)xjadeo_mask_bits , xjadeo_mask_width, xjadeo_mask_height);
+#endif
 	wmhints.flags = InputHint | IconPixmapHint | IconMaskHint ;// | StateHint
 
 	XStringListToTextProperty(&w_name, 1 ,&x_wname);
@@ -140,11 +149,13 @@ void xj_set_hints (void) {
 }
 
 void xj_set_ontop (int action) {
-//	net_wm_set_property(xj_win, "_NET_WM_STATE_STAYS_ON_TOP", action);
+	lcs_int("x11_ontop",action);
 	net_wm_set_property(xj_win, "_NET_WM_STATE_ABOVE", action); 
+//	net_wm_set_property(xj_win, "_NET_WM_STATE_STAYS_ON_TOP", action);
 }
 
 void xj_set_fullscreen (int action) {
+	lcs_int("x11_fullscreen",action); // FIXME : action= toggle may trick us
 	net_wm_set_property(xj_win, "_NET_WM_STATE_FULLSCREEN", action);
 }
 
@@ -184,8 +195,8 @@ void xj_get_window_pos (int *x,  int *y) {
 	unsigned int dummy_u0, dummy_u1;
 	unsigned int dummy_W, dummy_H;
 	Window dummy_w;
-	// FIXME: this returns the position of the video in the window
-	// should return the pos of the window relative to the root.
+	// this returns the position of the video in the xjadeo-window
+	// should return the pos of the xjadeo-window relative to the root window (desktop)
 	XGetGeometry(xj_dpy, xj_win, &dummy_w, x,y, &dummy_W, &dummy_H,&dummy_u0,&dummy_u1);
 }
 #endif
@@ -198,10 +209,12 @@ void xj_get_window_size (unsigned int *my_Width, unsigned int *my_Height) {
 }
 
 void xj_resize (unsigned int x, unsigned int y) { 
+	lcs_int("window_size",x<<16|y);
 	XResizeWindow(xj_dpy, xj_win, x, y);
 }
 
 void xj_position (int x, int y) { 
+	lcs_int("window_position",x<<16|y);
 	XMoveWindow(xj_dpy, xj_win,x,y);
 }
 
@@ -500,7 +513,6 @@ void xj_handle_X_events (void) {
 					else my_Height=floor((float)my_Width * (float)movie_height / (float)movie_width);
 
 					xj_resize(my_Width, my_Height);
-					lcs_int("window_size",my_Width<<16|my_Height);
 				}
 //				fprintf(stdout, "Button %i release event.\n", event.xbutton.button);
 
@@ -787,6 +799,7 @@ int open_window_xv (void) {
 	xj_dwidth = xv_swidth = movie_width;
 	xj_dheight = xv_sheight = movie_height;
 
+	lcs_int("window_size",movie_width<<16|movie_height);
 	xj_win = XCreateSimpleWindow(xj_dpy, xj_rwin,
 			0, 0,
 			xj_dwidth, xj_dheight,
@@ -884,6 +897,7 @@ int open_window_imlib (void) {
 	xj_rwin = RootWindow(xj_dpy, xj_screen);
 	depth = DefaultDepth(xj_dpy, xj_screen);
   
+	lcs_int("window_size",movie_width<<16|movie_height);
 	xj_win = XCreateSimpleWindow(
 		xj_dpy, xj_rwin,
 		0,             // x
@@ -1010,6 +1024,7 @@ int open_window_imlib2 (void) {
 	im_vis = DefaultVisual(xj_dpy, xj_screen);
 	im_cm = DefaultColormap(xj_dpy, xj_screen);
 
+	lcs_int("window_size",movie_width<<16|movie_height);
 	xj_win = XCreateSimpleWindow(
 		xj_dpy, xj_rwin,
 		0,             // x

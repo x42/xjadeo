@@ -74,13 +74,12 @@ AVFrame           *pFrame;
 AVFrame           *pFrameFMT = NULL;
 uint8_t           *buffer = NULL;
 
-// needs to be set before calling movie_open
-int               render_fmt = PIX_FMT_YUV420P;
+int               render_fmt = PIX_FMT_YUV420P; ///< needs to be set before calling movie_open
 
 /* Video File Info */
-double 	duration = 1;
-double 	framerate = 1;
-long frames = 1;
+double	duration = 1;
+double	framerate = 1;
+long	frames = 1;
 
 
 /* Option flags and variables */
@@ -211,12 +210,18 @@ decode_switches (int argc, char **argv)
 	  want_debug = 1;
 	  break;
 	case 'v':		/* --verbose */
+#ifndef HAVE_MQ
 	  want_verbose = !remote_en;
+#else
+	  want_verbose = 1;
+#endif
 	  break;
 	case 'R':		/* --remote */
 	  remote_en = 1;
+#ifndef HAVE_MQ
 	  want_quiet = 1;
 	  want_verbose = 0;
+#endif
 	  break;
 	case 'L':		/* --nolash */
 	  avoid_lash = 1;
@@ -331,6 +336,11 @@ jack video monitor\n", program_name);
 "  -t, --try-codec           checks if the video-file can be played by jadeo.\n"
 "                            exits with code 1 if the file is not supported.\n"
 "			     no window is opened in this mode.\n"
+#ifdef HAVE_LASH
+"  -L, --nolash              ignore the fact that xjadeo could use lash.\n"
+"  --lash-no-autoresume	     [liblash option]\n"
+"  --lash-no-start-server    [liblash option]\n"
+#endif /* HAVE_LASH */
 "  -h, --help                display this help and exit\n"
 "  -V, --version             output version information and exit\n"
 "  \n"
@@ -423,6 +433,7 @@ main (int argc, char **argv)
     lash_setup();
     if (!want_quiet) printf("Connected to LASH.\n");
   }
+  //lash_args_destroy(lash_args);
 #endif
 
   if (videomode < 0) vidoutmode(videomode); // dump modes and exit.

@@ -101,6 +101,9 @@ void select_sleep (int usec) {
 	}
 
 	if (select(max_fd, &fd, NULL, NULL, &tv)) remote_read();
+#if HAVE_MQ
+	if (remote_en) remote_read(); // select will always fail (sleep) with HAVE_MQ.
+#endif
 }
 
 void event_loop(void) {
@@ -211,7 +214,8 @@ int open_movie(char* file_name) {
   
 	/* Open video file */
 	if(av_open_input_file(&pFormatCtx, file_name, NULL, 0, NULL)!=0) {
-		fprintf( stderr, "Cannot open video file %s\n", file_name);
+		if (!remote_en) 
+			fprintf( stderr, "Cannot open video file %s\n", file_name);
 		return (-1);
 	}
 
@@ -355,7 +359,7 @@ int my_seek_frame (AVPacket *packet, int timestamp) {
 	} else /* SEEK_CONTINUOUS */ if (my_avprev >= timestamp || ((my_avprev +32) < timestamp) ) { 
 		// NOTE: only seek if last-frame is less then 32 frames behind 
 		// else read continuously until we get there :D
-		// FIXME: 32 use keyframes interval of video file or cmd-line-arg as threshold.
+		// FIXME 32: use keyframes interval of video file or cmd-line-arg as threshold.
 		// TODO: do we know if there is a keyframe inbetween now (my_avprev)
 		// and the frame to seek to?? - if so rather seek to that frame than read until then.
 		// and if no keyframe in between my_avprev and ts - prevent backwards seeks even if 
@@ -403,7 +407,7 @@ read_frame:
 #endif
 	if (seekflags!=SEEK_CONTINUOUS) return (1);
 
-	mtsb = packet->pts;  // FIXME I have no idea what v_stream->time_base is in older versions of ffmpeg
+	mtsb = packet->pts;  
 	if (mtsb == AV_NOPTS_VALUE) { 
 		mtsb = packet->dts;
 		//mtsb = av_q2d(v_stream->time_base)*packet->dts;
@@ -524,6 +528,7 @@ int close_movie()
 {
 	if(current_file) free(current_file);
 	current_file=NULL;
+	lcs_str("current_file","");
 
 	if (!pFrameFMT) return(-1);
 

@@ -34,13 +34,14 @@
 extern int errno;
 extern int loop_run; // display active
 extern int loop_flag;// program active
+extern int want_quiet;
+extern int want_verbose;
 
 
 /* see xjremote.c for information on this one */
 typedef struct {
 	int cmd;
-	long a[8];
-	char m[256];
+	char m[MQLEN];
 } mqmsg;
 
 /* some static globals */
@@ -51,49 +52,72 @@ char		*msg_buffer;
 int 		priority_of_msg = 20;
 
 
-
-void  mymq_init(void) {
+void  mymq_init(char *id) {
 	struct	 	mq_attr  mqat;
+	// TODO use session ID in path.
+	// implement session authenticaion? - allow user to specify umask.
+	char qname[64];
+	snprintf(qname,64,"/xjadeo-request%s%s", id?"-":"", id?(char*)id:"");
 
-	mqfd_r = mq_open("/xjadeo-request", O_RDONLY | O_CREAT| O_NONBLOCK, S_IRWXU | S_IRWXG , NULL);
+	mqfd_r = mq_open(qname, O_RDONLY | O_CREAT| O_NONBLOCK, S_IRWXU , NULL);
 	if (mqfd_r == -1) {
 		perror("mq_open failure:");
-		exit(0);
+		return;
 	}
 	if (mq_getattr(mqfd_r, &mqat) == -1) {
 		perror("mq_getattr error:");
-		exit(0);
+		return;
 	}
 	mq_msgsize_r = mqat.mq_msgsize;
+	msg_buffer = malloc(mq_msgsize_r);
 
-	mqfd_s = mq_open("/xjadeo-reply", O_WRONLY | O_CREAT| O_NONBLOCK, S_IRWXU | S_IRWXG , NULL);
+	snprintf(qname,64,"/xjadeo-reply%s%s", id?"-":"", id?(char*)id:"");
+
+	mqfd_s = mq_open(qname, O_WRONLY | O_CREAT| O_NONBLOCK, S_IRWXU , NULL);
 	if (mqfd_s == -1) {
-		// TODO close and unlink mqfd_r
 		perror("mq_open failure:");
-		exit(0);
+		mq_close(mqfd_r);
+		snprintf(qname,64,"/xjadeo-request%s%s", id?"-":"", id?(char*)id:"");
+		mq_unlink(qname);
+		return;
 	}
 
-	msg_buffer = malloc(mq_msgsize_r);
+	while (mq_receive(mqfd_r, msg_buffer, mq_msgsize_r, 0) > 0) ;
+
+#if 0 
+	{	// FLUSH the output Queue
+		mqd_t mqfd_sx = mq_open(qname, O_RDONLY | O_NONBLOCK, S_IRWXU , NULL);
+		while (mq_receive(mqfd_sx, msg_buffer, mq_msgsize_r, 0) > 0) ;
+		mq_close(mqfd_sx);
+	}
+#endif
+
+	if (!want_quiet)
+		printf("activated remote interface. mqID:%s\n",id?id:"[default]");
 
 }
 
 void mymq_close(void) {
-
 	if (mq_close(mqfd_r) == -1)
 		perror("mq_close failure on mqfd_r");
 
 	if (mq_close(mqfd_s) == -1)
 		perror("mq_close failure on mqfd_s");
 
+	//FIXME : use mqID
+	//	snprintf(qname,64,"/xjadeo-request%s%s", id?"-":"", id?(char*)id:"");
 	if (mq_unlink("/xjadeo-request") == -1)
 		perror("mq_unlink failure");
 
 	if (mq_unlink("/xjadeo-reply") == -1)
 		perror("mq_unlink failure");
+
+	if (!want_quiet)
+		printf("closed MQ remote control.\n");
 }
 
 /* read message from queue and store it in data.
- * data needs to be 'NULL' (ignore msg) or point to a valid char[256].
+ * data needs to be 'NULL' (ignore msg) or point to a valid char[MQLEN].
  * return values  0: no message in queue
  *               -1: error
  *               >0: data bytes in message.
@@ -101,7 +125,6 @@ void mymq_close(void) {
 int mymq_read(char *data) {
 	mqmsg *mymsg;
 	int num_bytes_received = mq_receive(mqfd_r, msg_buffer, mq_msgsize_r, 0);
-
 	if (num_bytes_received == -1 && errno==EAGAIN) return (0);
 	if (num_bytes_received == -1) {
 		perror("mq_receive failure on mqfd");
@@ -114,95 +137,26 @@ int mymq_read(char *data) {
 	}
 
 	mymsg = (mqmsg*) &msg_buffer[0];
-	if (data) strncpy(data,mymsg->m,256);
+	if (data) strncpy(data,mymsg->m,MQLEN);
 
 	return (strlen(data));
 }
 
 void mymq_reply(int rv, char *str) {
-	mqmsg myrpy = {1, {0,0,0,0,0,0,0,0}, "" };
+	int retry=10;
+	static int retry_warn=1;
+	mqmsg myrpy = {1, "" };
 	myrpy.cmd= rv;
-	snprintf(myrpy.m,256,"%s\n",str); // XXX newline
-	mq_send(mqfd_s, (char*) &myrpy, sizeof(mqmsg), priority_of_msg);
-}
-
-#define LOGLEN 256
-
-/* drop in replacement for remote_printf() */
-void mymq_printf(int rv, const char *format, ...) {
-	va_list arglist;
-	char text[LOGLEN];
-
-	va_start(arglist, format);
-	vsnprintf(text, LOGLEN, format, arglist);
-	va_end(arglist);
-
-	text[LOGLEN -1] =0; // just to be safe :)
-	mymq_reply(rv,text);
-}
-
-/* stuff rom remote.c -> move to header file */
-
-typedef void myfunction (void *);
-typedef struct _command {
-	const char *name;
-	const char *help;
-	struct _command *children;
-	myfunction *func;
-	int sticky;  // unused
-}  Dcommand;
-
-extern Dcommand *cmd_root;
-void exec_remote_cmd_recursive (Dcommand *leave, char *cmd);
-
-/* drop in replacement for remote_read() */
-int remote_read_mq(void) {
-	int rx;
-	char data[256];
-	char *t;
-
-	while ((rx=mymq_read(data)) > 0 ) { 
-		if ((t =  strchr(data, '\n'))) *t='\0';
-		exec_remote_cmd_recursive(cmd_root,data);
+	snprintf(myrpy.m,MQLEN,"%s\n",str);
+	// until we implement threads we should not waste time trying to re-send..
+	// mq_timedsend() might be an alternative..
+	while (retry > 0) {
+		int rv=mq_send(mqfd_s, (char*) &myrpy, sizeof(mqmsg), priority_of_msg);
+		if(!rv) break;
+		retry--;
+		usleep(1);
 	}
-	return(0);
+	if (retry==0 && retry_warn) { fprintf(stderr,"DROPPED REMOTE MESSAGE\n"); retry_warn=0; }
 }
-
-#if 0
-
-int main(void) {
-	int             i;
-
-	mymq_init();
-
-	i=0;
-	while (loop_flag) {
-		char data[256];
-		int num_bytes_received = mymq_read(data);
-
-		if (num_bytes_received < 1) {
-			if (num_bytes_received < 0)  perror("mq_receive failure on mqfd");
-			else printf("mq: idle.\n");
-			usleep (200000);
-			continue;
-		}
-		printf ("received:%i = %s \n", i, data);
-
-		// TODO : decode mymsg - and perform mymsg->cmd action..
-
-		mqmsg *mymsg = (mqmsg*) &msg_buffer[0];
-
-		printf ("data read for iteration %d = %li '%s'\n", mymsg->cmd, mymsg->a[0],mymsg->m);
-
-		mymq_reply(200,mymsg->m);
-
-	//	if (i++ > 20 ) break;
-	}
-
-	mymq_close();
-
-	exit(0);
-}
-#endif
 
 #endif /* HAVE_MQ */

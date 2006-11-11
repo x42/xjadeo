@@ -1,3 +1,10 @@
+2006-11-11  rgareus  <robin@gareus.org>
+ - implemented message queues: xjremote!
+ - 'remote=yes|no' config file option
+ - -L, --nolash
+ - more variables stored in lash config.
+ - preliminary qjadeo patch -> xjremote.
+
 2006-11-10  rgareus  <robin@gareus.org>
  - icon
  - fixed qt BINDIR define (again)

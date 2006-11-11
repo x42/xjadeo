@@ -35,7 +35,6 @@ extern int       loop_flag;
 extern char *current_file;
 extern long	ts_offset;
 extern long	userFrame;
-extern long	dispFrame;
 extern int want_quiet;
 extern int want_debug;
 extern int want_verbose;
@@ -43,7 +42,8 @@ extern int remote_en;
 extern int remote_mode;
 
 #ifdef HAVE_MIDI
-extern int midi_clkconvert;
+extern char midiid[32];
+extern int midi_clkconvert;	/* --midifps [0:MTC|1:VIDEO|2:RESAMPLE] */
 #endif
 
 extern double 		delay;
@@ -51,10 +51,14 @@ extern double 		filefps;
 extern int		videomode;
 extern int 		seekflags;
 
+extern double		framerate;
+extern double		duration;
+extern long		frames;
+
 // On screen display
-extern char OSD_fontfile[1024]; 
-extern char OSD_text[128];
-extern int OSD_mode;
+extern char		OSD_fontfile[1024]; 
+extern char		OSD_text[128];
+extern int		OSD_mode;
 
 extern int OSD_fx, OSD_tx, OSD_sx, OSD_fy, OSD_sy, OSD_ty;
 
@@ -62,7 +66,10 @@ extern char jackid[16];
 
 extern lash_client_t *lash_client;
 
-void xapi_open(void *d); // command to open movie - TODO: better do movie_open, initbuffer... (remote replies)
+
+// remote.c prototypes - TODO: better do movie_open, initbuffer to avoid remote replies.
+void xapi_open(void *d);
+void xapi_close(void *d);
 
 long int lash_config_get_value_long (const lash_config_t * config) {
 	const void *data = lash_config_get_value(config);
@@ -95,18 +102,82 @@ void handle_event(lash_event_t* ev) {
 
 void handle_config(lash_config_t* conf) {
 	const char*    key      = NULL;
-
 	key      = lash_config_get_key(conf);
-	//val      = lash_config_get_value(conf);
+
 	if (!strcmp(key,"current_file")) {
-		printf("LASH config: open movie\n");
-	   	xapi_open((char *) lash_config_get_value_string (conf));
-	} else if (!strcmp(key,"window_size")) {
-	//	printf("LASH config: window size %ix%i\n", (lash_config_get_value_int(conf)>>16)&0xffff,lash_config_get_value_int(conf)&0xffff);
-		Xresize((lash_config_get_value_int(conf)>>16)&0xffff,lash_config_get_value_int(conf)&0xffff);
+		const char *mfile = lash_config_get_value_string (conf);
+		//printf("LASH config: open movie: %s\n",mfile);
+		if (strlen(mfile))
+			xapi_open((char *) lash_config_get_value_string (conf));
+		else 
+			xapi_close(NULL);
+	} else if (!strcmp(key,"seekflags")) {
+		seekflags =  lash_config_get_value_int(conf);
+	} else if (!strcmp(key,"update_fps")) {
+		delay =  lash_config_get_value_double(conf);
+	} else if (!strcmp(key,"userFrame")) {
+		userFrame= lash_config_get_value_long(conf);
 	} else if (!strcmp(key,"ts_offset")) {
 		ts_offset= lash_config_get_value_long(conf);
 	//	printf("LASH config: change offset to: %li\n",ts_offset);
+//	} else if (!strcmp(key,"framerate")) {
+//		framerate =  lash_config_get_value_double(conf); 
+	} else if (!strcmp(key,"file_fps")) {
+		filefps =  lash_config_get_value_double(conf);
+		framerate =  lash_config_get_value_double(conf); 
+  		frames = (long) (framerate * duration); ///< TODO: check if we want that 
+
+// remote_en needs to be set on startup! - TODO
+// or we'd need to call remote_open here...
+//	} else if (!strcmp(key,"remote_en")) {
+//#if HAVE_MQ
+//		remote_en=1;
+//#endif
+//	notify frame??  No.
+//		remote_mode = lash_config_get_value_int(conf);
+//
+			/* OSD -settings */
+	} else if (!strcmp(key,"OSD_text")) {
+		strncpy(OSD_fontfile,lash_config_get_value_string (conf),127);
+		OSD_fontfile[127]=0;
+	} else if (!strcmp(key,"OSD_fontfile")) {
+		strncpy(OSD_fontfile,lash_config_get_value_string (conf),1024);
+		OSD_fontfile[1023]=0;
+	} else if (!strcmp(key,"OSD_mode")) {
+		OSD_mode = lash_config_get_value_int(conf);
+	} else if (!strcmp(key,"OSD_fx")) { OSD_fx = lash_config_get_value_int(conf);
+	} else if (!strcmp(key,"OSD_tx")) { OSD_tx = lash_config_get_value_int(conf);
+	} else if (!strcmp(key,"OSD_sx")) { OSD_sx = lash_config_get_value_int(conf);
+	} else if (!strcmp(key,"OSD_fy")) { OSD_fy = lash_config_get_value_int(conf);
+	} else if (!strcmp(key,"OSD_ty")) { OSD_ty = lash_config_get_value_int(conf);
+	} else if (!strcmp(key,"OSD_sy")) { OSD_sy = lash_config_get_value_int(conf);
+			/* jack/midi/offline */
+	} else if (!strcmp(key,"syncsource")) {
+// TODO
+		// jack_connect()
+		// jack_disconnect()
+		// midi_disconnect()
+		// midi_connect()
+		//
+			/* MIDI */
+	} else if (!strcmp(key,"MIDI_clkconvert")) {
+		midi_clkconvert = lash_config_get_value_int(conf);
+	} else if (!strcmp(key,"MIDI_ID")) {
+	#ifdef HAVE_MIDI
+		// TODO: check if we go the same midi library
+		// use LASH to remember MIDI connections ?!?
+		strncpy(midiid,lash_config_get_value_string (conf),32);
+		midiid[31]=0;
+	#endif
+			/* Window Settings  */
+	} else if (!strcmp(key,"window_size")) {
+	//	printf("LASH config: window size %ix%i\n", (lash_config_get_value_int(conf)>>16)&0xffff,lash_config_get_value_int(conf)&0xffff);
+		Xresize((lash_config_get_value_int(conf)>>16)&0xffff,lash_config_get_value_int(conf)&0xffff);
+	} else if (!strcmp(key,"win_position")) {
+		Xposition((lash_config_get_value_int(conf)>>16)&0xffff,lash_config_get_value_int(conf)&0xffff);
+	} else if (!strcmp(key,"x11_ontop")) {
+		//Xontop((lash_config_get_value_int(conf));
+	} else if (!strcmp(key,"x11_fullscreen")) {
 	} else {
 		unsigned long val_size = lash_config_get_value_size(conf);
 	//	if (want_debug)

@@ -1,20 +1,29 @@
 TODO
 ----
+
+* mq : FIX multiple remote clients one xjadeo -> who gets the replies ? 
+
+* OSD: render current offset on screen.
+   
 * fix X11 - buffer when re-opening window.
   free (buffers) when closing window. (leak!)
 
 * ratain aspect ratio  - letterbox option
 
+* qjadeo :: poll for running-config on startup (offset)
+  - dump buttons are bad: print a warning or do sth. (eg midi sync)
+
 * http://lash.nongnu.org/ support
   - fix , ignore '-R' when started by lash
     and think of a way to re-connect a remote session
 
-  - qt-gui + LASH
+  - lash resume of xjremote-forked xjadeo's fails with
+  xjadeo: unrecognized option `--lash-project=project-26'
+    error! 
 
-  - save internal states (offset, fps, file-fps, etc.) 
-    that can be changed via remote to lash.
-  
-  - remember window size + position
+  - save ~/.xjadeorc options to lashd on xjadeo-startup. ?!
+
+  - restore window settings ..
 
 TODO - next major version: (backport xj5 branch)
 ------------------------------------------------

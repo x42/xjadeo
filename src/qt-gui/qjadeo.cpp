@@ -293,8 +293,10 @@ int main(int argc, char **argv)
 
   QString xjadeoPath(getenv("XJADEO"));
 
+  // TODO: use "/xjadeo" ifndef HAVE_MQ  
+  // change env(XJADEO) -> env(XJREMOTE)
   if(xjadeoPath.isEmpty())
-    xjadeoPath = BINDIR "/xjadeo";
+    xjadeoPath = BINDIR "/xjremote";
 
   xjadeo.addArgument(xjadeoPath);
   xjadeo.addArgument("-R");
