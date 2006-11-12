@@ -56,6 +56,7 @@ case $host in
 	powerpc*) ARCH=powerpc ;;
 	arm*) ARCH=arm ;;
 	amd64*) ARCH=amd64 ;;
+	x86_64*) ARCH=amd64 ;;
 	mips64*) ARCH=mips64 ;;
 	alpha*) ARCH=alpha ;;
 	*) AC_MSG_ERROR([

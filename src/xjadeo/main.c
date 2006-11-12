@@ -424,17 +424,18 @@ main (int argc, char **argv)
   i = decode_switches (argc, argv);
 
 #ifdef HAVE_LASH
-//  if (!lashed && avoid_lash == 0)  {
-  lash_client = lash_init (lash_args, PACKAGE_NAME,
-                     0  | LASH_Config_Data_Set  
-                     ,LASH_PROTOCOL (2,0));
-  if (!lash_client) {
-    fprintf(stderr, "could not initialise LASH!\n");
-  } else {
-    lash_setup();
-    if (!want_quiet) printf("Connected to LASH.\n");
+  if (avoid_lash == 0)  { ///< check if this works as promised
+    lash_client = lash_init (lash_args, PACKAGE_NAME,
+		       0  | LASH_Config_Data_Set  
+		       ,LASH_PROTOCOL (2,0));
+    if (!lash_client) {
+      fprintf(stderr, "could not initialise LASH!\n");
+    } else {
+      lash_setup();
+      if (!want_quiet) printf("Connected to LASH.\n");
+    }
+    //lash_args_destroy(lash_args);
   }
-  //lash_args_destroy(lash_args);
 #endif
 
   if (videomode < 0) vidoutmode(videomode); // dump modes and exit.
@@ -445,10 +446,12 @@ main (int argc, char **argv)
 
   if (want_verbose) printf ("xjadeo %s\n", VERSION);
 
+#ifndef HAVE_MQ
   if (lashed==1 && remote_en) {
     printf("xjadeo remote-ctrl disabled (resuming a LASH session).\n");
     remote_en=0;
   }
+#endif
 
   stat_osd_fontfile();
     

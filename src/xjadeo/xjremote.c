@@ -22,7 +22,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <config.h>
+#include <string.h>
 #include <bindir.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -30,19 +30,32 @@
 
 #include <getopt.h>
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
 static void usage (int status);
 static void printversion (void);
 
 char *program_name;
-int want_quiet   =0;	/* --quiet, --silent */
-int want_debug   =0;	/* --debug */
-int want_verbose =0;	/* --verbose */
+int want_quiet   = 0;	/*< --quiet, --silent */
+int want_debug   = 0;	/*< --debug */
+int want_verbose = 0;	/*< --verbose */
+int want_nofork  = 0;	/*< --nofork ; donT launch xjadeo */
+char *qid	 = NULL;  /*< -I <arg> - name of the MQ */
+int want_create  = 0;	/*< unused - only xjadeo create queues */ 
+
+int xjr_mute 	 = 1;	/*< 1: mute all but '8xx' messages
+			 *  2: dont display  any replies
+			 *  0: terminal mode */
+	
 
 static struct option const long_options[] =
 {
 	{"quiet", no_argument, 0, 'q'},
 	{"silent", no_argument, 0, 'q'},
 	{"verbose", no_argument, 0, 'v'},
+	{"nofork", no_argument, 0, 'f'},
+	{"id", required_argument, 0, 'I'},
 	{"debug", no_argument, 0, 'D'},
 	{NULL, 0, NULL, 0}
 };
@@ -54,7 +67,8 @@ static int decode_switches (int argc, char **argv) {
 			   "v"	/* verbose */
 			   "h"	/* help */
 			   "R"	/* remote - arg retained for xjadeo compatibilty */
-			   "i:"	/* lash id */
+			   "I:"	/* queue id */
+			   "f"	/* nofork */
 			   "V",	/* version */
 			   long_options, (int *) 0)) != EOF)
 	{ switch (c) {
@@ -65,9 +79,11 @@ static int decode_switches (int argc, char **argv) {
 		case 'v':		/* --verbose */
 			want_verbose = 0;
 			break;
-		case 'i':		/* --id */
-			//strncpy(lash_id,optarg,32);
-			//lash_id[31]=0;
+		case 'I':		/* --id */
+			qid=strlen(optarg)?strdup(optarg):NULL;
+			break;
+		case 'f': 		/* --nofork */
+			want_nofork = 1;
 			break;
 		case 'R':
 			break;
@@ -90,7 +106,10 @@ static void usage (int status) {
 	printf (""
 "Options:"
 "  -h, --help                display this help and exit\n"
-"  -V, --version             output version information and exit\n"
+"  -V, --version             print version information and exit\n"
+"  -f, --nofork              connect only to already running instances and\n"
+"                            do not launch a new xjadeo if none found.\n"
+//"  -I <val>, --id <val>    \n"
 "  \n"
 );
 
@@ -114,22 +133,22 @@ int testexec (char *filename) {
 
 void execjadeo(int closestdio) {
 	char *xjadeo = getenv("XJADEO");
-	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo); xjadeo=NULL; }
+	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo?xjadeo:"(?)"); xjadeo=NULL; }
 	if (!xjadeo) xjadeo = BINDIR "/xjadeo";
-	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo); xjadeo=NULL; }
-	xjadeo = "./xjadeo";
-	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo); xjadeo=NULL; }
-	xjadeo = "src/xjadeo/xjadeo";
-	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo); xjadeo=NULL; }
-	xjadeo = "../xjadeo/xjadeo";
-	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo); xjadeo=NULL; }
+	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo?xjadeo:"(?)"); xjadeo=NULL; }
+	xjadeo = "./xjadeo"; // XXX DEVEL svn:trunk/src/xjadeo
+	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo?xjadeo:"(?)"); xjadeo=NULL; }
+	xjadeo = "src/xjadeo/xjadeo"; // XXX DEVEL svn:trunk/
+	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo?xjadeo:"(?)"); xjadeo=NULL; }
+	xjadeo = "../xjadeo/xjadeo"; // XXX DEVEL svn:trunk/src/qt-qui
+	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo?xjadeo:"(?)"); xjadeo=NULL; }
 
 	if (xjadeo) {
 		printf("# exec: %s\n",xjadeo);
 		if (closestdio) { close(0); close(1);}
-		execl(xjadeo,"xjadeo", "-R", 0);
+		execl(xjadeo,"xjadeo", "-R", "-q", 0);
+		//execl(xjadeo,"xjadeo", "-R", 0);
 	}
-	//if (xjadeo) execl(xjadeo,"xjadeo", "-R", "-q", 0);
 }
 
 void forkjadeo (void) {
@@ -205,7 +224,7 @@ void *read_thread (void *d) {
 
 	snprintf(qname,64,"/xjadeo-reply%s%s", d?"-":"", d?(char*)d:"");
 
-	printf("# STARTING reply receiver: mqID:%s\n",d?qname+13:"[default]");
+	printf("# STARTING reply receiver: mqID=%s\n",d?qname+13:"[default]");
 
 	mqfd = mq_open(qname, O_RDONLY | O_CREAT, S_IRWXU , NULL);
 	if (mqfd == -1) {
@@ -219,16 +238,23 @@ void *read_thread (void *d) {
 	msg_buffer = malloc(mqat.mq_msgsize);
 
 	while (loop_flag) {
-		int printit = 1;
+		int printit;
 		struct timeval tv;
 		struct timespec to;
 		gettimeofday(&tv,NULL);
 		to.tv_sec=tv.tv_sec + 2 ;
 		to.tv_nsec= (long) tv.tv_usec * 1000L;
-
+#if 0
+		if (timeout_cnt == 25 ) {
+			ping(.);
+		} else if (timeout_cnt > 30 ) {
+			timeout=0;
+			fprintf(stdout,"# no live signs from xjadeo.\n");
+		}
+#endif
 		int num_bytes_received = mq_timedreceive(mqfd, msg_buffer, mqat.mq_msgsize, 0, &to);
 		if (num_bytes_received == -1 && errno==ETIMEDOUT) {
-			// TODO : ping xjadeo ..? and print a warning.
+			// TODO : if this happens for a while - ping xjadeo ..? and print a warning.
 			timeout_cnt++;
 			continue;
 		}
@@ -242,6 +268,7 @@ void *read_thread (void *d) {
 			continue;
 		}
 		timeout_cnt=0;
+		printit = !xjr_mute;
 	
 		mqmsg *mymsg = (mqmsg*) &msg_buffer[0];
 		if ( mymsg->cmd == 100 && !strncmp(mymsg->m,"quit.",5)) {
@@ -250,11 +277,13 @@ void *read_thread (void *d) {
 		} else if ( mymsg->cmd == 100 && !strncmp(mymsg->m,"pong.",5) && ping_st && !pong_st) {
 			printit=0; pong_st=1;
 			gettimeofday(&pong_time,NULL);
+		} else if ( mymsg->cmd/100 == 8 && xjr_mute<2) {
+			printit=1;
 		}
 		if (printit) {
 		#if 1
 			char tmp[8+MQLEN];
-			snprintf (tmp,(MQLEN+8),"@%d %s\n", mymsg->cmd, mymsg->m); // newline is part of data payload.
+			snprintf (tmp,(MQLEN+8),"@%d %s", mymsg->cmd, mymsg->m); // newline is part of data payload.
  			write(REMOTE_TX,tmp,strlen(tmp));
 		#else
 			printf ("@%d %s", mymsg->cmd, mymsg->m); // newline is part of data payload.
@@ -267,13 +296,21 @@ void *read_thread (void *d) {
 	return (NULL);
 }
 
-/*
-void ping (void) {
+void ping (mqd_t mqfd_tx) {
 	if (ping_st) return;
 	ping_st=1; pong_st=0;
 	gettimeofday(&ping_time,NULL);
 	// send 'ping'
-} */
+	int             num_bytes_to_send;
+	int             priority_of_msg = 20;
+
+	mqmsg mymsg = {1, "ping\n" };
+	num_bytes_to_send = sizeof(mqmsg);
+
+	if(mq_send(mqfd_tx, (char*) &mymsg, num_bytes_to_send, priority_of_msg) == -1) {
+		perror("mq_send failure on mqfd_tx");
+	}
+}
 
 #define REMOTE_RX fileno(stdin) 
 
@@ -320,6 +357,7 @@ void dothework (mqd_t mqfd_tx) {
 		}
 
 		while ((end = strchr(buf, '\n'))) {
+			int retry = 5;
 			*(end) = '\0';
 
 			if (!strncmp(buf,"exit",4)) {
@@ -330,8 +368,10 @@ void dothework (mqd_t mqfd_tx) {
 			//strncpy(mymsg.m,buf,MQLEN-1); // add '\n'
 			mymsg.m[MQLEN-1]=0;
 
-			// THIS MAY BLOCK !
-			if(mq_send(mqfd_tx, (char*) &mymsg, num_bytes_to_send, priority_of_msg) == -1) {
+			while (--retry && mq_send(mqfd_tx, (char*) &mymsg, num_bytes_to_send, priority_of_msg) == -1) {
+				sleep(1);
+			}
+			if (!retry) {
 				perror("mq_send failure on mqfd_tx");
 			}
 			
@@ -347,40 +387,56 @@ int main(int argc, char **argv) {
 	mqd_t		mqfd_tx;
 	char		qname[64];
 	int		did_fork = 0;
+	int		timeout;
 
 	program_name = argv[0];
 
 	i = decode_switches (argc, argv);
 
-	// TODO: parse Command line argv
-	int want_nofork = 0;
-	int want_create = 0;
-	char *qarg = NULL; 
+	snprintf(qname,64,"/xjadeo-request%s%s", qid?"-":"", qid?qid:"");
 
-	snprintf(qname,64,"/xjadeo-request%s%s", qarg?"-":"", qarg?qarg:"");
-
-	printf("# initializing mqID:%s\n",qarg?qname+15:"[default]");
+	printf("# initializing mqID=%s\n",qid?qname+15:"[default]");
+	timeout = 10;
 
 	do {
-		mqfd_tx = mq_open(qname, O_WRONLY | (want_create?O_CREAT:0), S_IRWXU , NULL);
+		mqfd_tx = mq_open(qname, O_WRONLY | O_NONBLOCK | (want_create?O_CREAT|O_EXCL:0), S_IRWXU , NULL);
 		if (mqfd_tx < 0) {
-			printf("# could not connect to a xjadeo remote.\n");
+			if ( errno != ENOENT ) break;
+			printf("# could not connect to xjadeo.\n");
 			if (want_nofork) exit (0);
 			if (!did_fork) { forkjadeo(); did_fork=1;}
 			sleep (1);
-			// cleanup - option ??
-			// in case there are queues but xjadeo's dead // (ping!)
-			// mq_unlink(qname);
 		}
-	} while (mqfd_tx < 0);
+	} while (mqfd_tx < 0 && timeout--);
 
 	if (mqfd_tx == -1) {
-		perror("mq_open failure from main");
+		perror("mq_open failure.");
 		exit(0);
 	};
 
 	pthread_create(&xet, NULL, read_thread, NULL);
 
+	if (1) {
+		if (!want_quiet)
+			fprintf(stdout, "# pinging xjadeo...\n");
+		// TODO flush the queue before pinging
+		ping(mqfd_tx);
+		timeout=50; // 5 sec
+		while(!pong_st && --timeout) {
+			usleep(100000);
+		}
+		if (!timeout) {
+			fprintf(stdout, "# WARNING: queues exist, but xjadeo does not respond\n");
+			fprintf(stdout, "# unlinking message queues.\n");
+			mq_unlink(qname);
+			snprintf(qname,64,"/xjadeo-reply%s%s", qid?"-":"", qid?qid:"");
+			mq_unlink(qname);
+			exit(1);
+		}
+	}
+
+	xjr_mute = 0;
+			
 	dothework(mqfd_tx);
 
 	loop_flag=0; // stop read thread.
@@ -390,6 +446,7 @@ int main(int argc, char **argv) {
 	if (mq_close(mqfd_tx) == -1)
 		perror("mq_close failure on mqfd_tx");
 
+	if (qid) free(qid);
 	return (0);
 }
 #endif

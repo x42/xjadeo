@@ -8,8 +8,9 @@ man_MANS = doc/xjadeo.1 doc/qjadeo.1 doc/xjremote.1
 EXTRA_DIST= \
  xjadeo.lsm.in xjadeo.spec.in xjadeo.spec \
  doc/xjadeo.xml doc/Makefile doc/html.xsl doc/man.xsl \
- doc/xjadeo.1 doc/qjadeo.1 \
- src/xjadeo/xjadeo.bitmap src/xjadeo/xjadeo_mask.xbm \
+ doc/xjadeo.1 doc/qjadeo.1 doc/xjremote.1\
+ src/xjadeo/icons/xjadeo.bitmap src/xjadeo/icons/xjadeo_mask.xbm \
+ src/xjadeo/icons/xjadeo-color.xpm \
  contrib/cli-remote/jadeo.c \
  contrib/cli-remote/Makefile.am \
  contrib/cli-remote/README \

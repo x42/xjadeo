@@ -59,7 +59,7 @@ void  mymq_init(char *id) {
 	char qname[64];
 	snprintf(qname,64,"/xjadeo-request%s%s", id?"-":"", id?(char*)id:"");
 
-	mqfd_r = mq_open(qname, O_RDONLY | O_CREAT| O_NONBLOCK, S_IRWXU , NULL);
+	mqfd_r = mq_open(qname, O_RDONLY | O_CREAT | O_EXCL | O_NONBLOCK, S_IRWXU , NULL);
 	if (mqfd_r == -1) {
 		perror("mq_open failure:");
 		return;
@@ -73,7 +73,7 @@ void  mymq_init(char *id) {
 
 	snprintf(qname,64,"/xjadeo-reply%s%s", id?"-":"", id?(char*)id:"");
 
-	mqfd_s = mq_open(qname, O_WRONLY | O_CREAT| O_NONBLOCK, S_IRWXU , NULL);
+	mqfd_s = mq_open(qname, O_WRONLY | O_CREAT | O_EXCL | O_NONBLOCK, S_IRWXU , NULL);
 	if (mqfd_s == -1) {
 		perror("mq_open failure:");
 		mq_close(mqfd_r);

@@ -6,6 +6,8 @@
 # precompiled manpages are in included in the distribution,
 # as is the docbook source.
 #
+# an HTML version of the docbook is available online:
+#  http://xjadeo.sourceforge.net/doc/
 #
 
 .PHONY: all validate html clean man 

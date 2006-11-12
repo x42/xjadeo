@@ -292,12 +292,12 @@ void lash_process() {
 #endif
 }
 
-
 void lcs_str(char *key, char *value) {
 #ifdef HAVE_LASH
 	lash_config_t *lc = lash_config_new_with_key(key);
 	lash_config_set_value_string (lc, value);
 	lash_send_config(lash_client, lc);
+	//printf("DEBUG - LASH config str: %s -> %i\n",key,value);
 #endif
 }
 
@@ -307,6 +307,7 @@ void lcs_long(char *key, long int value) {
 	lc = lash_config_new_with_key(key);
 	lash_config_set_value (lc, (void*) &value, sizeof(long int));
 	lash_send_config(lash_client, lc);
+	//printf("DEBUG - LASH config long %ld -> %i\n",key,value);
 #endif
 }
 void lcs_int(char *key, int value) {
@@ -315,7 +316,7 @@ void lcs_int(char *key, int value) {
 	lc = lash_config_new_with_key(key);
 	lash_config_set_value_int (lc, value);
 	lash_send_config(lash_client, lc);
-	//printf("DEBUG - LASH config int %s -> %i\n",key,value);
+	//printf("DEBUG - LASH config int: %i -> %i\n",key,value);
 #endif
 }
 
@@ -325,7 +326,7 @@ void lcs_dbl(char *key, double value) {
 	lc = lash_config_new_with_key(key);
 	lash_config_set_value_double (lc, value);
 	lash_send_config(lash_client, lc);
-	//printf("DEBUG - LASH config dbl %s -> %i\n",key,value);
+	//printf("DEBUG - LASH config dbl %g -> %i\n",key,value);
 #endif
 }
 

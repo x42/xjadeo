@@ -1,3 +1,10 @@
+2006-11-12  rgareus  <robin@gareus.org>
+ - moved icons
+ - completed lash support
+ - unlink stale message queues
+ - added x86_64*) ARCH=amd64 ;; (thanks to Detlef Reichelt & the PackMan-Team)
+ - created xjremote man page.
+
 2006-11-11  rgareus  <robin@gareus.org>
  - implemented message queues: xjremote!
  - 'remote=yes|no' config file option

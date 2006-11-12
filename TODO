@@ -1,7 +1,13 @@
 TODO
 ----
 
-* mq : FIX multiple remote clients one xjadeo -> who gets the replies ? 
+* change user perspective of 
+   old-remote mode (-R) and message-queues (-R -> -Q)
+
+* mq:
+   - FIX multiple remote clients one xjadeo -> who gets the replies ? 
+   - multi drop queues and mq_notify()
+   - multiple instances - named message queues + list of avail queues.
 
 * OSD: render current offset on screen.
    
@@ -10,22 +16,13 @@ TODO
 
 * ratain aspect ratio  - letterbox option
 
-* qjadeo :: poll for running-config on startup (offset)
-  - dump buttons are bad: print a warning or do sth. (eg midi sync)
-
 * http://lash.nongnu.org/ support
-  - fix , ignore '-R' when started by lash
-    and think of a way to re-connect a remote session
 
-  - lash resume of xjremote-forked xjadeo's fails with
-  xjadeo: unrecognized option `--lash-project=project-26'
-    error! 
+  - restore window position. 
+    (depends on X11/SDL 'get window position' see below)
 
-  - save ~/.xjadeorc options to lashd on xjadeo-startup. ?!
 
-  - restore window settings ..
-
-TODO - next major version: (backport xj5 branch)
+TODO - next major version: 
 ------------------------------------------------
 * exact sync
  decode one frame ahead and use
@@ -34,13 +31,18 @@ TODO - next major version: (backport xj5 branch)
 * optional: don't poll for jack-time but register as jack-audio client
   -> jack will call xjadeo
 
-* modularize time-sync + video-source
+* modularize time-sync + video-source 
+  (send time information via message queues)
 
-* get rid of the goto's
+* coding style
 
-* struct video-file-options;
-  struct program-options;
+  - get rid of the goto's
 
+  - get rid of all the external globals 
+      struct video-file-options;
+      struct program-options;
+
+  - translations and internationalization ?!
 
 TODO - legacy and older ideas
 -----------------------------
@@ -66,8 +68,10 @@ TODO - legacy and older ideas
   MAIN:
 
  - config file for our mighty jolly bunch of config options.
+   
+   -> add more config options ?? 
 
- - SMPTE support drop frames 
+ - SMPTE support drop frames
 
   REMOTE: 
 
