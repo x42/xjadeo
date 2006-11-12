@@ -8,6 +8,7 @@
   extern int want_debug;
   extern int want_verbose;
   extern int start_ontop;
+  extern int start_fullscreen;
   extern int remote_en;
 
   extern char OSD_fontfile[1024];
@@ -38,6 +39,7 @@ typedef struct {
 	void (*position)(int x, int y);
 	void (*getpos)(int *x, int *y);
 	void (*fullscreen)(int action);
+	void (*ontop)(int action);
 }vidout;
 
 /*******************************************************************************
@@ -71,6 +73,7 @@ void handle_X_events_sdl (void) ;
 #if (HAVE_LIBXV || HAVE_IMLIB || HAVE_IMLIB2)
 
 void xj_set_fullscreen (int action);
+void xj_set_ontop (int action);
 void xj_position (int x, int y);
 void xj_resize (unsigned int x, unsigned int y);
 void xj_get_window_size (unsigned int *my_Width, unsigned int *my_Height);

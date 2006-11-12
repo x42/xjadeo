@@ -41,6 +41,7 @@ int			xj_screen;
 GC           		xj_gc;
 Atom      		xj_del_atom; 
 int			xj_ontop = 0;  
+int			xj_fullscreen = 0;  
 int			xj_mouse = 0; 
 
 int          		xj_dwidth, xj_dheight; // cache window size for rendering currently only Xv
@@ -105,16 +106,16 @@ static void net_wm_set_property(Window window, char *atom, int state) {
         if (!XSendEvent(xj_dpy, DefaultRootWindow(xj_dpy), False,
 		   SubstructureRedirectMask|SubstructureNotifyMask, &xev))
         {
-            fprintf(stderr,"error (un)setting 'always on top' mode\n");
+            fprintf(stderr,"error changing X11 property\n");
         }
 }
 
 #ifdef HAVE_XPM
 #include <X11/xpm.h>
-#include "xjadeo-color.xpm"
+#include "icons/xjadeo-color.xpm"
 #else 
-#include "xjadeo.bitmap"
-#include "xjadeo_mask.xbm"
+#include "icons/xjadeo.bitmap"
+#include "icons/xjadeo_mask.xbm"
 #endif
 
 void xj_set_hints (void) {
@@ -149,13 +150,15 @@ void xj_set_hints (void) {
 }
 
 void xj_set_ontop (int action) {
-	lcs_int("x11_ontop",action);
+	if (action==2) xj_ontop^=1;
+	else xj_ontop=action;
 	net_wm_set_property(xj_win, "_NET_WM_STATE_ABOVE", action); 
 //	net_wm_set_property(xj_win, "_NET_WM_STATE_STAYS_ON_TOP", action);
 }
 
 void xj_set_fullscreen (int action) {
-	lcs_int("x11_fullscreen",action); // FIXME : action= toggle may trick us
+	if (action==2) xj_fullscreen^=1;
+	else xj_fullscreen=action;
 	net_wm_set_property(xj_win, "_NET_WM_STATE_FULLSCREEN", action);
 }
 
@@ -209,12 +212,10 @@ void xj_get_window_size (unsigned int *my_Width, unsigned int *my_Height) {
 }
 
 void xj_resize (unsigned int x, unsigned int y) { 
-	lcs_int("window_size",x<<16|y);
 	XResizeWindow(xj_dpy, xj_win, x, y);
 }
 
 void xj_position (int x, int y) { 
-	lcs_int("window_position",x<<16|y);
 	XMoveWindow(xj_dpy, xj_win,x,y);
 }
 
@@ -325,7 +326,7 @@ void SendFinished (void) {
 }
 
 #define MAX_DND_FILES 64
-void xapi_open(void *d); // command to open movie - TODO: better do movie_open, initbuffer... (remote replies)
+void xapi_open(void *d); 
 
 void getDragData (XEvent *xe) {
 	Atom type;
@@ -442,7 +443,7 @@ void xj_handle_X_events (void) {
 						XConvertSelection(xj_dpy, xj_a_XdndSelection, xj_atom, xj_a_XdndSelection, xj_win, CurrentTime);
 					}
 				//	SendFinished();
-				}
+				} else 
 #endif
 				if (event.xclient.data.l[0] == xj_del_atom) {
 			//		fprintf(stdout, "Window destoyed...\n");
@@ -451,7 +452,9 @@ void xj_handle_X_events (void) {
 				} elseif (event.xclient.data.l[0] == xj_a_TakeFocus)  {
 					;
 #endif
-				} 
+				} else {
+		         		// fprintf(stdout, "unhandled X-client event: %i\n",event.xclient.message_type);
+				}
 				break;
 			case ConfigureNotify: // from XV only 
 				{
@@ -486,6 +489,8 @@ void xj_handle_X_events (void) {
 			case UnmapNotify: 
 			//	fprintf(stdout, "Window unmapped/minimized - disabled Video.\n");
 				loop_run=0;
+				break;
+			case ButtonPress:
 				break;
 			case ButtonRelease:
 				if (event.xbutton.button == 1) {
@@ -532,7 +537,7 @@ void xj_handle_X_events (void) {
 					if     (key == 0x11b ) loop_flag=0; // 'Esc'
 					else if (key == 0x71 ) loop_flag=0; // 'q'
 					else if (key == 0x61 ) xj_set_ontop(xj_ontop^=1); //'a'
-					else if (key == 0x66 ) xj_set_fullscreen(_NET_WM_STATE_TOGGLE); //'f' // fullscreen
+					else if (key == 0x66 ) xj_set_fullscreen(xj_fullscreen^=1); //'f' // fullscreen
 					else if (key == 0x6d ) { 	// 'm'
 					    if (xj_mouse^=1) xj_hidecursor(); else xj_showcursor();
 					} else if (want_debug) {
@@ -541,7 +546,7 @@ void xj_handle_X_events (void) {
 				}
 				break;
 			default:
-			//	printf("unhandled X event!\n");
+			//	printf("unhandled X event: type: %i\n",event.type);
 				break;
 		}
 	}
@@ -799,7 +804,6 @@ int open_window_xv (void) {
 	xj_dwidth = xv_swidth = movie_width;
 	xj_dheight = xv_sheight = movie_height;
 
-	lcs_int("window_size",movie_width<<16|movie_height);
 	xj_win = XCreateSimpleWindow(xj_dpy, xj_rwin,
 			0, 0,
 			xj_dwidth, xj_dheight,
@@ -826,6 +830,8 @@ int open_window_xv (void) {
 
 	check_wm_atoms();
 	if (start_ontop) xj_ontop=1;
+	if (start_fullscreen) xj_fullscreen=1;
+	xj_set_fullscreen(xj_fullscreen);
 	xj_set_ontop(xj_ontop);
 
 	return 0;
@@ -897,7 +903,6 @@ int open_window_imlib (void) {
 	xj_rwin = RootWindow(xj_dpy, xj_screen);
 	depth = DefaultDepth(xj_dpy, xj_screen);
   
-	lcs_int("window_size",movie_width<<16|movie_height);
 	xj_win = XCreateSimpleWindow(
 		xj_dpy, xj_rwin,
 		0,             // x
@@ -909,10 +914,9 @@ int open_window_imlib (void) {
 		WhitePixel(xj_dpy, xj_screen)
 	);
 
-	//XmbSetWMProperties(xj_dpy, xj_win, "xjadeo", NULL, NULL, 0, NULL, NULL, NULL);
 	xj_set_hints();
   
-	XSelectInput(xj_dpy, xj_win, KeyPressMask | ExposureMask | ButtonPressMask | ButtonReleaseMask |StructureNotifyMask ); 
+	XSelectInput(xj_dpy, xj_win, KeyPressMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | StructureNotifyMask);
  
 #ifdef DND 
 	init_dnd();
@@ -927,6 +931,8 @@ int open_window_imlib (void) {
 
 	check_wm_atoms();
 	if (start_ontop) xj_ontop=1;
+	if (start_fullscreen) xj_fullscreen=1;
+	xj_set_fullscreen(xj_fullscreen);
 	xj_set_ontop(xj_ontop);
 
 	return 0;
@@ -1024,7 +1030,6 @@ int open_window_imlib2 (void) {
 	im_vis = DefaultVisual(xj_dpy, xj_screen);
 	im_cm = DefaultColormap(xj_dpy, xj_screen);
 
-	lcs_int("window_size",movie_width<<16|movie_height);
 	xj_win = XCreateSimpleWindow(
 		xj_dpy, xj_rwin,
 		0,             // x
@@ -1036,10 +1041,9 @@ int open_window_imlib2 (void) {
 		WhitePixel(xj_dpy, xj_screen)
 	);
 
-	//XmbSetWMProperties(xj_dpy, xj_win, "xjadeo", NULL, NULL, 0, NULL, NULL, NULL);
 	xj_set_hints();
          
-	XSelectInput(xj_dpy, xj_win, KeyPressMask | ExposureMask | ButtonPressMask | ButtonReleaseMask |StructureNotifyMask ); 
+	XSelectInput(xj_dpy, xj_win, KeyPressMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | StructureNotifyMask);
  
 #ifdef DND 
 	init_dnd();
@@ -1060,6 +1064,8 @@ int open_window_imlib2 (void) {
 	check_wm_atoms();
 
 	if (start_ontop) xj_ontop=1;
+	if (start_fullscreen) xj_fullscreen=1;
+	xj_set_fullscreen(xj_fullscreen);
 	xj_set_ontop(xj_ontop);
 
 	return 0;

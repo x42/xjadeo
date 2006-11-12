@@ -16,27 +16,155 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-    $Id: xj-five.c,v 1.12 2006/09/09 10:55:12 rgareus Exp $
+    $Rev:$ 
 */
+#define EXIT_FAILURE 1
+
+#include <stdio.h>
+#include <stdlib.h>
 #include <config.h>
 #include <bindir.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+#include <getopt.h>
+
+static void usage (int status);
+static void printversion (void);
+
+char *program_name;
+int want_quiet   =0;	/* --quiet, --silent */
+int want_debug   =0;	/* --debug */
+int want_verbose =0;	/* --verbose */
+
+static struct option const long_options[] =
+{
+	{"quiet", no_argument, 0, 'q'},
+	{"silent", no_argument, 0, 'q'},
+	{"verbose", no_argument, 0, 'v'},
+	{"debug", no_argument, 0, 'D'},
+	{NULL, 0, NULL, 0}
+};
+
+static int decode_switches (int argc, char **argv) {
+	int c;
+	while ((c = getopt_long (argc, argv, 
+			   "q"	/* quiet or silent */
+			   "v"	/* verbose */
+			   "h"	/* help */
+			   "R"	/* remote - arg retained for xjadeo compatibilty */
+			   "i:"	/* lash id */
+			   "V",	/* version */
+			   long_options, (int *) 0)) != EOF)
+	{ switch (c) {
+		case 'q':		/* --quiet, --silent */
+			want_quiet = 1;
+			want_verbose = 0;
+			break;
+		case 'v':		/* --verbose */
+			want_verbose = 0;
+			break;
+		case 'i':		/* --id */
+			//strncpy(lash_id,optarg,32);
+			//lash_id[31]=0;
+			break;
+		case 'R':
+			break;
+		case 'V':
+			printversion();
+			exit(0);
+			break;
+		case 'h':
+			usage (0);
+		default:
+			usage (EXIT_FAILURE);
+	} } /* while switch */
+	return optind;
+}
+
+
+static void usage (int status) {
+	printf ("%s -  jack video monitor remote control utility\n", program_name);
+	printf ("usage: %s [Options]\n", program_name);
+	printf (""
+"Options:"
+"  -h, --help                display this help and exit\n"
+"  -V, --version             output version information and exit\n"
+"  \n"
+);
+
+  exit (status);
+}
+
+static void printversion (void) {
+	printf ("xjremote version %s\n", VERSION);
+}
+
+/* check if file is executable */
+int testexec (char *filename) {
+	struct stat s;
+	if (!filename) return (0);
+	int result= stat(filename, &s);
+	if (result != 0) return 0; /* stat() failed */
+	if (!S_ISREG(s.st_mode)) return 0; /* is not a regular file */
+	if (s.st_mode & (S_IXUSR|S_IXGRP|S_IXOTH))  return 1; /* is executable */
+        return(0); 
+}
+
+void execjadeo(int closestdio) {
+	char *xjadeo = getenv("XJADEO");
+	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo); xjadeo=NULL; }
+	if (!xjadeo) xjadeo = BINDIR "/xjadeo";
+	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo); xjadeo=NULL; }
+	xjadeo = "./xjadeo";
+	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo); xjadeo=NULL; }
+	xjadeo = "src/xjadeo/xjadeo";
+	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo); xjadeo=NULL; }
+	xjadeo = "../xjadeo/xjadeo";
+	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo); xjadeo=NULL; }
+
+	if (xjadeo) {
+		printf("# exec: %s\n",xjadeo);
+		if (closestdio) { close(0); close(1);}
+		execl(xjadeo,"xjadeo", "-R", 0);
+	}
+	//if (xjadeo) execl(xjadeo,"xjadeo", "-R", "-q", 0);
+}
+
+void forkjadeo (void) {
+	int status, died;
+	// TODO create remote-mqID and set pass it to xjadeo.
+	// check: is there a way to list mq's  apart from mounting /dev/mqueue ??
+	printf("# launching a new xjadeo instance for you..\n");
+	pid_t pid = fork();
+	switch (pid) {
+		case  -1: 
+			fprintf(stderr,"fork failed\n");
+			exit(-1);
+		case 0:
+			execjadeo(1);
+			exit(0);
+		default:
+			fprintf(stdout,"# started xjadeo.\n");
+	}
+}
+
+//-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
 #ifndef HAVE_MQ 
 
-int main() {
-	printf("This xjadeo was compiled without POSIX mqueue messages\n");
-	printf("resort to 'xjadeo -R' stdio remote interface.\n");
+int main(int argc, char **argv) {
+	program_name = argv[0];
+	printf("# This xjadeo was compiled without POSIX mqueue messages.\n");
+	printf("# -> stdio remote terminal.\n");
+	execjadeo(0);
 	exit(1);
 	// TODO : make a busybox or exec 'xjadeo -R'??
 }
 
 #else  /* HAVE_MQ */
 
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <time.h>
@@ -61,13 +189,20 @@ typedef struct {
 	char m[MQLEN];
 } mqmsg;
 
+// globals shared between threads 
 int loop_flag  = 1;
+int ping_st =0;
+int pong_st =0;
+struct timeval ping_time,pong_time;
 
+#define REMOTE_TX fileno(stdout)
 void *read_thread (void *d) {
 	mqd_t           mqfd;
 	char           *msg_buffer;
+	int		timeout_cnt = 0;
 	struct mq_attr  mqat;
-	char qname[64];
+	char		qname[64];
+
 	snprintf(qname,64,"/xjadeo-reply%s%s", d?"-":"", d?(char*)d:"");
 
 	printf("# STARTING reply receiver: mqID:%s\n",d?qname+13:"[default]");
@@ -84,6 +219,7 @@ void *read_thread (void *d) {
 	msg_buffer = malloc(mqat.mq_msgsize);
 
 	while (loop_flag) {
+		int printit = 1;
 		struct timeval tv;
 		struct timespec to;
 		gettimeofday(&tv,NULL);
@@ -93,6 +229,7 @@ void *read_thread (void *d) {
 		int num_bytes_received = mq_timedreceive(mqfd, msg_buffer, mqat.mq_msgsize, 0, &to);
 		if (num_bytes_received == -1 && errno==ETIMEDOUT) {
 			// TODO : ping xjadeo ..? and print a warning.
+			timeout_cnt++;
 			continue;
 		}
 		if (num_bytes_received == -1) {
@@ -104,82 +241,118 @@ void *read_thread (void *d) {
 			fprintf(stderr,"MQ: received garbage message\n");
 			continue;
 		}
+		timeout_cnt=0;
 	
 		mqmsg *mymsg = (mqmsg*) &msg_buffer[0];
-		printf ("@%d %s", mymsg->cmd, mymsg->m); // newline is part of data payload.
-		if ( mymsg->cmd = 100 && !strncmp(mymsg->m,"quit.",5)) {
+		if ( mymsg->cmd == 100 && !strncmp(mymsg->m,"quit.",5)) {
 			printf("# xjadeo terminated. we will follow.\n");
 			loop_flag=0;
+		} else if ( mymsg->cmd == 100 && !strncmp(mymsg->m,"pong.",5) && ping_st && !pong_st) {
+			printit=0; pong_st=1;
+			gettimeofday(&pong_time,NULL);
+		}
+		if (printit) {
+		#if 1
+			char tmp[8+MQLEN];
+			snprintf (tmp,(MQLEN+8),"@%d %s\n", mymsg->cmd, mymsg->m); // newline is part of data payload.
+ 			write(REMOTE_TX,tmp,strlen(tmp));
+		#else
+			printf ("@%d %s", mymsg->cmd, mymsg->m); // newline is part of data payload.
+			fflush(stdout);
+		#endif
 		}
 	}
 	printf ("# SHUTTING DOWN receiver thread.\n");
-	printf ("  [press enter to exit]\n"); // XXX
 	mq_close(mqfd);
 	return (NULL);
 }
-/*  - might come in handy again.
-void select_sleep(int usec) {
-	fd_set          fd;
-	struct timeval  tv = { 0, 0 };
-	tv.tv_sec = 0;
-	tv.tv_usec = usec;
+
+/*
+void ping (void) {
+	if (ping_st) return;
+	ping_st=1; pong_st=0;
+	gettimeofday(&ping_time,NULL);
+	// send 'ping'
+} */
+
+#define REMOTE_RX fileno(stdin) 
+
+int xjselect (int sec) {
+	fd_set fd;
+	int max_fd=0;
+	struct timeval tv = { 0, 0 };
+	tv.tv_sec = sec; tv.tv_usec = 0;
+
 	FD_ZERO(&fd);
-	select(0, &fd, NULL, NULL, &tv);
-}
-*/
-
-int testexec (char *filename) {
-	struct stat s;
-	if (!filename) return (0);
-	int result= stat(filename, &s);
-	if (result != 0) return 0; /* stat() failed */
-	if (S_ISREG(s.st_mode)) return 1; /* is a regular file - ok */
-	//TODO check for S_IXUSR|S_IXGRP|S_IXOTH
-        return(0); 
+	FD_SET(REMOTE_RX,&fd);
+	max_fd=(REMOTE_RX+1);
+	if (select(max_fd, &fd, NULL, NULL, &tv)) return(1);
+	return(0);
 }
 
 
-void forkjadeo (void) {
-	int status, died;
-	// TODO create remote-mqID and set pass it to xjadeo.
-	// check: is there a way to list mq's  apart from mounting /dev/mqueue ??
-	printf("# launching a new xjadeo instance for you..\n");
-	pid_t pid = fork();
-	switch (pid) {
-		case  -1: 
-			fprintf(stderr,"fork failed\n");
-			exit(-1);
-		case 0:
-			close(0);
-			close(1);
-			char *xjadeo = getenv("XJADEO");
-			if (!testexec(xjadeo)) { xjadeo=NULL; printf("# xjadeo executable not found in : %s\n",xjadeo); }
-			if (!xjadeo) xjadeo = BINDIR "/xjadeo";
-			if (!testexec(xjadeo)) { xjadeo=NULL; printf("# xjadeo executable not found in : %s\n",xjadeo); }
-			xjadeo = "src/xjadeo/xjadeo";
-			if (!testexec(xjadeo)) { xjadeo=NULL; printf("# xjadeo executable not found in : %s\n",xjadeo); }
-			xjadeo = "../xjadeo/xjadeo";
-			if (!testexec(xjadeo)) { xjadeo=NULL; printf("# xjadeo executable not found in : %s\n",xjadeo); }
 
-			if (xjadeo) execl(xjadeo,"xjadeo", "-R", 0);
-			//if (xjadeo) execl(xjadeo,"xjadeo", "-R", "-q", 0);
-			exit(0);
-		default:
-			fprintf(stdout,"# started xjadeo.\n");
+void dothework (mqd_t mqfd_tx) {
+	int             num_bytes_to_send;
+	int             priority_of_msg = 20;
+
+	mqmsg mymsg = {1, "" };
+	num_bytes_to_send = sizeof(mqmsg);
+
+	printf("# COMMAND INTERFACE ACTIVATED: use 'exit' or EOF to terminate this session.\n");
+
+	char buf[MQLEN];
+	int offset =0;
+
+	while (loop_flag) {
+		int rx;
+		char *end;
+		if (!xjselect(1)) continue;
+		if ((rx = read(REMOTE_RX, buf + offset, (MQLEN-1)-offset)) > 0) {
+			offset += rx;	
+			buf[offset] = '\0';
+		} else if (rx < 0) {
+			continue;
+		} else {
+			continue;
+			loop_flag=0;
+			break;
+		}
+
+		while ((end = strchr(buf, '\n'))) {
+			*(end) = '\0';
+
+			if (!strncmp(buf,"exit",4)) {
+				loop_flag=0;
+				break;
+			}
+			snprintf(mymsg.m,MQLEN,"%s\n",buf);
+			//strncpy(mymsg.m,buf,MQLEN-1); // add '\n'
+			mymsg.m[MQLEN-1]=0;
+
+			// THIS MAY BLOCK !
+			if(mq_send(mqfd_tx, (char*) &mymsg, num_bytes_to_send, priority_of_msg) == -1) {
+				perror("mq_send failure on mqfd_tx");
+			}
+			
+			offset-=((++end)-buf);
+			if (offset) memmove(buf,end,offset);
+		}
 	}
 }
 
 int main(int argc, char **argv) {
-	int             status = 0;
-	mqd_t           mqfd_tx = -1;
-	int             num_bytes_to_send;
-	int             priority_of_msg;
+	int 		i;
 	pthread_t       xet;
-	char qname[64];
-	int did_fork = 0;
+	mqd_t		mqfd_tx;
+	char		qname[64];
+	int		did_fork = 0;
+
+	program_name = argv[0];
+
+	i = decode_switches (argc, argv);
 
 	// TODO: parse Command line argv
-	
 	int want_nofork = 0;
 	int want_create = 0;
 	char *qarg = NULL; 
@@ -197,48 +370,18 @@ int main(int argc, char **argv) {
 			sleep (1);
 			// cleanup - option ??
 			// in case there are queues but xjadeo's dead // (ping!)
+			// mq_unlink(qname);
 		}
 	} while (mqfd_tx < 0);
-
-	pthread_create(&xet, NULL, read_thread, NULL);
 
 	if (mqfd_tx == -1) {
 		perror("mq_open failure from main");
 		exit(0);
 	};
 
-	priority_of_msg = 20;
-	printf("# COMMAND INTERFACE ACTIVATED: use 'exit' or EOF to terminate this session.\n");
-	while (loop_flag) {
-		char buf[MQLEN];
-		// TODO: use select  and read() XXX
-		if(!fgets(buf,MQLEN,stdin)) { 
-		#if 1
-			loop_flag=0;
-			break;
-		#else
-			usleep(100000);
-			continue;
-		#endif
-		}
+	pthread_create(&xet, NULL, read_thread, NULL);
 
-		if (!strncmp(buf,"exit",4)) {
-			loop_flag=0;
-			break;
-		}
-
-		mqmsg mymsg = {1, "" };
-		strncpy(mymsg.m,buf,MQLEN);
-		num_bytes_to_send = sizeof(mqmsg);
-
-		status = mq_send(mqfd_tx, (char*) &mymsg, num_bytes_to_send, priority_of_msg);
-		if (status == -1) {
-			perror("mq_send failure on mqfd_tx");
-			continue;
-		}
-	//	printf ("# successful call to mq_send, i = %d\n", i);
-	}
-
+	dothework(mqfd_tx);
 
 	loop_flag=0; // stop read thread.
 	printf("bye bye.\n");

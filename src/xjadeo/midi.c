@@ -523,7 +523,8 @@ inline void midi_close(void) {amidi_close();}
 void midi_open(char *midiid) {
 	char devicestring[32];
 	if (atoi(midiid)<0) {
-		fprintf(stderr,"AlsaMIDI does not support autodetection. using default hw:2,0,0\n");
+		if (!want_quiet)
+			fprintf(stdout,"AlsaMIDI does not support autodetection. using default hw:2,0,0\n");
 		snprintf(devicestring,31,"hw:2,0,0");
 	} else if (isdigit(midiid[0])) {
 		snprintf(devicestring,31,"hw:%s",midiid);

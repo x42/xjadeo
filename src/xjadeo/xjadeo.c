@@ -331,7 +331,6 @@ int open_movie(char* file_name) {
 	}
 
 	current_file=strdup(file_name);
-	lcs_str("current_file",current_file);
 	return( 0 );
 }
 
@@ -528,7 +527,6 @@ int close_movie()
 {
 	if(current_file) free(current_file);
 	current_file=NULL;
-	lcs_str("current_file","");
 
 	if (!pFrameFMT) return(-1);
 

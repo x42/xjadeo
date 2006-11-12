@@ -39,6 +39,7 @@ void getsize_null (unsigned int *x, unsigned int *y) { if(x)*x=1; if(y)*y=1; }
 void position_null (int x, int y) { ; }
 void getpos_null (int *x, int *y) { if(x)*x=1; if(y)*y=1; }
 void fullscreen_null (int a) { ; }
+void ontop_null (int a) { ; }
 
 /*******************************************************************************
  * strided memcopy - convert pitches of video buffer
@@ -159,7 +160,7 @@ void rgb2abgr (uint8_t *rgbabuffer, uint8_t *rgbbuffer, int width, int height) {
 #include <ffmpeg/avcodec.h> // needed for PIX_FMT 
 #include <ffmpeg/avformat.h>
 
-#define NULLOUTPUT &render_null, &open_window_null, &close_window_null, &handle_X_events_null, &newsrc_null, &resize_null, &getsize_null, &position_null, &getpos_null, &fullscreen_null
+#define NULLOUTPUT &render_null, &open_window_null, &close_window_null, &handle_X_events_null, &newsrc_null, &resize_null, &getsize_null, &position_null, &getpos_null, &fullscreen_null, &ontop_null
 
 const vidout VO[] = {
 	{ PIX_FMT_RGB24,   1, 		"NULL", NULLOUTPUT}, // NULL is --vo 0 -> autodetect 
@@ -168,7 +169,7 @@ const vidout VO[] = {
 		&render_xv, &open_window_xv, &close_window_xv,
 		&handle_X_events_xv, &newsrc_xv, &resize_xv,
 		&get_window_size_xv, &position_xv, get_window_pos_xv,
-		&xj_set_fullscreen},
+		&xj_set_fullscreen, &xj_set_ontop},
 #else
 		NULLOUTPUT},
 #endif
@@ -177,7 +178,7 @@ const vidout VO[] = {
 		&render_sdl, &open_window_sdl, &close_window_sdl,
 		&handle_X_events_sdl, &newsrc_sdl, &resize_sdl,
 		&getsize_sdl, &position_sdl, &getpos_null,
-		&fullscreen_null},
+		&fullscreen_null, &ontop_null},
 #else
 		NULLOUTPUT},
 #endif
@@ -186,7 +187,7 @@ const vidout VO[] = {
 		&render_imlib, &open_window_imlib, &close_window_imlib,
 		&handle_X_events_imlib, &newsrc_imlib, &resize_imlib,
 		&get_window_size_imlib, &position_imlib, &get_window_pos_imlib,
-		&xj_set_fullscreen},
+		&xj_set_fullscreen, &xj_set_ontop},
 #else
 		NULLOUTPUT},
 #endif
@@ -199,7 +200,7 @@ const vidout VO[] = {
 		&render_imlib2, &open_window_imlib2, &close_window_imlib2,
 		&handle_X_events_imlib2, &newsrc_imlib2, &resize_imlib2,
 		&get_window_size_imlib2, &position_imlib2, &get_window_pos_imlib2,
-		&xj_set_fullscreen},
+		&xj_set_fullscreen, &xj_set_ontop},
 #else
 		NULLOUTPUT},
 #endif
@@ -332,11 +333,15 @@ void Xresize (unsigned int x, unsigned int y) {
 	VO[VOutput].resize(x,y);
 }
 
+void Xontop (int a) {
+	VO[VOutput].ontop(a);
+}
 
 void Xfullscreen (int a) {
 	VO[VOutput].fullscreen(a);
 }
 
 void Xposition (int x, int y) {
+	printf("set window position to %i %i\n",x,y);
 	VO[VOutput].position(x,y);
 }

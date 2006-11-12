@@ -62,12 +62,17 @@ extern int		OSD_mode;
 
 extern int OSD_fx, OSD_tx, OSD_sx, OSD_fy, OSD_sy, OSD_ty;
 
-extern char jackid[16];
+#if (HAVE_LIBXV || HAVE_IMLIB || HAVE_IMLIB2)
+ extern int xj_ontop;
+ extern int xj_fullscreen;
+#else 
+# define xj_ontop (0)
+# define xj_fullscreen (0)
+#endif
 
+// defined in main.c
 extern lash_client_t *lash_client;
 
-
-// remote.c prototypes - TODO: better do movie_open, initbuffer to avoid remote replies.
 void xapi_open(void *d);
 void xapi_close(void *d);
 
@@ -92,6 +97,45 @@ void handle_event(lash_event_t* ev) {
 	} else if (type == LASH_Save_Data_Set) {
 		if (!want_quiet)
 			printf("LASH saving data set\n");
+		unsigned int w,h;
+		int x,y;
+		Xgetsize(&w,&h); 
+		lcs_int("window_size",w<<16|h);
+		Xgetpos(&x,&y); 
+		// lcs_int("window_position",x<<16|y);
+		lcs_int("x11_ontop",xj_ontop);
+		lcs_int("x11_fullscreen",xj_fullscreen); 
+#ifdef HAVE_MIDI
+		if (midi_connected())  lcs_int("syncsource",2);
+		else
+#endif
+		if (jack_connected())  lcs_int("syncsource",1);
+		else lcs_int("syncsource",0);
+
+		lcs_str("current_file",current_file?current_file:"");
+		lcs_int("seekflags",seekflags);
+		lcs_long("ts_offset",ts_offset);
+		lcs_long("userFrame",userFrame);
+		lcs_dbl("update_fps",delay);
+		lcs_dbl("file_fps",filefps);
+		lcs_int("OSD_mode",OSD_mode);
+	//	lcs_int("OSD_sx",OSD_sx);
+		lcs_int("OSD_sy",OSD_sy);
+		lcs_int("OSD_mode",OSD_mode);
+	//	lcs_int("OSD_fx",OSD_fx);
+		lcs_int("OSD_fy",OSD_fy);
+		lcs_int("OSD_mode",OSD_mode);
+		lcs_int("OSD_mode",OSD_mode);
+		lcs_str("OSD_text",OSD_text?OSD_text:"");
+		lcs_str("OSD_fontfile",OSD_fontfile);
+		lcs_int("OSD_mode",OSD_mode);
+		lcs_int("OSD_mode",OSD_mode);
+		lcs_int("OSD_tx",OSD_tx);
+		lcs_int("OSD_ty",OSD_ty);
+	#ifdef HAVE_MIDI
+		lcs_int("MIDI_clkconvert",midi_clkconvert);
+		lcs_str("MIDI_ID",(midiid && midi_connected())?midiid:"-2");
+	#endif
 		lash_send_event(lash_client, lash_event_new_with_type(LASH_Save_Data_Set));
 	} else if (type == LASH_Quit) {
 		loop_flag=0;
@@ -124,8 +168,10 @@ void handle_config(lash_config_t* conf) {
 //		framerate =  lash_config_get_value_double(conf); 
 	} else if (!strcmp(key,"file_fps")) {
 		filefps =  lash_config_get_value_double(conf);
-		framerate =  lash_config_get_value_double(conf); 
-  		frames = (long) (framerate * duration); ///< TODO: check if we want that 
+		if (filefps > 0) {
+			framerate =  filefps;
+			frames = (long) (framerate * duration); ///< TODO: check if we want that 
+		}
 
 // remote_en needs to be set on startup! - TODO
 // or we'd need to call remote_open here...
@@ -138,8 +184,8 @@ void handle_config(lash_config_t* conf) {
 //
 			/* OSD -settings */
 	} else if (!strcmp(key,"OSD_text")) {
-		strncpy(OSD_fontfile,lash_config_get_value_string (conf),127);
-		OSD_fontfile[127]=0;
+		strncpy(OSD_text,lash_config_get_value_string (conf),127);
+		OSD_text[127]=0;
 	} else if (!strcmp(key,"OSD_fontfile")) {
 		strncpy(OSD_fontfile,lash_config_get_value_string (conf),1024);
 		OSD_fontfile[1023]=0;
@@ -153,31 +199,50 @@ void handle_config(lash_config_t* conf) {
 	} else if (!strcmp(key,"OSD_sy")) { OSD_sy = lash_config_get_value_int(conf);
 			/* jack/midi/offline */
 	} else if (!strcmp(key,"syncsource")) {
-// TODO
-		// jack_connect()
-		// jack_disconnect()
-		// midi_disconnect()
-		// midi_connect()
-		//
+		switch(lash_config_get_value_int(conf)) {
+			case 1: 
+			printf("LASH: setting sync source to JACK\n");
+				open_jack();
+	#ifdef HAVE_MIDI
+				midi_close();
+	#endif
+				break;
+			case 2: 
+			printf("LASH: setting sync source to midi\n");
+				close_jack();
+				//we'll connect to MIDI later when we know the port/channel
+				break;
+			default:
+			printf("LASH: setting no sync source. (manual seek)\n");
+				close_jack();
+	#ifdef HAVE_MIDI
+				midi_close();
+	#endif
+		}
 			/* MIDI */
 	} else if (!strcmp(key,"MIDI_clkconvert")) {
+	#ifdef HAVE_MIDI
 		midi_clkconvert = lash_config_get_value_int(conf);
+	#endif
 	} else if (!strcmp(key,"MIDI_ID")) {
 	#ifdef HAVE_MIDI
-		// TODO: check if we go the same midi library
-		// use LASH to remember MIDI connections ?!?
+		// TODO: check if we got the same midi library (alsa,portmidi) as the Lash session.
+		// can we use LASH to remember MIDI connections ?!?
 		strncpy(midiid,lash_config_get_value_string (conf),32);
 		midiid[31]=0;
+		if (strlen(midiid) > 0) 
+			if (atoi(midiid)>-2) midi_open(midiid);
 	#endif
 			/* Window Settings  */
 	} else if (!strcmp(key,"window_size")) {
 	//	printf("LASH config: window size %ix%i\n", (lash_config_get_value_int(conf)>>16)&0xffff,lash_config_get_value_int(conf)&0xffff);
 		Xresize((lash_config_get_value_int(conf)>>16)&0xffff,lash_config_get_value_int(conf)&0xffff);
-	} else if (!strcmp(key,"win_position")) {
+	} else if (!strcmp(key,"window_position")) {
 		Xposition((lash_config_get_value_int(conf)>>16)&0xffff,lash_config_get_value_int(conf)&0xffff);
 	} else if (!strcmp(key,"x11_ontop")) {
-		//Xontop((lash_config_get_value_int(conf));
+		Xontop(lash_config_get_value_int(conf));
 	} else if (!strcmp(key,"x11_fullscreen")) {
+		Xfullscreen(lash_config_get_value_int(conf));
 	} else {
 		unsigned long val_size = lash_config_get_value_size(conf);
 	//	if (want_debug)

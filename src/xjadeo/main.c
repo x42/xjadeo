@@ -92,6 +92,7 @@ int want_quiet   =0;	/* --quiet, --silent */
 int want_debug   =0;	/* --debug */
 int want_verbose =0;	/* --verbose */
 int start_ontop =0;	/* --ontop // -a */
+int start_fullscreen =0;/* NY available */
 int avoid_lash   =0;	/* --nolash */
 int remote_en =0;	/* --remote, -R */
 int remote_mode =0;	/* 0: undirectional ; >0: bidir
@@ -267,6 +268,7 @@ decode_switches (int argc, char **argv)
 #ifdef HAVE_MIDI
 	case 'm':		/* --midi */
 	  strncpy(midiid,optarg,32);
+	  midiid[31]=0;
 	  break;
 	case 'M':		/* --midifps */
           midi_clkconvert = atoi(optarg);
@@ -275,16 +277,11 @@ decode_switches (int argc, char **argv)
 	case 'V':
 	  printversion();
 	  exit(0);
-
-	  exit (0);
-
 	case 'a':
 	  start_ontop=1;
 	  break;
-
 	case 'h':
 	  usage (0);
-
 	default:
 	  usage (EXIT_FAILURE);
     }

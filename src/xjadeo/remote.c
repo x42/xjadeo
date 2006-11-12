@@ -126,7 +126,7 @@ void xapi_open(void *d) {
 	printf("open file: '%s'\n",fn);
 	if ( open_movie(fn)) 
 		remote_printf(403, "failed to open file '%s'",fn);
-	else	remote_printf(100, "opened file: '%s'",fn);
+	else	remote_printf(129, "opened file: '%s'",fn);
         init_moviebuffer();
 	newsourcebuffer();
 	display_frame((int64_t)(dispFrame),1); // update screen
@@ -307,7 +307,6 @@ void xapi_sseekmode (void *d) {
 		remote_printf(422,"invalid argument (1-3 or 'continuous', 'any', 'key')");
 		return;
 	}
-	lcs_int("seekflags",seekflags);
 	xapi_pseekmode(NULL);
 }
 
@@ -322,7 +321,6 @@ void xapi_soffset(void *d) {
 //	long int new = atol((char*)d);
 	long int new = smptestring_to_frame((char*)d);
 	ts_offset= (int64_t) new;
-	lcs_long("ts_offset",ts_offset);
 	remote_printf(101,"offset=%li",(long int) ts_offset);
 }
 
@@ -340,7 +338,6 @@ void xapi_seek(void *d) {
 //	long int new = atol((char*)d);
 	long int new = smptestring_to_frame((char*)d);
 	userFrame= (int64_t) new;
-	lcs_long("userFrame",userFrame);
 	remote_printf(101,"defaultseek=%li",userFrame);
 }
 
@@ -351,7 +348,6 @@ void xapi_pfps(void *d) {
 void xapi_sfps(void *d) {
 	char *off= (char*)d;
         delay = 1.0 / atof(off);
-	lcs_dbl("update_fps",delay);
 	remote_printf(101,"updatefps=%i",(int) rint(1/delay));
 }
 
@@ -359,7 +355,6 @@ void xapi_sframerate(void *d) {
 	char *off= (char*)d;
         filefps= atof(off);
        	framerate = filefps;
-	lcs_dbl("file_fps",filefps);
 //	if (filefps > 0) { 
 //        	framerate = filefps;
 //	} else { // reset framerate according to av_stream
@@ -403,9 +398,6 @@ void xapi_osd_smpte(void *d) {
 		remote_printf(100,"rendering smpte on position y:%i%%",y);
 	} else 
 		remote_printf(422,"invalid argument (range -1..100)");
-	lcs_int("OSD_mode",OSD_mode);
-//	lcs_int("OSD_sx",OSD_sx);
-	lcs_int("OSD_sy",OSD_sy);
 	display_frame((int64_t)(dispFrame),1); // update OSD
 }
 
@@ -420,49 +412,40 @@ void xapi_osd_frame(void *d) {
 		remote_printf(100,"rendering frame on position y:%i%%",y);
 	} else 
 		remote_printf(422,"invalid argument (range -1..100)");
-	lcs_int("OSD_mode",OSD_mode);
-//	lcs_int("OSD_fx",OSD_fx);
-	lcs_int("OSD_fy",OSD_fy);
 	display_frame((int64_t)(dispFrame),1); // update OSD
 }
 
 void xapi_osd_off(void *d) {
 	OSD_mode&=~OSD_TEXT;
 	remote_printf(100,"hiding OSD");
-	lcs_int("OSD_mode",OSD_mode);
 	display_frame((int64_t)(dispFrame),1); // update OSD
 }
 
 void xapi_osd_on(void *d) {
 	OSD_mode|=OSD_TEXT;
 	remote_printf(100,"rendering OSD");
-	lcs_int("OSD_mode",OSD_mode);
 	display_frame((int64_t)(dispFrame),1); // update OSD
 }
 
 void xapi_osd_text(void *d) {
 	snprintf(OSD_text,128,"%s",(char*)d);
-	lcs_str("OSD_text",OSD_text);
 	display_frame((int64_t)(dispFrame),1); // update OSD
 	xapi_osd_on(NULL);
 }
 
 void xapi_osd_font(void *d) {
 	snprintf(OSD_fontfile,1024,"%s",(char*)d);
-	lcs_str("OSD_fontfile",OSD_fontfile);
 	xapi_osd_on(NULL);
 }
 
 void xapi_osd_nobox(void *d) {
 	OSD_mode&=~OSD_BOX;
-	lcs_int("OSD_mode",OSD_mode);
 	remote_printf(100,"OSD transparent background");
 	display_frame((int64_t)(dispFrame),1); // update OSD
 }
 
 void xapi_osd_box(void *d) {
 	OSD_mode|=OSD_BOX;
-	lcs_int("OSD_mode",OSD_mode);
 	remote_printf(100,"OSD black box background");
 	display_frame((int64_t)(dispFrame),1); // update OSD
 }
@@ -493,8 +476,6 @@ void xapi_osd_pos(void *d) {
 	}  else {
 		remote_printf(421,"invalid  argument (example 1 95)");
 	}
-	lcs_int("OSD_tx",OSD_tx);
-	lcs_int("OSD_ty",OSD_ty);
 	display_frame((int64_t)(dispFrame),1); // update OSD
 }
 
@@ -507,7 +488,6 @@ void xapi_midi_status(void *d) {
 		remote_printf(100,"midi connected.");
 	else
 		remote_printf(199,"midi not connected.");
-	// TODO : lcs_str("MIDI_ID",midiid);
 #else
 	remote_printf(499,"midi not available.");
 #endif
@@ -570,7 +550,6 @@ void xapi_smidisync(void *d) {
 #ifdef HAVE_MIDI
         midi_clkconvert = atoi((char*)d);
 	remote_printf(101,"midisync=%i", midi_clkconvert);
-	lcs_int("MIDI_clkconvert",midi_clkconvert);
 #else
 	remote_printf(499,"midi not available.");
 #endif
