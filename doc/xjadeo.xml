@@ -582,6 +582,9 @@ make install # (requires root privileges) </screen></para>
   <section>
     <title>Remote Control Interface</title>
 
+    <para> SUBJECT TO CHANGE ! (v0.3.19) </para>
+    <para>-R enables message queues; use <command>xjremote</command> to connect.</para>
+
     <para>xjadeo features a remote control mode that allows to modify all
     settings of a running xjadeo monitor window. When started in remote mode
     (using option <option>-R</option> or <option>--remote</option>)
@@ -1692,6 +1695,8 @@ make install # (requires root privileges) </screen></para>
 
       <refsect1>
         <title>REMOTE MODE</title>
+	<para> SUBJECT TO CHANGE ! (v0.3.19) </para>
+	<para>-R enables message queues; use <command>xjremote</command> to connect.</para>
 
         <para>When started in remote mode (option <option>-R</option> or
         <option>--remote</option>) <command>xjadeo</command> will
@@ -1762,6 +1767,45 @@ make install # (requires root privileges) </screen></para>
         <title>ENVIRONMENT</title>
 
         <para><command>qjadeo</command> if the XJADEO variable is set, qjadeo
+        will assume that it holds the path to the xjadeo executable.</para>
+      </refsect1>
+    </refentry>
+ 
+    <refentry>
+      <refmeta>
+        <refentrytitle>xjremote</refentrytitle>
+    	<manvolnum>1</manvolnum>
+      </refmeta>
+
+      <refnamediv>
+        <refname>xjremote</refname>
+
+        <refpurpose>CLI front-end to <command>xjadeo</command></refpurpose>
+      </refnamediv>
+
+      <refsynopsisdiv>
+        <cmdsynopsis>
+          <command>xjremote</command>
+        </cmdsynopsis>
+      </refsynopsisdiv>
+
+      <refsect1>
+        <title>DESCRIPTION</title>
+
+        <para><command>xjadeo</command> displays a video clip in sync with an
+        external timing source. It is a handy tool to help with the
+        synchronization of the soundtrack of a video file.</para>
+
+        <para><command>xjremote</command>  connects to a 
+	instance of xjadeo and allows to tweak the running configuration.</para>
+
+	<para>If it can not connect, xjremote will start an instance of xjadeo</para>
+      </refsect1>
+
+      <refsect1>
+        <title>ENVIRONMENT</title>
+
+        <para><command>xjremote</command> if the XJADEO variable is set, xjremote
         will assume that it holds the path to the xjadeo executable.</para>
       </refsect1>
     </refentry>
