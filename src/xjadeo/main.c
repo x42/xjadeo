@@ -300,7 +300,11 @@ jack video monitor\n", program_name);
 "Options:\n"
 "  -q, --quiet, --silent     inhibit usual output\n"
 "  -v, --verbose             print more information\n"
+#ifdef HAVE_MQ
 "  -R, --remote              remote control (stdin) - implies non verbose&quiet\n"
+#else
+"  -R, --remote              set-up message queue for xjremote\n"
+#endif
 "  -f <val>, --fps <val>     video display update fps - default 10.0 fps\n"
 "  -k, --keyframes           seek to keyframes only\n"
 "  -K, --continuous          decode video source continuously. (extra latency\n"
