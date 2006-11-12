@@ -19,6 +19,7 @@ private:
   int m_movie_height;
   int m_updatefps;
   int m_frames;
+  int m_offset;
   int m_framerate;
   QString m_osdfont;
 
@@ -38,6 +39,8 @@ public slots:
   void zoomFullScreen();
 
   void syncJack();
+  void syncMTC();
+  void syncOff();
 
   void setFPS(const QString &);
   void setOffset(const QString &);

@@ -163,6 +163,7 @@
     <item text="&amp;Sync" name="Sync">
         <action name="syncJackAction"/>
         <action name="syncMTCAction"/>
+        <action name="syncOffAction"/>
     </item>
     <item text="&amp;Zoom" name="Zoom">
         <action name="zoom50Action"/>
@@ -247,6 +248,17 @@
         </property>
         <property name="menuText">
             <string>MTC</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>syncOffAction</cstring>
+        </property>
+        <property name="text">
+            <string>off</string>
+        </property>
+        <property name="menuText">
+            <string>off</string>
         </property>
     </action>
     <actiongroup>
@@ -391,6 +403,18 @@
         <slot>zoomFullScreen()</slot>
     </connection>
     <connection>
+        <sender>syncOffAction</sender>
+        <signal>activated()</signal>
+        <receiver>MainWindow</receiver>
+        <slot>syncOff()</slot>
+    </connection>
+    <connection>
+        <sender>syncMTCAction</sender>
+        <signal>activated()</signal>
+        <receiver>MainWindow</receiver>
+        <slot>syncMTC()</slot>
+    </connection>
+    <connection>
         <sender>syncJackAction</sender>
         <signal>activated()</signal>
         <receiver>MainWindow</receiver>
@@ -437,6 +461,7 @@
     <slot>zoomFullScreen()</slot>
     <slot>syncJack()</slot>
     <slot>syncMTC()</slot>
+    <slot>syncOff()</slot>
     <slot>setOffset( const QString &amp; )</slot>
     <slot>fileExit()</slot>
     <slot>osdFrameToggled(bool)</slot>

@@ -157,7 +157,20 @@ void QJadeo::zoomFullScreen()
 
 void QJadeo::syncJack()
 {
+  xjadeo.writeToStdin(QString("midi disconnect\n"));
   xjadeo.writeToStdin(QString("jack connect\n"));
+}
+
+void QJadeo::syncMTC()
+{
+  xjadeo.writeToStdin(QString("jack disconnect\n"));
+  xjadeo.writeToStdin(QString("midi autoconnect\n"));
+}
+
+void QJadeo::syncOff()
+{
+  xjadeo.writeToStdin(QString("jack disconnect\n"));
+  xjadeo.writeToStdin(QString("midi disconnect\n"));
 }
 
 void QJadeo::setFPS(const QString &fps)
@@ -248,8 +261,15 @@ void QJadeo::readFromStdout()
         else if(name == "movie_height")
           m_movie_height = value.toInt();
         else if(name == "frames")
+	{
           m_frames = value.toInt();
-        else if(name == "framerate")
+	}
+        else if(name == "offset")
+	{
+          m_offset = value.toInt();
+          offsetSpinBox->setValue(m_offset);
+        }
+	else if(name == "framerate")
         {
           m_framerate = value.toInt();
           fpsSpinBox->setValue(m_framerate);
@@ -259,6 +279,16 @@ void QJadeo::readFromStdout()
           m_updatefps = value.toInt();
         break;
       }
+      case 1:
+       if(status==129) {
+	  xjadeo.writeToStdin(QString("get filename\n"));
+	  xjadeo.writeToStdin(QString("get width\n"));
+	  xjadeo.writeToStdin(QString("get height\n"));
+	  xjadeo.writeToStdin(QString("get frames\n"));
+	  xjadeo.writeToStdin(QString("get framerate\n"));
+	  xjadeo.writeToStdin(QString("notify frame\n"));
+	  xjadeo.writeToStdin(QString("get offset\n"));
+	}
     }
   }
 }
@@ -270,6 +300,7 @@ void QJadeo::fileLoad(const QString & filename)
   m_movie_height = 0;
   m_updatefps = 0;
   m_frames = 0;
+  m_offset = 0;
   m_framerate = 0;
   xjadeo.writeToStdin("load " + filename + "\n");
   xjadeo.writeToStdin(QString("get filename\n"));
@@ -278,7 +309,7 @@ void QJadeo::fileLoad(const QString & filename)
   xjadeo.writeToStdin(QString("get frames\n"));
   xjadeo.writeToStdin(QString("get framerate\n"));
   xjadeo.writeToStdin(QString("notify frame\n"));
-
+  xjadeo.writeToStdin(QString("get offset\n"));
 
 }
 
@@ -315,6 +346,8 @@ int main(int argc, char **argv)
   w.show();
   a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
 
+  xjadeo.writeToStdin(QString("get framerate\n"));
+  xjadeo.writeToStdin(QString("get offset\n"));
   a.exec();
 
   xjadeo.tryTerminate();
