@@ -19,6 +19,9 @@
 */
 #define EXIT_FAILURE 1
 
+/* we'll use mq_timedreceive */
+#define _XOPEN_SOURCE 600
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -167,14 +170,13 @@ void execjadeo(int flags) {
 		printf("# executing: %s\n",xjadeo);
 		if (flags&1) { close(0); close(1);}
 		if (flags&2)
-			execl(xjadeo,"xjadeo", "-R", 0);
+			execl(xjadeo,"xjadeo", "-R", NULL);
 		else 
-			execl(xjadeo,"xjadeo", "-Q", "-q", 0);
+			execl(xjadeo,"xjadeo", "-Q", "-q", NULL);
 	}
 }
 
 void forkjadeo (void) {
-	int status, died;
 	// TODO create remote-mqID and set pass it to xjadeo.
 	// check: is there a way to list mq's  apart from mounting /dev/mqueue ??
 	printf("# launching a new xjadeo instance for you..\n");
@@ -211,8 +213,8 @@ int main(int argc, char **argv) {
 
 #include <sys/time.h>
 #include <sys/resource.h>
-#include <time.h>
 #include <string.h>
+#include <time.h>
 #include <mqueue.h>
 #include <errno.h>
 #include <pthread.h>
