@@ -18,9 +18,6 @@
  *  Robin Gareus <robin@gareus.org>
  *  Luis Garrido <luisgarrido@users.sourceforge.net>
  *
- * $Id: $
- * $Revision:  $
- * $Rev:  $
  */
 
 #include "xjadeo.h"

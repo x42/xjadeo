@@ -1,11 +1,11 @@
 .\"     Title: xjadeo
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.71.0 <http://docbook.sf.net/>
-.\"      Date: 11/12/2006
+.\"      Date: 11/13/2006
 .\"    Manual: Manual Pages
 .\"    Source: 
 .\"
-.TH "XJADEO" "1" "11/12/2006" "" "Manual Pages"
+.TH "XJADEO" "1" "11/13/2006" "" "Manual Pages"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
@@ -151,14 +151,9 @@ Checks if the video file is encoded in a format suitable for use with
 and exits. If the video format is not supported the exit code is 1.
 .RE
 .PP
-\fB\-h, \-\-help\fR
-.RS 3n
-Display usage information and exit.
-.RE
-.PP
 \fB\-V, \-\-version\fR
 .RS 3n
-Display version information and exit.
+Display version and compile\-time configuration information and exit.
 .RE
 .SH "SYNC SOURCES"
 .PP
@@ -228,11 +223,13 @@ Scroll Wheel (buttons 4,5) stepwise decreases/increases the window size maintain
 \(bu
 Closing the window or pressing ctrl\-C will terminate
 \fBxjadeo\fR.
+.TP 3n
+\(bu
+xjadeo >= v0.3.8 supports keyboard events. Pressing 'Esc' and 'q' will end the program. depending on your display setup xjadeo supports 'f' toggle fullscreen, 'a' toggle always\-on\-top and 'm' to hide mouse cursor keystrokes.
 .SH "REMOTE MODE"
 .PP
-SUBJECT TO CHANGE ! (v0.3.19)
-.PP
-\-R enables message queues; use
+\fBxjadeo \-Q\fR
+enables message queues; use
 \fBxjremote\fR
 to connect.
 .PP
@@ -246,6 +243,39 @@ will interactively accept commands and issue responses through its standard inpu
 Use the remote command
 \fBhelp\fR
 to get a quick overview of all available commands. please refer to the docbook documentation for a complete description of the remote commands.
+.SH "FILES"
+.PP
+xjadeo reads the following resource config files in this order:
+.TP 3n
+1.
+/@SYSCONFDIR@/xjadeorc (usually /etc/xjadeorc or /usr/local/etc/xjadeorc, depends on settings when
+building xjadeo)
+.TP 3n
+2.
+$HOME/.xjadeorc
+.TP 3n
+3.
+$HOME/xjadeorc
+.PP
+Each line in the config file must be in in the format:
+.sp
+.RS 3n
+.nf
+KEY=VALUE
+.fi
+.RE
+.sp
+. If the first character on a line is either '#' or ';'. the line is ignored.
+\fBKEYS\fR
+are not case sensitive.
+\fBVALUES\fR
+can be case sensitive (fi. filenames) and are parsed identical to the corresponding command line arguments (eg.
+\fB\-x SDL\fR
+becomes
+\fBvideomode=SDL\fR). Boolean values are specified as 'yes' or 'no' (eg.
+\fBquiet=yes\fR).
+.PP
+currently supported rc KEYS: fps, fontfile, lash, mq, quiet, seek, verbose and videomode.
 .SH "COPYRIGHT"
 Copyright \(co 2005, 2006 Luis Garrido, Robin Gareus
 .br

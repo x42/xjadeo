@@ -22,9 +22,7 @@ AC_ARG_ENABLE(ft,    AC_HELP_STRING([--disable-ft],  [Disable freetype On-Screen
 AC_ARG_ENABLE(qtgui, AC_HELP_STRING([--disable-qtgui],[Don't build the Qt GUI controller]))
 AC_ARG_ENABLE(contrib,  AC_HELP_STRING([--enable-contrib],  [Compile and install code in contrib folder]))
 AC_ARG_ENABLE(lash, AC_HELP_STRING([--disable-lash],[disable LASH support]))
-
-# TODO: disable posix-mq detection 
-#AC_ARG_ENABLE(mq, AC_HELP_STRING([--disable-mq],[disable mq remote support]))
+AC_ARG_ENABLE(mq, AC_HELP_STRING([--disable-mq],[disable mq remote support]))
 
 dnl FPU emulation core.
 AC_ARG_ENABLE(midi, AC_HELP_STRING([--enable-midi=auto], [select MTC support: auto,alsa,portmidi,off]),
@@ -65,19 +63,18 @@ case $host in
 	]);;
 esac
 
+dnl set portmidi host architecture.
+dnl 2006/11/13 : 32 bit RGBA is known not to work on OSX ffmpeg+imlib2
 case $ARCH in
   powerpc*) PM_OS=mac ;;
-  *) PM_OS="linux";
+  *) 	PM_OS="linux";
   	AC_DEFINE([IMLIB2RGBA], [], [use native RGB32 ffmpeg -> imlib.])
+	;;
 esac
 
 AC_SUBST(VERSION)
 ISODATE=`date +%Y-%m-%d`
 AC_SUBST(ISODATE)
-
-dnl support old old automake-1.4
-#AC_SUBST(PACKAGE,[$PACKAGE_NAME])
-#AC_SUBST(VERSION,[$PACKAGE_VERSION])
 
 dnl Checks for programs.
 AC_PROG_INSTALL
@@ -111,7 +108,10 @@ AH_TEMPLATE([HAVE_MIDI], [Define as 1 if you have either alsa or portmidi])
 AH_TEMPLATE([HAVE_LASH], [Define as 1 if you have lash])
 AH_TEMPLATE([HAVE_XPM], [Define as 1 if you have libXpm])
 AH_TEMPLATE([HAVE_MQ], [Define as 1 if you have POSIX message queues (libc, librt)])
+AH_TEMPLATE([TTFFONTFILE], [absolute path to truetype default OSD font file])
+AH_TEMPLATE([CFG_WARN_ONLY], [errors in the resource config file only result in a warning message instead of forcing xjadeo to exit.])
 
+AC_DEFINE(CFG_WARN_ONLY)
 
 AC_HEADER_MAJOR
 AC_FUNC_ALLOCA
@@ -129,7 +129,9 @@ LIBS="$LIBS -L/usr/X11R6/lib"
 AC_CHECK_LIB([jack], [jack_client_new], , [AC_MSG_ERROR(*** AUDIO: You need to have the JACK audio development kit. ***)])
 
 MQ_LIBS=""
-AC_SEARCH_LIBS( mq_open, rt, AC_DEFINE(HAVE_MQ) MQ_LIBS="-lrt" HAVE_MQ=1 )
+if test "x$enable_mq" != "xno"; then
+	AC_SEARCH_LIBS( mq_open, rt, AC_DEFINE(HAVE_MQ) MQ_LIBS="-lrt" HAVE_MQ=1 )
+fi
 AC_SUBST(MQ_LIBS)
 AC_DEFINE(MQLEN, 512, [ max length of a remote control line. ])
 
@@ -216,7 +218,7 @@ fi
 if test -z "$ffmpegprefix" -a "x$HAVE_FFMPEG_CONFIG" == xyes; then
 	FFMPEG_CFLAGS=`ffmpeg-config --cflags`
 	FFMPEG_LIBS=`ffmpeg-config --libs avformat`
-	HAVE_FFMPEG = yes
+	HAVE_FFMPEG=yes
         AC_MSG_NOTICE([
 	located a ffmpeg installation without pkg-information.
 	])
@@ -299,8 +301,11 @@ fi
 
 if test -n "$fontfile" ; then
 	# I'm not sure if this is the proper way to escape a #define string.
-	# better use AC_DEFINE ?
-	FREETYPE_CFLAGS="$FREETYPE_CFLAGS -DTTFFONTFILE=\\\"$fontfile\\\""
+	# AC_DEFINE(TTFFONTFILE, "\"$fontfile\"") - no
+	# FREETYPE_CFLAGS="$FREETYPE_CFLAGS -DTTFFONTFILE=\\\"$fontfile\\\"" - maybe
+	dnl hack alert - we 'should' use our own .h file for this
+	dnl this might not work with some autoconf's
+	echo "#define TTFFONTFILE \"$fontfile\"" >> confdefs.h
 fi
 
 AC_SUBST(FREETYPE_CFLAGS)
@@ -458,41 +463,44 @@ echo "------------------------------------------------------------------------"
 echo "  $PACKAGE $VERSION  - Configuration Report"
 echo "------------------------------------------------------------------------"
 echo " "
-echo    " Installation Path: $prefix"
+echo    " prefix:             $prefix"
+echo    " exec-prefix:        $exec_prefix"
+echo    " install path:       $bindir"
+echo    " System wide config: $sysconfdir/xjadeorc"
+echo " "
 echo    " Video Displays"
-echo -n "   - libxv:         ";	if test -n "$HAVE_LIBXV"; then echo "ok"; else echo "not avail."; fi
-echo -n "   - libsdl:        ";	if test -n "$HAVE_SDL"; then echo "ok"; else 
-    if test "x$enable_sdl" = "xyes"; then
+echo -n "   - libxv:          ";	if test -n "$HAVE_LIBXV"; then echo "ok"; else echo "not avail."; fi
+echo -n "   - libsdl:         ";	if test -n "$HAVE_SDL"; then echo "ok"; else 
+    if test "x$enable_sdl" =  "xyes"; then
 	echo "not avail."; 
     else 
 	echo "disabled. (use --enable-sdl to enable)"; 
     fi
 fi
-echo -n "   - libx11/imlib:  ";	if test -n "$HAVE_IMLIB"; then echo "ok"; else echo "not avail."; fi
-echo -n "   - libx11/imlib2: ";	if test -n "$HAVE_IMLIB2"; then echo "ok"; else echo "not avail."; fi
-echo -n " MIDI:              ";
+echo -n "   - libx11/imlib:   ";	if test -n "$HAVE_IMLIB"; then echo "ok"; else echo "not avail."; fi
+echo -n "   - libx11/imlib2:  ";	if test -n "$HAVE_IMLIB2"; then echo "ok"; else echo "not avail."; fi
+echo -n " MIDI:               ";
 if test -n "$HAVE_PORTMIDI"; then echo "portmidi";
 else if test -n "$HAVE_MIDI"; then echo "alsa"
      else echo "disabled."; fi
 fi
-echo -n " LASH:              ";	if test -n "$HAVE_LASH"; then echo "ok"; else echo "not avail."; fi
-#echo -n " Xpm:              ";	if test -n "$HAVE_XPM"; then echo "ok"; else echo "not avail."; fi
-echo -n " POSIX msg queue:   ";	if test -n "$HAVE_MQ"; then echo "ok"; else echo "not avail."; fi
-echo -n " On screen display: ";
+echo -n " LASH:               ";	if test -n "$HAVE_LASH"; then echo "ok"; else echo "not avail."; fi
+#echo -n " Xpm:                ";	if test -n "$HAVE_XPM"; then echo "ok"; else echo "not avail."; fi
+echo -n " POSIX msg queue:    ";	if test -n "$HAVE_MQ"; then echo "ok"; else echo "not avail."; fi
+echo -n " On screen display:  ";
 if test -z "$HAVE_FT"; then 
 echo "disabled";
 else echo 
-echo    "   - freetype:      ok";
-echo -n "   - default font:  ";	if test -n "$fontfile" ; then echo "$fontfile"; else echo " - "; fi
+echo    "   - freetype:       ok";
+echo -n "   - default font:   ";	if test -n "$fontfile" ; then echo "$fontfile"; else echo " - "; fi
 fi
-echo -n " GUI:               ";	
+echo -n " GUI:                ";	
 if test -n "$HAVE_QT4"; then echo "QT4";
 else if test -n "$HAVE_QT3"; then echo "QT3"
      else echo "none"; fi
 fi
-#echo -n " build contib/*:    ";	if test "x$enable_contrib" = "xyes"; then echo "yes."; else echo "no."; fi
+#echo -n " build contib/*:     ";	if test "x$enable_contrib" = "xyes"; then echo "yes."; else echo "no."; fi
 echo " "
 echo "now type 'make'; followed by 'make install' as root."
 echo " "
-
 

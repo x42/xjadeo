@@ -16,14 +16,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-    $Rev:$ 
 */
 #define EXIT_FAILURE 1
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <bindir.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -33,6 +31,9 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
+
+#include "paths.h"
+
 static void usage (int status);
 static void printversion (void);
 
@@ -40,6 +41,7 @@ char *program_name;
 int want_quiet   = 0;	/*< --quiet, --silent */
 int want_debug   = 0;	/*< --debug */
 int want_verbose = 0;	/*< --verbose */
+int want_unlink  = 0;	/*< --1:unlink mqueues on startup  2: and exit */
 int want_nofork  = 0;	/*< --nofork ; donT launch xjadeo */
 char *qid	 = NULL;  /*< -I <arg> - name of the MQ */
 int want_create  = 0;	/*< unused - only xjadeo create queues */ 
@@ -55,8 +57,11 @@ static struct option const long_options[] =
 	{"silent", no_argument, 0, 'q'},
 	{"verbose", no_argument, 0, 'v'},
 	{"nofork", no_argument, 0, 'f'},
+	{"unlink", no_argument, 0, 'u'},
+	{"unlinkonly", no_argument, 0, 'U'},
 	{"id", required_argument, 0, 'I'},
 	{"debug", no_argument, 0, 'D'},
+	{"version", no_argument, 0, 'V'},
 	{NULL, 0, NULL, 0}
 };
 
@@ -66,9 +71,12 @@ static int decode_switches (int argc, char **argv) {
 			   "q"	/* quiet or silent */
 			   "v"	/* verbose */
 			   "h"	/* help */
-			   "R"	/* remote - arg retained for xjadeo compatibilty */
+			   "R"	/* remote - arg for xjadeo compatibilty */
+			   "Q"	/* remote - arg for xjadeo compatibilty */
 			   "I:"	/* queue id */
 			   "f"	/* nofork */
+			   "u"	/* unlink */
+			   "U"	/* unlinkonly */
 			   "V",	/* version */
 			   long_options, (int *) 0)) != EOF)
 	{ switch (c) {
@@ -80,12 +88,20 @@ static int decode_switches (int argc, char **argv) {
 			want_verbose = 0;
 			break;
 		case 'I':		/* --id */
-			qid=strlen(optarg)?strdup(optarg):NULL;
+			qid=NULL; // strlen(optarg)?strdup(optarg):NULL; 
+			// truncate to 48 chars ? or fix qname[64]
+			break;
+		case 'U': 		/* --unlinkonly */
+			want_unlink = 2;
+			break;
+		case 'u': 		/* --unlink */
+			want_unlink = 1;
 			break;
 		case 'f': 		/* --nofork */
 			want_nofork = 1;
 			break;
 		case 'R':
+		case 'Q':
 			break;
 		case 'V':
 			printversion();
@@ -99,21 +115,23 @@ static int decode_switches (int argc, char **argv) {
 	return optind;
 }
 
-
 static void usage (int status) {
 	printf ("%s -  jack video monitor remote control utility\n", program_name);
 	printf ("usage: %s [Options]\n", program_name);
 	printf (""
-"Options:"
+"Options:\n"
 "  -h, --help                display this help and exit\n"
 "  -V, --version             print version information and exit\n"
 "  -f, --nofork              connect only to already running instances and\n"
-"                            do not launch a new xjadeo if none found.\n"
+"                            do NOT launch a new xjadeo if none found.\n"
+"  -q, --quiet, --silent     inhibit usual output\n"
+"  -u, --unlink              remove existing queues\n"
+"  -U, --unlinkonly          remove queues and exit\n"
+"                 UN*X NOTE: active connections will not be affected by an\n"
+"                            unlink event.\n"
 //"  -I <val>, --id <val>    \n"
-"  \n"
-);
-
-  exit (status);
+"  \n");
+	exit (status);
 }
 
 static void printversion (void) {
@@ -131,7 +149,9 @@ int testexec (char *filename) {
         return(0); 
 }
 
-void execjadeo(int closestdio) {
+// flags: bit0 (1): close stdio
+//        bit1 (2): fork xjadeo -R 
+void execjadeo(int flags) {
 	char *xjadeo = getenv("XJADEO");
 	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo?xjadeo:"(?)"); xjadeo=NULL; }
 	if (!xjadeo) xjadeo = BINDIR "/xjadeo";
@@ -144,10 +164,12 @@ void execjadeo(int closestdio) {
 	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo?xjadeo:"(?)"); xjadeo=NULL; }
 
 	if (xjadeo) {
-		printf("# exec: %s\n",xjadeo);
-		if (closestdio) { close(0); close(1);}
-		execl(xjadeo,"xjadeo", "-R", "-q", 0);
-		//execl(xjadeo,"xjadeo", "-R", 0);
+		printf("# executing: %s\n",xjadeo);
+		if (flags&1) { close(0); close(1);}
+		if (flags&2)
+			execl(xjadeo,"xjadeo", "-R", 0);
+		else 
+			execl(xjadeo,"xjadeo", "-Q", "-q", 0);
 	}
 }
 
@@ -170,16 +192,19 @@ void forkjadeo (void) {
 }
 
 //-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
+//-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
 #ifndef HAVE_MQ 
 
 int main(int argc, char **argv) {
 	program_name = argv[0];
+	decode_switches (argc, argv);
 	printf("# This xjadeo was compiled without POSIX mqueue messages.\n");
+	if (want_nofork) exit (0);
 	printf("# -> stdio remote terminal.\n");
-	execjadeo(0);
+	execjadeo(2);
 	exit(1);
-	// TODO : make a busybox or exec 'xjadeo -R'??
+	// TODO : make a busybox or sth.
 }
 
 #else  /* HAVE_MQ */
@@ -209,7 +234,7 @@ typedef struct {
 } mqmsg;
 
 // globals shared between threads 
-int loop_flag  = 1;
+int loop_flag = 1;
 int ping_st =0;
 int pong_st =0;
 struct timeval ping_time,pong_time;
@@ -254,25 +279,31 @@ void *read_thread (void *d) {
 #endif
 		int num_bytes_received = mq_timedreceive(mqfd, msg_buffer, mqat.mq_msgsize, 0, &to);
 		if (num_bytes_received == -1 && errno==ETIMEDOUT) {
-			// TODO : if this happens for a while - ping xjadeo ..? and print a warning.
 			timeout_cnt++;
 			continue;
 		}
 		if (num_bytes_received == -1) {
 			perror("mq_receive failure on mqfd");
+#if 0
 			usleep(40000);
 			continue;
+#else
+			loop_flag = 0;
+			break;
+#endif
 		}
 		if (num_bytes_received != sizeof(mqmsg) )  {
-			fprintf(stderr,"MQ: received garbage message\n");
+			if (!want_quiet)  // display anyway ? warning ??
+				fprintf(stderr,"MQ: received garbage message\n");
 			continue;
 		}
 		timeout_cnt=0;
 		printit = !xjr_mute;
 	
 		mqmsg *mymsg = (mqmsg*) &msg_buffer[0];
-		if ( mymsg->cmd == 100 && !strncmp(mymsg->m,"quit.",5)) {
-			printf("# xjadeo terminated. we will follow.\n");
+		if ( xjr_mute==0 && mymsg->cmd == 100 && !strncmp(mymsg->m,"quit.",5)) {
+			if (want_verbose) 
+				printf("# xjadeo terminated. we will follow.\n");
 			loop_flag=0;
 		} else if ( mymsg->cmd == 100 && !strncmp(mymsg->m,"pong.",5) && ping_st && !pong_st) {
 			printit=0; pong_st=1;
@@ -291,9 +322,20 @@ void *read_thread (void *d) {
 		#endif
 		}
 	}
-	printf ("# SHUTTING DOWN receiver thread.\n");
+	if (want_verbose) 
+		printf ("# SHUTTING DOWN receiver thread.\n");
 	mq_close(mqfd);
 	return (NULL);
+}
+
+void unlink_queues (char *qid) {
+	char qname[64];
+	if (!want_quiet)
+		printf("# unlinking queue mqID=%s\n",qid?qname+15:"[default]");
+	snprintf(qname,64,"/xjadeo-request%s%s", qid?"-":"", qid?qid:"");
+	mq_unlink(qname);
+	snprintf(qname,64,"/xjadeo-reply%s%s", qid?"-":"", qid?qid:"");
+	mq_unlink(qname);
 }
 
 void ping (mqd_t mqfd_tx) {
@@ -336,7 +378,8 @@ void dothework (mqd_t mqfd_tx) {
 	mqmsg mymsg = {1, "" };
 	num_bytes_to_send = sizeof(mqmsg);
 
-	printf("# COMMAND INTERFACE ACTIVATED: use 'exit' or EOF to terminate this session.\n");
+	if (!want_quiet)
+		printf("# COMMAND INTERFACE ACTIVATED: use 'exit' or EOF to terminate this session.\n");
 
 	char buf[MQLEN];
 	int offset =0;
@@ -351,7 +394,6 @@ void dothework (mqd_t mqfd_tx) {
 		} else if (rx < 0) {
 			continue;
 		} else {
-			continue;
 			loop_flag=0;
 			break;
 		}
@@ -393,17 +435,29 @@ int main(int argc, char **argv) {
 
 	i = decode_switches (argc, argv);
 
-	snprintf(qname,64,"/xjadeo-request%s%s", qid?"-":"", qid?qid:"");
+	if (want_unlink) unlink_queues(qid);
+	if (want_unlink&2) exit(0);
 
-	printf("# initializing mqID=%s\n",qid?qname+15:"[default]");
+restart:
+	/* set up outgoing connection first */
+	loop_flag=1;
 	timeout = 10;
+
+	snprintf(qname,64,"/xjadeo-request%s%s", qid?"-":"", qid?qid:"");
+	if (want_verbose)
+		printf("# initializing mqID=%s\n",qid?qname+15:"[default]");
 
 	do {
 		mqfd_tx = mq_open(qname, O_WRONLY | O_NONBLOCK | (want_create?O_CREAT|O_EXCL:0), S_IRWXU , NULL);
 		if (mqfd_tx < 0) {
 			if ( errno != ENOENT ) break;
-			printf("# could not connect to xjadeo.\n");
-			if (want_nofork) exit (0);
+			if (!want_quiet)
+				printf("# could not connect to xjadeo. still trying.\n");
+			if (want_nofork) { 
+				if (!want_quiet) 
+					printf("# giving up. There's no running instance of xjadeo with MQ enabled.\n");
+				exit (0);
+			}
 			if (!did_fork) { forkjadeo(); did_fork=1;}
 			sleep (1);
 		}
@@ -414,8 +468,10 @@ int main(int argc, char **argv) {
 		exit(0);
 	};
 
+	/* create incoming connection + handler */
 	pthread_create(&xet, NULL, read_thread, NULL);
 
+	/* ping xjadeo - alive check */
 	if (1) {
 		if (!want_quiet)
 			fprintf(stdout, "# pinging xjadeo...\n");
@@ -426,21 +482,33 @@ int main(int argc, char **argv) {
 			usleep(100000);
 		}
 		if (!timeout) {
-			fprintf(stdout, "# WARNING: queues exist, but xjadeo does not respond\n");
-			fprintf(stdout, "# unlinking message queues.\n");
-			mq_unlink(qname);
-			snprintf(qname,64,"/xjadeo-reply%s%s", qid?"-":"", qid?qid:"");
-			mq_unlink(qname);
+			if (!want_quiet)
+				fprintf(stdout, "# WARNING: queues exist, but xjadeo does not respond\n");
+			if (want_verbose)
+				fprintf(stdout, "# deleting stale message queues.\n");
+#if 1 
+			if (!did_fork) {
+				mq_close(mqfd_tx);
+				loop_flag=0; // stop read thread.
+				pthread_join(xet,NULL);
+				ping_st=0;pong_st=0;
+				unlink_queues(qid);
+				goto restart;
+			} else 
+#endif
+			unlink_queues(qid);
+			if (!want_quiet)
+				fprintf(stdout, "# please try again.\n");
 			exit(1);
 		}
 	}
 
 	xjr_mute = 0;
-			
 	dothework(mqfd_tx);
 
+	/* time to go */
 	loop_flag=0; // stop read thread.
-	printf("bye bye.\n");
+	if (!want_quiet) printf("bye bye.\n");
 	pthread_join(xet,NULL);
 
 	if (mq_close(mqfd_tx) == -1)

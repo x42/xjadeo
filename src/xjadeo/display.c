@@ -192,9 +192,9 @@ const vidout VO[] = {
 		NULLOUTPUT},
 #endif
 #ifdef IMLIB2RGBA
-	{ PIX_FMT_RGBA32,   SUP_IMLIB2,   "x11 - ImLib2 (RGBA32)",
+	{ PIX_FMT_RGBA32,   SUP_IMLIB2,   "ImLib2/x11 (RGBA32)",
 #else
-	{ PIX_FMT_RGB24,   SUP_IMLIB2,   "x11 - ImLib2 (RGB24)",
+	{ PIX_FMT_RGB24,   SUP_IMLIB2,   "ImLib2/x11 (RGB24)",
 #endif
 #if HAVE_IMLIB2
 		&render_imlib2, &open_window_imlib2, &close_window_imlib2,

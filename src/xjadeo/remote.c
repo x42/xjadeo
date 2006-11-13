@@ -87,6 +87,7 @@ extern long	dispFrame;
 extern int want_quiet;
 extern int want_verbose;
 extern int remote_en;
+extern int mq_en;
 extern int remote_mode;
 
 #ifdef HAVE_MIDI
@@ -702,6 +703,11 @@ Dcommand cmd_root[] = {
 	{NULL, NULL, NULL , NULL, 0},
 };
 
+// TODO new commands:
+//  - welcome message. (on reconnect)
+//  - query OSD status (qjadeo - reconnect)
+//  - query midi settings  (xapi_midi_status)
+
 void api_help_recursive(Dcommand *r, const char *prefix) {
 	int i=0;
 	while (r[i].name) {
@@ -746,16 +752,17 @@ void exec_remote_cmd_recursive (Dcommand *leave, char *cmd) {
 		remote_printf(401,"command not implemented.");
 }
 
-#ifndef HAVE_MQ
 #ifdef HAVE_LASH
+# ifndef HAVE_MQ
 #warning 
 #warning 
 #warning LASH support - but no POSIX message queues!
 #warning 
 #warning This xjadeo will not be able to (re)connect 
-#warning to a GUI when launched by lashd!"
+#warning to a GUI when launched by lashd!
 #warning 
 #warning 
+# endif
 #endif
 
 //--------------------------------------------
@@ -770,7 +777,7 @@ typedef struct {
 
 remotebuffer *inbuf;
 
-int remote_read(void) {
+int remote_read_io(void) {
 	int rx;
 	char *start, *end;
 
@@ -791,9 +798,13 @@ int remote_read(void) {
 	return(0);
 }
 
-#define LOGLEN 1023
+#if HAVE_MQ
+# define LOGLEN MQLEN
+#else
+# define LOGLEN 1023
+#endif
 
-void remote_printf(int rv, const char *format, ...) {
+void remote_printf_io(int rv, const char *format, ...) {
 	va_list arglist;
 	char text[LOGLEN];
 	char msg[LOGLEN];
@@ -811,7 +822,7 @@ void remote_printf(int rv, const char *format, ...) {
 void open_remote_ctrl (void) {
 	inbuf=malloc(sizeof(remotebuffer));
 	inbuf->offset=0;
-	remote_printf(800, "xjadeo - remote control (type 'help<enter>' for info)");
+	remote_printf_io(800, "xjadeo - remote control (type 'help<enter>' for info)");
 }
 
 void close_remote_ctrl (void) {
@@ -823,19 +834,20 @@ int remote_fd_set(fd_set *fd) {
 	return( REMOTE_RX+1);
 }
 
-#else  /* POSIX message queeue */
+//--------------------------------------------
+// POSIX message queeue
+//--------------------------------------------
 
+#if HAVE_MQ
 // prototypes in mqueue.c
+int  mymq_read(char *data);
 void mymq_reply(int rv, char *str);
-int mymq_read(char *data);
 void mymq_close(void);
-void mymq_init(char *id);
+int mymq_init(char *id);
 
-
-// wrapper functions - TODO declare inline or #DEFINE ??
 
 /* MQ replacement for remote_printf() */
-void remote_printf(int rv, const char *format, ...) {
+void remote_printf_mq(int rv, const char *format, ...) {
 	va_list arglist;
 	char text[MQLEN];
 
@@ -847,7 +859,7 @@ void remote_printf(int rv, const char *format, ...) {
 	mymq_reply(rv,text);
 }
 
-int remote_read(void) {
+int remote_read_mq(void) {
 	int rx;
 	char data[MQLEN];
 	char *t;
@@ -859,17 +871,40 @@ int remote_read(void) {
 	return(0);
 }
 
-void open_remote_ctrl (void) {
-	mymq_init(NULL);
-	remote_printf(800, "xjadeo - remote control (type 'help<enter>' for info)");
+void open_mq_ctrl (void) {
+	if(mymq_init(NULL)) mq_en=0;
+	else remote_printf_mq(800, "xjadeo - remote control (type 'help<enter>' for info)");
 }
 
-void close_remote_ctrl (void) {
+void close_mq_ctrl (void) {
 	remote_printf(100, "quit.");
 	mymq_close();
 }
-int remote_fd_set(fd_set *fd) {
-	return (0);
-}
-
 #endif
+
+//--------------------------------------------
+// REMOTE + MQ wrapper 
+//--------------------------------------------
+
+void remote_printf(int rv, const char *format, ...) {
+	va_list arglist;
+	char text[LOGLEN];
+	char msg[LOGLEN];
+
+	va_start(arglist, format);
+	vsnprintf(text, MQLEN, format, arglist);
+	va_end(arglist);
+
+	text[LOGLEN -1] =0; 
+#if HAVE_MQ
+		/* remote_printf_mq(...) */
+	mymq_reply(rv,text);
+#endif
+
+		/* remote_printf_io(...) */
+	if (remote_en) {
+		snprintf(msg, LOGLEN, "@%i %s\n",rv,text);
+		msg[LOGLEN -1] =0; 
+		write(REMOTE_TX,msg,strlen(msg));
+	}
+}

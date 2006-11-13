@@ -1,15 +1,13 @@
 TODO
 ----
 
-* change user perspective of 
-   old-remote mode (-R) and message-queues (-R -> -Q)
-
 * mq:
    - FIX multiple remote clients one xjadeo -> who gets the replies ? 
    - multi drop queues and mq_notify()
    - multiple instances - named message queues + list of avail queues.
+   - trap signals and unlink queues on exit (atexit,onexit?)
 
-* OSD: render current offset on screen.
+* OSD: render current offset ('-o', ts_offset) on screen.
    
 * fix X11 - buffer when re-opening window.
   free (buffers) when closing window. (leak!)
@@ -21,6 +19,8 @@ TODO
   - restore window position. 
     (depends on X11/SDL 'get window position' see below)
 
+minor stuff:
+  - add default midi id and settings(?) to config file option
 
 TODO - next major version: 
 ------------------------------------------------

@@ -3,17 +3,22 @@
 #include <errno.h>
 #include <string.h>
 
+#define XJADEORC "xjadeorc"
 #define MAX_LINE_LEN 256 
 #define PATH_MAX 255
-
-#define SYSCFGDIR "/etc"
-#define XJADEORC "xjadeorc"
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
 #include <xjadeo.h>
+#include "paths.h"
+
+#ifdef SYSCONFDIR
+# define SYSCFGDIR SYSCONFDIR
+#else
+# define SYSCFGDIR "/etc"
+#endif
 
 /* test if file exists and is a regular file - returns 1 if ok */
 int testfile (char *filename) {
@@ -33,7 +38,8 @@ extern int		videomode;
 extern int 		seekflags;
 extern int want_quiet;
 extern int want_verbose;
-extern int remote_en;
+extern int mq_en;
+extern int avoid_lash;
 
 int parseoption (char *item, char *value) {
 	int rv =0;
@@ -46,10 +52,18 @@ int parseoption (char *item, char *value) {
 		}
 	} else if (!strncasecmp(item,"FPS",3)) {
 		delay = 1.0 / atof(value); rv=1;
+	} else if (!strncasecmp(item,"QUIET",7)) {
+		if (!strncasecmp(value,"yes",3)){
+			want_quiet=1; rv=1;
+		}
+		else if (!strncasecmp(value,"no",3)) 
+			rv=1;
 	} else if (!strncasecmp(item,"VERBOSE",7)) {
 		if (!strncasecmp(value,"yes",3)){
 			want_verbose=1; rv=1;
 		}
+		else if (!strncasecmp(value,"no",3)) 
+			rv=1;
 	} else if (!strncasecmp(item,"SEEK",4)) {
 		if (!strncasecmp(value,"any",3)){
 			seekflags=SEEK_ANY; rv=1;
@@ -58,9 +72,16 @@ int parseoption (char *item, char *value) {
 		} else if (!strncasecmp(value,"key",3)){
 			seekflags=SEEK_KEY; rv=1;
 		}
-	} else if (!strncasecmp(item,"REMOTE",6)) {
-		if (!strncasecmp(value,"yes",3))
-			remote_en = 1; rv=1;
+	} else if (!strncasecmp(item,"LASH",4)) {
+		if (!strncasecmp(value,"no",2)) {
+			avoid_lash = 1; rv=1;
+		} else if (!strncasecmp(value,"yes",3))
+			rv=1;
+	} else if (!strncasecmp(item,"MQ",2)) {
+		if (!strncasecmp(value,"yes",3)) {
+			mq_en = 1; rv=1;
+		} else if (!strncasecmp(value,"no",3)) 
+			rv=1;
 	} else if (!strncasecmp(item,"FONTFILE",8)) {
 		strncpy(OSD_fontfile,value,1023);rv=1;
 		OSD_fontfile[1023]=0; // just to be sure.
@@ -72,6 +93,7 @@ int readconfig (char *fn) {
        	FILE* config_fp;
        	char line[MAX_LINE_LEN];
        	char* token, *item,*value;
+	int lineno=0;
 	
        	if (!(config_fp = fopen(fn, "r"))) {
 		fprintf(stderr,"configfile failed: %s (%s)\n",fn,strerror(errno));
@@ -81,13 +103,31 @@ int readconfig (char *fn) {
 	fprintf(stdout,"INFO: parsing configfile: %s\n",fn);
 #endif
        	while( fgets( line, MAX_LINE_LEN-1, config_fp ) != NULL ) {
+		lineno++;
 		line[MAX_LINE_LEN-1]=0;
 	       	token = strtok( line, "\t =\n\r" ) ; 
 		if( token != NULL && token[0] != '#' && token[0] != ';') {
 			item=strdup(token);
 			token = strtok( NULL, "\t =\n\r" ) ; 
+			if (!token) {
+				free(item);
+	#ifdef CFG_WARN_ONLY
+				printf("WARNING: ignored line in config file. %s:%d\n",fn,lineno);
+				continue;
+	#else
+				printf("ERROR parsing config file. %s:%d\n",fn,lineno);
+				exit(1);
+	#endif
+			}
 			value=strdup(token);
-			parseoption(item,value);
+			if (!parseoption(item,value)) {
+	#ifdef CFG_WARN_ONLY
+				printf("WARNING: ignored error in config file. %s:%d\n",fn,lineno);
+	#else
+				printf("ERROR parsing config file. %s:%d\n",fn,lineno);
+				exit(1);
+	#endif
+			}
 			free(item); free(value);
 	       	}
        	}

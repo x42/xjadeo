@@ -1,11 +1,11 @@
 .\"     Title: xjremote
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.71.0 <http://docbook.sf.net/>
-.\"      Date: 11/12/2006
+.\"      Date: 11/13/2006
 .\"    Manual: Manual Pages
 .\"    Source: 
 .\"
-.TH "XJREMOTE" "1" "11/12/2006" "" "Manual Pages"
+.TH "XJREMOTE" "1" "11/13/2006" "" "Manual Pages"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
@@ -14,16 +14,63 @@
 xjremote \- CLI front\-end to xjadeo
 .SH "SYNOPSIS"
 .HP 9
-\fBxjremote\fR
+\fBxjremote\fR [\-fhquUvV]
 .SH "DESCRIPTION"
 .PP
 \fBxjadeo\fR
 displays a video clip in sync with an external timing source. It is a handy tool to help with the synchronization of the soundtrack of a video file.
 .PP
 \fBxjremote\fR
-connects to a instance of xjadeo and allows to tweak the running configuration.
+connects to a instance of xjadeo and allows a user to tweak the running configuration.
 .PP
-If it can not connect, xjremote will start an instance of xjadeo
+If it can not connect, xjremote will start a new instance of xjadeo and open a connection to it. see
+\fB\-f\fR
+.SH "OPTIONS"
+.PP
+\fB\-f, \-\-nofork\fR
+.RS 3n
+disable automatic startup of xjadeo. Instead xjremote will terminate if it can not connect to a running xjadeo.
+.RE
+.PP
+\fB\-h, \-\-help\fR
+.RS 3n
+Prints usage help and exits.
+.RE
+.PP
+\fB\-q, \-\-quiet, \-\-silent\fR
+.RS 3n
+Suppresses normal output messages.
+.RE
+.PP
+\fB\-R\fR
+.RS 3n
+ignored (no action) \-
+\fBxjremote\fR
+can be used as a drop in replacement for
+\fBxjadeo \-R\fR.
+.RE
+.PP
+\fB\-u, \-\-unlink\fR
+.RS 3n
+remove existing queues. unless combined with
+\fB\-f\fR. This will launch a new xjadeo instance.
+.RE
+.PP
+\fB\-U, \-\-unlinkonly\fR
+.RS 3n
+remove existing queues and exit. This is equivalent (but not identical) to
+\fB\-u \-f\fR.
+.RE
+.PP
+\fB\-v, \-\-verbose\fR
+.RS 3n
+Prints additional information during the execution.
+.RE
+.PP
+\fB\-V, \-\-version\fR
+.RS 3n
+Prints version information end exits.
+.RE
 .SH "ENVIRONMENT"
 .PP
 \fBxjremote\fR

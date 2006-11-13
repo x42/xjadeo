@@ -86,8 +86,11 @@ void Xgetpos (int *x, int *y);
 /* remote.c */
 void close_remote_ctrl (void) ;
 void open_remote_ctrl (void);
+void close_mq_ctrl (void) ;
+void open_mq_ctrl (void);
 int remote_fd_set(fd_set *fd);
-int remote_read(void);
+int remote_read_mq(void);
+int remote_read_io(void);
 void remote_printf(int val, const char *format, ...);
 
 /* xjadeo.c */

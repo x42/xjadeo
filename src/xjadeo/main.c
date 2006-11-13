@@ -95,6 +95,7 @@ int start_ontop =0;	/* --ontop // -a */
 int start_fullscreen =0;/* NY available */
 int avoid_lash   =0;	/* --nolash */
 int remote_en =0;	/* --remote, -R */
+int mq_en =0;		/* --mq, -Q */
 int remote_mode =0;	/* 0: undirectional ; >0: bidir
 			 * bitwise enable async-messages 
 			 *  so far only: 
@@ -157,6 +158,7 @@ static struct option const long_options[] =
   {"videomode", required_argument, 0, 'm'},
   {"vo", required_argument, 0, 'x'},
   {"remote", no_argument, 0, 'R'},
+  {"mq", no_argument, 0, 'Q'},
   {"help", no_argument, 0, 'h'},
   {"version", no_argument, 0, 'V'},
   {"try-codec", no_argument, 0, 't'},
@@ -183,7 +185,8 @@ decode_switches (int argc, char **argv)
 			   "q"	/* quiet or silent */
 			   "v"	/* verbose */
 			   "h"	/* help */
-			   "R"	/* remote control */
+			   "R"	/* stdio remote control */
+			   "Q"	/* message queues */
 			   "k"	/* keyframes */
 			   "K"	/* anyframe */
 			   "o:"	/* offset */
@@ -211,18 +214,15 @@ decode_switches (int argc, char **argv)
 	  want_debug = 1;
 	  break;
 	case 'v':		/* --verbose */
-#ifndef HAVE_MQ
 	  want_verbose = !remote_en;
-#else
-	  want_verbose = 1;
-#endif
 	  break;
 	case 'R':		/* --remote */
 	  remote_en = 1;
-#ifndef HAVE_MQ
 	  want_quiet = 1;
 	  want_verbose = 0;
-#endif
+	  break;
+	case 'Q':		/* --mq */
+	  mq_en = 1;
 	  break;
 	case 'L':		/* --nolash */
 	  avoid_lash = 1;
@@ -298,52 +298,51 @@ jack video monitor\n", program_name);
   printf ("       %s -R [Options] [<video-file>]\n", program_name);
   printf (""
 "Options:\n"
+"  -h, --help                display this help and exit\n"
+"  -V, --version             print version information and exit\n"
 "  -q, --quiet, --silent     inhibit usual output\n"
 "  -v, --verbose             print more information\n"
-#ifdef HAVE_MQ
-"  -R, --remote              remote control (stdin) - implies non verbose&quiet\n"
-#else
-"  -R, --remote              set-up message queue for xjremote\n"
-#endif
+"\n"
+"  -a, --ontop               stack xjadeo window on top of the desktop.\n"
+"                            requires x11 or xv videomode and EWMH.\n"
 "  -f <val>, --fps <val>     video display update fps - default 10.0 fps\n"
+"  -i <int> --info <int>     render OnScreenDisplay info: 0:off, %i:frame,\n"
+"                            %i:smpte, %i:both. (use remote ctrl for more opts.)\n"
 "  -k, --keyframes           seek to keyframes only\n"
 "  -K, --continuous          decode video source continuously. (extra latency\n"
 "                            when seeking to non-key frames.)\n"
-"  -o <int>, --offset <int>  add/subtract <int> video-frames to/from timecode\n"
-"  -x <int>, --vo <int>,     set the video output mode (default: 0 - autodetect\n"
-"      --videomode <int>     -1 prints a list of available modes.\n"
-"  -i <int> --info <int>     render OnScreenDisplay info: 0:off, %i:frame,\n"
-"                            %i:smpte, %i:both. (use remote ctrl for more opts.)\n",
-	OSD_FRAME,OSD_SMPTE,OSD_FRAME|OSD_SMPTE); // :)
-
-  printf (""
+#ifdef HAVE_LASH
+"  -L, --nolash              ignore the fact that xjadeo could use lash.\n"
+"  --lash-no-autoresume      [liblash option]\n"
+"  --lash-no-start-server    [liblash option]\n"
+#endif /* HAVE_LASH */
+"",	OSD_FRAME,OSD_SMPTE,OSD_FRAME|OSD_SMPTE); // :)
+  printf ("" /* take a breath */
 #ifdef HAVE_MIDI
 #ifdef HAVE_PORTMIDI
-"  -m <int>, --midi <int>,   use portmidi instead of jack (-1: autodetect)\n"
+"  -m <int>, --midi <int>    use portmidi instead of jack (-1: autodetect)\n"
 "                            value > -1 specifies a (input) midi port to use\n" 	  
 "                            use -v -m -1 to list midi ports.\n" 	  
 #else /* alsa midi */
 "  -m <port>,                use alsamidi instead of jack\n"
-"      --midi <port>,        specify alsa seq id to connect to. (-1: none)\n" 	  
+"      --midi <port>         specify alsa seq id to connect to. (-1: none)\n" 	  
 "                            eg. -m ardour or -m 80 \n"
 #endif /* HAVE_PORTMIDI */
-"  -M <int>, --midifps <int> how to 'convert' MTC SMPTE to framenumber:\n"
-"                            0: use framerate of MTC clock (default)\n" 
+"  -M <int>,                 how to 'convert' MTC SMPTE to framenumber:\n"
+"      --midifps <int>       0: use framerate of MTC clock (default)\n" 
 "                            2: use video file FPS\n" 
-"                            3: resample: videoFPS / MTC \n" 
+"                            3: \"resample\": videoFPS / MTC \n" 
 #endif /* HAVE_MIDI */
-"  -a, --ontop               stack xjadeo window on top of the desktop.\n"
-"                            requires xv vidmode and EWMH.\n"
+"  -o <int>, --offset <int>  add/subtract <int> video-frames to/from timecode\n"
+#ifdef HAVE_MQ
+"  -Q, --mq                  set-up message queues for xjremote\n"
+#endif
+"  -R, --remote              remote control (stdin) - implies non verbose&quiet\n"
 "  -t, --try-codec           checks if the video-file can be played by jadeo.\n"
 "                            exits with code 1 if the file is not supported.\n"
 "			     no window is opened in this mode.\n"
-#ifdef HAVE_LASH
-"  -L, --nolash              ignore the fact that xjadeo could use lash.\n"
-"  --lash-no-autoresume	     [liblash option]\n"
-"  --lash-no-start-server    [liblash option]\n"
-#endif /* HAVE_LASH */
-"  -h, --help                display this help and exit\n"
-"  -V, --version             output version information and exit\n"
+"  -x <int>, --vo <int>,     set the video output mode (default: 0 - autodetect\n"
+"      --videomode <int>     -1 prints a list of available modes.\n"
 "  \n"
 "  Check the docs to learn how the video should be encoded.\n"
 );
@@ -441,17 +440,15 @@ main (int argc, char **argv)
   if (videomode < 0) vidoutmode(videomode); // dump modes and exit.
 
   if ((i+1)== argc) movie = argv[i];
-  else if (remote_en && i==argc) movie = "";
+  else if ((remote_en || mq_en) && i==argc) movie = "";
   else usage (EXIT_FAILURE);
 
   if (want_verbose) printf ("xjadeo %s\n", VERSION);
 
-#ifndef HAVE_MQ
   if (lashed==1 && remote_en) {
-    printf("xjadeo remote-ctrl disabled (resuming a LASH session).\n");
+    printf("xjadeo remote-ctrl is unavailable when resuming a LASH session\n");
     remote_en=0;
   }
-#endif
 
   stat_osd_fontfile();
     
@@ -485,8 +482,9 @@ main (int argc, char **argv)
 
   if (getvidmode() ==0) {
 	fprintf(stderr,"Could not open display.\n");
-  	if(!remote_en) {
-		// FIXME: cleanup close jack, midi and file ??
+  	if(!remote_en) {  // && !mq_en) { /* TODO: allow windowless startup with MQ ?! */
+		// TODO: cleanup close midi and file ??
+		close_jack();
 		exit(1);
 	}
   }
@@ -503,6 +501,9 @@ main (int argc, char **argv)
   open_jack();
 #endif
 
+#ifdef HAVE_MQ
+  if(mq_en) open_mq_ctrl();
+#endif
   if(remote_en) open_remote_ctrl();
 
   display_frame(0LL,1);
@@ -510,6 +511,9 @@ main (int argc, char **argv)
   event_loop();
 
   if(remote_en) close_remote_ctrl();
+#ifdef HAVE_MQ
+  if(mq_en) close_mq_ctrl();
+#endif
   
   close_window();
   

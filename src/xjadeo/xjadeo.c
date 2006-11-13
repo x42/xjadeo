@@ -75,6 +75,7 @@ extern int want_debug;
 extern int want_verbose;
 extern int remote_en;
 extern int remote_mode;
+extern int mq_en;
 
 extern double 		delay;
 
@@ -100,9 +101,9 @@ void select_sleep (int usec) {
 		max_fd=remote_fd_set(&fd);
 	}
 
-	if (select(max_fd, &fd, NULL, NULL, &tv)) remote_read();
+	if (select(max_fd, &fd, NULL, NULL, &tv)) remote_read_io();
 #if HAVE_MQ
-	if (remote_en) remote_read(); // select will always fail (sleep) with HAVE_MQ.
+	if (mq_en) remote_read_mq();
 #endif
 }
 
@@ -137,7 +138,7 @@ void event_loop(void) {
 
 		offFrame = newFrame + ts_offset;
 
-		if (remote_en && ((remote_mode&1) || ((remote_mode&2)&& offFrame!=dispFrame)) ) {
+		if ((remote_en||mq_en) && ((remote_mode&1) || ((remote_mode&2)&& offFrame!=dispFrame)) ) {
 		/*call 	xapi_pposition ?? -> rv:200
 		 * dispFrame is the currently displayed frame 
 		 * = SMPTE + offset
@@ -214,7 +215,7 @@ int open_movie(char* file_name) {
   
 	/* Open video file */
 	if(av_open_input_file(&pFormatCtx, file_name, NULL, 0, NULL)!=0) {
-		if (!remote_en) 
+		if (!remote_en || !mq_en) //TODO prevent msg only when starting up with no file...
 			fprintf( stderr, "Cannot open video file %s\n", file_name);
 		return (-1);
 	}

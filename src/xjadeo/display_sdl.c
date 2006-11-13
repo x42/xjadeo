@@ -110,7 +110,7 @@ int displaytext (char *string, SDL_Color *col, int yperc) {
 #endif /* USE_SDLTTF */
 #endif /* 0 */
 
-int open_window_sdl (int *argc, char ***argv) {
+int open_window_sdl (void) {
 	const SDL_VideoInfo *video_info;
 	int video_bpp;
 

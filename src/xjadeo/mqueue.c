@@ -52,7 +52,7 @@ char		*msg_buffer;
 int 		priority_of_msg = 20;
 
 
-void  mymq_init(char *id) {
+int  mymq_init(char *id) {
 	struct	 	mq_attr  mqat;
 	// TODO use session ID in path.
 	// implement session authenticaion? - allow user to specify umask.
@@ -62,11 +62,13 @@ void  mymq_init(char *id) {
 	mqfd_r = mq_open(qname, O_RDONLY | O_CREAT | O_EXCL | O_NONBLOCK, S_IRWXU , NULL);
 	if (mqfd_r == -1) {
 		perror("mq_open failure:");
-		return;
+		if (errno == EEXIST) 
+			fprintf(stderr,"note: use `xjremote -u` to unlink old queues\n");
+		return(1);
 	}
 	if (mq_getattr(mqfd_r, &mqat) == -1) {
 		perror("mq_getattr error:");
-		return;
+		return(1);
 	}
 	mq_msgsize_r = mqat.mq_msgsize;
 	msg_buffer = malloc(mq_msgsize_r);
@@ -76,10 +78,12 @@ void  mymq_init(char *id) {
 	mqfd_s = mq_open(qname, O_WRONLY | O_CREAT | O_EXCL | O_NONBLOCK, S_IRWXU , NULL);
 	if (mqfd_s == -1) {
 		perror("mq_open failure:");
+		if (errno == EEXIST) 
+			fprintf(stderr,"note: use `xjremote -u` to unlink old queues\n");
 		mq_close(mqfd_r);
 		snprintf(qname,64,"/xjadeo-request%s%s", id?"-":"", id?(char*)id:"");
 		mq_unlink(qname);
-		return;
+		return(1);
 	}
 
 	while (mq_receive(mqfd_r, msg_buffer, mq_msgsize_r, 0) > 0) ;
@@ -94,7 +98,7 @@ void  mymq_init(char *id) {
 
 	if (!want_quiet)
 		printf("activated remote interface. mqID:%s\n",id?id:"[default]");
-
+	return(0);
 }
 
 void mymq_close(void) {
@@ -144,7 +148,7 @@ int mymq_read(char *data) {
 }
 
 void mymq_reply(int rv, char *str) {
-	int retry=10;
+	int retry=5;
 	static int retry_warn=1;
 	mqmsg myrpy = {1, "" };
 	myrpy.cmd= rv;
@@ -155,7 +159,7 @@ void mymq_reply(int rv, char *str) {
 		int rv=mq_send(mqfd_s, (char*) &myrpy, sizeof(mqmsg), priority_of_msg);
 		if(!rv) break;
 		retry--;
-		usleep(1);
+		usleep(20);
 	}
 	if (retry==0 && retry_warn) { fprintf(stderr,"DROPPED REMOTE MESSAGE\n"); retry_warn=0; }
 }

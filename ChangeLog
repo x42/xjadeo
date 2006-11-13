@@ -1,9 +1,17 @@
+2006-11-13  rgareus  <robin@gareus.org>
+ - `ffmpeg-config` and other configure.ac updates.
+ - lash=[yes|no] and mq=[yes|no] config file options.
+ - a little more documentation.
+ * version v0.3.20
+
 2006-11-12  rgareus  <robin@gareus.org>
  - moved icons
  - completed lash support
  - unlink stale message queues
  - added x86_64*) ARCH=amd64 ;; (thanks to Detlef Reichelt & the PackMan-Team)
  - created xjremote man page.
+ - message queues option becomes -Q
+ - unlink option for xjremote
 
 2006-11-11  rgareus  <robin@gareus.org>
  - implemented message queues: xjremote!

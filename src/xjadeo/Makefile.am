@@ -16,8 +16,9 @@ xjremote_LDADD = $(MQ_LIBS)
 
 MAINTAINERCLEANFILES = Makefile.in
 
-CLEANFILES = bindir.h
-BUILT_SOURCES = bindir.h icons/xjadeo-color.xpm  icons/xjadeo.bitmap  icons/xjadeo_mask.xbm
+CLEANFILES = paths.h
+BUILT_SOURCES = paths.h icons/xjadeo-color.xpm  icons/xjadeo.bitmap  icons/xjadeo_mask.xbm
 
-bindir.h: Makefile
-	echo '#define BINDIR "$(DESTDIR)/$(bindir)"' >$@
+paths.h: Makefile
+	@echo '#define BINDIR "$(DESTDIR)/$(bindir)"' >$@
+	@echo '#define SYSCONFDIR "$(DESTDIR)/$(sysconfdir)"' >>$@
