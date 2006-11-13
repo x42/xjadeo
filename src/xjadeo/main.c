@@ -43,6 +43,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <signal.h>
 
 
 //------------------------------------------------
@@ -400,9 +401,45 @@ void stat_osd_fontfile(void) {
 #endif
 }
 
+
+
 //--------------------------------------------
 // Main
 //--------------------------------------------
+
+void clean_up (int status) {
+
+  if(remote_en) close_remote_ctrl();
+#ifdef HAVE_MQ
+  if(mq_en) close_mq_ctrl();
+#endif
+  
+  close_window();
+  
+  close_movie();
+
+#ifdef HAVE_MIDI
+  if (midi_connected()) midi_close(); 
+  else
+#endif
+  close_jack();
+  
+  if (!want_quiet)
+    fprintf(stdout, "\nBye!\n");
+  exit(status);
+}
+
+void catchsig (int sig) {
+  signal(SIGHUP, catchsig); /* reset signal */
+  signal(SIGINT, catchsig);
+//signal(SIGHUP, SIG_IGN); /* reset signal */
+//signal(SIGINT, SIG_IGN);
+  if (!want_quiet)
+    fprintf(stdout,"\n CAUGHT SIGINT - shutting down.\n");
+  loop_flag=0;
+  clean_up(1);
+  exit(1);
+}
 
 int
 main (int argc, char **argv)
@@ -461,6 +498,8 @@ main (int argc, char **argv)
   // only try to seek to frame 1 and decode it.
   if (try_codec) do_try_this_file_and_exit (movie);
 
+  signal (SIGHUP, catchsig);
+  signal (SIGINT, catchsig);
 
   open_movie(movie);
   
@@ -509,26 +548,8 @@ main (int argc, char **argv)
   display_frame(0LL,1);
   
   event_loop();
-
-  if(remote_en) close_remote_ctrl();
-#ifdef HAVE_MQ
-  if(mq_en) close_mq_ctrl();
-#endif
   
-  close_window();
-  
-  close_movie();
-
-#ifdef HAVE_MIDI
-  if (midi_connected()) midi_close(); 
-  else
-#endif
-  close_jack();
-  
-  if (!want_quiet)
-    fprintf(stdout, "\nBye!\n");
-
-  exit (0);
+  clean_up(0);
 }
 
 /* vi:set ts=8 sts=2 sw=2: */

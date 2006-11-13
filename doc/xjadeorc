@@ -1,0 +1,34 @@
+# xjadeorc
+#
+# lines beginning with '#' or ';' are ignored.
+#
+# xjadeo checks:  @sysconfdir@/xjadeorc
+#                 $HOME/.xjadeorc
+#                 $HOME/xjadeorc
+#
+
+#verbose=[yes|no]
+;verbose=no
+
+#quiet=[yes|no]
+;quiet=no
+
+#fps=<numeric>
+;fps=10.0
+
+#seek=[any|cont|key]
+;seek=any
+
+#lash=[yes|no]
+;lash=yes
+
+#videomode=[xv|imlib2|x11|sdl]
+;videomode=auto
+
+#mq=[on|off]
+;my=on
+
+#fontfile=<filename>
+;fonfile=/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf
+
+# END of xjadeorc

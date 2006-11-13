@@ -290,24 +290,41 @@ void HandleEnter(XEvent * xe) {
 			if (l[i] == ok) xj_atom= ok;
 		}
 	}
-	//printf("!!!!!!!!!!!!!!!! DND ok: %i\n",xj_atom==ok);
+	if (want_debug)
+		printf("DEBUG: DND ok: %i\n",xj_atom==ok);
 }
 
-void SendStatus (void) {
-	unsigned int my_Width,my_Height;
-	xj_get_window_size(&my_Width,&my_Height);
+void SendStatus (XEvent * xe) {
+	unsigned int w,h;
 	XClientMessageEvent response;
 	response.type = ClientMessage;
 	response.window = xj_win;
 	response.format = 32;
 	response.message_type = xj_a_XdndStatus;
 	response.data.l[0] = xj_win;
-	response.data.l[1] = (1)?1:0; // flags 3 ?? - TODO: check if we can accept this drop.
-	response.data.l[2] = 0; // x, y
-	response.data.l[3] = my_Width<<16 || my_Height&0xFFFFL; // w, h (width<<16 || height&0xFFFFL)
+
+	response.data.l[1] = 0x3; // bit0: accept ; bit1: want_position
+
+//	response.data.l[2] = 0; // x, y
+	response.data.l[2] = xe->xclient.data.l[2]; // x, y
+
+//	response.data.l[3] = (1024<<16) | (768&0xFFFFUL); // w, h 
+//	response.data.l[3] = (1<<16) | (1&0xFFFFUL); // w, h 
+	xj_get_window_size(&w,&h);
+	response.data.l[3] = (w<<16) | (h&0xFFFFUL); // w, h 
+
 	response.data.l[4] = xj_a_XdndActionCopy; // action
+//	response.data.l[4] = xe->xclient.data.l[4];
 
 	XSendEvent(xj_dpy, dnd_source, False, NoEventMask, (XEvent*)&response);
+#if 0
+	int x,y;
+	x= xe->xclient.data.l[2] >>16;
+	y= xe->xclient.data.l[2] & 0xFFFFUL;
+	w= response.data.l[3] >>16;
+	h= response.data.l[3] & 0xFFFFUL;
+	printf("x:%iy:%iw:%i:h:%i\n",x,y,w,h);
+#endif
 }
 
 void SendFinished (void) {
@@ -415,12 +432,15 @@ inline void xj_render () {
 
 void xj_handle_X_events (void) {
 	XEvent event;
+//	XSynchronize(xj_dpy,False );
+//	XLockDisplay(xj_dpy);
 	while(XPending(xj_dpy)) {
-	//while(XQLength(xj_dpy)) {
 		XNextEvent(xj_dpy, &event);
 		switch (event.type) {
 			case Expose:
 				xj_render();
+				break;
+			case SelectionRequest:
 				break;
 			case SelectionNotify:
 #ifdef DND
@@ -429,31 +449,35 @@ void xj_handle_X_events (void) {
 				break;
 			case ClientMessage:
 #ifdef DND
-		         	//fprintf(stdout, "event client: %i\n",event.xclient.message_type);
+		       	//	fprintf(stdout, "event client: %i\n",event.xclient.message_type);
 				if (event.xclient.message_type == xj_a_XdndPosition) {
-					if (xj_atom!= None) SendStatus();
-			//	} else if (event.xclient.message_type == xj_a_XdndLeave)
-			//		printf("DND LEAVE!\n");
+					if (xj_atom!= None) SendStatus(&event);
+				} else if (event.xclient.message_type == xj_a_XdndLeave) {
+					if (want_debug) printf("DND LEAVE!\n");
 				} else if (event.xclient.message_type == xj_a_XdndEnter) {
 					HandleEnter(&event);
-					SendStatus();
 				} else if (event.xclient.message_type == xj_a_XdndDrop) {
-			//		printf("DROP!\n");
+					if ((event.xclient.data.l[0] != XGetSelectionOwner(xj_dpy, xj_a_XdndSelection))
+					    || (event.xclient.data.l[0] != dnd_source)){
+					    	if (!want_quiet)
+							fprintf(stderr,"[x11] DnD owner mismatch.");
+					}
+					if(want_debug) printf("DROP!\n");
     					if (xj_atom!= None) {
 						XConvertSelection(xj_dpy, xj_a_XdndSelection, xj_atom, xj_a_XdndSelection, xj_win, CurrentTime);
 					}
-				//	SendFinished();
+				//	SendFinished(); // called by getDragData(..)
 				} else 
 #endif
 				if (event.xclient.data.l[0] == xj_del_atom) {
-			//		fprintf(stdout, "Window destoyed...\n");
+				//	fprintf(stdout, "Window destoyed...\n");
 					loop_flag = 0;
 #if 0
 				} elseif (event.xclient.data.l[0] == xj_a_TakeFocus)  {
 					;
 #endif
 				} else {
-		         		// fprintf(stdout, "unhandled X-client event: %i\n",event.xclient.message_type);
+		         	//	fprintf(stdout, "unhandled X-client event: %ld\n",(long) event.xclient.message_type);
 				}
 				break;
 			case ConfigureNotify: // from XV only 
@@ -545,11 +569,16 @@ void xj_handle_X_events (void) {
 					}
 				}
 				break;
+			case ReparentNotify:
+				break;
 			default:
-			//	printf("unhandled X event: type: %i\n",event.type);
+			/* TODO: I get Xevents type 94 a lot - 
+			 * no what could that be ?  */
+			//	printf("unhandled X event: type: %ld\n",(long) event.type);
 				break;
 		}
 	}
+//	XUnlockDisplay(xj_dpy);
 }
 
 #endif /* HAVE any of xv, imlib* */
@@ -593,10 +622,15 @@ void allocate_xvimage (void) {
 		xj_dwidth, xj_dheight, //768, 486, //720, 576,
 		&xv_shminfo);
 
-	/* TODO: check that this does not break support for VIC's where the pitches 
-	 * are not packed. - ship xjadeo w/ xv_one_memcpy=0; - slower(?) but safer(!) 
+	/* TODO: check that this does not break support for some VIC's 
+	 * let's ship xjadeo w/ xv_one_memcpy=0; - slower(?) but safer(!) 
+	 * (maybe the U/V planes are swapped, byte order or whatever...)
 	 */ 
+#if 0
 	if (xv_len != xv_image->data_size) xv_one_memcpy =0; else xv_one_memcpy=1;
+#else
+	xv_one_memcpy=0;
+#endif
 
 	xv_len =  xv_image->data_size;
 	xv_shminfo.shmid = shmget(IPC_PRIVATE, xv_len, IPC_CREAT | 0777);
@@ -694,6 +728,7 @@ int open_window_xv (void) {
 	unsigned int 	ad_cnt;
 	int fmt_cnt, got_port, i, k;
 	int xv_have_YV12, xv_have_I420;
+	long ev_mask;
 
 	XGCValues	values;
 
@@ -814,7 +849,9 @@ int open_window_xv (void) {
 //	XmbSetWMProperties(xj_dpy, xj_win, "xjadeo", NULL, NULL, 0, NULL, NULL, NULL);
 	xj_set_hints();
 
-	XSelectInput(xj_dpy, xj_win, KeyPressMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | StructureNotifyMask);
+	ev_mask =  KeyPressMask | ButtonPressMask | ButtonReleaseMask |
+			ExposureMask | StructureNotifyMask; //| PropertyChangeMask | PointerMotionMask;
+	XSelectInput(xj_dpy, xj_win, ev_mask);
 
 #ifdef DND
 	init_dnd();
@@ -847,7 +884,6 @@ void close_window_xv(void) {
 	if(xv_image) XFree(xv_image);
 	XSync(xj_dpy, False);
 	XFreeGC(xj_dpy, xj_gc);
-	// XSelectInput (xj_dpy, xj_rwin, 0);
 	XCloseDisplay(xj_dpy);
 }
 
@@ -891,6 +927,7 @@ Pixmap    pxm, pxmmask;
 
 int open_window_imlib (void) {
 	XGCValues values;
+	long ev_mask;
 
 	if ( (xj_dpy=XOpenDisplay(NULL)) == NULL ) {
 		fprintf( stderr, "Cannot connect to X server\n");
@@ -916,7 +953,8 @@ int open_window_imlib (void) {
 
 	xj_set_hints();
   
-	XSelectInput(xj_dpy, xj_win, KeyPressMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | StructureNotifyMask);
+	ev_mask =  KeyPressMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | StructureNotifyMask;
+	XSelectInput(xj_dpy, xj_win, ev_mask);
  
 #ifdef DND 
 	init_dnd();
@@ -1018,6 +1056,7 @@ Colormap  im_cm;
 
 int open_window_imlib2 (void) {
 	XGCValues values;
+	long ev_mask;
 
 	if ( (xj_dpy=XOpenDisplay(NULL)) == NULL ) {
 		fprintf( stderr, "Cannot connect to X server\n");
@@ -1043,7 +1082,8 @@ int open_window_imlib2 (void) {
 
 	xj_set_hints();
          
-	XSelectInput(xj_dpy, xj_win, KeyPressMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | StructureNotifyMask);
+	ev_mask =  KeyPressMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | StructureNotifyMask;
+	XSelectInput(xj_dpy, xj_win, ev_mask);
  
 #ifdef DND 
 	init_dnd();

@@ -11,6 +11,7 @@ EXTRA_DIST= \
  doc/xjadeo.1 doc/qjadeo.1 doc/xjremote.1\
  src/xjadeo/icons/xjadeo.bitmap src/xjadeo/icons/xjadeo_mask.xbm \
  src/xjadeo/icons/xjadeo-color.xpm \
+ doc/xjadeorc \
  contrib/cli-remote/jadeo.c \
  contrib/cli-remote/Makefile.am \
  contrib/cli-remote/README \
@@ -19,6 +20,8 @@ EXTRA_DIST= \
  contrib/encode.sh \
  contrib/README \
  autogen.sh
+# debian/changelog debian/rules debian/control debian/watch\
+# debian/compat debian/copyright
 
 MAINTAINERCLEANFILES = \
  Makefile.in \

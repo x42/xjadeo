@@ -459,6 +459,16 @@ void xapi_osd_avail(void *d) {
 #endif
 }
 
+void xapi_posd(void *d) {
+#ifdef HAVE_FT
+	remote_printf(201,"osdmode=%i", (OSD_mode&OSD_FRAME?1:0)|(OSD_mode&OSD_SMPTE?2:0)|(OSD_mode&OSD_TEXT?4:0));
+	remote_printf(220,"osdfont=%s", OSD_fontfile); 
+	remote_printf(220,"osdtext=%s", OSD_text); 
+#else
+	remote_printf(490,"this feature is not compiled");
+#endif
+}
+
 void xapi_osd_pos(void *d) {
 	int x,y;
 	char *t0= (char*)d;
@@ -652,6 +662,7 @@ Dcommand cmd_get[] = {
 //	{"windowpos" , ": show current window position", NULL, xapi_pwinpos, 0 },
 	{"videomode" , ": display current video mode", NULL, xapi_pvideomode, 0 },
 	{"midisync", ": display midi smpte conversion mode", NULL, xapi_pmidisync, 0 },
+	{"osdcfg", ": display status of on screen display", NULL, xapi_posd, 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 

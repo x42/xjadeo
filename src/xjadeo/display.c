@@ -293,20 +293,20 @@ void render_buffer (uint8_t *mybuffer) {
 
 
 void open_window(int *argc, char ***argv) {
-	loop_run=1;
 	if (!want_quiet)
 		printf("Video output: %s\n",VO[VOutput].name);
 	if (VO[VOutput].open() ) { 
 		fprintf(stderr,"Could not open video output.\n");
 		VOutput=0;
 		loop_run=0;
-	}
+	} else loop_run=1;
 }
 
 void close_window(void) {
-	VO[VOutput].close();
+	int vmode=VOutput;
 	VOutput=0;
 	loop_run=0;
+	VO[vmode].close();
 }
 
 void handle_X_events (void) {

@@ -45,8 +45,8 @@ typedef struct {
 } mqmsg;
 
 /* some static globals */
-mqd_t           mqfd_r;
-mqd_t           mqfd_s;
+mqd_t           mqfd_r = -1;
+mqd_t           mqfd_s = -1;
 size_t		mq_msgsize_r;
 char		*msg_buffer;
 int 		priority_of_msg = 20;
@@ -102,6 +102,10 @@ int  mymq_init(char *id) {
 }
 
 void mymq_close(void) {
+	if(mqfd_s == -1 || mqfd_r==-1) {
+		return;
+	}
+
 	if (mq_close(mqfd_r) == -1)
 		perror("mq_close failure on mqfd_r");
 
@@ -118,6 +122,7 @@ void mymq_close(void) {
 
 	if (!want_quiet)
 		printf("closed MQ remote control.\n");
+	mqfd_s=mqfd_r=-1;
 }
 
 /* read message from queue and store it in data.
@@ -151,6 +156,7 @@ void mymq_reply(int rv, char *str) {
 	int retry=5;
 	static int retry_warn=1;
 	mqmsg myrpy = {1, "" };
+	if (mqfd_s== -1) return;
 	myrpy.cmd= rv;
 	snprintf(myrpy.m,MQLEN,"%s\n",str);
 	// until we implement threads we should not waste time trying to re-send..

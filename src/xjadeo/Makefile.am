@@ -1,5 +1,3 @@
-# TODO - build xjremote only if we "HAVE_MQ" ... 
-# or eventually make it a xjadeo busybox.
 bin_PROGRAMS=xjadeo xjremote
 
 xjadeo_SOURCES=xjadeo.c ../../aclocal.m4 ../../config.h getopt.c getopt1.c getopt.h display.c jack.c midi.c freetype.c xjadeo.h display_sdl.c display.h display_x11.c smpte.c main.c remote.c configfile.c lash.c mqueue.c
@@ -8,7 +6,9 @@ xjadeo_LDADD = -ljack -lXext $(MQ_LIBS) @FFMPEG_LIBS@  $(SDL_LIBS) $(XV_LIBS) $(
 
 xjadeo_CFLAGS = -Wall -g -O3 @FFMPEG_CFLAGS@ $(SDL_CFLAGS) $(XV_CFLAGS) $(IMLIB_CFLAGS) $(MIDI_CFLAGS) @FREETYPE_CFLAGS@ $(IMLIB2_CFLAGS) $(LASH_CFLAGS)
 
+
 xjremote = xjremote.c
+
 xjremote_LDADD = $(MQ_LIBS)
 
 #ctags:
