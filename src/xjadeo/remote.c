@@ -82,6 +82,7 @@ extern int               videoStream;
 /* Option flags and variables */
 extern char *current_file;
 extern long	ts_offset;
+extern char    *smpte_offset;
 extern long	userFrame;
 extern long	dispFrame;
 extern int want_quiet;
@@ -386,6 +387,8 @@ void xapi_sframerate(void *d) {
 	}
         filefps= atof(off);
        	framerate = filefps;
+	// recalc offset with new framerate
+	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset);
 //	if (filefps > 0) { 
 //        	framerate = filefps;
 //	} else { // reset framerate according to av_stream

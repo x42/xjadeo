@@ -93,19 +93,28 @@ void parse_string (bcd *s, char *val) {
 
 int to_frame(bcd *s) {
 	int frame=0;
-	frame=((((s->v[SMPTE_HOUR]*60)+s->v[SMPTE_MIN])*60)+s->v[SMPTE_SEC]);
-	if (s->v[SMPTE_HOUR]>11) {
-		frame=86400-frame;
-		frame*=-1;
+	int sec=0;
+#if 0
+	printf("%s %02i#%02i:%02i:%02i:%02i\n","DBG: ",
+			s->v[SMPTE_OVERFLOW],
+			s->v[SMPTE_HOUR],
+			s->v[SMPTE_MIN],
+			s->v[SMPTE_SEC],
+			s->v[SMPTE_FRAME]);
+#endif
+	sec=((((s->v[SMPTE_HOUR]*60)+s->v[SMPTE_MIN])*60)+s->v[SMPTE_SEC]);
+	if (s->v[SMPTE_OVERFLOW]<0) { 
+		sec=86400-sec;
+		sec*=-1;
 	}
-	frame=(int) floor(frame*FPS);
-	frame+=s->v[SMPTE_FRAME];
+	frame=(int) floor(sec*FPS)+s->v[SMPTE_FRAME];
 	return (frame);
 }
 
 void add (bcd*s, bcd *s0, bcd *s1) {
 	int i;
-	for (i=0;i<SMPTE_OVERFLOW;i++) s->v[i]=s0->v[i]+s1->v[i];
+	for (i=0;i<SMPTE_LAST;i++) s->v[i]=s0->v[i]+s1->v[i];
+	//s->v[SMPTE_OVERFLOW]=0;
 
 	FIX_SMPTE_OVERFLOW(SMPTE_FRAME,SMPTE_SEC,FPS);
 	FIX_SMPTE_OVERFLOW(SMPTE_SEC,SMPTE_MIN,60);
@@ -115,7 +124,8 @@ void add (bcd*s, bcd *s0, bcd *s1) {
 
 void sub (bcd*s, bcd *s0, bcd *s1) {
 	int i;
-	for (i=0;i<SMPTE_OVERFLOW;i++) s->v[i]=s0->v[i]-s1->v[i];
+	for (i=0;i<SMPTE_LAST;i++) s->v[i]=s0->v[i]-s1->v[i];
+	//s->v[SMPTE_OVERFLOW]=0;
 
 	FIX_SMPTE_OVERFLOW(SMPTE_FRAME,SMPTE_SEC,FPS);
 	FIX_SMPTE_OVERFLOW(SMPTE_SEC,SMPTE_MIN,60);
@@ -138,7 +148,7 @@ int main (int argc, char **argv) {
 
 //	if (argc != 2) return(1);
 	parse_string(&n0,argv[1]);
-	parse_int(&n1,1100);
+	parse_int(&n1,25*60);
 	sub(&d0,&n0,&n1);
 
 	dump(&n0,"S1  : ");	

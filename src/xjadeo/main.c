@@ -85,6 +85,7 @@ long	frames = 1;
 
 /* Option flags and variables */
 char	*current_file = NULL;
+char    *smpte_offset = NULL;
 long	ts_offset = 0;
 long	userFrame = 0; // seek to this frame if jack and midi are N/A
 long	dispFrame = 0; // global strorage... = (SMPTE+offset) with boundaries to [0..movie_file_frames]
@@ -247,8 +248,10 @@ decode_switches (int argc, char **argv)
 		);
 	  break;
 	case 'o':		/* --offset */
-	  ts_offset=smptestring_to_frame(optarg);
-	  printf("set time offset to %li frames\n",ts_offset);
+	  // we don't know the file's framerate yet!
+	  smpte_offset=strdup(optarg); 
+	  //ts_offset=smptestring_to_frame(optarg);
+	  //printf("set time offset to %li frames\n",ts_offset);
 	  break;
 	case 'k':		/* --keyframes */
 	  seekflags=SEEK_KEY;
@@ -433,6 +436,8 @@ void clean_up (int status) {
   else
 #endif
   close_jack();
+
+  if (smpte_offset) free(smpte_offset);
   
   if (!want_quiet)
     fprintf(stdout, "\nBye!\n");

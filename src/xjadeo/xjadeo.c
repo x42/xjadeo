@@ -68,6 +68,7 @@ extern long	frames;
 extern char *current_file;
 extern double 	filefps;
 extern long	ts_offset;
+extern char    *smpte_offset;
 extern long	userFrame;
 extern long	dispFrame;
 extern int want_quiet;
@@ -214,6 +215,8 @@ int open_movie(char* file_name) {
 	movie_height = 90;
 	framerate = duration = frames = 1;
 	videoStream=-1;
+	// recalc offset with new framerate
+	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset);
   
 	/* Open video file */
 	if(av_open_input_file(&pFormatCtx, file_name, NULL, 0, NULL)!=0) {
@@ -278,6 +281,9 @@ int open_movie(char* file_name) {
 	duration = (double) (((double) (pFormatCtx->duration - pFormatCtx->start_time))/ (double) AV_TIME_BASE);
 #endif
 	frames = (long) (framerate * duration);
+
+	// recalc offset with new framerate
+	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset);
   
 	if (!want_quiet) {
 		if (filefps >0 ) 
