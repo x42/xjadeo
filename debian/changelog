@@ -1,0 +1,5 @@
+xjadeo (0.3.21) unstable; urgency=low
+
+  * resume debian packaging for beta devel.
+
+ -- Robin Gareus <robin@gareus.org>  Mon, 14 Nov 2006 08:27:32 +0100

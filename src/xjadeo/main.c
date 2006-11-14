@@ -247,7 +247,7 @@ decode_switches (int argc, char **argv)
 		);
 	  break;
 	case 'o':		/* --offset */
-	  ts_offset=atol(optarg);
+	  ts_offset=smptestring_to_frame(optarg);
 	  printf("set time offset to %li frames\n",ts_offset);
 	  break;
 	case 'k':		/* --keyframes */

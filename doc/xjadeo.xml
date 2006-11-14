@@ -6,24 +6,10 @@
   <articleinfo>
     <title><application>xjadeo</application> - X Jack Video Monitor</title>
     <subtitle><ulink url="http://xjadeo.sourceforge.net"></ulink></subtitle>
-<!--
-
-     <author>
-	<firstname>Luis</firstname>
-	<surname>Garrido</surname>
-	<affiliation> <address><email>foo@example.com</email></address> </affiliation>
-     </author>
-
-     <author>
-	<firstname>Robin</firstname>
-	<surname>Gareus</surname>
-	<affiliation> <address><email>foo@example.com</email></address> </affiliation>
-     </author>
--->
      <copyright>
 	<year>2005</year>
 	<year>2006</year>
-	<holder>Luis Garrido, Robin Gareus</holder>
+	<holder>Robin Gareus, Luis Garrido</holder>
      </copyright>
 							 
      <abstract>
@@ -57,7 +43,7 @@
     <para><application>xjadeo v0.4-rc1</application> is a oven-fresh rewrite. Some
     of the documentation is still so hot that is not readably rendered.
     If you're already interested, see the NEWS and Changelog files
-    provided with the source. This manual (as well as xjadeo itself) is work in progress...</para>
+    provided with the source. This manual (as well as xjadeo itself) is work in progress..</para>
   </section>
 
   <section id="download">
@@ -197,7 +183,7 @@
 
     <para>It's a thighrope walk between audio-helper-application (low profile) and pro-A/V-tool (exact video sync).</para>
 
-    <para>xjadeo started as a collection of example code end is being used as that. People use it as code repository to spin-off c based video installations...   Parts of <application>xjadeo</application> have been re-used for various VJ purposes, mainly to synchronize playback on multiple screens (using <ulink url="netjack.sourceforge.net">netjack</ulink> and/or xjadeo remote-ctrl see <xref linkend="sync_remote_commands" /> ). check <ulink url="http://svn.sourceforge.net/viewcvs.cgi/xjadeo/trunk/contrib/">http://svn.sourceforge.net/viewcvs.cgi/xjadeo/trunk/contrib/</ulink> for further additions.</para>
+    <para>xjadeo started as a collection of example code end is being used as that. People use it as code repository to spin-off c based video installations..   Parts of <application>xjadeo</application> have been re-used for various VJ purposes, mainly to synchronize playback on multiple screens (using <ulink url="netjack.sourceforge.net">netjack</ulink> and/or xjadeo remote-ctrl see <xref linkend="sync_remote_commands" /> ). check <ulink url="http://svn.sourceforge.net/viewcvs.cgi/xjadeo/trunk/contrib/">http://svn.sourceforge.net/viewcvs.cgi/xjadeo/trunk/contrib/</ulink> for further additions.</para>
 
     <para>With a minor modifications xjadeo can read dynamic video-frame-offset lists (EDL) and do the editing during playback. It is unlikely for this to be merged in the main distribution. video editing, although sometimes handy, is clearly beyond xjadeo's scope.  see our sister projects: <ulink url="http://openmovieeditor.sourceforge.net/">Open Movie Editor</ulink> or use the EDL capabilities of mplayer/mencoder. join the discussion <ulink url="http://openmtes.tomveens.nl/">Openmtes</ulink> </para>
   </section>
@@ -207,14 +193,14 @@
   <section id="build_instructions" xreflabel="Build and Install Instructions">
     <title>Build and Install Instructions</title>
 
-    <section>
+    <section id="system_requirements">
       <title>System Requirements</title>
       <para><application>xjadeo</application> is currently known to work on
       gnu/Linux and Mac OS-X. It is compatible with any modern Linux distribution.
       There are no special hardware requirements.</para>
     </section>
 
-    <section>
+    <section id="section_binaries_and_sources">
       <title id="binaries_and_sources" >Binaries and Sources</title>
 
       <para><application>xjadeo</application> is developed using Subversion
@@ -226,8 +212,7 @@
 
       <para><application>xjadeo</application> is also available for <ulink
       url="http://sourceforge.net/project/showfiles.php?group_id=131926">download</ulink>
-      as source and binary package. For convenience we provide a binary rpm
-      built on a FC4 for i386 systems.</para>
+      as source and binary package.</para>
 
       <para>A debian package can be found at <ulink
       url="http://www.debian-multimedia.org/">debian-multimedia</ulink>
@@ -237,6 +222,9 @@ deb-src http://www.debian-multimedia.org sid main</screen>
       (replace <option>sid</option>  by your distribution name)
       and run <command>apt-get install xjadeo</command>
       </para>
+      <para>Note that xjadeo >v0.3 also works with <ulink url="http://packages.debian.org/unstable/libdevel/libavformat-dev">official debian ffmpeg</ulink> packages.</para>
+
+      <para>&#187;Packman&#171; kindly provides SVN-snapshot <ulink url="http://packman.links2linux.de/package/xjadeo">xjadeo RPM</ulink> packages for SuSE Linux.</para>
     </section>
 
     <section id="build_depends" xreflabel="build dependencies">
@@ -259,6 +247,9 @@ deb-src http://www.debian-multimedia.org sid main</screen>
      <para>Video Display Libraries. (you need at least one of the following)
         <itemizedlist>
           <listitem>
+            <para><ulink url="http://xorg.freedesktop.org">libXV</ulink> (recommended)</para>
+          </listitem>
+          <listitem>
             <para><ulink url="http://www.enlightenment.org/Libraries/Imlib/">IMlib &ge; 1.9.13</ulink></para>
           </listitem>
           <listitem>
@@ -266,9 +257,6 @@ deb-src http://www.debian-multimedia.org sid main</screen>
           </listitem>
           <listitem>
             <para><ulink url="http://www.libsdl.org">SDL 1.2</ulink></para>
-          </listitem>
-          <listitem>
-            <para><ulink url="http://xorg.freedesktop.org">libXV</ulink></para>
           </listitem>
 	 </itemizedlist>
       </para>
@@ -290,19 +278,32 @@ deb-src http://www.debian-multimedia.org sid main</screen>
           <listitem>
             <para><ulink url="http://www.trolltech.com/products/qt/downloads">QT4</ulink> + qt3compat - new qjadeo GUI</para>
           </listitem>
+          <listitem>
+            <para><ulink url="http://www.nongnu.org/lash/">lash</ulink> for restoring sessions.</para>
+          </listitem>
+          <listitem>
+            <para>librt (from the <ulink url="http://www.gnu.org/software/libc/">GNU C Library</ulink> > 2.3.2(?)) - POSIX message queues (requires kernel support - linux >= 2.6.6)</para>
+          </listitem>
 	 </itemizedlist>
       </para>
 
       <para>QT is only needed to compile and run the qjadeo GUI - not xjadeo itself.  qjadeo works with 
       both QT3 or QT4. If both libraries are available QT4 is preferred by the configure script.
-      Override by setting the QTDIR environment variable.  You can certainly build and use xjadeo without the GUI wrapper if you wish so.
+      Override by setting the QTDIR environment variable.  You can certainly build and use xjadeo without the GUI. 
       </para>
 
-      <para>Furthermore you'll need <application>autotools</application> to generate the build
-      environment, and the standard gnu devel system (<application>gcc</application>, <application>make</application>). We recommend <application>mencoder</application>
+<!-- <para>Note that you can not use the GUI with lash resumed xjadeo sessions unless you a message queue setup.</para> !-->
+
+      <para>Other dependencies:</para>
+
+      <para>Furthermore you'll need <application>autotools</application> (automake >= 1.7, autoconf) to generate the build
+      environment, and the standard gnu devel system (<application>gcc</application>, <application>make</application>, glibc-devel, etc) to compile it.
+      </para>
+      
+      <para>We also recommend to install <application>mencoder</application>
       to convert the video file to a suitable format.</para>
 
-      <para>Pay special attention to the version of ffmpeg, since some
+      <para>Pay special attention to ffmpeg, since some
       versions of this package are not compatible with xjadeo.</para>
 
     </section>
@@ -310,10 +311,13 @@ deb-src http://www.debian-multimedia.org sid main</screen>
     <section id="build" xreflabel="building xjadeo">
       <title>Building xjadeo</title>
 
-      <para>Once you have all the build dependencies and decompressed the xjadeo tar.gz the usual spells apply:
+      <para>If you are using sources from the <ulink url="http://sourceforge.net/svn/?group_id=131926">subversion repository</ulink>, you'll first need to generate the configuration script in the <filename>xjadeo/trunk/</filename>:
       <screen>
-cd xjadeo-*
-./autogen.sh # (re-creates ./configure) - optional when using tar.gz - reqired for SVN
+cd xjadeo/trunk/
+./autogen.sh</screen></para>
+
+      <para>Once you have all the build dependencies and uncompressed the xjadeo tar.gz the usual spells apply:
+      <screen>
 ./configure
 make 
 make install # (requires root privileges) </screen></para>
@@ -378,9 +382,9 @@ make install # (requires root privileges) </screen></para>
 
     <para>If you prefer, you can also use the graphical user interface <command>qjadeo</command>.</para>
 
-    <para>But let's back off a little, first you need a suitable video file to display...</para>
+    <para>But let's back off a little, first you need a suitable video file to display..</para>
 
-    <section>
+    <section id="video_formats">
       <title>Video Formats</title>
 
       <para><application>xjadeo</application> has been designed to aid
@@ -405,7 +409,7 @@ make install # (requires root privileges) </screen></para>
 
       <para>This will reduce the size of the avi file, will tax less the
       system resources when displayed and will leave more space in the screen
-      for your audio software...</para>
+      for your audio software..</para>
 
       <para>In the <ulink
       url="http://svn.sourceforge.net/viewcvs.cgi/*checkout*/xjadeo/trunk/contrib/xjadeo-example.avi"><filename>contrib/</filename></ulink>
@@ -413,7 +417,7 @@ make install # (requires root privileges) </screen></para>
       finding an appropriate codec.</para>
     </section>
 
-    <section>
+    <section id="invoking_xjadeo">
       <title>Invoking xjadeo</title>
 
       <para><command>xjadeo [options] output-file.avi</command></para>
@@ -425,7 +429,7 @@ make install # (requires root privileges) </screen></para>
       the lower the framerate, the smaller is the impact of xjadeo on the
       performance of your system.</para>
 
-      <section>
+      <section id="sync_methods">
         <title>Sync Methods</title>
 
         <para>xjadeo polls the time code information in the following order,
@@ -465,7 +469,7 @@ make install # (requires root privileges) </screen></para>
         </para>
       </section>
 
-      <section>
+      <section id="howto_ardour1">
         <title>Configure Ardour 0.99.X to sync to jack</title>
 
         <para><itemizedlist>
@@ -492,12 +496,12 @@ make install # (requires root privileges) </screen></para>
           </itemizedlist></para>
       </section>
 
-      <section>
+      <section id="howto_ardour2">
         <title>Configure Ardour 2 to sync to jack</title>
 	<para> You have not even started ardour2 before, have you? There's a nice looking button next to the SMPTE display.</para>
       </section>
 
-      <section>
+      <section id="howto_rg">
         <title>configure rosegarden to run with xjadeo</title>
 
         <para><itemizedlist>
@@ -527,7 +531,7 @@ make install # (requires root privileges) </screen></para>
     <section id="troubleshoot">
       <title>Troubleshoot</title>
 
-      <para>In case xjadeo does not work out of the box...</para>
+      <para>In case xjadeo does not work out of the box..</para>
 
       <itemizedlist>
         <listitem>
@@ -565,9 +569,6 @@ make install # (requires root privileges) </screen></para>
       in fact a feature of portmidi but could also be considered a bug in
       <application>xjadeo</application>.</para>
 
-      <para>xjadeo has not been tested on a 64bit architecture. not sure if we
-      ought to expect problems there...</para>
-
       <para>X11 / nvidia might not work properly with the <ulink url="http://download.nvidia.com/XFree86/Linux-x86_64/1.0-8762/README/appendix-s.html">Composite Extension</ulink> as reported in the <ulink url="http://sourceforge.net/forum/forum.php?thread_id=1437336?forum_id=447923">Forum</ulink>.
 	Temporarily disable this extension 
 	<command>nvidia-xconfig --composite</command>
@@ -603,7 +604,7 @@ make install # (requires root privileges) </screen></para>
 
     <para>SUBJECT TO CHANGE. - use the <option>help</option> command for latest changes.</para>
 
-    <section>
+    <section id="rc_general">
       <title>General Commands</title>
 
       <variablelist>
@@ -626,7 +627,7 @@ make install # (requires root privileges) </screen></para>
       </variablelist>
     </section>
 
-    <section>
+    <section id="rc_file">
       <title>Video File Commands</title>
 
       <variablelist>
@@ -740,10 +741,10 @@ make install # (requires root privileges) </screen></para>
       </variablelist>
     </section>
 
-    <section>
+    <section id="rc_sync">
       <title>Synchronization Commands</title>
 
-      <section>
+      <section id="rc_jack">
         <title>Jack</title>
 
         <variablelist>
@@ -773,7 +774,7 @@ make install # (requires root privileges) </screen></para>
         </variablelist>
       </section>
 
-      <section>
+      <section id="rc_midi">
         <title>Midi</title>
 
         <variablelist>
@@ -918,7 +919,7 @@ make install # (requires root privileges) </screen></para>
       </section>
     </section>
 
-    <section>
+    <section id="rc_window">
       <title>Monitor Window Commands</title>
 
       <variablelist>
@@ -1001,7 +1002,7 @@ make install # (requires root privileges) </screen></para>
       </variablelist>
     </section>
 
-    <section>
+    <section id="rc_notify">
       <title>Notify Commands</title>
 
       <variablelist>
@@ -1033,7 +1034,7 @@ make install # (requires root privileges) </screen></para>
       </variablelist>
     </section>
 
-    <section>
+    <section id="rc_osd">
       <title>On Screen Display Commands</title>
 
       <variablelist>
@@ -1270,7 +1271,7 @@ make install # (requires root privileges) </screen></para>
   <section id="internals">
     <title>Internals</title>
 
-    <section>
+    <section id="behind_the_scenes">
     <title>Behind the Scenes</title>
 	<para>When <application>xjadeo</application> is started, it</para>
 	<orderedlist>
@@ -1298,26 +1299,26 @@ make install # (requires root privileges) </screen></para>
 		</listitem>
 		<listitem>
 		  <para>Sleep for the duration of the <option>framerate delay</option> subtracted by the time needed for this loop.</para>
-		  <para>If this xjadeo instance is remote controlled, any input will break the sleep and execute the command.</para>
+		  <para>If this xjadeo instance is remote controlled, any input will interrupt the sleep and execute the command.</para>
 		</listitem>
           </orderedlist>
         </listitem>
       </orderedlist>
 
       <para>The loop runs 'framerate' times per second, depending on what you
-      entered in the command line. This loop is not synchronized to anything. xjadeo uses the select() and clock() system calls for internal time keeping.</para>
+      entered in the command line. This loop is not synchronized to anything. xjadeo uses the select() and gettimeofday() system calls for internal time keeping.</para>
     </section>
 
-    <section>
+    <section id="sync_info">
     <title>Synchronization Accuracy</title>
-    <para>xjadeo does not provide an exact time base for online-editing! Always stop the transport when you need to define an exact sync point!</para>
+    <para>xjadeo does not provide an exact time base for online-editing! Always stop the transport when you need to define a sync point!</para>
     <para>There current version of xjadeo decodes the video just in time (as opposed to ahead in time). This introduces a random latency. screen updates are not locked to any time source.</para>
     <para>xjadeo polls the time source at regular intervals. Try increasing the update framerate with <option>-f</option> to multiples of the framerate; or drop us a motivating line to code the VSync extension. So far we are perfectly happy editing soundtracks at 10 video frames per second.</para>
     </section>
 
-    <section>
-    <title>Frame Conversion</title>
-    <para>The calculation from jack frame/framerate to video frame/framerate and smpte is done using
+    <section id="frame_convert">
+    <title>Frame Transformation</title>
+    <para>The calculation from jack frame/framerate to video frame/framerate and SMPTE timecode is done using
     double precision arithmetics with seconds as basis unit. The conversion Audio Frame to Video SMPTE is done by 
     calculating audio-frame / audio-frame-rate * video-frame-rate and round down to the nearest integer.
     Integer video-frame offsets (<option>-o &lt;integer&gt;</option>are applied afterwards.
@@ -1325,7 +1326,7 @@ make install # (requires root privileges) </screen></para>
     <para>This depends on correctly detecting the framerate of the video file, which can be overridden with <option>-F</option>.</para>
     </section>
 
-    <section>
+    <section id="midi_clock">
     <title>Midi Clock Conversion</title>
     <para>MTC includes information about the framerate of the SMPTE, which is used by xjadeo for generating the framecount independent of the movie clip's framerate. Naturally you want to adjust the midi time source to match the exact framerate of the video that you want to display.
     In any case xjadeo allows you to convert or force the video-file's framerate value with the <option>--midifps</option> option.
@@ -1341,30 +1342,6 @@ make install # (requires root privileges) </screen></para>
     <refmeta>
     <refentrytitle>xjadeo</refentrytitle>
     <manvolnum>1</manvolnum>
-    <!--
-        <authorgroup>
-          <author>
-            <firstname>Luis</firstname>
-
-            <surname>Garrido</surname>
-
-            <affiliation>
-              <address><email>luisgarrido@users.sourceforge.net</email></address>
-            </affiliation>
-          </author>
-
-          <author>
-            <firstname>Robin</firstname>
-
-            <surname>Gareus</surname>
-
-            <affiliation>
-              <address><email>robin@gareus.org</email>
-              </address>
-            </affiliation>
-          </author>
-        </authorgroup>
-	-->
     </refmeta>
 
     <refnamediv>
@@ -1377,7 +1354,14 @@ make install # (requires root privileges) </screen></para>
       <refsynopsisdiv>
         <cmdsynopsis>
           <command>xjadeo</command>
+<!--
+add full list of replaceables and literals here 
+	xjadeo [options] <file>
+	xjadeo -Q [-R] [options] [<file>]
+	xjadeo -R [-Q] [options] [<file>]
 
+	options: -a , -b, -f <num>, -F <int>,...
+-->
           <arg choice="opt">-abfFhikKLmMoqQRtvVx</arg>
  	  <arg>videofile</arg>
         </cmdsynopsis>

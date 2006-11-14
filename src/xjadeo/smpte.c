@@ -1,4 +1,4 @@
-/* simple smpte parser.
+/* simple timecode parser.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,21 +23,35 @@
 #include <stdlib.h>
 #include <math.h>
 
-//#define FPS 25
-extern double framerate;
-#define FPS framerate
-
 enum { SMPTE_FRAME = 0, SMPTE_SEC, SMPTE_MIN, SMPTE_HOUR, SMPTE_OVERFLOW, SMPTE_LAST };
 
+/* binary coded decimal (BCD) digits 
+ * not to mix up with SMPTE struct (in midi.c)
+ * HH:MM:SS:FF
+ */
 typedef struct {
 	int v[(SMPTE_LAST)];
-} smpte;
+} bcd;
+
+
+#ifdef HAVE_CONFIG_H 	/* XJADEO include */
+extern double framerate;
+extern int midi_clkconvert;
+#define FPS framerate
+#else			 /* Standalone */
+//#define FPS 25
+void dump(bcd *s, char *info);
+int midi_clkconvert =0;
+int framerate = 25;
+#define FPS framerate
+#endif
+
 
 #define FIX_SMPTE_OVERFLOW(THIS,NEXT,INC) \
 	if (s->v[(THIS)] >= (INC)) { int ov= (int) floor((double) s->v[(THIS)] / (INC));  s->v[(THIS)] -= ov*(INC); s->v[(NEXT)]+=ov;} \
-	if (s->v[(THIS)] < 0 ) { int ov= (int) floor((double) s->v[(THIS)] / (INC));   s->v[(THIS)] -= ov*(INC); s->v[(NEXT)]-=ov;} 
+	if (s->v[(THIS)] < 0 ) { int ov= (int) floor((double) s->v[(THIS)] / (INC));   s->v[(THIS)] -= ov*(INC); s->v[(NEXT)]+=ov;} 
 
-void parse_int (smpte *s, int val) {
+void parse_int (bcd *s, int val) {
 	int i;
 	for (i=0;i<SMPTE_LAST;i++)
 		s->v[i]=0;
@@ -52,7 +66,7 @@ void parse_int (smpte *s, int val) {
 
 
 // FORMAT [[[HH:]MM:]SS:]FF
-void parse_string (smpte *s, char *val) {
+void parse_string (bcd *s, char *val) {
 	int i;
 	char *buf = strdup(val);
 	char *t;
@@ -68,6 +82,7 @@ void parse_string (smpte *s, char *val) {
 		i++;
 	}
 	if (i < SMPTE_OVERFLOW) s->v[i]= (int) atoi(buf);
+	//dump(s,"DEBUG  : ");	
 
 	free(buf);
 	FIX_SMPTE_OVERFLOW(SMPTE_FRAME,SMPTE_SEC,FPS);
@@ -76,7 +91,7 @@ void parse_string (smpte *s, char *val) {
 	FIX_SMPTE_OVERFLOW(SMPTE_HOUR,SMPTE_OVERFLOW,24);
 }
 
-int to_frame(smpte *s) {
+int to_frame(bcd *s) {
 	int frame=0;
 	frame=((((s->v[SMPTE_HOUR]*60)+s->v[SMPTE_MIN])*60)+s->v[SMPTE_SEC]);
 	if (s->v[SMPTE_HOUR]>11) {
@@ -88,7 +103,7 @@ int to_frame(smpte *s) {
 	return (frame);
 }
 
-void add (smpte*s, smpte *s0, smpte *s1) {
+void add (bcd*s, bcd *s0, bcd *s1) {
 	int i;
 	for (i=0;i<SMPTE_OVERFLOW;i++) s->v[i]=s0->v[i]+s1->v[i];
 
@@ -98,7 +113,7 @@ void add (smpte*s, smpte *s0, smpte *s1) {
 	FIX_SMPTE_OVERFLOW(SMPTE_HOUR,SMPTE_OVERFLOW,24);
 }
 
-void sub (smpte*s, smpte *s0, smpte *s1) {
+void sub (bcd*s, bcd *s0, bcd *s1) {
 	int i;
 	for (i=0;i<SMPTE_OVERFLOW;i++) s->v[i]=s0->v[i]-s1->v[i];
 
@@ -108,8 +123,8 @@ void sub (smpte*s, smpte *s0, smpte *s1) {
 	FIX_SMPTE_OVERFLOW(SMPTE_HOUR,SMPTE_OVERFLOW,24);
 }
 
-#if 0
-void dump(smpte *s, char *info) {
+#ifndef HAVE_CONFIG_H // standalone
+void dump(bcd *s, char *info) {
 	printf("%s %02i:%02i:%02i:%02i -- %i\n",info?info:"",
 			s->v[SMPTE_HOUR],
 			s->v[SMPTE_MIN],
@@ -118,8 +133,8 @@ void dump(smpte *s, char *info) {
 }
 
 int main (int argc, char **argv) {
-	smpte n0,n1;
-	smpte d0;
+	bcd n0,n1;
+	bcd d0;
 
 //	if (argc != 2) return(1);
 	parse_string(&n0,argv[1]);
@@ -135,13 +150,13 @@ int main (int argc, char **argv) {
 #endif
 
 long int smptestring_to_frame (char *str) {
-	smpte n0;
+	bcd n0;
 	parse_string(&n0,str);
 	return ((long int)to_frame(&n0));
 }
 
 void frame_to_smptestring(char *smptestring, long int frame) {
-	smpte s;
+	bcd s;
 	if (!smptestring) return;
 
 	parse_int(&s, (int) frame);
@@ -152,3 +167,28 @@ void frame_to_smptestring(char *smptestring, long int frame) {
 			s.v[SMPTE_FRAME]);
 }
 
+
+long int smpte_to_frame(int type, int f, int s, int m, int h, int overflow) {
+	long frame =0 ;
+	int fps= FPS;
+
+	switch(type) {
+		case 0: fps=24; break;
+		case 1: fps=25; break;
+		case 2: fps=29; break;
+		case 3: fps=30; break;
+	}
+	switch (midi_clkconvert) {
+		case 2: // force video fps
+			frame = f +  (int) floor(FPS * ( s + 60*m+ 3600*h));
+		break;
+		case 3: // 'convert' FPS.
+			frame = f + fps * ( s + 60*m + 3600*h);
+			frame = (int) rint(frame * FPS / fps);
+		break;
+		default: // use MTC fps info
+			frame = f + fps * ( s + 60*m + 3600*h);
+		break;
+	}
+	return(frame);
+}

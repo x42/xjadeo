@@ -1,0 +1,4 @@
+version=3
+
+http://sf.net/xjadeo/xjadeo-(.*)\.tar\.gz
+

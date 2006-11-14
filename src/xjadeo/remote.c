@@ -345,9 +345,8 @@ void xapi_pmheight(void *d) {
 	remote_printf(201,"movie_height=%i", movie_height);
 }
 void xapi_soffset(void *d) {
-  	long int new = atol((char*)d);
-//	long int new = smptestring_to_frame((char*)d);
-	ts_offset= (int64_t) new;
+  	//long int new = atol((char*)d);
+	ts_offset = smptestring_to_frame((char*)d);
 	remote_printf(101,"offset=%li",(long int) ts_offset);
 }
 
@@ -362,9 +361,8 @@ void xapi_psmpte(void *d) {
 }
 
 void xapi_seek(void *d) {
-  	long int new = atol((char*)d);
-//	long int new = smptestring_to_frame((char*)d);
-	userFrame= (int64_t) new;
+  	//long int new = atol((char*)d);
+	userFrame= smptestring_to_frame((char*)d);
 	remote_printf(101,"defaultseek=%li",userFrame);
 }
 

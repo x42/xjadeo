@@ -182,6 +182,51 @@ int parse_sysex_urtm (int data, int state, int type) {
 	return (rv);
 }
 
+/************************************************
+ * SMPTE converter.
+ *
+ * this one does not handle drop frames correctly
+ * -> smpte.c
+ */
+#if 0
+long convert_smpte_to_frame(smpte now) {
+	long frame =0 ;
+	int fps= 25; 
+	switch(now.type) {
+		case 0: fps=24; break;
+		case 1: fps=25; break;
+		case 2: fps=29; break;
+		case 3: fps=30; break;
+	}
+	switch (midi_clkconvert) {
+		case 2: // force video fps
+			frame = now.frame +  (int)
+				floor(framerate * ( now.sec + 60*now.min + 3600*now.hour));
+		break;
+		case 3: // 'convert' FPS.
+			frame = now.frame + 
+				fps * ( now.sec + 60*now.min + 3600*now.hour);
+			frame = (int) rint(frame * framerate / fps);
+		break;
+		default: // use MTC fps info
+			frame = now.frame + 
+				fps * ( now.sec + 60*now.min + 3600*now.hour);
+	}
+	return(frame);
+}
+#else
+
+long convert_smpte_to_frame (smpte now) {
+	return(smpte_to_frame(
+		now.type,
+		now.frame,
+		now.sec,
+		now.min,
+		now.hour,
+		now.day));
+}
+
+#endif
 
 
 /************************************************
@@ -371,8 +416,6 @@ int midi_connected(void) {
 }
 
 long midi_poll_frame (void) {
-	long frame =0 ;
-	int fps= 25; 
 	int spin;
     	smpte now;
 	if (!midi) return (0);
@@ -383,28 +426,7 @@ long midi_poll_frame (void) {
 		spin = Pm_Dequeue(midi_to_main, &now);
 	} while (spin == 0); /* spin */ ;
 
-
-	switch(now.type) {
-		case 0: fps=24; break;
-		case 1: fps=25; break;
-		case 2: fps=29; break;
-		case 3: fps=30; break;
-	}
-	switch (midi_clkconvert) {
-		case 2: // force video fps
-			frame = now.frame +  (int)
-				floor(framerate * ( now.sec + 60*now.min + 3600*now.hour));
-		break;
-		case 3: // 'convert' FPS.
-			frame = now.frame + 
-				fps * ( now.sec + 60*now.min + 3600*now.hour);
-			frame = (int) rint(frame * framerate / fps);
-		break;
-		default: // use MTC fps info
-			frame = now.frame + 
-				fps * ( now.sec + 60*now.min + 3600*now.hour);
-	}
-	return(frame);
+	return(convert_smpte_to_frame(now));
 }
 
 #else  /* endif HAVE_PORTMIDI */
@@ -488,33 +510,10 @@ void amidi_event(void) {
 }
 
 long amidi_poll_frame (void) {
-	long frame =0 ;
-	int fps= 25; 
 	if (!amidi) return (0);
 
 	amidi_event(); // process midi buffers - get most recent timecode
-
-	switch(last_tc.type) {
-		case 0: fps=24; break;
-		case 1: fps=25; break;
-		case 2: fps=29; break;
-		case 3: fps=30; break;
-	}
-	switch (midi_clkconvert) {
-		case 2: // force video fps
-			frame = last_tc.frame +  (int)
-				floor(framerate * ( last_tc.sec + 60*last_tc.min + 3600*last_tc.hour));
-		break;
-		case 3: // 'convert' FPS.
-			frame = last_tc.frame + 
-				fps * ( last_tc.sec + 60*last_tc.min + 3600*last_tc.hour);
-			frame = (int) rint(frame * framerate / fps);
-		break;
-		default: // use MTC fps info
-			frame = last_tc.frame + 
-				fps * ( last_tc.sec + 60*last_tc.min + 3600*last_tc.hour);
-	}
-	return(frame);
+	return(convert_smpte_to_frame(last_tc));
 }
 
 inline long midi_poll_frame (void) { return (amidi_poll_frame() ); }
@@ -659,31 +658,10 @@ void aseq_event(void) {
 
 long aseq_poll_frame (void) {
 	long frame =0 ;
-	int fps= 25; 
 	if (!seq) return (0);
 
 	pthread_mutex_lock(&aseq_lock);
-
-	switch(last_tc.type) {
-		case 0: fps=24; break;
-		case 1: fps=25; break;
-		case 2: fps=29; break;
-		case 3: fps=30; break;
-	}
-	switch (midi_clkconvert) {
-		case 2: // force video fps
-			frame = last_tc.frame +  (int)
-				floor(framerate * ( last_tc.sec + 60*last_tc.min + 3600*last_tc.hour));
-		break;
-		case 3: // 'convert' FPS.
-			frame = last_tc.frame + 
-				fps * ( last_tc.sec + 60*last_tc.min + 3600*last_tc.hour);
-			frame = (int) rint(frame * framerate / fps);
-		break;
-		default: // use MTC fps info
-			frame = last_tc.frame + 
-				fps * ( last_tc.sec + 60*last_tc.min + 3600*last_tc.hour);
-	}
+	frame = convert_smpte_to_frame(last_tc);
 	pthread_mutex_unlock(&aseq_lock);
 	return(frame);
 }

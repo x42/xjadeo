@@ -1,0 +1,28 @@
+Source: xjadeo
+Section: sound
+Priority: optional
+Bugs: mailto:x42@users.sourceforge.net
+Maintainer: Robin Gareus <robin@gareus.org>
+Standards-Version: 3.6.2
+Build-Depends: debhelper (>= 4), imlib11-dev | imlib2-dev, libxv-dev,
+ libavcodeccvs51-dev | libavcodec-dev, libavutilcvs49-dev | libavformat-dev,
+ libjack0.100.0-dev | libjack-dev, libx11-dev, libfreetype6-dev,
+ libportmidi-dev | libasound2-dev, liblash-dev, libxpm-dev,
+ qt3-dev-tools | libqt4-dev
+
+Package: xjadeo
+Architecture: any
+Depends: ${shlibs:Depends}
+Recommends: mencoder, transcode, libquicktime-progs | libquicktime-utils
+Description: video player with jack sync
+ xjadeo is a simple video player that receives sync from jackd or MTC.
+ It has applications in soundtrack creation, video monitoring or any task that
+ requires to associate movie frames with audio events.
+ .
+ For instance when a jack-client (like Muse, Rosegarden or Ardour) acts as a
+ timebase master, xjadeo will display the video synchronized to jack transport.
+ xjadeo is capable to read Midi Time Clock as an alternate sync source and comes
+ along with an optional QT-GUI.
+ .
+ xjadeo reads only seekable media by default. Installing a transcoding utility
+ like mencoder or transcode is highly recommended.
