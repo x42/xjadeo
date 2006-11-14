@@ -9,6 +9,7 @@
   extern int want_verbose;
   extern int start_ontop;
   extern int start_fullscreen;
+  extern int want_letterbox;
   extern int remote_en;
 
   extern char OSD_fontfile[1024];

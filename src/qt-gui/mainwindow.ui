@@ -8,8 +8,8 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>260</width>
-            <height>106</height>
+            <width>256</width>
+            <height>120</height>
         </rect>
     </property>
     <property name="caption">
@@ -70,7 +70,7 @@
                     </property>
                     <property name="sizeHint">
                         <size>
-                            <width>20</width>
+                            <width>125</width>
                             <height>20</height>
                         </size>
                     </property>
@@ -119,11 +119,20 @@
                             <verstretch>0</verstretch>
                         </sizepolicy>
                     </property>
+                    <property name="minimumSize">
+                        <size>
+                            <width>0</width>
+                            <height>4</height>
+                        </size>
+                    </property>
                     <property name="maximumSize">
                         <size>
-                            <width>2000</width>
-                            <height>6</height>
+                            <width>32767</width>
+                            <height>10</height>
                         </size>
+                    </property>
+                    <property name="totalSteps">
+                        <number>1000</number>
                     </property>
                     <property name="percentageVisible">
                         <bool>false</bool>
@@ -132,6 +141,64 @@
                 <spacer>
                     <property name="name">
                         <cstring>spacer4</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Expanding</enum>
+                    </property>
+                    <property name="sizeHint">
+                        <size>
+                            <width>1</width>
+                            <height>6</height>
+                        </size>
+                    </property>
+                </spacer>
+            </hbox>
+        </widget>
+        <widget class="QLayoutWidget">
+            <property name="name">
+                <cstring>layout16</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="spacing">
+                    <number>0</number>
+                </property>
+                <widget class="QSlider">
+                    <property name="name">
+                        <cstring>seekBar</cstring>
+                    </property>
+                    <property name="enabled">
+                        <bool>false</bool>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>7</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>5</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="maximumSize">
+                        <size>
+                            <width>32767</width>
+                            <height>14</height>
+                        </size>
+                    </property>
+                    <property name="maxValue">
+                        <number>1000</number>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                </widget>
+                <spacer>
+                    <property name="name">
+                        <cstring>spacer5</cstring>
                     </property>
                     <property name="orientation">
                         <enum>Horizontal</enum>
@@ -228,39 +295,62 @@
             <string></string>
         </property>
     </action>
-    <action>
+    <actiongroup>
         <property name="name">
-            <cstring>syncJackAction</cstring>
+            <cstring>syncAction</cstring>
         </property>
         <property name="text">
-            <string>JACK Transport</string>
+            <string>ActionGroup</string>
         </property>
-        <property name="menuText">
-            <string>JACK Transport</string>
+        <property name="toolTip">
+            <string>Sync</string>
         </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>syncMTCAction</cstring>
+        <property name="usesDropDown">
+            <bool>false</bool>
         </property>
-        <property name="text">
-            <string>MTC</string>
-        </property>
-        <property name="menuText">
-            <string>MTC</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>syncOffAction</cstring>
-        </property>
-        <property name="text">
-            <string>off</string>
-        </property>
-        <property name="menuText">
-            <string>off</string>
-        </property>
-    </action>
+	    <action>
+		<property name="name">
+		    <cstring>syncJackAction</cstring>
+		</property>
+		<property name="toggleAction">
+		    <bool>true</bool>
+		</property>
+		<property name="text">
+		    <string>JACK Transport</string>
+		</property>
+		<property name="menuText">
+		    <string>JACK Transport</string>
+		</property>
+	    </action>
+	    <action>
+		<property name="name">
+		    <cstring>syncMTCAction</cstring>
+		</property>
+		<property name="toggleAction">
+		    <bool>true</bool>
+		</property>
+		<property name="text">
+		    <string>MTC</string>
+		</property>
+		<property name="menuText">
+		    <string>MTC</string>
+		</property>
+	    </action>
+	    <action>
+		<property name="name">
+		    <cstring>syncOffAction</cstring>
+		</property>
+		<property name="toggleAction">
+		    <bool>true</bool>
+		</property>
+		<property name="text">
+		    <string>off</string>
+		</property>
+		<property name="menuText">
+		    <string>off (slider)</string>
+		</property>
+	    </action>
+    </actiongroup>
     <actiongroup>
         <property name="name">
             <cstring>zoomAction</cstring>
@@ -312,10 +402,10 @@
                 <cstring>zoomFullScreenAction</cstring>
             </property>
             <property name="text">
-                <string>Full Screen</string>
+                <string>Maximize</string>
             </property>
             <property name="toolTip">
-                <string>Full Screen</string>
+                <string>Maximize</string>
             </property>
         </action>
     </actiongroup>
@@ -450,7 +540,16 @@
         <receiver>MainWindow</receiver>
         <slot>osdFont()</slot>
     </connection>
+    <connection>
+        <sender>seekBar</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>MainWindow</receiver>
+        <slot>seekBarChanged(int)</slot>
+    </connection>
 </connections>
+<includes>
+    <include location="local" impldecl="in implementation">mainwindow.ui.h</include>
+</includes>
 <slots>
     <slot>fileOpen()</slot>
     <slot>setFPS( const QString &amp; )</slot>
@@ -464,9 +563,10 @@
     <slot>syncOff()</slot>
     <slot>setOffset( const QString &amp; )</slot>
     <slot>fileExit()</slot>
-    <slot>osdFrameToggled(bool)</slot>
-    <slot>osdSMPTEToggled(bool)</slot>
+    <slot>osdFrameToggled( bool )</slot>
+    <slot>osdSMPTEToggled( bool )</slot>
     <slot>osdFont()</slot>
+    <slot>seekBarChanged( int )</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>

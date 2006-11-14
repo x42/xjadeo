@@ -8,7 +8,7 @@ AC_CANONICAL_TARGET
 
 dnl Every other copy of the package version number gets its value from here
 #AM_INIT_AUTOMAKE(xjadeo, [0.4.]esyscmd((svnversion . /trunk||echo 0)|tr : _|tr -d \\012))
-AM_INIT_AUTOMAKE(xjadeo, 0.3.20)
+AM_INIT_AUTOMAKE(xjadeo, 0.3.21)
 AC_REVISION([$Id: configure.ac $])
 
 dnl create a config.h file (Automake will add -DHAVE_CONFIG_H)
@@ -103,7 +103,7 @@ AH_TEMPLATE([HAVE_SDL], [Define as 1 if you have libsdl])
 AH_TEMPLATE([HAVE_LIBXV], [Define as 1 if  you have the Xv library (-lXv)])
 AH_TEMPLATE([HAVE_IMLIB], [Define as 1 if you have imlib])
 AH_TEMPLATE([HAVE_IMLIB2], [Define as 1 if you have imlib2])
-AH_TEMPLATE([HAVE_PORTMIDI], [Define as 1 if you have portmidi and asound])
+AH_TEMPLATE([HAVE_PORTMIDI], [Define as 1 if you have portmidi and not asound])
 AH_TEMPLATE([HAVE_MIDI], [Define as 1 if you have either alsa or portmidi])
 AH_TEMPLATE([HAVE_LASH], [Define as 1 if you have lash])
 AH_TEMPLATE([HAVE_XPM], [Define as 1 if you have libXpm])

@@ -494,7 +494,7 @@ make install # (requires root privileges) </screen></para>
 
       <section>
         <title>Configure Ardour 2 to sync to jack</title>
-	<para> You have not even started ardour2 before, have you? There's a nice looking sync source button next to the SMPTE display.</para>
+	<para> You have not even started ardour2 before, have you? There's a nice looking button next to the SMPTE display.</para>
       </section>
 
       <section>
@@ -597,10 +597,11 @@ make install # (requires root privileges) </screen></para>
 
     <para>Since version 0.3.20 xjadeo implements POSIX <ulink url="http://www.linuxhowtos.org/manpages/7/mq_overview.htm">message queues</ulink> as an alternative to the stdio remote control. It provides the capability to dis- and re-connect to existing xjadeo sessions, which is particularly useful in combination with <ulink url="http://www.nongnu.org/lash/">LASH</ulink> sessions. For more information about message queues (MQ) read the <xref linkend="xjremote" /> manual.</para>
 
-    <para>Currently <command>xjadeo</command> accepts the following commands:</para>
+    <para>Note that <application>qjadeo</application> controls xjadeo via this interface</para>
 
-    <para>SUBJECT TO CHANGE. - use the <option>help</option> remote command or read the source
-    for latest changes.</para>
+    <para>Currently the jadeo remote control interpreter accepts the following commands:</para>
+
+    <para>SUBJECT TO CHANGE. - use the <option>help</option> command for latest changes.</para>
 
     <section>
       <title>General Commands</title>
@@ -873,6 +874,14 @@ make install # (requires root privileges) </screen></para>
           </varlistentry>
 
           <varlistentry>
+            <term><option>get syncsource</option></term>
+
+            <listitem>
+              <para>Prints the currently active source: 2:Midi, 1:jack, 0:none / manual seek</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
             <term><option>get fps</option></term>
 
             <listitem>
@@ -944,31 +953,6 @@ make install # (requires root privileges) </screen></para>
         </varlistentry>
 
         <varlistentry>
-          <term><option>get videomode</option></term>
-
-          <listitem>
-            <para>Returns the current video mode.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term><option>list videomodes</option></term>
-
-          <listitem>
-            <para>Prints a list of available video modes.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term><option>get windowsize</option></term>
-
-          <listitem>
-            <para>Prints the size of the video window in a 2d vector.
-            &lt;width&gt;x&lt;height&gt;</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
           <term><option>window resize <replaceable
           class="option">value</replaceable></option></term>
 
@@ -987,6 +971,31 @@ make install # (requires root privileges) </screen></para>
           <listitem>
             <para>Position the monitor window on the desktop. value is
             expected to be: &lt;width&gt;x&lt;height&gt;</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>get windowsize</option></term>
+
+          <listitem>
+            <para>Prints the size of the video window in a 2d vector.
+            &lt;width&gt;x&lt;height&gt;</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>get videomode</option></term>
+
+          <listitem>
+            <para>Returns the current video mode.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><option>list videomodes</option></term>
+
+          <listitem>
+            <para>Prints a list of available video modes.</para>
           </listitem>
         </varlistentry>
       </variablelist>
@@ -1140,6 +1149,16 @@ make install # (requires root privileges) </screen></para>
             <para>make On Screen Display background transparent.</para>
           </listitem>
         </varlistentry>
+
+        <varlistentry>
+          <term><option>get osdcfg</option></term>
+
+          <listitem>
+            <para>Return information on which text is currently rendered on screen in a bitwise integer encoding:</para>
+	    <para> bit0 (1): Frame, &nbsp;&nbsp;&nbsp;  bit1(2): SMPTE timecode, &nbsp;&nbsp;&nbsp; bit2(4): Text </para>
+          </listitem>
+        </varlistentry>
+
       </variablelist>
     </section>
 
@@ -1359,7 +1378,7 @@ make install # (requires root privileges) </screen></para>
         <cmdsynopsis>
           <command>xjadeo</command>
 
-          <arg choice="opt">-afFhkKmMoqRtvVx</arg>
+          <arg choice="opt">-abfFhikKLmMoqQRtvVx</arg>
  	  <arg>videofile</arg>
         </cmdsynopsis>
       </refsynopsisdiv>
@@ -1377,39 +1396,21 @@ make install # (requires root privileges) </screen></para>
 
       <refsect1>
         <title>OPTIONS</title>
-
         <variablelist>
-          <varlistentry>
-            <term><option>-h, --help</option></term>
 
+          <varlistentry>
+            <term><option>-a, --ontop</option></term>
             <listitem>
-              <para>Prints usage help and exits.</para>
+              <para>Start xjadeo on top of other windows. (affects XV videomode only).</para>
             </listitem>
           </varlistentry>
 
           <varlistentry>
-            <term><option>-q, --quiet, --silent</option></term>
+            <term><option>-b, --letterbox</option></term>
 
             <listitem>
-              <para>Suppresses normal output messages.</para>
-            </listitem>
-          </varlistentry>
-
-          <varlistentry>
-            <term><option>-v, --verbose</option></term>
-
-            <listitem>
-              <para>Prints additional information during the execution.</para>
-            </listitem>
-          </varlistentry>
-
-          <varlistentry>
-            <term><option>-R, --remote</option></term>
-
-            <listitem>
-              <para>Enables interactive (stdin/stdout) control mode. Options
-              <option>--quiet</option> and <option>--verbose</option> have no
-              effect in remote mode.</para>
+              <para>retain aspect ratio and draw a letterbox around the move if necessary.
+	      Note that this feature is only available with the Xv video mode.</para>
             </listitem>
           </varlistentry>
 
@@ -1421,53 +1422,25 @@ make install # (requires root privileges) </screen></para>
               <para>Desired refresh rate of the video display in frames per
               second. Lower values lighten the CPU load at the cost of video
               quality. Admits non-integer values. Defaults to 10.0 fps.</para>
+	      <para> If this value is set to zero (or less), xjadeo will use the framerate of the 
+	      video file as its video update frequency.</para>
             </listitem>
           </varlistentry>
 
           <varlistentry>
-            <term><option>-k, --keyframes </option></term>
-
-            <listitem>
-              <para>Instructs the internal algorithm to seek only keyframes.
-              This option may improve the performance for certain video
-              encodings.</para>
-            </listitem>
-          </varlistentry>
-
-          <varlistentry>
-            <term><option>-K, --continuous </option></term>
-
-            <listitem>
-              <para>Decode video frame by frame, particularly only useful to read files where not every frame is a keyframe at cost of CPU usage. Note that this option adds some extra latency when seeking. combine with <option>-f </option>: It makes sense to set xjadeo's framerate to equal the framerate of the video file.</para>
-            </listitem>
-          </varlistentry>
-
-          <varlistentry>
-            <term><option>-a, --ontop</option></term>
-            <listitem>
-              <para>Start xjadeo on top of other windows. (affects XV videomode only).</para>
-            </listitem>
-          </varlistentry>
-
-          <varlistentry>
-            <term><option>-o, --offset <replaceable
+            <term><option>-F, --filefps <replaceable
             class="option">n</replaceable></option></term>
 
             <listitem>
-              <para>Offset the video player a certain number of (video) frames
-              relative to the sync master time base. Admits negative
-              values.</para>
+              <para>Override the (autodetected) framerate of the videofile.</para>
             </listitem>
           </varlistentry>
 
           <varlistentry>
-            <term><option>-x, --vo, --videomode <replaceable
-            class="option">n</replaceable></option></term>
+            <term><option>-h, --help</option></term>
 
             <listitem>
-              <para>Selects the video output driver. Defaults to 0
-              (autodetect.) A value of -1 makes the program list the available
-              drivers and exit.</para>
+              <para>Prints usage help and exits.</para>
             </listitem>
           </varlistentry>
 
@@ -1511,6 +1484,32 @@ make install # (requires root privileges) </screen></para>
                   </varlistentry>
                 </variablelist>The remote interface allows more complete
               control over the OSD.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>-k, --keyframes </option></term>
+
+            <listitem>
+              <para>Instructs the internal algorithm to seek only keyframes.
+              This option may improve the performance for certain video encodings. </para>
+	      <para>The default behaviour (without -k and -K arguments) is to search any ANY frame.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>-K, --continuous </option></term>
+
+            <listitem>
+              <para>Decode video frame by frame, particularly only useful to read files where not every frame is a keyframe at cost of CPU usage. Note that this option adds some extra latency when seeking. combine with <option>-f </option>: It makes sense to set xjadeo's framerate to equal the framerate of the video file.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>-L, --nolash</option></term>
+
+            <listitem>
+              <para>Disable LASH support.</para>
             </listitem>
           </varlistentry>
 
@@ -1568,6 +1567,44 @@ make install # (requires root privileges) </screen></para>
           </varlistentry>
 
           <varlistentry>
+            <term><option>-o, --offset <replaceable
+            class="option">n</replaceable></option></term>
+
+            <listitem>
+              <para>Offset the video player a certain number of (video) frames
+              relative to the sync master time base. Admits negative
+              values.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>-q, --quiet, --silent</option></term>
+
+            <listitem>
+              <para>Suppresses normal output messages.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>-Q, --mq</option></term>
+
+            <listitem>
+              <para>Enable POSIX message queues. Sets up a communication channel for use with 
+	      <xref linkend="xjremote"/>.  See the <xref linkend="remote_control_interface"/> in the documentation.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>-R, --remote</option></term>
+
+            <listitem>
+              <para>Enables interactive (stdin/stdout) control mode. Options
+              <option>--quiet</option> and <option>--verbose</option> have no
+              effect in remote mode.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
             <term><option>-t, --try-codec</option></term>
 
             <listitem>
@@ -1578,12 +1615,32 @@ make install # (requires root privileges) </screen></para>
           </varlistentry>
 
           <varlistentry>
+            <term><option>-v, --verbose</option></term>
+
+            <listitem>
+              <para>Prints additional information during the execution.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
             <term><option>-V, --version</option></term>
 
             <listitem>
               <para>Display version and compile-time configuration information and exit.</para>
             </listitem>
           </varlistentry>
+
+          <varlistentry>
+            <term><option>-x, --vo, --videomode <replaceable
+            class="option">n</replaceable></option></term>
+
+            <listitem>
+              <para>Selects the video output driver. Defaults to 0
+              (autodetect.) A value of -1 makes the program list the available
+              drivers and exit.</para>
+            </listitem>
+          </varlistentry>
+
         </variablelist>
       </refsect1>
 

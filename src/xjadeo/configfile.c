@@ -38,6 +38,7 @@ extern int		videomode;
 extern int 		seekflags;
 extern int want_quiet;
 extern int want_verbose;
+extern int want_letterbox;
 extern int mq_en;
 extern int avoid_lash;
 
@@ -72,6 +73,11 @@ int parseoption (char *item, char *value) {
 		} else if (!strncasecmp(value,"key",3)){
 			seekflags=SEEK_KEY; rv=1;
 		}
+	} else if (!strncasecmp(item,"LETTERBOX",9)) {
+		if (!strncasecmp(value,"yes",3)) {
+			want_letterbox = 1; rv=1;
+		} else if (!strncasecmp(value,"no",2))
+			rv=1;
 	} else if (!strncasecmp(item,"LASH",4)) {
 		if (!strncasecmp(value,"no",2)) {
 			avoid_lash = 1; rv=1;

@@ -9,18 +9,19 @@ TODO
 
 * OSD: render current offset ('-o', ts_offset) on screen.
    
-* fix X11 - buffer when re-opening window.
-  free (buffers) when closing window. (leak!)
+* fix X11 - re-open window.
 
-* ratain aspect ratio  - letterbox option
+* ratain aspect ratio  - letterbox option (for imlib + SDL ?)
 
 * http://lash.nongnu.org/ support
-
   - restore window position. 
     (depends on X11/SDL 'get window position' see below)
 
+* update the build information in the .spec.in 
+
 minor stuff:
   - add default midi id and settings(?) to config file option
+  - smpte parser 
 
 TODO - next major version: 
 ------------------------------------------------

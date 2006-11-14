@@ -65,7 +65,7 @@ void lcs_dbl(char *key, double value);
 /* prototypes of fn's in  display.c */
 void newsourcebuffer (void);
 void close_window(void);
-void open_window(int *argc, char ***argv);
+void open_window(void);
 
 int vidoutmode(int user_req);
 int parsevidoutname (char *arg);

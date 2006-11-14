@@ -7,6 +7,7 @@
 #include <qstatusbar.h>
 #include <qprogressbar.h>
 #include <qspinbox.h>
+#include <qslider.h>
 #include <qdesktopwidget.h>
 
 #include "qjadeo.h"
@@ -159,18 +160,21 @@ void QJadeo::syncJack()
 {
   xjadeo.writeToStdin(QString("midi disconnect\n"));
   xjadeo.writeToStdin(QString("jack connect\n"));
+  xjadeo.writeToStdin(QString("get syncsource\n"));
 }
 
 void QJadeo::syncMTC()
 {
   xjadeo.writeToStdin(QString("jack disconnect\n"));
   xjadeo.writeToStdin(QString("midi autoconnect\n"));
+  xjadeo.writeToStdin(QString("get syncsource\n"));
 }
 
 void QJadeo::syncOff()
 {
   xjadeo.writeToStdin(QString("jack disconnect\n"));
   xjadeo.writeToStdin(QString("midi disconnect\n"));
+  xjadeo.writeToStdin(QString("get syncsource\n"));
 }
 
 void QJadeo::setFPS(const QString &fps)
@@ -197,6 +201,17 @@ void QJadeo::osdSMPTEToggled(bool value)
     xjadeo.writeToStdin(QString("osd smpte 100\n"));
   else
     xjadeo.writeToStdin(QString("osd smpte -1\n"));
+}
+
+void QJadeo::seekBarChanged( int value )
+{
+  int frame=0;
+  QString Temp;
+  if(m_frames > 0) {
+  	frame = value*m_frames/1000;	
+  }
+  Temp.sprintf("seek %i\n",frame);
+  xjadeo.writeToStdin(QString(Temp));
 }
 
 void QJadeo::osdFont()
@@ -260,6 +275,34 @@ void QJadeo::readFromStdout()
           m_movie_width = value.toInt();
         else if(name == "movie_height")
           m_movie_height = value.toInt();
+        else if(name == "syncsource")
+	{
+	  Sync->setItemChecked(Sync->idAt(0),FALSE);
+	  Sync->setItemChecked(Sync->idAt(1),FALSE);
+	  Sync->setItemChecked(Sync->idAt(2),FALSE);
+
+	  if (value.toInt()==0) { // off
+            seekBar->setEnabled(TRUE);
+	    Sync->setItemChecked(Sync->idAt(2),TRUE);
+	  } else if (value.toInt()==2) { // MIDI
+            seekBar->setEnabled(FALSE);
+	    Sync->setItemChecked(Sync->idAt(1),TRUE);
+	  } else {
+            seekBar->setEnabled(FALSE); //JACK
+	    Sync->setItemChecked(Sync->idAt(0),TRUE);
+	  }
+	}
+        else if(name == "osdfont")
+	{
+	  ;// set default folder and file in 
+	   // File selection dialog.
+	}
+        else if(name == "osdmode")
+	{
+	  int v= value.toInt();
+	  OSD->setItemChecked(OSD->idAt(1),v&1);
+	  OSD->setItemChecked(OSD->idAt(2),v&2);
+	}
         else if(name == "frames")
 	{
           m_frames = value.toInt();
@@ -280,7 +323,7 @@ void QJadeo::readFromStdout()
         break;
       }
       case 1:
-       if(status==129) {
+        if(status==129) {
 	  xjadeo.writeToStdin(QString("get filename\n"));
 	  xjadeo.writeToStdin(QString("get width\n"));
 	  xjadeo.writeToStdin(QString("get height\n"));
@@ -288,6 +331,9 @@ void QJadeo::readFromStdout()
 	  xjadeo.writeToStdin(QString("get framerate\n"));
 	  xjadeo.writeToStdin(QString("notify frame\n"));
 	  xjadeo.writeToStdin(QString("get offset\n"));
+	  xjadeo.writeToStdin(QString("get osdcfg\n"));
+	  xjadeo.writeToStdin(QString("get syncsource\n"));
+	  xjadeo.writeToStdin(QString("get position\n"));
 	}
     }
   }
@@ -310,6 +356,7 @@ void QJadeo::fileLoad(const QString & filename)
   xjadeo.writeToStdin(QString("get framerate\n"));
   xjadeo.writeToStdin(QString("notify frame\n"));
   xjadeo.writeToStdin(QString("get offset\n"));
+  xjadeo.writeToStdin(QString("get position\n"));
 
 }
 
@@ -345,10 +392,19 @@ int main(int argc, char **argv)
 
   w.show();
   a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
-
+  xjadeo.writeToStdin(QString("get width\n"));
+  xjadeo.writeToStdin(QString("get height\n"));
+  xjadeo.writeToStdin(QString("get frames\n"));
   xjadeo.writeToStdin(QString("get framerate\n"));
   xjadeo.writeToStdin(QString("get offset\n"));
+  xjadeo.writeToStdin(QString("get osdcfg\n"));
+  xjadeo.writeToStdin(QString("get syncsource\n"));
+  xjadeo.writeToStdin(QString("get position\n"));
+  xjadeo.writeToStdin(QString("notify frame\n"));
+
   a.exec();
+
+  xjadeo.writeToStdin(QString("notify off\n"));
 
   xjadeo.tryTerminate();
   QTimer::singleShot(5000, &xjadeo, SLOT(kill()));

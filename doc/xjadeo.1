@@ -1,11 +1,11 @@
 .\"     Title: xjadeo
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.71.0 <http://docbook.sf.net/>
-.\"      Date: 11/13/2006
+.\"      Date: 11/14/2006
 .\"    Manual: Manual Pages
 .\"    Source: 
 .\"
-.TH "XJADEO" "1" "11/13/2006" "" "Manual Pages"
+.TH "XJADEO" "1" "11/14/2006" "" "Manual Pages"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
@@ -14,7 +14,7 @@
 xjadeo \- displays a video clip in sync with an external timing source
 .SH "SYNOPSIS"
 .HP 7
-\fBxjadeo\fR [\-afFhkKmMoqRtvVx] [videofile]
+\fBxjadeo\fR [\-abfFhikKLmMoqQRtvVx] [videofile]
 .SH "DESCRIPTION"
 .PP
 \fBxjadeo\fR
@@ -23,59 +23,31 @@ displays a video clip in sync with an external timing source. It is a handy tool
 supports different video file formats, video output libraries and sync sources.
 .SH "OPTIONS"
 .PP
-\fB\-h, \-\-help\fR
-.RS 3n
-Prints usage help and exits.
-.RE
-.PP
-\fB\-q, \-\-quiet, \-\-silent\fR
-.RS 3n
-Suppresses normal output messages.
-.RE
-.PP
-\fB\-v, \-\-verbose\fR
-.RS 3n
-Prints additional information during the execution.
-.RE
-.PP
-\fB\-R, \-\-remote\fR
-.RS 3n
-Enables interactive (stdin/stdout) control mode. Options
-\fB\-\-quiet\fR
-and
-\fB\-\-verbose\fR
-have no effect in remote mode.
-.RE
-.PP
-\fB\-f, \-\-fps \fR\fB\fI<n>\fR\fR
-.RS 3n
-Desired refresh rate of the video display in frames per second. Lower values lighten the CPU load at the cost of video quality. Admits non\-integer values. Defaults to 10.0 fps.
-.RE
-.PP
-\fB\-k, \-\-keyframes \fR
-.RS 3n
-Instructs the internal algorithm to seek only keyframes. This option may improve the performance for certain video encodings.
-.RE
-.PP
-\fB\-K, \-\-continuous \fR
-.RS 3n
-Decode video frame by frame, particularly only useful to read files where not every frame is a keyframe at cost of CPU usage. Note that this option adds some extra latency when seeking. combine with
-\fB\-f \fR: It makes sense to set xjadeo's framerate to equal the framerate of the video file.
-.RE
-.PP
 \fB\-a, \-\-ontop\fR
 .RS 3n
 Start xjadeo on top of other windows. (affects XV videomode only).
 .RE
 .PP
-\fB\-o, \-\-offset \fR\fB\fI<n>\fR\fR
+\fB\-b, \-\-letterbox\fR
 .RS 3n
-Offset the video player a certain number of (video) frames relative to the sync master time base. Admits negative values.
+retain aspect ratio and draw a letterbox around the move if necessary. Note that this feature is only available with the Xv video mode.
 .RE
 .PP
-\fB\-x, \-\-vo, \-\-videomode \fR\fB\fI<n>\fR\fR
+\fB\-f, \-\-fps \fR\fB\fI<n>\fR\fR
 .RS 3n
-Selects the video output driver. Defaults to 0 (autodetect.) A value of \-1 makes the program list the available drivers and exit.
+Desired refresh rate of the video display in frames per second. Lower values lighten the CPU load at the cost of video quality. Admits non\-integer values. Defaults to 10.0 fps.
+.sp
+If this value is set to zero (or less), xjadeo will use the framerate of the video file as its video update frequency.
+.RE
+.PP
+\fB\-F, \-\-filefps \fR\fB\fI<n>\fR\fR
+.RS 3n
+Override the (autodetected) framerate of the videofile.
+.RE
+.PP
+\fB\-h, \-\-help\fR
+.RS 3n
+Prints usage help and exits.
 .RE
 .PP
 \fB\-i, \-\-info \fR\fB\fI<n>\fR\fR
@@ -105,6 +77,24 @@ Both frame number and SMPTE.
 .RE
 .IP "" 3n
 The remote interface allows more complete control over the OSD.
+.RE
+.PP
+\fB\-k, \-\-keyframes \fR
+.RS 3n
+Instructs the internal algorithm to seek only keyframes. This option may improve the performance for certain video encodings.
+.sp
+The default behaviour (without \-k and \-K arguments) is to search any ANY frame.
+.RE
+.PP
+\fB\-K, \-\-continuous \fR
+.RS 3n
+Decode video frame by frame, particularly only useful to read files where not every frame is a keyframe at cost of CPU usage. Note that this option adds some extra latency when seeking. combine with
+\fB\-f \fR: It makes sense to set xjadeo's framerate to equal the framerate of the video file.
+.RE
+.PP
+\fB\-L, \-\-nolash\fR
+.RS 3n
+Disable LASH support.
 .RE
 .PP
 \fB\-m, \-\-midi \fR\fB\fI<port>\fR\fR
@@ -144,6 +134,33 @@ Resample video frame rate / MTC.
 .RE
 .RE
 .PP
+\fB\-o, \-\-offset \fR\fB\fI<n>\fR\fR
+.RS 3n
+Offset the video player a certain number of (video) frames relative to the sync master time base. Admits negative values.
+.RE
+.PP
+\fB\-q, \-\-quiet, \-\-silent\fR
+.RS 3n
+Suppresses normal output messages.
+.RE
+.PP
+\fB\-Q, \-\-mq\fR
+.RS 3n
+Enable POSIX message queues. Sets up a communication channel for use with
+xjremote(1). See the
+the section called \(lqRemote Control Interface\(rq
+in the documentation.
+.RE
+.PP
+\fB\-R, \-\-remote\fR
+.RS 3n
+Enables interactive (stdin/stdout) control mode. Options
+\fB\-\-quiet\fR
+and
+\fB\-\-verbose\fR
+have no effect in remote mode.
+.RE
+.PP
 \fB\-t, \-\-try\-codec\fR
 .RS 3n
 Checks if the video file is encoded in a format suitable for use with
@@ -151,9 +168,19 @@ Checks if the video file is encoded in a format suitable for use with
 and exits. If the video format is not supported the exit code is 1.
 .RE
 .PP
+\fB\-v, \-\-verbose\fR
+.RS 3n
+Prints additional information during the execution.
+.RE
+.PP
 \fB\-V, \-\-version\fR
 .RS 3n
 Display version and compile\-time configuration information and exit.
+.RE
+.PP
+\fB\-x, \-\-vo, \-\-videomode \fR\fB\fI<n>\fR\fR
+.RS 3n
+Selects the video output driver. Defaults to 0 (autodetect.) A value of \-1 makes the program list the available drivers and exit.
 .RE
 .SH "SYNC SOURCES"
 .PP

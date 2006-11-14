@@ -94,6 +94,7 @@ int want_debug   =0;	/* --debug */
 int want_verbose =0;	/* --verbose */
 int start_ontop =0;	/* --ontop // -a */
 int start_fullscreen =0;/* NY available */
+int want_letterbox =0;  /* --letterbox -b */
 int avoid_lash   =0;	/* --nolash */
 int remote_en =0;	/* --remote, -R */
 int mq_en =0;		/* --mq, -Q */
@@ -166,6 +167,7 @@ static struct option const long_options[] =
   {"info", no_argument, 0, 'i'},
   {"ontop", no_argument, 0, 'a'},
   {"nolash", no_argument, 0, 'L'},
+  {"letterbox", no_argument, 0, 'b'},
 #ifdef HAVE_MIDI
   {"midi", required_argument, 0, 'm'},
   {"midifps", required_argument, 0, 'M'},
@@ -197,6 +199,7 @@ decode_switches (int argc, char **argv)
 			   "x:"	/* video-mode */
 			   "a"	/* always on top */
 			   "i:"	/* info - OSD-mode */
+			   "b"	/* letterbox */
 #ifdef HAVE_MIDI
 			   "m:"	/* midi interface */
 			   "M:"	/* midi clk convert */
@@ -228,6 +231,9 @@ decode_switches (int argc, char **argv)
 	case 'L':		/* --nolash */
 	  avoid_lash = 1;
 	  break;
+	case 'b':		/* --letterbox */
+	  want_letterbox = 1;
+	  break;
 	case 't':		/* --try */
 	  try_codec = 1;
 	  break;
@@ -241,7 +247,7 @@ decode_switches (int argc, char **argv)
 		);
 	  break;
 	case 'o':		/* --offset */
-	  ts_offset=atoi(optarg);
+	  ts_offset=atol(optarg);
 	  printf("set time offset to %li frames\n",ts_offset);
 	  break;
 	case 'k':		/* --keyframes */
@@ -257,10 +263,13 @@ decode_switches (int argc, char **argv)
 #endif
 	  break;
 	case 'F':		/* --filefps */
-          filefps = atof(optarg);
+	  if(atof(optarg)>0)
+	    filefps = atof(optarg);
 	  break;
 	case 'f':		/* --fps */
-          delay = 1.0 / atof(optarg);
+	  if(atof(optarg)>0)
+	    delay = 1.0 / atof(optarg);
+	  else delay = -1; // use file-framerate
 	  break;
 	case 'x':		/* --vo --videomode */
           videomode = atoi(optarg);
@@ -306,6 +315,7 @@ jack video monitor\n", program_name);
 "\n"
 "  -a, --ontop               stack xjadeo window on top of the desktop.\n"
 "                            requires x11 or xv videomode and EWMH.\n"
+"  -b, --letterbox           retain apect ratio when scaling (Xv only).\n"
 "  -f <val>, --fps <val>     video display update fps - default 10.0 fps\n"
 "  -i <int> --info <int>     render OnScreenDisplay info: 0:off, %i:frame,\n"
 "                            %i:smpte, %i:both. (use remote ctrl for more opts.)\n"
@@ -503,7 +513,7 @@ main (int argc, char **argv)
 
   open_movie(movie);
   
-  open_window(&argc,&argv);
+  open_window();
 
  // try fallbacks if window open failed in autodetect mode
   if (videomode==0 && getvidmode() ==0) { // re-use cmd-option variable as counter.
@@ -515,7 +525,7 @@ main (int argc, char **argv)
       if (want_verbose) printf("trying videomode: %i: %s\n",videomode,vidoutname(videomode));
       if (tv==0) continue; // this mode is not available
       render_fmt = vidoutmode(videomode);
-      open_window(&argc,&argv); 
+      open_window(); 
     }
   }
 

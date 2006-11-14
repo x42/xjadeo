@@ -86,6 +86,7 @@ extern long	userFrame;
 extern long	dispFrame;
 extern int want_quiet;
 extern int want_verbose;
+extern int want_letterbox;
 extern int remote_en;
 extern int mq_en;
 extern int remote_mode;
@@ -162,7 +163,7 @@ void xapi_set_videomode(void *d) {
 	render_fmt = vidoutmode(vmode);
 	remote_printf(100, "setting video mode to %i",getvidmode());
 
-	open_window(0,NULL); // required here; else VOutout callback fn will fail.
+	open_window(); // required here; else VOutout callback fn will fail.
 
 	if (pFrameFMT && current_file) { 
 		// reinit buffer with new format
@@ -174,6 +175,7 @@ void xapi_set_videomode(void *d) {
 		// set videomode to 0 or loop_flag=0?
 	}
 	init_moviebuffer();
+	// display_frame(0LL,1);
 }
 
 void xapi_open_window(void *d) {
@@ -199,6 +201,23 @@ void xapi_lvideomodes(void *d) {
 			remote_printf(800,"n/a=%i : %s",i,vidoutname(i));
 	}
 }
+
+void xapi_pletterbox(void *d) {
+	unsigned int x,y;
+	if (want_letterbox)
+		remote_printf(201,"videomode=1 # fixed aspect ratio");
+	else
+		remote_printf(201,"letterbox=0 # free scaling");
+	Xgetsize(&x,&y); 
+	Xresize(x,y);
+}
+
+void xapi_sletterbox(void *d) {
+	if (!strcmp(d,"on") || atoi(d)==1 || !strcmp(d,"yes")) want_letterbox=1;
+	else want_letterbox=0;
+	xapi_pletterbox(NULL);
+}
+
 
 void xapi_pwinpos(void *d) {
 	int x,y;
@@ -231,6 +250,13 @@ void xapi_swinsize(void *d) {
 
 	remote_printf(100,"resizing window to %ux%u",x,y);
 	Xresize(x,y);
+}
+
+void xapi_ontop(void *d) {
+	int action=_NET_WM_STATE_TOGGLE;
+	if (!strcmp(d,"on") || atoi(d)==1) action=_NET_WM_STATE_ADD;
+	else if (!strcmp(d,"off") || atoi(d)==0) action=_NET_WM_STATE_REMOVE;
+	Xontop(action);
 }
 
 void xapi_fullscreen(void *d) {
@@ -319,8 +345,8 @@ void xapi_pmheight(void *d) {
 	remote_printf(201,"movie_height=%i", movie_height);
 }
 void xapi_soffset(void *d) {
-//	long int new = atol((char*)d);
-	long int new = smptestring_to_frame((char*)d);
+  	long int new = atol((char*)d);
+//	long int new = smptestring_to_frame((char*)d);
 	ts_offset= (int64_t) new;
 	remote_printf(101,"offset=%li",(long int) ts_offset);
 }
@@ -336,8 +362,8 @@ void xapi_psmpte(void *d) {
 }
 
 void xapi_seek(void *d) {
-//	long int new = atol((char*)d);
-	long int new = smptestring_to_frame((char*)d);
+  	long int new = atol((char*)d);
+//	long int new = smptestring_to_frame((char*)d);
 	userFrame= (int64_t) new;
 	remote_printf(101,"defaultseek=%li",userFrame);
 }
@@ -348,12 +374,18 @@ void xapi_pfps(void *d) {
 
 void xapi_sfps(void *d) {
 	char *off= (char*)d;
-        delay = 1.0 / atof(off);
+	if(atof(off)>0)
+		delay = 1.0 / atof(off);
+	else delay = -1; // use file-framerate
 	remote_printf(101,"updatefps=%i",(int) rint(1/delay));
 }
 
 void xapi_sframerate(void *d) {
 	char *off= (char*)d;
+	if (!(atof(off)>0)) {
+		remote_printf(423,"invalid argument (range >0)"); 
+		return;
+	}
         filefps= atof(off);
        	framerate = filefps;
 //	if (filefps > 0) { 
@@ -467,6 +499,16 @@ void xapi_posd(void *d) {
 #else
 	remote_printf(490,"this feature is not compiled");
 #endif
+}
+
+void xapi_psync(void *d) {
+	int ss =0;
+#ifdef HAVE_MIDI
+	if (midi_connected()) ss=2;
+	else
+#endif
+	if (jack_connected()) ss=1;
+	remote_printf(201,"syncsource=%i",ss);
 }
 
 void xapi_osd_pos(void *d) {
@@ -662,7 +704,9 @@ Dcommand cmd_get[] = {
 //	{"windowpos" , ": show current window position", NULL, xapi_pwinpos, 0 },
 	{"videomode" , ": display current video mode", NULL, xapi_pvideomode, 0 },
 	{"midisync", ": display midi smpte conversion mode", NULL, xapi_pmidisync, 0 },
-	{"osdcfg", ": display status of on screen display", NULL, xapi_posd, 0 },
+	{"osdcfg", ": display status on screen display", NULL, xapi_posd, 0 },
+	{"syncsource", ": display currently used sync source", NULL, xapi_psync, 0 },
+	{"letterbox" , ": query video scaling mode", NULL, xapi_pletterbox, 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 
@@ -680,7 +724,9 @@ Dcommand cmd_window[] = {
 	{"resize " , "<int>|<int>x<int>: resize window (percent of movie or abs)", NULL, xapi_swinsize, 0 },
 	{"position " , "<int>x<int>: move window to absolute position", NULL, xapi_swinpos, 0 },
 	{"pos " , "<int>x<int>: alias for 'window position'", NULL, xapi_swinpos, 0 },
-	{"fullscreen " , "[on|off|toggle]: en/disable fullscreen (only XV videomode)", NULL, xapi_fullscreen, 0 },
+	{"fullscreen " , "[on|off|toggle]: en/disable fullscreen (only XV/x11 )", NULL, xapi_fullscreen, 0 },
+	{"ontop " , "[on|off|toggle]: en/disable 'on top' (only XV/x11)", NULL, xapi_ontop, 0 },
+	{"letterbox " , "[on|off]: retain aspect movie ratio (only Xv)", NULL, xapi_sletterbox, 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 

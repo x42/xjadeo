@@ -45,6 +45,7 @@ int			xj_fullscreen = 0;
 int			xj_mouse = 0; 
 
 int          		xj_dwidth, xj_dheight; // cache window size for rendering currently only Xv
+int			xj_box[4]; // letterbox site - currently only Xv
 
 
 /*******************************************************************************
@@ -219,6 +220,26 @@ void xj_position (int x, int y) {
 	XMoveWindow(xj_dpy, xj_win,x,y);
 }
 
+void xj_letterbox() {
+	if (!want_letterbox) { /* scale */
+		xj_box[0]=xj_box[1]=0;
+		xj_box[2]=xj_dwidth;
+		xj_box[3]=xj_dheight;
+	} else { /* letterbox; */
+		float asp_src= (float)movie_width/movie_height;
+		float asp_dst= (float)xj_dwidth/xj_dheight;
+		if (asp_dst > asp_src ) {
+			xj_box[3]=xj_dheight;
+			xj_box[2]=xj_box[3]*asp_src;
+		} else {
+			xj_box[2]=xj_dwidth;
+			xj_box[3]=xj_box[2]/asp_src;
+		}
+		xj_box[0]=(xj_dwidth-xj_box[2])/2;
+		xj_box[1]=(xj_dheight-xj_box[3])/2;
+	}
+}
+
 /*
 void set_x11_icon_name(unsigned char *icon) {
 	XTextProperty text_prop;
@@ -359,6 +380,7 @@ void getDragData (XEvent *xe) {
 
 	if (!data){
 		fprintf(stderr, "WARNING: drag-n-drop - no data\n"); 
+		return;
 	}
 
 	/* Handle dropped files */
@@ -486,6 +508,7 @@ void xj_handle_X_events (void) {
 					xj_get_window_size(&my_Width,&my_Height);
 					xj_dwidth= my_Width;
 					xj_dheight= my_Height;
+					xj_letterbox();
 				}
 				if (VOutput == 1) // only XV
 					xj_render();
@@ -696,8 +719,12 @@ void render_xv (uint8_t *mybuffer) {
 		xv_image,
 		0, 0,				/* sx, sy */
 		xv_swidth, xv_sheight,		/* sw, sh */
-		0,  0,		/* dx, dy */
+#if 1 // letterbox
+		xj_box[0],xj_box[1],xj_box[2],xj_box[3],
+#else
+		0, 0,				/* dx, dy */
 		xj_dwidth, xj_dheight,		/* dw, dh */
+#endif
 		True);
 	XFlush(xj_dpy);
 // 	XSync(xj_dpy,False);
@@ -708,6 +735,7 @@ void newsrc_xv (void) {
 
   	xj_dwidth = xv_swidth = movie_width;
 	xj_dheight = xv_sheight = movie_height;
+	xj_letterbox();
 	allocate_xvimage();
 	xj_render();
 
@@ -838,6 +866,7 @@ int open_window_xv (void) {
  */
 	xj_dwidth = xv_swidth = movie_width;
 	xj_dheight = xv_sheight = movie_height;
+	xj_letterbox();
 
 	xj_win = XCreateSimpleWindow(xj_dpy, xj_rwin,
 			0, 0,
@@ -922,7 +951,7 @@ void position_xv (int x, int y) {
 
 ImlibData *imlib = NULL;
 int       depth;
-XImage    *image;
+//XImage    *image;
 Pixmap    pxm, pxmmask;
 
 int open_window_imlib (void) {
@@ -995,16 +1024,15 @@ void render_imlib (uint8_t *mybuffer) {
 
     /* Render the original 24-bit Image data into a pixmap of size w * h */
 	Imlib_render(imlib,iimage, my_Width,my_Height );
-//	Imlib_render(imlib,iimage,movie_width,movie_height);
-
+	//Imlib_render(imlib,iimage, my_Width-20,my_Height-20 );
 
     /* Extract the Image and mask pixmaps from the Image */
 	pxm=Imlib_move_image(imlib,iimage);
     /* The mask will be 0 if the image has no transparency */
-	pxmmask=Imlib_move_mask(imlib,iimage);
+//	pxmmask=Imlib_move_mask(imlib,iimage);
     /* Put the Image pixmap in the background of the window */
 	XSetWindowBackgroundPixmap(xj_dpy,xj_win,pxm);       
-//	XPutImage(display,window,gc,pxm, 0,0,0,0, my_Width, my_Height);
+//	XPutImage(xj_dpy,xj_win,xj_gc,img, 0,0,0,0, my_Width, my_Height);
 	XClearWindow(xj_dpy,xj_win);       
     /* No need to sync. XPending will take care in the event loop. */
 //	XSync(display, True);     

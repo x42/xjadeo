@@ -1,3 +1,18 @@
+2006-11-14  rgareus  <robin@gareus.org>
+ - qjadeo 
+   - sync-menu radio buttons
+   - position slider (sync off mode)
+   - query xjadeo settings (OSD, sync) on startup
+   - renamed fullscreen -> maximize
+ - xjadeo: get osdcfg, get syncsource remote commands
+ - Xv letterbox (-b, --leterbox, "window letterbox [on|off]")
+ - use file-fps as delay when (0 >= delay ) 
+ * version v0.3.21
+
+2006-11-13  rgareus  <robin@gareus.org>
+ - fixed drag/drop accept area.
+ - catch signals + clean up 
+
 2006-11-13  rgareus  <robin@gareus.org>
  - `ffmpeg-config` and other configure.ac updates.
  - lash=[yes|no] and mq=[yes|no] config file options.

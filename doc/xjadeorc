@@ -13,22 +13,37 @@
 #quiet=[yes|no]
 ;quiet=no
 
+
+# xjadeo framerate - delay
+# specifies how many times per second xjadeo updates the screen.
+# this is independant of the video-file's frame-rate.
+# a negative value will force xjadeo to use the frame-rate of the video file.
 #fps=<numeric>
 ;fps=10.0
 
+# specify default seek mode
 #seek=[any|cont|key]
 ;seek=any
 
+# disable LASH support (enabled by default)
 #lash=[yes|no]
 ;lash=yes
 
+# select the video library/interface to use.
 #videomode=[xv|imlib2|x11|sdl]
 ;videomode=auto
 
+# en/disable message queues (remote control)
 #mq=[on|off]
-;my=on
+;my=off
 
+# absolute path to a TTF font file to be used for on-screen-display
 #fontfile=<filename>
 ;fonfile=/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf
+
+# specify whether to retain the aspect ratio of the movie when scaling
+# the window.  (only Xv)
+#letterbox=[yes|no]
+;letterbox=no
 
 # END of xjadeorc

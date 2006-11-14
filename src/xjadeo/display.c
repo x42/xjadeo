@@ -292,7 +292,7 @@ void render_buffer (uint8_t *mybuffer) {
 }
 
 
-void open_window(int *argc, char ***argv) {
+void open_window(void) {
 	if (!want_quiet)
 		printf("Video output: %s\n",VO[VOutput].name);
 	if (VO[VOutput].open() ) { 

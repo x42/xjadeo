@@ -113,6 +113,7 @@ void event_loop(void) {
 	long		newFrame, offFrame;
 	long		nanos;
 	struct timespec	ts;
+	double dly;
 
 	gettimeofday(&clock1, NULL);
 
@@ -155,11 +156,12 @@ void event_loop(void) {
 
 		handle_X_events();
 		lash_process();
+		dly = delay>0?delay:(1.0/framerate);
     
 		gettimeofday(&clock2, NULL);
 		elapsed_time = ((double) (clock2.tv_sec-clock1.tv_sec)) + ((double) (clock2.tv_usec-clock1.tv_usec)) / 1000000.0;
-		if(elapsed_time < delay) {
-			nanos = (long) floor(1e9L * (delay - elapsed_time));
+		if(elapsed_time < dly) {
+			nanos = (long) floor(1e9L * (dly - elapsed_time));
 			ts.tv_sec = (nanos / 1000000000L);
 			ts.tv_nsec = (nanos % 1000000000L);
 			select_sleep(nanos/1000L);
@@ -532,12 +534,16 @@ int close_movie()
 	if (!pFrameFMT) return(-1);
 
 	// Free the formatted image 
-	free(buffer); buffer=NULL;
-	av_free(pFrameFMT);
+	if(buffer) free(buffer);
+	buffer=NULL;
+	if (pFrameFMT)
+		av_free(pFrameFMT);
 	pFrameFMT=NULL;
 
 	//Free the YUV frame
-	av_free(pFrame);
+	if (pFrame)
+		av_free(pFrame);
+	pFrame=NULL;
 
 	//Close the codec
 	avcodec_close(pCodecCtx);
