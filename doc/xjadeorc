@@ -13,7 +13,6 @@
 #quiet=[yes|no]
 ;quiet=no
 
-
 # xjadeo framerate - delay
 # specifies how many times per second xjadeo updates the screen.
 # this is independant of the video-file's frame-rate.
@@ -45,5 +44,32 @@
 # the window.  (only Xv)
 #letterbox=[yes|no]
 ;letterbox=no
+
+#
+# MIDI OPTIONS
+# (midi options will be ignored if midi is not available)
+#
+
+# -m : specify MIDI port to read from.
+# with alsa-midi this is a string alike "24,0" or "hw:2,0,0" 
+# for port-midi use an integer value of the midi port eg. 2
+# "-1" autoconnects to the first avail. input-port with the
+# portmidi driver.
+#midiid=<port>
+;midismpte=-1
+
+# -C : use MTC quarter frames for 
+# more accurate sync. this is generally
+# a good idea, however only available with
+# the alsa midi driver.
+#midiclk=[yes|no]
+;midiclk=no
+
+# -M : how to convert the MTC smpte to video smpte 
+# 1: use MTC information (-v to check) - default
+# 2: force video file's fps
+# 3: convert/adjust framerates
+#midismpte=<1|2|3>
+;midismpte=0
 
 # END of xjadeorc

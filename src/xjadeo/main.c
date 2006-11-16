@@ -91,11 +91,13 @@ long	userFrame = 0; // seek to this frame if jack and midi are N/A
 long	dispFrame = 0; // global strorage... = (SMPTE+offset) with boundaries to [0..movie_file_frames]
 
 int want_quiet   =0;	/* --quiet, --silent */
-int want_debug   =0;	/* --debug */
+int want_debug   =0;	/* -D --debug  (hidden option) */
 int want_verbose =0;	/* --verbose */
 int start_ontop =0;	/* --ontop // -a */
 int start_fullscreen =0;/* NY available */
 int want_letterbox =0;  /* --letterbox -b */
+int want_dropframes =0; /* --dropframes -N  BEWARE! */
+int want_autodrop =1;   /* --nodropframes -n (hidden option) */
 int avoid_lash   =0;	/* --nolash */
 int remote_en =0;	/* --remote, -R */
 int mq_en =0;		/* --mq, -Q */
@@ -111,6 +113,7 @@ int try_codec =0;	/* --try-codec */
 #ifdef HAVE_MIDI
 char midiid[32] = "-2";	/* --midi # -1: autodetect -2: jack*/
 int midi_clkconvert =0;	/* --midifps [0:MTC|1:VIDEO|2:RESAMPLE] */
+int midi_clkadj =0;	/* --midiclk  */
 #endif
 
 #ifdef HAVE_LASH
@@ -168,10 +171,13 @@ static struct option const long_options[] =
   {"info", no_argument, 0, 'i'},
   {"ontop", no_argument, 0, 'a'},
   {"nolash", no_argument, 0, 'L'},
+  {"dropframes", no_argument, 0, 'N'},
+  {"nodropframes", no_argument, 0, 'n'},
   {"letterbox", no_argument, 0, 'b'},
 #ifdef HAVE_MIDI
   {"midi", required_argument, 0, 'm'},
   {"midifps", required_argument, 0, 'M'},
+  {"midiclk", required_argument, 0, 'C'},
 #endif
   {"debug", no_argument, 0, 'D'},
   {NULL, 0, NULL, 0}
@@ -204,7 +210,10 @@ decode_switches (int argc, char **argv)
 #ifdef HAVE_MIDI
 			   "m:"	/* midi interface */
 			   "M:"	/* midi clk convert */
+			   "C"	/* --midiclk */
 #endif
+			   "N"	/* --dropframes */
+			   "n"	/* --nodropframes */
 			   "D"	/* debug */
 			   "L"	/* no lash */
 			   "V",	/* version */
@@ -229,6 +238,12 @@ decode_switches (int argc, char **argv)
 	case 'Q':		/* --mq */
 	  mq_en = 1;
 	  break;
+	case 'n':		/* --nodropframes */
+	  want_autodrop = 0;
+	  break;
+	case 'N':		/* --dropframes */
+	  want_dropframes = 1;
+	  break;
 	case 'L':		/* --nolash */
 	  avoid_lash = 1;
 	  break;
@@ -250,7 +265,7 @@ decode_switches (int argc, char **argv)
 	case 'o':		/* --offset */
 	  // we don't know the file's framerate yet!
 	  smpte_offset=strdup(optarg); 
-	  //ts_offset=smptestring_to_frame(optarg);
+	  //ts_offset=smptestring_to_frame(optarg,0);
 	  //printf("set time offset to %li frames\n",ts_offset);
 	  break;
 	case 'k':		/* --keyframes */
@@ -285,6 +300,9 @@ decode_switches (int argc, char **argv)
 	  break;
 	case 'M':		/* --midifps */
           midi_clkconvert = atoi(optarg);
+	  break;
+	case 'C':		/* --midiclk */
+          midi_clkadj = 1;
 	  break;
 #endif
 	case 'V':
@@ -341,12 +359,24 @@ jack video monitor\n", program_name);
 "  -m <port>,                use alsamidi instead of jack\n"
 "      --midi <port>         specify alsa seq id to connect to. (-1: none)\n" 	  
 "                            eg. -m ardour or -m 80 \n"
+"  -C, --midiclk             use midi quarter frames for more exact sync.\n"
 #endif /* HAVE_PORTMIDI */
 "  -M <int>,                 how to 'convert' MTC SMPTE to framenumber:\n"
 "      --midifps <int>       0: use framerate of MTC clock (default)\n" 
 "                            2: use video file FPS\n" 
 "                            3: \"resample\": videoFPS / MTC \n" 
 #endif /* HAVE_MIDI */
+/*
+"  -n , --nodropframes       parse MTC as announced, but do not use frame-drop\n" 
+"                            algorithm for OSD - useful for debugging\n"
+"  -N , --dropframes         force the SMPTE converter to use the drop-frames\n" 
+"                            algorithm. (Frame dropping is only useful in \n"
+"                            combination with a 29fps MIDI time source.\n"
+"                            MTC in 29.97-frame-drop format is automatically\n"
+"                            detected and it is illegal to use this algorithm\n"
+"                            for other framerates.) DO NOT USE THIS OPTION,\n"
+"                            unless you really know what you are doing.\n" 
+*/
 "  -o <int>, --offset <int>  add/subtract <int> video-frames to/from timecode\n"
 #ifdef HAVE_MQ
 "  -Q, --mq                  set-up message queues for xjremote\n"
@@ -565,6 +595,7 @@ main (int argc, char **argv)
   event_loop();
   
   clean_up(0);
+  return (0);
 }
 
 /* vi:set ts=8 sts=2 sw=2: */

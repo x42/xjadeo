@@ -1,27 +1,36 @@
-TODO
-----
-
-* mq:
-   - FIX multiple remote clients one xjadeo -> who gets the replies ? 
-   - multi drop queues and mq_notify()
-   - multiple instances - named message queues + list of avail queues.
-   - trap signals and unlink queues on exit (atexit,onexit?)
+TODO < 0.4
+-----------
 
 * OSD: render current offset ('-o', ts_offset) on screen.
+
+* keystrokes to adjust offset: eg. press key '-' '+' sub/add a frame. 
+  and toggle offset display.
    
 * fix X11 - re-open window.
 
-* ratain aspect ratio  - letterbox option (for imlib + SDL ?)
-
 * http://lash.nongnu.org/ support
-  - restore window position. 
+  - restore window position.  (maybe > 0.4)
     (depends on X11/SDL 'get window position' see below)
 
 * update the build information in the .spec.in 
 
-minor stuff:
-  - add default midi id and settings(?) to config file option
-  - smpte parser 
+* qjadeo
+ - specify midi device
+ - offset + seek to SMPTE value
+ - notify smtpe ??
+
+MIDI:
+  - alsamidi - catch port re-assignments and remember em ?
+  - read up docs on 1/4 frame timing.
+
+TODO > 0.4.0
+-------------
+* mq:
+   - FIX multiple remote clients one xjadeo -> who gets the replies ? 
+   - multi drop queues and mq_notify()
+   - multiple instances - named message queues + list of avail queues.
+
+* ratain aspect ratio  - letterbox option for imlib (+ SDL? )
 
 TODO - next major version: 
 ------------------------------------------------
@@ -45,18 +54,19 @@ TODO - next major version:
 
   - translations and internationalization ?!
 
-TODO - legacy and older ideas
------------------------------
+TODO - legacy and low priority issues
+-------------------------------------
   DISPLAY:
 
  - getwindow position 
 
  - SDL RGB SWSURFACE (new videomode)
 
- - speed up YUV trancoding - rewrite "buffer" concept.
+ - speed up YUV trancoding -
    have ffmpeg decode directly to shared-mem...
 
- - keyboard events. (-> generate remote msgs)
+ - put xjadeo-session name in window title ? 
+   add some info and markups to the title (on top, offset, smpte)
 
  - freetype font config. outline font? color, xposition.
 
@@ -66,37 +76,12 @@ TODO - legacy and older ideas
 
  - jack midi 
 
-  MAIN:
-
- - config file for our mighty jolly bunch of config options.
-   
-   -> add more config options ?? 
-
- - SMPTE support drop frames
-
   REMOTE: 
+ - keyboard events. (-> generate remote msgs)
+ - notify key event ?? (have client handle keystrokes on the xjadeo window)
+   internal (default) key press handler if no-bidir remote ctrl.
+   map key event to command 
 
- - some commands are 402: not yet implemented
- - notify key event
- - internal (default) key press handler if no-bidir remote ctrl.
- - map key event to command (dynamic or fixed ?!)
-
-
-########
-
-Support more video formats. Doubtful. It is difficult and taxes performance.
-
-rename "-fps" option - can be confusing: fps of the movie-file, and delay
-between display-updates.
-
-put xjadeo-session name in window title ? 
-
-New Feature request / Brainstorm:
+  OTHER:
  - check cpu load - dynamically increase delay if above threshold.
-
- - allow dynamic adj. of offset.
-   eg. press key '-' '+' sub/add a frame. (see note abvoe)
- - parse offset from EDL file 
- 
- - libdv / libtheora / mjpeg  :)
 

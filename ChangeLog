@@ -1,3 +1,11 @@
+2006-11-15  x42  <robin@gareus.org>
+ - SMPTE / MIDI TC drop frames code
+ - alsa-midi: parse quarter frames (-C)
+ - added midi options to cfgfile
+ - removed command 'midi autoconnect'  and added 'midi reconnect'
+ - crudly convert '%20' to whitespaces when receiving drag data. 
+ - added '-P' --noping option to xjremote.
+
 2006-11-14  rgareus  <robin@gareus.org>
  - preparing for proper midi+smpte conversion.
  - added debian files to SVN.

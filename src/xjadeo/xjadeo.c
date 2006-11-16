@@ -151,7 +151,13 @@ void event_loop(void) {
 		display_frame((int64_t)(offFrame),0);
 
 		if(want_verbose) {
+		#if 0
 			fprintf(stdout, "frame: smpte:%li    \r", newFrame);
+		#else
+			char tempsmpte[15];
+			frame_to_smptestring(tempsmpte,newFrame,midi_connected());
+			fprintf(stdout, "smpte: %s f:%li\r", tempsmpte,newFrame);
+		#endif
 			fflush(stdout); 
 		}
 
@@ -216,7 +222,7 @@ int open_movie(char* file_name) {
 	framerate = duration = frames = 1;
 	videoStream=-1;
 	// recalc offset with new framerate
-	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset);
+	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset,midi_connected());
   
 	/* Open video file */
 	if(av_open_input_file(&pFormatCtx, file_name, NULL, 0, NULL)!=0) {
@@ -283,7 +289,7 @@ int open_movie(char* file_name) {
 	frames = (long) (framerate * duration);
 
 	// recalc offset with new framerate
-	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset);
+	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset,midi_connected());
   
 	if (!want_quiet) {
 		if (filefps >0 ) 
@@ -475,11 +481,11 @@ void display_frame(int64_t timestamp, int force_update) {
 	if (!force_update && dispFrame == timestamp) return;
 
 	if(want_verbose)
-		fprintf(stdout, "\t\t\tdisplay:%li        \r", (long int) timestamp);
+		fprintf(stdout, "\t\t\t\tdisplay:%07li  \r", (long int) timestamp);
 
 	dispFrame = timestamp;
 	if (OSD_mode&OSD_FRAME) snprintf(OSD_frame,48,"Frame: %li", dispFrame);
-	if (OSD_mode&OSD_SMPTE) frame_to_smptestring(OSD_smpte,dispFrame);
+	if (OSD_mode&OSD_SMPTE) frame_to_smptestring(OSD_smpte,dispFrame,midi_connected());
 
 	if(fFirstTime) {
 		fFirstTime=0;
@@ -488,8 +494,9 @@ void display_frame(int64_t timestamp, int force_update) {
 
 	if (pFrameFMT && my_seek_frame(&packet, timestamp)) {
 		// FIXME pts/dts display might be wrong
+		// verbose out here - cause packet will be freed after loop.. mmh.
 		if(want_verbose && packet.pts != dispFrame)
-			fprintf(stdout, "\t\t\tdisplay:%li        \r", (long int) packet.pts);
+			fprintf(stdout, "\t\t\t\tdecoder:%07li  \r", (long int) packet.pts);
 		/* Decode video frame */
 		while (1) {
 			// FIXME: pts/dts stream->time_base

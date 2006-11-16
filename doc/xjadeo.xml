@@ -138,7 +138,7 @@
     <para><application>xjadeo</application> was designed and written by Luis
     Garrido and Robin Gareus.</para>
 
-    <para>Fortunately we stand on the GNU giants' shoulders! See comments in
+    <para>Fortunately we stand on the GNU giants' shoulders (both of em). See header and comments in
     the source files for more detailed information.</para>
 
     <itemizedlist>
@@ -154,8 +154,10 @@
       </listitem>
 
       <listitem>
-        <para>XLib code: (xjadeo-0.1)<ulink
+        <para>XLib code:<ulink
         url="http://www.ac3.edu.au/SGI_Developer/books/XLib_PG/sgi_html/index.html">http://www.ac3.edu.au/SGI_Developer/books/XLib_PG/sgi_html/index.html</ulink></para>
+      </listitem>
+      <listitem>
 	<para>X11-fullscreen code credits: <ulink url="http://www.mplayerhq.hu">mplayer</ulink>.</para>
       </listitem>
 
@@ -179,13 +181,13 @@
   <section id="prospects">
     <title>PROSPECTS</title>
 	
-    <para>Future releases of xjadeo will be more comprehensive. xjadeo will settle for X11/Xv, support VSync and buffered video. see the TODO file in the source or contact the developers.</para>
+    <para>Future releases of xjadeo will be more comprehensive. xjadeo will settle for X11/Xv, support VSync and buffered video. see the TODO file in the source or contact the developers if you are interested.</para>
 
     <para>It's a thighrope walk between audio-helper-application (low profile) and pro-A/V-tool (exact video sync).</para>
 
     <para>xjadeo started as a collection of example code end is being used as that. People use it as code repository to spin-off c based video installations..   Parts of <application>xjadeo</application> have been re-used for various VJ purposes, mainly to synchronize playback on multiple screens (using <ulink url="netjack.sourceforge.net">netjack</ulink> and/or xjadeo remote-ctrl see <xref linkend="sync_remote_commands" /> ). check <ulink url="http://svn.sourceforge.net/viewcvs.cgi/xjadeo/trunk/contrib/">http://svn.sourceforge.net/viewcvs.cgi/xjadeo/trunk/contrib/</ulink> for further additions.</para>
 
-    <para>With a minor modifications xjadeo can read dynamic video-frame-offset lists (EDL) and do the editing during playback. It is unlikely for this to be merged in the main distribution. video editing, although sometimes handy, is clearly beyond xjadeo's scope.  see our sister projects: <ulink url="http://openmovieeditor.sourceforge.net/">Open Movie Editor</ulink> or use the EDL capabilities of mplayer/mencoder. join the discussion <ulink url="http://openmtes.tomveens.nl/">Openmtes</ulink> </para>
+    <para>With minor modifications xjadeo can read video-frame-offset lists (EDL) and do the editing during playback. It is unlikely for this to be merged in the main distribution. video editing, although sometimes handy, is clearly beyond xjadeo's scope.  see our sister projects: <ulink url="http://openmovieeditor.sourceforge.net/">Open Movie Editor</ulink> or use the EDL capabilities of mplayer/mencoder. join the discussion <ulink url="http://openmtes.tomveens.nl/">Openmtes</ulink> </para>
   </section>
 
   </section>
@@ -214,7 +216,7 @@
       url="http://sourceforge.net/project/showfiles.php?group_id=131926">download</ulink>
       as source and binary package.</para>
 
-      <para>A debian package can be found at <ulink
+      <para>A Debian package can be found at <ulink
       url="http://www.debian-multimedia.org/">debian-multimedia</ulink>
       edit <filename>/etc/apt/sources.list</filename> to include <screen>
 deb http://www.debian-multimedia.org sid main
@@ -282,7 +284,7 @@ deb-src http://www.debian-multimedia.org sid main</screen>
             <para><ulink url="http://www.nongnu.org/lash/">lash</ulink> for restoring sessions.</para>
           </listitem>
           <listitem>
-            <para>librt (from the <ulink url="http://www.gnu.org/software/libc/">GNU C Library</ulink> > 2.3.2(?)) - POSIX message queues (requires kernel support - linux >= 2.6.6)</para>
+            <para>librt (from the <ulink url="http://www.gnu.org/software/libc/">GNU C Library</ulink> > 2.3.2(?)) - POSIX message queues (requires kernel support - Linux >= 2.6.6)</para>
           </listitem>
 	 </itemizedlist>
       </para>
@@ -560,7 +562,7 @@ make install # (requires root privileges) </screen></para>
     <section id="problems" xreflabel="known issues">
       <title>Known Issues</title>
 
-      <para>Some Video Codecs are known not to work properly on some systems.
+      <para>Some Video codecs are known not to work properly on some systems.
       This is mostly due to different ffmpeg versions, available codec
       decoders, etc.</para>
 
@@ -779,11 +781,13 @@ make install # (requires root privileges) </screen></para>
 
         <variablelist>
           <varlistentry>
-            <term><option>midi autoconnect </option></term>
+            <term><option>midi reconnect </option></term>
 
             <listitem>
-              <para>Auto-discover and connect to a MIDI time source, overriding
-              jack transport information.</para>
+              <para>(Dis and re)connect to the last specifid midi port. The default port is -1, but it can be
+	      overridden with <option>-m</option> or the <command>midi open &lt;port&gt;</command> command.</para>
+	      <para>Note: when a MIDI port is connected, the jack transport information will be ignored, whether xjadeo is
+	      connected to jack or not.</para>
             </listitem>
           </varlistentry>
 
@@ -827,7 +831,7 @@ make install # (requires root privileges) </screen></para>
             <term><option>get midisync </option></term>
 
             <listitem>
-              <para>Display midi smpte conversion mode, corresponding to -M
+              <para>Display midi SMPTE conversion mode, corresponding to -M
               option.</para>
             </listitem>
           </varlistentry>
@@ -1328,9 +1332,10 @@ make install # (requires root privileges) </screen></para>
 
     <section id="midi_clock">
     <title>Midi Clock Conversion</title>
-    <para>MTC includes information about the framerate of the SMPTE, which is used by xjadeo for generating the framecount independent of the movie clip's framerate. Naturally you want to adjust the midi time source to match the exact framerate of the video that you want to display.
-    In any case xjadeo allows you to convert or force the video-file's framerate value with the <option>--midifps</option> option.
-    Midi and smpte clock parsing is implemented using bitwise integer and long integer arithmetic operations on frame basis. and does not support drop-frame timecode yet.</para>
+    <para>MTC includes information about the framerate of the SMPTE timecode, which is used by xjadeo for generating the framecount independent of the movie clip's framerate. Naturally you want to adjust the midi time source to match the exact framerate of the video that you want to work with. 
+    Timecode freaks and desparate engineers can resort to force the converter algorithm to use the video-file's framerate value with the <option>--midifps</option> and <option>--filefps</option> option.</para>
+    <para> Starting with version 0.3.22 xjadeo supports drop-frame timecode and non-integer framerates.
+    Midi and SMPTE clock parsing is implemented using bitwise integer and long integer arithmetic operations.</para>
     </section>
 
   </section>
@@ -1477,7 +1482,7 @@ add full list of replaceables and literals here
             <listitem>
               <para>Instructs the internal algorithm to seek only keyframes.
               This option may improve the performance for certain video encodings. </para>
-	      <para>The default behaviour (without -k and -K arguments) is to search any ANY frame.</para>
+	      <para>The default behavior (without -k and -K arguments) is to search any ANY frame.</para>
             </listitem>
           </varlistentry>
 
@@ -1830,7 +1835,7 @@ add full list of replaceables and literals here
       <refsect1>
         <title>ENVIRONMENT</title>
 
-        <para><command>qjadeo</command> if the XJADEO variable is set, qjadeo
+        <para>if the XJADEO variable is set, qjadeo
         will assume that it holds the path to the xjadeo executable.</para>
       </refsect1>
     </refentry>
@@ -1890,6 +1895,14 @@ add full list of replaceables and literals here
           </varlistentry>
 
           <varlistentry>
+            <term><option>-P, --noping</option></term>
+
+            <listitem>
+              <para>Skip checking for xjadeo live signs (ping).</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
             <term><option>-q, --quiet, --silent</option></term>
 
             <listitem>
@@ -1942,7 +1955,7 @@ add full list of replaceables and literals here
       <refsect1>
         <title>ENVIRONMENT</title>
 
-        <para><command>xjremote</command> if the XJADEO variable is set, xjremote
+        <para>If the XJADEO variable is set, xjremote
         will assume that it holds the path to the xjadeo executable.</para>
       </refsect1>
     </refentry>

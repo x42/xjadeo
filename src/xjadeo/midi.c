@@ -42,8 +42,11 @@
 
 extern int want_quiet;
 extern int want_verbose;
+extern int want_debug;
 extern double framerate;
 extern int midi_clkconvert;
+extern int midi_clkadj;
+extern double 	delay;
 
 typedef struct {
 	int frame;
@@ -55,10 +58,24 @@ typedef struct {
 	int type;
 } smpte;
 
+/* use gettimeofday() to extrapolate the 'current time'
+ * from the last full MTC message until the 
+ * moment of polling
+ *
+ * the alternative (default) is to use 1/4 messages
+ * (there are 8 quater midi msgs in each MTC frame)
+ */
+//#define EXT_TIME
 
 /* global Vars */
 smpte tc;
 smpte last_tc;
+int eights;
+#define SE(ARG) eights++;
+
+#ifdef EXT_TIME
+struct timeval last_tv;
+#endif
 
 
 const char MTCTYPE[4][10] = {
@@ -77,28 +94,33 @@ const char MTCTYPE[4][10] = {
 void parse_timecode( int data) {
 	switch (data>>4) {
 		case 0x0: // #0000 frame LSN
-			tc.frame= ( tc.frame&(~0xf)) | (data&0xf); break;
+			SE(1); tc.frame= ( tc.frame&(~0xf)) | (data&0xf); break;
 		case 0x1: // #0001 frame MSN
-			tc.frame= (tc.frame&(~0xf0)) | ((data&0xf)<<4); break;
+			SE(2); tc.frame= (tc.frame&(~0xf0)) | ((data&0xf)<<4); break;
 		case 0x2: // #0010 sec LSN
-			tc.sec= ( tc.sec&(~0xf)) | (data&0xf); break;
+			SE(3); tc.sec= ( tc.sec&(~0xf)) | (data&0xf); break;
 		case 0x3: // #0011 sec MSN
-			tc.sec= (tc.sec&(~0xf0)) | ((data&0xf)<<4); break;
+			SE(4); tc.sec= (tc.sec&(~0xf0)) | ((data&0xf)<<4); break;
 		case 0x4: // #0100 min LSN
-			tc.min= ( tc.min&(~0xf)) | (data&0xf); break;
+			SE(5); tc.min= ( tc.min&(~0xf)) | (data&0xf); break;
 		case 0x5: // #0101 min MSN
-			tc.min= (tc.min&(~0xf0)) | ((data&0xf)<<4); break;
+			SE(6); tc.min= (tc.min&(~0xf0)) | ((data&0xf)<<4); break;
 		case 0x6: // #0110 hour LSN
-			tc.hour= ( tc.hour&(~0xf)) | (data&0xf); break;
+			SE(7); tc.hour= ( tc.hour&(~0xf)) | (data&0xf); break;
 		case 0x7: // #0111 hour MSN and type
 			tc.hour= (tc.hour&(~0xf0)) | ((data&1)<<4);
 			tc.type = (data>>1)&3;
+			eights=0;
 			if (want_verbose) {
-			  printf("\t\t\t\t\t---  %02i:%02i:%02i.%02i [%s]       \r",tc.hour,tc.min,tc.sec,tc.frame,MTCTYPE[tc.type]);
+			  printf("\r\t\t\t\t\t\t\t->- %02i:%02i:%02i.%02i[%s]\r",tc.hour,tc.min,tc.sec,tc.frame,MTCTYPE[tc.type]);
 			  fflush(stdout);
 			}
 			memcpy(&last_tc,&tc,sizeof(smpte));
 			tc.type=tc.min=tc.frame=tc.sec=tc.hour=0;
+	#ifdef EXT_TIME /* remember last timestamp for extrapolation. */
+			// TODO: use some *better* timer eg. audio-frames
+			gettimeofday(&last_tv,NULL);
+	#endif
 		default: 
 			;
 	}
@@ -143,6 +165,10 @@ int parse_sysex_urtm (int data, int state, int type) {
 	if (state==2 && type==0) {
 		if (data==0x01) rv=1;
 		if (data==0x06) rv=2;
+		eights=0;
+	#ifdef EXT_TIME /* reset timestamp for extrapolation. */
+		last_tv.tv_sec=last_tv.tv_usec=0;
+	#endif
 	}
 	if (state>2 && type <=0 ) return (-4);
 
@@ -160,7 +186,10 @@ int parse_sysex_urtm (int data, int state, int type) {
 	if (state==7 && type ==1 ) { last_tc.frame=(data&0x7f); } // frame
 	if (state>7 && type ==1 ) {
 		if (want_verbose) {
-			printf("\t\t\t\t\t---  %02i:%02i:%02i.%02i [%s]       \r",tc.hour,tc.min,tc.sec,tc.frame,MTCTYPE[tc.type]);
+			if (want_debug)
+			printf("\r\t\t\t\t\t\t\t~-~ %02i:%02i:%02i.%02i[%s]\r",tc.hour,tc.min,tc.sec,tc.frame,MTCTYPE[tc.type]);
+			else
+			printf("\r\t\t\t\t\t\t\t-~- %02i:%02i:%02i.%02i[%s]\r",last_tc.hour,last_tc.min,last_tc.sec,last_tc.frame,MTCTYPE[last_tc.type]);
 			fflush(stdout);
 		}
 		return (-1);
@@ -173,7 +202,10 @@ int parse_sysex_urtm (int data, int state, int type) {
 	if (state==9 && type ==2 ) { last_tc.frame=(data&0x7f); } // frame
 	if (state>9 && type ==2 ) {
 		if (want_verbose) {
-			printf("\t\t\t\t\t---  %02i:%02i:%02i.%02i [%s]       \r",tc.hour,tc.min,tc.sec,tc.frame,MTCTYPE[tc.type]);
+			if (want_debug)
+			printf("\r\t\t\t\t\t\t\t-V- %02i:%02i:%02i.%02i[%s]\r",tc.hour,tc.min,tc.sec,tc.frame,MTCTYPE[tc.type]);
+			else
+			printf("\r\t\t\t\t\t\t\t-v- %02i:%02i:%02i.%02i[%s]\r",last_tc.hour,last_tc.min,last_tc.sec,last_tc.frame,MTCTYPE[last_tc.type]);
 			fflush(stdout);
 		}
 		return (-1);
@@ -426,6 +458,8 @@ long midi_poll_frame (void) {
 		spin = Pm_Dequeue(midi_to_main, &now);
 	} while (spin == 0); /* spin */ ;
 
+	// TODO: add time that has passed since receiving now
+	// will not work with this spinlock
 	return(convert_smpte_to_frame(now));
 }
 
@@ -513,6 +547,7 @@ long amidi_poll_frame (void) {
 	if (!amidi) return (0);
 
 	amidi_event(); // process midi buffers - get most recent timecode
+	// TODO: add time that has passed since receiving now
 	return(convert_smpte_to_frame(last_tc));
 }
 
@@ -658,11 +693,49 @@ void aseq_event(void) {
 
 long aseq_poll_frame (void) {
 	long frame =0 ;
+	static long lastframe = -1 ;
+	static int stopcnt = 0;
+	static int stopped = 0;
 	if (!seq) return (0);
 
 	pthread_mutex_lock(&aseq_lock);
 	frame = convert_smpte_to_frame(last_tc);
 	pthread_mutex_unlock(&aseq_lock);
+	if(midi_clkadj 
+	#ifdef EXT_TIME
+	 	&& last_tv.tv_sec > 0
+	#endif
+	) { // add time that has passed since receiving that last_tc..
+		double diff= eights/4.0;
+	#ifdef EXT_TIME
+		struct timeval now_tv;
+		gettimeofday(&now_tv,NULL);
+		diff = ((double) (now_tv.tv_sec-last_tv.tv_sec)) + ((double) (now_tv.tv_usec-last_tv.tv_usec)) / 1000000.0;
+		diff*=framerate;
+	#endif
+		if (lastframe != frame) {
+			stopcnt=0;
+			lastframe=frame;
+			stopped=0;
+		} else if (stopcnt++ > (int) ceil(4.0*framerate*delay)) {
+			// we expect a full midi MTC every (2.0*framerate/delay) polls
+	#ifdef EXT_TIME
+			last_tv.tv_sec=last_tv.tv_usec=0;diff=0.0;
+	#endif
+			eights=0;
+			stopped=1;
+			if (want_verbose) 
+				printf("\r\t\t\t\t\t\t        -?-\r");
+		}
+
+		if (want_verbose) 
+			printf("\r\t\t\t\t\t\t  |+%g/8\r",rint(4.0*diff));
+	// TODO: check the doc about this and set 'stopped' flag when using sysex msg info
+	//	if (!stopped) 
+	//		diff+=1.75; // we receive a complete MTC on each 7th quarter frame.
+		
+		frame += (long) rint(diff);
+	}
 	return(frame);
 }
 
@@ -690,7 +763,7 @@ void *aseq_run(void *arg) {
 			err = snd_seq_event_input(seq, &event);
 			if (err < 0) break;
 			if (event) {
-				// TODO? lock only when actually modifying last_tc
+				// TODO: lock only when actually modifying last_tc
 				pthread_mutex_lock(&aseq_lock);
 				process_seq_event(event);
 				pthread_mutex_unlock(&aseq_lock);
@@ -768,4 +841,9 @@ int midi_connected(void) {
 
 #endif /* not HAVE_PORTMIDI = alsamidi */
 
+#else /* HAVE_MIDI */
+
+int midi_connected(void) {
+	return (0);
+}
 #endif /* HAVE_MIDI */

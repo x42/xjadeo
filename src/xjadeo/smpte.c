@@ -30,22 +30,27 @@ enum { SMPTE_FRAME = 0, SMPTE_SEC, SMPTE_MIN, SMPTE_HOUR, SMPTE_OVERFLOW, SMPTE_
  * HH:MM:SS:FF
  */
 typedef struct {
-	int v[(SMPTE_LAST)];
+	int v[(SMPTE_LAST)]; ///< allocates 5 ints for a 32bit BCD - bad design :-)
 } bcd;
 
 
 #ifdef HAVE_CONFIG_H 	/* XJADEO include */
 extern double framerate;
 extern int midi_clkconvert;
+extern int want_dropframes;
+extern int want_autodrop;
 #define FPS framerate
 #else			 /* Standalone */
 //#define FPS 25
 void dump(bcd *s, char *info);
 int midi_clkconvert =0;
 int framerate = 25;
+int want_dropframes = 0;
+int want_autodrop = 1;
 #define FPS framerate
 #endif
 
+int have_dropframes = 0; // TODO: force to zero if jack of user TC
 
 #define FIX_SMPTE_OVERFLOW(THIS,NEXT,INC) \
 	if (s->v[(THIS)] >= (INC)) { int ov= (int) floor((double) s->v[(THIS)] / (INC));  s->v[(THIS)] -= ov*(INC); s->v[(NEXT)]+=ov;} \
@@ -58,7 +63,7 @@ void parse_int (bcd *s, int val) {
 
 	s->v[SMPTE_FRAME]= (int) val;
 
-	FIX_SMPTE_OVERFLOW(SMPTE_FRAME,SMPTE_SEC,FPS);
+	FIX_SMPTE_OVERFLOW(SMPTE_FRAME,SMPTE_SEC,(int)rint(FPS));
 	FIX_SMPTE_OVERFLOW(SMPTE_SEC,SMPTE_MIN,60);
 	FIX_SMPTE_OVERFLOW(SMPTE_MIN,SMPTE_HOUR,60);
 	FIX_SMPTE_OVERFLOW(SMPTE_HOUR,SMPTE_OVERFLOW,24);
@@ -82,15 +87,17 @@ void parse_string (bcd *s, char *val) {
 		i++;
 	}
 	if (i < SMPTE_OVERFLOW) s->v[i]= (int) atoi(buf);
-	//dump(s,"DEBUG  : ");	
 
 	free(buf);
-	FIX_SMPTE_OVERFLOW(SMPTE_FRAME,SMPTE_SEC,FPS);
+	FIX_SMPTE_OVERFLOW(SMPTE_FRAME,SMPTE_SEC,(int)rint(FPS));
 	FIX_SMPTE_OVERFLOW(SMPTE_SEC,SMPTE_MIN,60);
 	FIX_SMPTE_OVERFLOW(SMPTE_MIN,SMPTE_HOUR,60);
 	FIX_SMPTE_OVERFLOW(SMPTE_HOUR,SMPTE_OVERFLOW,24);
 }
 
+/* legacy version of smpte_to_frame(...)
+ * does not do any frame-dropping.. handy.
+ */
 int to_frame(bcd *s) {
 	int frame=0;
 	int sec=0;
@@ -107,7 +114,9 @@ int to_frame(bcd *s) {
 		sec=86400-sec;
 		sec*=-1;
 	}
-	frame=(int) floor(sec*FPS)+s->v[SMPTE_FRAME];
+	// TODO: check if this behaves correctly for non integer FPS :->
+	//frame=(int) floor(sec*FPS)+s->v[SMPTE_FRAME];
+	frame=(int) sec * FPS + s->v[SMPTE_FRAME];
 	return (frame);
 }
 
@@ -116,7 +125,7 @@ void add (bcd*s, bcd *s0, bcd *s1) {
 	for (i=0;i<SMPTE_LAST;i++) s->v[i]=s0->v[i]+s1->v[i];
 	//s->v[SMPTE_OVERFLOW]=0;
 
-	FIX_SMPTE_OVERFLOW(SMPTE_FRAME,SMPTE_SEC,FPS);
+	FIX_SMPTE_OVERFLOW(SMPTE_FRAME,SMPTE_SEC,(int)rint(FPS));
 	FIX_SMPTE_OVERFLOW(SMPTE_SEC,SMPTE_MIN,60);
 	FIX_SMPTE_OVERFLOW(SMPTE_MIN,SMPTE_HOUR,60);
 	FIX_SMPTE_OVERFLOW(SMPTE_HOUR,SMPTE_OVERFLOW,24);
@@ -127,11 +136,14 @@ void sub (bcd*s, bcd *s0, bcd *s1) {
 	for (i=0;i<SMPTE_LAST;i++) s->v[i]=s0->v[i]-s1->v[i];
 	//s->v[SMPTE_OVERFLOW]=0;
 
-	FIX_SMPTE_OVERFLOW(SMPTE_FRAME,SMPTE_SEC,FPS);
+	FIX_SMPTE_OVERFLOW(SMPTE_FRAME,SMPTE_SEC,(int)rint(FPS));
 	FIX_SMPTE_OVERFLOW(SMPTE_SEC,SMPTE_MIN,60);
 	FIX_SMPTE_OVERFLOW(SMPTE_MIN,SMPTE_HOUR,60);
 	FIX_SMPTE_OVERFLOW(SMPTE_HOUR,SMPTE_OVERFLOW,24);
 }
+
+/*-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+*/
+
 
 #ifndef HAVE_CONFIG_H // standalone
 void dump(bcd *s, char *info) {
@@ -159,17 +171,72 @@ int main (int argc, char **argv) {
 }
 #endif
 
-long int smptestring_to_frame (char *str) {
-	bcd n0;
-	parse_string(&n0,str);
-	return ((long int)to_frame(&n0));
+
+/*-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+*/
+
+
+/* 	
+ * Insert two frame numbers at the 
+ * start of every minute except the tenth.
+ */
+long  insert_drop_frames (long int frames) {
+	long minutes = (frames / 17982L) * 10L; ///< 17982 frames in 10 mins base.
+	long off_f = frames % 17982L;
+	long off_adj =0;
+
+	if (off_f >= 1800L) { // nothing to do in the first minute 
+		off_adj  = 2 + 2 * (long) floor(((off_f-1800L) / 1798L)); 
+	}
+
+	return ( 1800L * minutes + off_f + off_adj);
 }
 
-void frame_to_smptestring(char *smptestring, long int frame) {
+
+/*-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+*/
+
+long int smpte_to_frame(int type, int f, int s, int m, int h, int overflow);
+
+/* 
+ * used for parsing user input '-o' 'set offset', etc
+ * basically the same as smpte_to_frame(...)
+ */
+long int smptestring_to_frame (char *str, int autodrop) {
+	bcd s;
+	long int frame;
+	parse_string(&s,str);
+	if ((have_dropframes && autodrop && want_autodrop)||want_dropframes) {
+		frame= smpte_to_frame (
+			2 /*29.97fps */,
+			s.v[SMPTE_FRAME],
+			s.v[SMPTE_SEC],
+			s.v[SMPTE_MIN],
+			s.v[SMPTE_HOUR],
+			0);
+
+		if (s.v[SMPTE_OVERFLOW]<0) { 
+			frame=30*86400-frame;
+			frame*=-1;
+		}
+	} else 
+		frame = (long int)to_frame(&s);
+
+	return (frame);
+}
+
+/* any smpte output (verbose and OSD) */
+void frame_to_smptestring(char *smptestring, long int frame, int autodrop) {
 	bcd s;
 	if (!smptestring) return;
 
-	parse_int(&s, (int) frame);
+	double fpsf =1.0 ; // video frames per smpte frame (FPS/fps)
+	long frames = (long) floor((double) frame / fpsf);
+
+	if ((have_dropframes && autodrop && want_autodrop)||want_dropframes) {
+		frames = insert_drop_frames(frames);
+	}
+
+	parse_int(&s, (int) frames);
+
 	snprintf(smptestring,13,"%02i:%02i:%02i:%02i",
 			s.v[SMPTE_HOUR],
 			s.v[SMPTE_MIN],
@@ -177,27 +244,49 @@ void frame_to_smptestring(char *smptestring, long int frame) {
 			s.v[SMPTE_FRAME]);
 }
 
-
 long int smpte_to_frame(int type, int f, int s, int m, int h, int overflow) {
 	long frame =0 ;
-	int fps= FPS;
+	double fps= FPS;
 
 	switch(type) {
-		case 0: fps=24; break;
-		case 1: fps=25; break;
-		case 2: fps=29; break;
-		case 3: fps=30; break;
+		case 0: fps=24.0; break;
+		case 1: fps=25.0; break;
+		case 2: fps=30.0*1000.0/1001.0; break;
+		case 3: fps=30.0; break;
 	}
+
+	if (type==2 || want_dropframes) {
+	/* 	
+	 * Drop frame numbers (not frames) 00:00 and 00:01 at the
+	 * start of every minute except the tenth.
+	 *
+	 * dropframes are not required or permitted when operating at
+	 * 24, 25, or 30 frames per second.
+	 *
+	 */
+		long base_time = ((h*3600) + ((m/10) * 10 * 60)) * fps; // XXXFPS
+		long off_m = m % 10;
+		long off_s = (off_m * 60) + s;
+		long off_f = (30 * off_s) + f - (2 * off_m);
+		//long off_s = (long) rint(off_f * XXXFPS/fps);
+		//frame = base_time + off_s;
+		frame = base_time + off_f;
+		fps=30; 
+		have_dropframes=1;  // TODO: recalc ts_offset string when changing this
+	} else {
+		frame = f + fps * ( s + 60*m + 3600*h);
+		have_dropframes=0;  // TODO: recalc ts_offset string when changing this
+	}
+
 	switch (midi_clkconvert) {
 		case 2: // force video fps
 			frame = f +  (int) floor(FPS * ( s + 60*m+ 3600*h));
 		break;
 		case 3: // 'convert' FPS.
-			frame = f + fps * ( s + 60*m + 3600*h);
 			frame = (int) rint(frame * FPS / fps);
 		break;
 		default: // use MTC fps info
-			frame = f + fps * ( s + 60*m + 3600*h);
+			;
 		break;
 	}
 	return(frame);

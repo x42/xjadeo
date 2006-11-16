@@ -30,17 +30,20 @@
 extern int       loop_flag;
 /* Option flags and variables */
 extern char *current_file;
+extern char *smpte_offset;
 extern long	ts_offset;
 extern long	userFrame;
 extern int want_quiet;
 extern int want_debug;
 extern int want_verbose;
+extern int want_letterbox;
 extern int remote_en;
 extern int remote_mode;
 
 #ifdef HAVE_MIDI
 extern char midiid[32];
 extern int midi_clkconvert;	/* --midifps [0:MTC|1:VIDEO|2:RESAMPLE] */
+extern int midi_clkadj;	
 #endif
 
 extern double 		delay;
@@ -102,6 +105,7 @@ void handle_event(lash_event_t* ev) {
 		// lcs_int("window_position",x<<16|y);
 		lcs_int("x11_ontop",xj_ontop);
 		lcs_int("x11_fullscreen",xj_fullscreen); 
+		lcs_int("want_letterbox",want_letterbox); 
 #ifdef HAVE_MIDI
 		if (midi_connected())  lcs_int("syncsource",2);
 		else
@@ -112,6 +116,7 @@ void handle_event(lash_event_t* ev) {
 		lcs_str("current_file",current_file?current_file:"");
 		lcs_int("seekflags",seekflags);
 		lcs_long("ts_offset",ts_offset);
+		lcs_str("smpte_offset",smpte_offset?smpte_offset:"");
 		lcs_long("userFrame",userFrame);
 		lcs_dbl("update_fps",delay);
 		lcs_dbl("file_fps",filefps);
@@ -131,6 +136,7 @@ void handle_event(lash_event_t* ev) {
 		lcs_int("OSD_ty",OSD_ty);
 	#ifdef HAVE_MIDI
 		lcs_int("MIDI_clkconvert",midi_clkconvert);
+		lcs_int("MIDI_clkadj",midi_clkadj);
 		lcs_str("MIDI_ID",(midiid && midi_connected())?midiid:"-2");
 	#endif
 		lash_send_event(lash_client, lash_event_new_with_type(LASH_Save_Data_Set));
@@ -160,7 +166,11 @@ void handle_config(lash_config_t* conf) {
 		userFrame= lash_config_get_value_long(conf);
 	} else if (!strcmp(key,"ts_offset")) {
 		ts_offset= lash_config_get_value_long(conf);
-	//	printf("LASH config: change offset to: %li\n",ts_offset);
+	} else if (!strcmp(key,"smpte_offset")) {
+		const char *moff = lash_config_get_value_string (conf);
+		if (smpte_offset) free(smpte_offset); smpte_offset=NULL;
+		if (strlen(moff))
+			smpte_offset=strdup(moff);
 //	} else if (!strcmp(key,"framerate")) {
 //		framerate =  lash_config_get_value_double(conf); 
 	} else if (!strcmp(key,"file_fps")) {
@@ -217,6 +227,10 @@ void handle_config(lash_config_t* conf) {
 	#endif
 		}
 			/* MIDI */
+	} else if (!strcmp(key,"MIDI_clkadj")) {
+	#ifdef HAVE_MIDI
+		midi_clkadj = lash_config_get_value_int(conf);
+	#endif
 	} else if (!strcmp(key,"MIDI_clkconvert")) {
 	#ifdef HAVE_MIDI
 		midi_clkconvert = lash_config_get_value_int(conf);
@@ -231,6 +245,11 @@ void handle_config(lash_config_t* conf) {
 			if (atoi(midiid)>-2) midi_open(midiid);
 	#endif
 			/* Window Settings  */
+	} else if (!strcmp(key,"want_letterbox")) {
+		unsigned int x,y;
+		want_letterbox= lash_config_get_value_long(conf);
+		Xgetsize(&x,&y); 
+		Xresize(x,y);
 	} else if (!strcmp(key,"window_size")) {
 	//	printf("LASH config: window size %ix%i\n", (lash_config_get_value_int(conf)>>16)&0xffff,lash_config_get_value_int(conf)&0xffff);
 		Xresize((lash_config_get_value_int(conf)>>16)&0xffff,lash_config_get_value_int(conf)&0xffff);

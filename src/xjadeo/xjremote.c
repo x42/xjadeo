@@ -44,6 +44,7 @@ char *program_name;
 int want_quiet   = 0;	/*< --quiet, --silent */
 int want_debug   = 0;	/*< --debug */
 int want_verbose = 0;	/*< --verbose */
+int want_ping    = 1;	/*< --noping */
 int want_unlink  = 0;	/*< --1:unlink mqueues on startup  2: and exit */
 int want_nofork  = 0;	/*< --nofork ; donT launch xjadeo */
 char *qid	 = NULL;  /*< -I <arg> - name of the MQ */
@@ -63,6 +64,7 @@ static struct option const long_options[] =
 	{"unlink", no_argument, 0, 'u'},
 	{"unlinkonly", no_argument, 0, 'U'},
 	{"id", required_argument, 0, 'I'},
+	{"noping", required_argument, 0, 'P'},
 	{"debug", no_argument, 0, 'D'},
 	{"version", no_argument, 0, 'V'},
 	{NULL, 0, NULL, 0}
@@ -80,6 +82,7 @@ static int decode_switches (int argc, char **argv) {
 			   "f"	/* nofork */
 			   "u"	/* unlink */
 			   "U"	/* unlinkonly */
+			   "P"	/* noping */
 			   "V",	/* version */
 			   long_options, (int *) 0)) != EOF)
 	{ switch (c) {
@@ -102,6 +105,9 @@ static int decode_switches (int argc, char **argv) {
 			break;
 		case 'f': 		/* --nofork */
 			want_nofork = 1;
+			break;
+		case 'P': 		/* --noping */
+			want_ping = 0;
 			break;
 		case 'R':
 		case 'Q':
@@ -127,6 +133,7 @@ static void usage (int status) {
 "  -V, --version             print version information and exit\n"
 "  -f, --nofork              connect only to already running instances and\n"
 "                            do NOT launch a new xjadeo if none found.\n"
+"  -P, --noping              do not check if xjadeo is alive. just connect.\n"
 "  -q, --quiet, --silent     inhibit usual output\n"
 "  -u, --unlink              remove existing queues\n"
 "  -U, --unlinkonly          remove queues and exit\n"
@@ -417,6 +424,7 @@ void dothework (mqd_t mqfd_tx) {
 			}
 			if (!retry) {
 				perror("mq_send failure on mqfd_tx");
+				// ping ? 
 			}
 			
 			offset-=((++end)-buf);
@@ -474,7 +482,7 @@ restart:
 	pthread_create(&xet, NULL, read_thread, NULL);
 
 	/* ping xjadeo - alive check */
-	if (1) {
+	if (want_ping) {
 		if (!want_quiet)
 			fprintf(stdout, "# pinging xjadeo...\n");
 		// TODO flush the queue before pinging

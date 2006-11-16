@@ -166,7 +166,7 @@ void QJadeo::syncJack()
 void QJadeo::syncMTC()
 {
   xjadeo.writeToStdin(QString("jack disconnect\n"));
-  xjadeo.writeToStdin(QString("midi autoconnect\n"));
+  xjadeo.writeToStdin(QString("midi reconnect\n"));
   xjadeo.writeToStdin(QString("get syncsource\n"));
 }
 

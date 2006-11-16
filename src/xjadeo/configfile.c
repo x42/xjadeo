@@ -42,6 +42,27 @@ extern int want_letterbox;
 extern int mq_en;
 extern int avoid_lash;
 
+#ifdef HAVE_MIDI
+extern char midiid[32];
+extern int midi_clkconvert;	/* --midifps [0:MTC|1:VIDEO|2:RESAMPLE] */
+extern int midi_clkadj;		/* 0|1 */
+#endif
+
+#define YES_OK(VAR) \
+		if (!strncasecmp(value,"yes",3)){ \
+			VAR = 1; rv=1; \
+		} else if (!strncasecmp(value,"no",3)) {\
+			rv=1; \
+		}
+
+
+#define YES_NO(VAR) \
+		if (!strncasecmp(value,"yes",3)){ \
+			VAR = 1; rv=1; \
+		} else if (!strncasecmp(value,"no",3)) {\
+			VAR = 1; rv=1; \
+		}
+
 int parseoption (char *item, char *value) {
 	int rv =0;
 	if (!strncasecmp(item,"VIDEOMODE",9)) {
@@ -53,18 +74,26 @@ int parseoption (char *item, char *value) {
 		}
 	} else if (!strncasecmp(item,"FPS",3)) {
 		delay = 1.0 / atof(value); rv=1;
+	} else if (!strncasecmp(item,"MIDICLK",7)) {
+		rv=1;
+	#ifdef HAVE_MIDI
+		YES_NO(midi_clkadj)
+	#endif
+	} else if (!strncasecmp(item,"MIDIID",6)) {
+		rv=1;
+	#ifdef HAVE_MIDI
+		strncpy(midiid,value,32);
+		midiid[31]=0;
+	#endif
+	} else if (!strncasecmp(item,"MIDISMPTE",9)) {
+		rv=1;
+	#ifdef HAVE_MIDI
+		midi_clkconvert=atoi(value);
+	#endif
 	} else if (!strncasecmp(item,"QUIET",7)) {
-		if (!strncasecmp(value,"yes",3)){
-			want_quiet=1; rv=1;
-		}
-		else if (!strncasecmp(value,"no",3)) 
-			rv=1;
+		YES_OK (want_quiet);
 	} else if (!strncasecmp(item,"VERBOSE",7)) {
-		if (!strncasecmp(value,"yes",3)){
-			want_verbose=1; rv=1;
-		}
-		else if (!strncasecmp(value,"no",3)) 
-			rv=1;
+		YES_OK (want_verbose);
 	} else if (!strncasecmp(item,"SEEK",4)) {
 		if (!strncasecmp(value,"any",3)){
 			seekflags=SEEK_ANY; rv=1;
@@ -74,20 +103,14 @@ int parseoption (char *item, char *value) {
 			seekflags=SEEK_KEY; rv=1;
 		}
 	} else if (!strncasecmp(item,"LETTERBOX",9)) {
-		if (!strncasecmp(value,"yes",3)) {
-			want_letterbox = 1; rv=1;
-		} else if (!strncasecmp(value,"no",2))
-			rv=1;
+		YES_OK(want_letterbox)
 	} else if (!strncasecmp(item,"LASH",4)) {
 		if (!strncasecmp(value,"no",2)) {
 			avoid_lash = 1; rv=1;
 		} else if (!strncasecmp(value,"yes",3))
 			rv=1;
 	} else if (!strncasecmp(item,"MQ",2)) {
-		if (!strncasecmp(value,"yes",3)) {
-			mq_en = 1; rv=1;
-		} else if (!strncasecmp(value,"no",3)) 
-			rv=1;
+		YES_OK(mq_en);
 	} else if (!strncasecmp(item,"FONTFILE",8)) {
 		strncpy(OSD_fontfile,value,1023);rv=1;
 		OSD_fontfile[1023]=0; // just to be sure.

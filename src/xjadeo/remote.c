@@ -94,6 +94,8 @@ extern int remote_mode;
 
 #ifdef HAVE_MIDI
 extern int midi_clkconvert;
+extern int midi_clkadj;
+extern char midiid[32];
 #endif
 
 extern double 		delay;
@@ -347,7 +349,7 @@ void xapi_pmheight(void *d) {
 }
 void xapi_soffset(void *d) {
   	//long int new = atol((char*)d);
-	ts_offset = smptestring_to_frame((char*)d);
+	ts_offset = smptestring_to_frame((char*)d,midi_connected());
 	remote_printf(101,"offset=%li",(long int) ts_offset);
 }
 
@@ -357,13 +359,13 @@ void xapi_pposition(void *d) {
 
 void xapi_psmpte(void *d) {
 	char smptestr[13];
-	frame_to_smptestring(smptestr,dispFrame);
+	frame_to_smptestring(smptestr,dispFrame,midi_connected());
 	remote_printf(228,"smpte=%s",smptestr);
 }
 
 void xapi_seek(void *d) {
   	//long int new = atol((char*)d);
-	userFrame= smptestring_to_frame((char*)d);
+	userFrame= smptestring_to_frame((char*)d,midi_connected());
 	remote_printf(101,"defaultseek=%li",userFrame);
 }
 
@@ -388,7 +390,7 @@ void xapi_sframerate(void *d) {
         filefps= atof(off);
        	framerate = filefps;
 	// recalc offset with new framerate
-	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset);
+	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset,midi_connected());
 //	if (filefps > 0) { 
 //        	framerate = filefps;
 //	} else { // reset framerate according to av_stream
@@ -546,15 +548,31 @@ void xapi_midi_status(void *d) {
 	remote_printf(499,"midi not available.");
 #endif
 }
+
 void xapi_open_midi(void *d) {
 #ifdef HAVE_MIDI
-	midi_open(d);
+	char *mp;
+	if (d && strlen(d)>0) mp=d; 
+	else mp="-1"; // midiid ?
+
 	if (midi_connected())
+		remote_printf(441,"MIDI port already connected.");
+	midi_open(mp);
+	if (midi_connected()) {
 		remote_printf(100,"MIDI connected.");
-	else
+	  	strncpy(midiid,mp,32);
+		midiid[31]=0;
+	} else
 		remote_printf(440,"MIDI open failed.");
 #else
 	remote_printf(499,"midi not available.");
+#endif
+}
+
+void xapi_reopen_midi(void *d) {
+#ifdef HAVE_MIDI
+	midi_close();
+	xapi_open_midi(midiid);
 #endif
 }
 
@@ -586,6 +604,24 @@ void xapi_pmidilibrary (void *d) {
     #else
 	remote_printf(220,"midilib=alsaseq");
     #endif
+#else
+	remote_printf(499,"midi not available.");
+#endif
+}
+
+	
+void xapi_pmidiclk(void *d) {
+#ifdef HAVE_MIDI
+	remote_printf(201,"midiclk=%i", midi_clkadj);
+#else
+	remote_printf(499,"midi not available.");
+#endif
+}
+
+void xapi_smidiclk(void *d) {
+#ifdef HAVE_MIDI
+        midi_clkadj = atoi((char*)d)?1:0;
+	remote_printf(101,"midiclk=%i", midi_clkadj);
 #else
 	remote_printf(499,"midi not available.");
 #endif
@@ -654,12 +690,14 @@ Dcommand cmd_test[] = {
 };
 
 Dcommand cmd_midi[] = {
-	{"autoconnect", ": discover and connect to midi time source", NULL, xapi_detect_midi, 0 },
-	{"connect ", "<port>: connect to midi time source", NULL, xapi_open_midi, 0 },
+/*	{"autoconnect", ": discover and connect to midi time source", NULL, xapi_detect_midi, 0 }, */
+	{"connect ", "<port>: connect to midi time source (-1: discover)", NULL, xapi_open_midi, 0 },
 	{"disconnect", ": unconect from midi device", NULL, xapi_close_midi, 0 },
+	{"reconnect", ": connect to last specified midi port", NULL, xapi_reopen_midi, 0 },
 	{"status", ": display status of midi connection.", NULL, xapi_midi_status, 0 },
 	{"library", ": display the used midi libaray", NULL, xapi_pmidilibrary, 0 },
 	{"sync ", "<int>: set MTC smpte conversion. 0:MTC 2:Video 3:resample", NULL, xapi_smidisync, 0 },
+	{"clk ", "[1|0]: use MTC quarter frames.", NULL, xapi_smidiclk, 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 
@@ -705,6 +743,7 @@ Dcommand cmd_get[] = {
 //	{"windowpos" , ": show current window position", NULL, xapi_pwinpos, 0 },
 	{"videomode" , ": display current video mode", NULL, xapi_pvideomode, 0 },
 	{"midisync", ": display midi smpte conversion mode", NULL, xapi_pmidisync, 0 },
+	{"midiclk", ": MTC quarter frame precision", NULL, xapi_pmidiclk, 0 },
 	{"osdcfg", ": display status on screen display", NULL, xapi_posd, 0 },
 	{"syncsource", ": display currently used sync source", NULL, xapi_psync, 0 },
 	{"letterbox" , ": query video scaling mode", NULL, xapi_pletterbox, 0 },

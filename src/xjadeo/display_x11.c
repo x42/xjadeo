@@ -409,6 +409,14 @@ void getDragData (XEvent *xe) {
 		for (f=0;f<num;f++) {
 			printf("drag-n-drop: recv: %i '%s'\n",f,files[f]);
 		}
+		{ //FIXME: properly translate %20 -> to whitespaces, etc.
+			char *t;
+			while ((t=strstr(files[0],"%20")) && strlen(t)>3) {
+				memmove(t+1,t+3,strlen(t)-2);
+				*t=' ';
+				t[strlen(t)]='\0';
+			}
+		}
 	if (num>0) xapi_open(files[0]);
 	free(data);
 }
