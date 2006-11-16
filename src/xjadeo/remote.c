@@ -128,7 +128,7 @@ void remote_printf(int val, const char *format, ...);
 
 void xapi_open(void *d) {
 	char *fn= (char*)d;
-	printf("open file: '%s'\n",fn);
+	//printf("open file: '%s'\n",fn);
 	if ( open_movie(fn)) 
 		remote_printf(403, "failed to open file '%s'",fn);
 	else	remote_printf(129, "opened file: '%s'",fn);
