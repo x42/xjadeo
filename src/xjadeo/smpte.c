@@ -35,19 +35,24 @@ typedef struct {
 
 
 #ifdef HAVE_CONFIG_H 	/* XJADEO include */
+#include <config.h>
 extern double framerate;
-extern int midi_clkconvert;
 extern int want_dropframes;
 extern int want_autodrop;
 #define FPS framerate
 #else			 /* Standalone */
 //#define FPS 25
 void dump(bcd *s, char *info);
-int midi_clkconvert =0;
 int framerate = 25;
 int want_dropframes = 0;
 int want_autodrop = 1;
 #define FPS framerate
+#endif
+
+#ifdef HAVE_MIDI
+extern int midi_clkconvert;
+#else
+int midi_clkconvert =0;
 #endif
 
 int have_dropframes = 0; // TODO: force to zero if jack of user TC
