@@ -23,6 +23,8 @@ enum { OSD_LEFT=-1, OSD_CENTER=-2, OSD_RIGHT=-3 }; ///< use positive values as p
 
 #define OSD_FRAME (1)
 #define OSD_SMPTE (2)
+#define OSD_OFFS (16)
+#define OSD_OFFF (32)
 #define OSD_TEXT (64)
 #define OSD_BOX (256)
 

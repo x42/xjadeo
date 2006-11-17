@@ -159,6 +159,8 @@ void rgb2abgr (uint8_t *rgbabuffer, uint8_t *rgbbuffer, int width, int height) {
 
 #include <ffmpeg/avcodec.h> // needed for PIX_FMT 
 #include <ffmpeg/avformat.h>
+extern long    ts_offset; // display on screen
+
 
 #define NULLOUTPUT &render_null, &open_window_null, &close_window_null, &handle_X_events_null, &newsrc_null, &resize_null, &getsize_null, &position_null, &getpos_null, &fullscreen_null, &ontop_null
 
@@ -287,7 +289,15 @@ void render_buffer (uint8_t *mybuffer) {
 	// render OSD on buffer 
 	if (OSD_mode&OSD_FRAME) OSD_render (mybuffer, OSD_frame, OSD_fx, OSD_fy);
 	if (OSD_mode&OSD_SMPTE) OSD_render (mybuffer, OSD_smpte, OSD_sx, OSD_sy);
-	if (OSD_mode&OSD_TEXT ) OSD_render (mybuffer, OSD_text, OSD_tx, OSD_ty);
+	if (OSD_mode&OSD_OFFF ) {
+		char tempoff[15];
+		snprintf(tempoff,15,"%li",ts_offset);
+		OSD_render (mybuffer, tempoff, OSD_CENTER, 50);
+	} else if (OSD_mode&OSD_OFFS ) { 
+		char tempsmpte[15];
+		frame_to_smptestring(tempsmpte,ts_offset,midi_connected());
+		OSD_render (mybuffer, tempsmpte, OSD_CENTER, 50);
+	} else if (OSD_mode&OSD_TEXT ) OSD_render (mybuffer, OSD_text, OSD_tx, OSD_ty);
 	VO[VOutput].render(buffer); // buffer = mybuffer (so far no share mem or sth)
 }
 

@@ -1,12 +1,7 @@
 TODO < 0.4
 -----------
 
-* OSD: render current offset ('-o', ts_offset) on screen.
-
-* keystrokes to adjust offset: eg. press key '-' '+' sub/add a frame. 
-  and toggle OSD.
-   
-* fix X11 - re-open window.
+* keystrokes for SDL & doc. keystokes (OSD help?)
 
 * http://lash.nongnu.org/ support
   - restore window position.  (maybe > 0.4)
@@ -27,6 +22,8 @@ TODO > 0.4.0
    - multiple instances - named message queues + list of avail queues.
 
 * ratain aspect ratio  - letterbox option for imlib (+ SDL? )
+
+* opt. cache cont. images from last keyframe. (backwards play)
 
 MIDI:
   - alsamidi - catch port re-assignments and remember em ?

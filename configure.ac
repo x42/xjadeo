@@ -8,7 +8,7 @@ AC_CANONICAL_TARGET
 
 dnl Every other copy of the package version number gets its value from here
 #AM_INIT_AUTOMAKE(xjadeo, [0.4.]esyscmd((svnversion . /trunk||echo 0)|tr : _|tr -d \\012))
-AM_INIT_AUTOMAKE(xjadeo, 0.3.21)
+AM_INIT_AUTOMAKE(xjadeo, 0.3.22)
 AC_REVISION([$Id: configure.ac $])
 
 dnl create a config.h file (Automake will add -DHAVE_CONFIG_H)

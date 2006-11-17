@@ -456,6 +456,10 @@ void disable_dnd () {
 
 extern const vidout VO[];
 extern int VOutput;
+extern int OSD_mode; // change via keystroke
+extern long ts_offset; 
+extern char    *smpte_offset;
+extern int 	force_redraw; // tell the main event loop that some cfg has changed
 
 inline void xj_render () { 
 	/* this is the only reference to the global buffer..
@@ -596,7 +600,27 @@ void xj_handle_X_events (void) {
 					else if (key == 0x71 ) loop_flag=0; // 'q'
 					else if (key == 0x61 ) xj_set_ontop(xj_ontop^=1); //'a'
 					else if (key == 0x66 ) xj_set_fullscreen(xj_fullscreen^=1); //'f' // fullscreen
-					else if (key == 0x6d ) { 	// 'm'
+					else if (key == 0x6f ) { OSD_mode^=OSD_OFFF; //'o' // OSD - offset in frames
+						force_redraw=1;
+					} else if (key == 0x4f ) { OSD_mode^=OSD_OFFS; //'O' // OSD - offset in smpte
+						force_redraw=1;
+					} else if (key == 0x73 ) { OSD_mode^=OSD_SMPTE; //'s' // OSD - current smpte
+						force_redraw=1;
+					} else if (key == 0x76 ) { OSD_mode^=OSD_FRAME; //'v' // OSD - current video frame
+						force_redraw=1;
+					} else if (key == 0x62 ) { OSD_mode^=OSD_BOX; //'b' // OSD - black box
+						force_redraw=1;
+					} else if (key == 0x43 ) { OSD_mode=0; //'C' // OSD - clear all
+						force_redraw=1;
+					} else if (key == 0x2b ) { ts_offset++; //'+'  
+						if (smpte_offset) free(smpte_offset);
+						smpte_offset= calloc(15,sizeof(char));
+						frame_to_smptestring(smpte_offset,ts_offset,midi_connected());
+					} else if (key == 0x2d ) { ts_offset--; //'-' 
+						if (smpte_offset) free(smpte_offset);
+						smpte_offset= calloc(15,sizeof(char));
+						frame_to_smptestring(smpte_offset,ts_offset,midi_connected());
+					} else if (key == 0x6d ) { 	// 'm'
 					    if (xj_mouse^=1) xj_hidecursor(); else xj_showcursor();
 					} else if (want_debug) {
 						printf("unassigned key pressed: '%c' 0x%x\n",key,key);

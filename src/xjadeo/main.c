@@ -89,6 +89,7 @@ char    *smpte_offset = NULL;
 long	ts_offset = 0;
 long	userFrame = 0; // seek to this frame if jack and midi are N/A
 long	dispFrame = 0; // global strorage... = (SMPTE+offset) with boundaries to [0..movie_file_frames]
+int 	force_redraw = 0;
 
 int want_quiet   =0;	/* --quiet, --silent */
 int want_debug   =0;	/* -D --debug  (hidden option) */

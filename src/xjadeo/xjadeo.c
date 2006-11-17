@@ -71,6 +71,7 @@ extern long	ts_offset;
 extern char    *smpte_offset;
 extern long	userFrame;
 extern long	dispFrame;
+extern int 	force_redraw;
 extern int want_quiet;
 extern int want_debug;
 extern int want_verbose;
@@ -147,8 +148,9 @@ void event_loop(void) {
 		 */
 			remote_printf(301,"position=%li",dispFrame);
 		}
-
-		display_frame((int64_t)(offFrame),0);
+			
+		display_frame((int64_t)(offFrame), force_redraw);
+		force_redraw=0;
 
 		if(want_verbose) {
 		#if 0

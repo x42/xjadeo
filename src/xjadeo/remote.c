@@ -79,6 +79,8 @@ extern long	frames;
 extern AVFormatContext   *pFormatCtx;
 extern int               videoStream;
 
+extern int 	force_redraw; // tell the main event loop that some cfg has changed
+
 /* Option flags and variables */
 extern char *current_file;
 extern long	ts_offset;
@@ -134,7 +136,8 @@ void xapi_open(void *d) {
 	else	remote_printf(129, "opened file: '%s'",fn);
         init_moviebuffer();
 	newsourcebuffer();
-	display_frame((int64_t)(dispFrame),1); // update screen
+	force_redraw=1;
+	//display_frame((int64_t)(dispFrame),1); // update screen
 }
 
 void xapi_close(void *d) {
@@ -178,7 +181,7 @@ void xapi_set_videomode(void *d) {
 		// set videomode to 0 or loop_flag=0?
 	}
 	init_moviebuffer();
-	// display_frame(0LL,1);
+	force_redraw=1;
 }
 
 void xapi_open_window(void *d) {
@@ -434,7 +437,8 @@ void xapi_osd_smpte(void *d) {
 		remote_printf(100,"rendering smpte on position y:%i%%",y);
 	} else 
 		remote_printf(422,"invalid argument (range -1..100)");
-	display_frame((int64_t)(dispFrame),1); // update OSD
+	force_redraw=1;
+	//display_frame((int64_t)(dispFrame),1); // update OSD
 }
 
 void xapi_osd_frame(void *d) {
@@ -448,19 +452,22 @@ void xapi_osd_frame(void *d) {
 		remote_printf(100,"rendering frame on position y:%i%%",y);
 	} else 
 		remote_printf(422,"invalid argument (range -1..100)");
-	display_frame((int64_t)(dispFrame),1); // update OSD
+	force_redraw=1;
+	//display_frame((int64_t)(dispFrame),1); // update OSD
 }
 
 void xapi_osd_off(void *d) {
 	OSD_mode&=~OSD_TEXT;
 	remote_printf(100,"hiding OSD");
-	display_frame((int64_t)(dispFrame),1); // update OSD
+	force_redraw=1;
+	//display_frame((int64_t)(dispFrame),1); // update OSD
 }
 
 void xapi_osd_on(void *d) {
 	OSD_mode|=OSD_TEXT;
 	remote_printf(100,"rendering OSD");
-	display_frame((int64_t)(dispFrame),1); // update OSD
+	force_redraw=1;
+	//display_frame((int64_t)(dispFrame),1); // update OSD
 }
 
 void xapi_osd_text(void *d) {
@@ -477,13 +484,15 @@ void xapi_osd_font(void *d) {
 void xapi_osd_nobox(void *d) {
 	OSD_mode&=~OSD_BOX;
 	remote_printf(100,"OSD transparent background");
-	display_frame((int64_t)(dispFrame),1); // update OSD
+	force_redraw=1;
+	//display_frame((int64_t)(dispFrame),1); // update OSD
 }
 
 void xapi_osd_box(void *d) {
 	OSD_mode|=OSD_BOX;
 	remote_printf(100,"OSD black box background");
-	display_frame((int64_t)(dispFrame),1); // update OSD
+	force_redraw=1;
+	//display_frame((int64_t)(dispFrame),1); // update OSD
 }
 
 void xapi_osd_avail(void *d) {
@@ -532,7 +541,8 @@ void xapi_osd_pos(void *d) {
 	}  else {
 		remote_printf(421,"invalid  argument (example 1 95)");
 	}
-	display_frame((int64_t)(dispFrame),1); // update OSD
+	force_redraw=1;
+	//display_frame((int64_t)(dispFrame),1); // update OSD
 }
 
 void xapi_midi_status(void *d) {
