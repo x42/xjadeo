@@ -35,7 +35,7 @@
 
 #if (HAVE_LIBXV || HAVE_IMLIB || HAVE_IMLIB2)
 
-Display      		*xj_dpy;
+Display      		*xj_dpy = NULL;
 Window			xj_rwin, xj_win;
 int			xj_screen; 
 GC           		xj_gc;
@@ -924,6 +924,8 @@ void close_window_xv(void) {
 	if(xv_image) XFree(xv_image);
 	XSync(xj_dpy, False);
 	XFreeGC(xj_dpy, xj_gc);
+	if (!loop_flag) // TODO: do 'DestroyAll' during shutdown()
+		XSetCloseDownMode(xj_dpy, DestroyAll);
 	XCloseDisplay(xj_dpy);
 }
 
@@ -1018,9 +1020,16 @@ int open_window_imlib (void) {
 
 void close_window_imlib(void)
 {
-	XSync(xj_dpy, False);
+//	XSync(xj_dpy, True);
+
+	if (loop_flag)
+		XSetCloseDownMode(xj_dpy, RetainPermanent);
+	else
+		XSetCloseDownMode(xj_dpy, DestroyAll);
+	XDestroyWindow(xj_dpy, xj_win);
 	XFreeGC(xj_dpy, xj_gc);
-	XCloseDisplay(xj_dpy);
+	XSync(xj_dpy, False);
+//	XCloseDisplay(xj_dpy);
 	imlib=NULL;  
 }
         
@@ -1159,9 +1168,15 @@ void close_window_imlib2(void)
 		imlib_free_image();
 		im_image = NULL;
 	}
-	XSync(xj_dpy, False);
+//	XSync(xj_dpy, True);
+	if (loop_flag)
+		XSetCloseDownMode(xj_dpy, RetainPermanent);
+	else
+		XSetCloseDownMode(xj_dpy, DestroyAll);
+	XDestroyWindow(xj_dpy, xj_win);
 	XFreeGC(xj_dpy, xj_gc);
-	XCloseDisplay(xj_dpy);
+	XSync(xj_dpy, False);
+//	XCloseDisplay(xj_dpy);
 }
 
 
