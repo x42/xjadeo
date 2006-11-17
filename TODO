@@ -4,7 +4,7 @@ TODO < 0.4
 * OSD: render current offset ('-o', ts_offset) on screen.
 
 * keystrokes to adjust offset: eg. press key '-' '+' sub/add a frame. 
-  and toggle offset display.
+  and toggle OSD.
    
 * fix X11 - re-open window.
 
@@ -15,13 +15,9 @@ TODO < 0.4
 * update the build information in the .spec.in 
 
 * qjadeo
- - specify midi device
- - offset + seek to SMPTE value
- - notify smtpe ??
+ - specify midi device to use
+ - allow to set offset + seek to as frame-int or SMPTE string.
 
-MIDI:
-  - alsamidi - catch port re-assignments and remember em ?
-  - read up docs on 1/4 frame timing.
 
 TODO > 0.4.0
 -------------
@@ -32,30 +28,30 @@ TODO > 0.4.0
 
 * ratain aspect ratio  - letterbox option for imlib (+ SDL? )
 
+MIDI:
+  - alsamidi - catch port re-assignments and remember em ?
+    don't clash with check with lash+qjackctl !
+
+
 TODO - next major version: 
 ------------------------------------------------
 * exact sync
  decode one frame ahead and use
  Xv/Xext -> VSYNC raster interrupt to trigger double buffer flip
 
-* optional: don't poll for jack-time but register as jack-audio client
-  -> jack will call xjadeo
+* option: don't poll for jack-time but register as jack-audio client
+  -> jack will call xjadeo in a RT callback.
 
-* modularize time-sync + video-source 
+* option: modularize time-sync + video-source 
   (send time information via message queues)
 
-* coding style
+* vacuum the code and clean the bath tub.
 
-  - get rid of the goto's
+* translations and internationalization ?!
 
-  - get rid of all the external globals 
-      struct video-file-options;
-      struct program-options;
 
-  - translations and internationalization ?!
-
-TODO - legacy and low priority issues
--------------------------------------
+TODO - legacy and low priority issues / ideas
+---------------------------------------------
   DISPLAY:
 
  - getwindow position 

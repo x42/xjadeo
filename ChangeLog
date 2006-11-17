@@ -1,3 +1,7 @@
+2006-11-16  x42  <robin@gareus.org>
+ - properly convert escaped DnD text
+ - portmidi quarter frames support
+
 2006-11-15  x42  <robin@gareus.org>
  - SMPTE / MIDI TC drop frames code
  - alsa-midi: parse quarter frames (-C)

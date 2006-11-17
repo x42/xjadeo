@@ -60,8 +60,7 @@
 
 # -C : use MTC quarter frames for 
 # more accurate sync. this is generally
-# a good idea, however only available with
-# the alsa midi driver.
+# a good idea, however it taxes performance.
 #midiclk=[yes|no]
 ;midiclk=no
 

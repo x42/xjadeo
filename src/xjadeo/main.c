@@ -337,6 +337,9 @@ jack video monitor\n", program_name);
 "  -a, --ontop               stack xjadeo window on top of the desktop.\n"
 "                            requires x11 or xv videomode and EWMH.\n"
 "  -b, --letterbox           retain apect ratio when scaling (Xv only).\n"
+#ifdef HAVE_MIDI
+"  -C, --midiclk             use midi quarter frames for more exact sync.\n"
+#endif
 "  -f <val>, --fps <val>     video display update fps - default 10.0 fps\n"
 "  -i <int> --info <int>     render OnScreenDisplay info: 0:off, %i:frame,\n"
 "                            %i:smpte, %i:both. (use remote ctrl for more opts.)\n"
@@ -359,7 +362,6 @@ jack video monitor\n", program_name);
 "  -m <port>,                use alsamidi instead of jack\n"
 "      --midi <port>         specify alsa seq id to connect to. (-1: none)\n" 	  
 "                            eg. -m ardour or -m 80 \n"
-"  -C, --midiclk             use midi quarter frames for more exact sync.\n"
 #endif /* HAVE_PORTMIDI */
 "  -M <int>,                 how to 'convert' MTC SMPTE to framenumber:\n"
 "      --midifps <int>       0: use framerate of MTC clock (default)\n" 

@@ -17,6 +17,11 @@
  * (c) 2006 
  *  Robin Gareus <robin@gareus.org>
  *
+ * NOTE: compiles standalone for testing
+ * 	gcc -o smpte smpte.c  -lm
+ *
+ * 	run ./smpte <timecode>
+ *
  */
 #include <stdio.h>
 #include <string.h>
@@ -163,7 +168,8 @@ int main (int argc, char **argv) {
 	bcd n0,n1;
 	bcd d0;
 
-//	if (argc != 2) return(1);
+	if (argc != 2) { printf("usage %s <smpte>\n",argv[0]); return(1);
+	framerate=25;
 	parse_string(&n0,argv[1]);
 	parse_int(&n1,25*60);
 	sub(&d0,&n0,&n1);

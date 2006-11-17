@@ -56,27 +56,13 @@ typedef struct {
 
 	int day; //  overflow
 	int type;
+	int tick; // 1/8 of a frame.
 } smpte;
-
-/* use gettimeofday() to extrapolate the 'current time'
- * from the last full MTC message until the 
- * moment of polling
- *
- * the alternative (default) is to use 1/4 messages
- * (there are 8 quater midi msgs in each MTC frame)
- */
-//#define EXT_TIME
 
 /* global Vars */
 smpte tc;
 smpte last_tc;
-int eights;
-#define SE(ARG) eights++;
-
-#ifdef EXT_TIME
-struct timeval last_tv;
-#endif
-
+int full_tc = 0;
 
 const char MTCTYPE[4][10] = {
 	"24fps",
@@ -89,40 +75,57 @@ const char MTCTYPE[4][10] = {
 #define MIDI_SOX 0xf0
 #define MIDI_EOX 0xf7
 
+#define SE(ARG) prevtick = tc.tick; tc.tick=ARG; full_tc|=1<<(ARG);
+#define SL(ARG) ARG = ( ARG &(~0xf)) | (data&0xf);
+#define SH(ARG) ARG = ( ARG &(~0xf0)) | ((data&0xf)<<4);
 
 /* parse MTC 0x71 message data */
 void parse_timecode( int data) {
+	static int prevtick =0;
 	switch (data>>4) {
 		case 0x0: // #0000 frame LSN
-			SE(1); tc.frame= ( tc.frame&(~0xf)) | (data&0xf); break;
+			SE(1); SL(tc.frame); break;
 		case 0x1: // #0001 frame MSN
-			SE(2); tc.frame= (tc.frame&(~0xf0)) | ((data&0xf)<<4); break;
+			SE(2); SH(tc.frame); break;
 		case 0x2: // #0010 sec LSN
-			SE(3); tc.sec= ( tc.sec&(~0xf)) | (data&0xf); break;
+			SE(3); SL(tc.sec); break;
 		case 0x3: // #0011 sec MSN
-			SE(4); tc.sec= (tc.sec&(~0xf0)) | ((data&0xf)<<4); break;
+			SE(4); SH(tc.sec); break;
 		case 0x4: // #0100 min LSN
-			SE(5); tc.min= ( tc.min&(~0xf)) | (data&0xf); break;
+			SE(5); SL(tc.min); break;
 		case 0x5: // #0101 min MSN
-			SE(6); tc.min= (tc.min&(~0xf0)) | ((data&0xf)<<4); break;
+			SE(6); SH(tc.min); break;
 		case 0x6: // #0110 hour LSN
-			SE(7); tc.hour= ( tc.hour&(~0xf)) | (data&0xf); break;
+			SE(7); SL(tc.hour); break;
 		case 0x7: // #0111 hour MSN and type
-			tc.hour= (tc.hour&(~0xf0)) | ((data&1)<<4);
+			SE(0);tc.hour= (tc.hour&(~0xf0)) | ((data&1)<<4);
 			tc.type = (data>>1)&3;
-			eights=0;
+			if (full_tc!=0xff) break;
 			if (want_verbose) {
 			  printf("\r\t\t\t\t\t\t\t->- %02i:%02i:%02i.%02i[%s]\r",tc.hour,tc.min,tc.sec,tc.frame,MTCTYPE[tc.type]);
 			  fflush(stdout);
 			}
 			memcpy(&last_tc,&tc,sizeof(smpte));
-			tc.type=tc.min=tc.frame=tc.sec=tc.hour=0;
-	#ifdef EXT_TIME /* remember last timestamp for extrapolation. */
-			// TODO: use some *better* timer eg. audio-frames
-			gettimeofday(&last_tv,NULL);
-	#endif
+			tc.type=tc.min=tc.frame=tc.sec=tc.hour=tc.tick=0;
 		default: 
 			;
+	}
+	if (full_tc!=0xff) { last_tc.tick=0; return; }
+	// count quarterframes 
+	switch (tc.tick - prevtick) {
+		case 7: 
+		//	assert(tc.tick==7);
+		case -1: /*reverse direction */
+			last_tc.tick=0-tc.tick; // -7+(7-tc.tick) compensate for latency
+			if (want_verbose) { printf("\r\t\t\t\t\t\t\t-<-\r"); fflush(stdout); }
+			break;
+		case -7: 
+		//	assert(prevtick==7);
+		case 1: /* transport rolling */
+			last_tc.tick=tc.tick+7; // compensate for latency
+			break;
+		default:
+			full_tc=last_tc.tick=0;
 	}
 }
 
@@ -165,10 +168,7 @@ int parse_sysex_urtm (int data, int state, int type) {
 	if (state==2 && type==0) {
 		if (data==0x01) rv=1;
 		if (data==0x06) rv=2;
-		eights=0;
-	#ifdef EXT_TIME /* reset timestamp for extrapolation. */
-		last_tv.tv_sec=last_tv.tv_usec=0;
-	#endif
+		last_tc.tick=0;
 	}
 	if (state>2 && type <=0 ) return (-4);
 
@@ -339,14 +339,19 @@ void process_midi(PtTimestamp timestamp, void *userData)
 	do { 
 		result = Pm_Dequeue(main_to_midi, &msg); 
 		if (result) {
-				if (msg.frame == 0xaffe) {  
+			if (msg.frame == 0xaffe) {  
 				// stop thread
 				Pm_Enqueue(midi_to_main, &msg);
 				active= FALSE;
 				return;
+			} else if (msg.frame == 0x4711) {  
+				// transport stopped - reset ticks.
+				full_tc=last_tc.tick=0;
+				Pm_Enqueue(midi_to_main, &msg);
+			} else {
+				memcpy(&msg,&last_tc,sizeof(smpte));
+				Pm_Enqueue(midi_to_main, &msg);
 			}
-			memcpy(&msg,&last_tc,sizeof(smpte));
-			Pm_Enqueue(midi_to_main, &msg);
 		}
 	} while (result);
      
@@ -449,6 +454,9 @@ int midi_connected(void) {
 
 long midi_poll_frame (void) {
 	int spin;
+	long frame;
+	static long lastframe = -1 ;
+	static int stopcnt = 0;
     	smpte now;
 	if (!midi) return (0);
 
@@ -458,9 +466,33 @@ long midi_poll_frame (void) {
 		spin = Pm_Dequeue(midi_to_main, &now);
 	} while (spin == 0); /* spin */ ;
 
-	// TODO: add time that has passed since receiving now
-	// will not work with this spinlock
-	return(convert_smpte_to_frame(now));
+	frame = convert_smpte_to_frame(now);
+
+	if(midi_clkadj && (full_tc==0xff)) {
+		//add time that has passed sice last full MTC frame..
+		smpte cmd;
+		cmd.frame=0x4711; // reset-full_tc CMD 
+		double diff= now.tick/4.0; // in smpte frames.
+		// check if transport is stuck...
+		if (lastframe != frame) {
+			stopcnt=0;
+			lastframe=frame;
+		} else if (stopcnt++ > (int) ceil(4.0*framerate*delay)) {
+			// we expect a full midi MTC every (2.0*framerate/delay) polls
+
+			Pm_Enqueue(main_to_midi, &cmd); // request data
+			while (Pm_Dequeue(midi_to_main, &cmd)==0) ; // spin 
+			diff=0.0;
+			if (want_verbose) 
+				printf("\r\t\t\t\t\t\t        -?-\r");
+		}
+		frame += (long) rint(diff);
+		if (want_verbose)
+			// subtract 7 quarter frames latency when running..
+			printf("\r\t\t\t\t\t\t  |+%g/8\r",diff<0?rint(4.0*(1.75-diff)):diff<2.0?0:rint(4.0*(diff-1.75)));
+	}
+	return(frame);
+	//return(convert_smpte_to_frame(now));
 }
 
 #else  /* endif HAVE_PORTMIDI */
@@ -695,45 +727,32 @@ long aseq_poll_frame (void) {
 	long frame =0 ;
 	static long lastframe = -1 ;
 	static int stopcnt = 0;
-	static int stopped = 0;
 	if (!seq) return (0);
 
 	pthread_mutex_lock(&aseq_lock);
 	frame = convert_smpte_to_frame(last_tc);
 	pthread_mutex_unlock(&aseq_lock);
-	if(midi_clkadj 
-	#ifdef EXT_TIME
-	 	&& last_tv.tv_sec > 0
-	#endif
-	) { // add time that has passed since receiving that last_tc..
-		double diff= eights/4.0;
-	#ifdef EXT_TIME
-		struct timeval now_tv;
-		gettimeofday(&now_tv,NULL);
-		diff = ((double) (now_tv.tv_sec-last_tv.tv_sec)) + ((double) (now_tv.tv_usec-last_tv.tv_usec)) / 1000000.0;
-		diff*=framerate;
-	#endif
+
+	if(midi_clkadj && (full_tc==0xff)) {
+		//add time that has passed sice last full MTC frame.
+		double diff; // unit: smpte-frames.
+		// check if transport is stuck...
 		if (lastframe != frame) {
 			stopcnt=0;
 			lastframe=frame;
-			stopped=0;
 		} else if (stopcnt++ > (int) ceil(4.0*framerate*delay)) {
 			// we expect a full midi MTC every (2.0*framerate/delay) polls
-	#ifdef EXT_TIME
-			last_tv.tv_sec=last_tv.tv_usec=0;diff=0.0;
-	#endif
-			eights=0;
-			stopped=1;
+			pthread_mutex_lock(&aseq_lock);
+			full_tc=last_tc.tick=0;
+			pthread_mutex_unlock(&aseq_lock);
 			if (want_verbose) 
 				printf("\r\t\t\t\t\t\t        -?-\r");
 		}
+		diff= last_tc.tick/4.0;
 
 		if (want_verbose) 
-			printf("\r\t\t\t\t\t\t  |+%g/8\r",rint(4.0*diff));
-	// TODO: check the doc about this and set 'stopped' flag when using sysex msg info
-	//	if (!stopped) 
-	//		diff+=1.75; // we receive a complete MTC on each 7th quarter frame.
-		
+			// subtract 7 quarter frames latency when running..
+			printf("\r\t\t\t\t\t\t  |+%g/8\r",diff<0?rint(4.0*(1.75-diff)):diff<2.0?0:rint(4.0*(diff-1.75)));
 		frame += (long) rint(diff);
 	}
 	return(frame);
