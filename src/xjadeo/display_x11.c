@@ -186,24 +186,10 @@ void xj_showcursor (void) {
 	XDefineCursor(xj_dpy,xj_win, 0);
 }
 
-
-#if 1
 void xj_get_window_pos (int *x,  int *y) {
-	XWindowAttributes attr;
-	XGetWindowAttributes(xj_dpy, xj_win, &attr);
-	if (x) *x=attr.x;
-	if (y) *y=attr.y;
+	Window	dummy;
+	XTranslateCoordinates( xj_dpy, xj_win, xj_rwin,0,0,x,y,&dummy );
 }
-#else // old X11 debug code
-void xj_get_window_pos (int *x,  int *y) {
-	unsigned int dummy_u0, dummy_u1;
-	unsigned int dummy_W, dummy_H;
-	Window dummy_w;
-	// this returns the position of the video in the xjadeo-window
-	// should return the pos of the xjadeo-window relative to the root window (desktop)
-	XGetGeometry(xj_dpy, xj_win, &dummy_w, x,y, &dummy_W, &dummy_H,&dummy_u0,&dummy_u1);
-}
-#endif
 
 void xj_get_window_size (unsigned int *my_Width, unsigned int *my_Height) {
 	int dummyX,dummyY;
@@ -613,10 +599,12 @@ void xj_handle_X_events (void) {
 					} else if (key == 0x43 ) { OSD_mode=0; //'C' // OSD - clear all
 						force_redraw=1;
 					} else if (key == 0x2b ) { ts_offset++; //'+'  
+						force_redraw=1;
 						if (smpte_offset) free(smpte_offset);
 						smpte_offset= calloc(15,sizeof(char));
 						frame_to_smptestring(smpte_offset,ts_offset,midi_connected());
 					} else if (key == 0x2d ) { ts_offset--; //'-' 
+						force_redraw=1;
 						if (smpte_offset) free(smpte_offset);
 						smpte_offset= calloc(15,sizeof(char));
 						frame_to_smptestring(smpte_offset,ts_offset,midi_connected());
@@ -904,7 +892,7 @@ int open_window_xv (void) {
 	xj_letterbox();
 
 	xj_win = XCreateSimpleWindow(xj_dpy, xj_rwin,
-			0, 0,
+			-1, -1,
 			xj_dwidth, xj_dheight,
 			0,
 			XWhitePixel(xj_dpy, xj_screen),
@@ -968,6 +956,7 @@ void get_window_pos_xv (int *x,  int *y) {
 }
 
 void resize_xv (unsigned int x, unsigned int y) { 
+	printf("RSIZE TO %ix%i\n",x,y);
 	xj_resize(x, y);
 }
 

@@ -1,3 +1,6 @@
+2006-11-18  x42  <robin@gareus.org>
+ - LASH remember window position
+
 2006-11-17  x42  <robin@gareus.org>
  - change between all window modes:
    x11+imlib re-init/retain

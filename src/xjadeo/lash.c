@@ -1,4 +1,4 @@
-/* xjadeo -  lash interface
+/* xjadeo - LASH interface
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,18 +76,26 @@ extern lash_client_t *lash_client;
 void xapi_open(void *d);
 void xapi_close(void *d);
 
+/* config options that need to be applied 
+ * in a certain order after all other
+ * cfg has been LASHed-in */
+typedef struct {
+	int apply;
+	int winpos_x, winpos_y;
+	unsigned int winsize_x, winsize_y;
+} jdo_config;
+
 long int lash_config_get_value_long (const lash_config_t * config) {
 	const void *data = lash_config_get_value(config);
 	return(*((long*) data));
 }
 
 /*************************
- * private lash functions
+ * private LASH functions
  */
 void handle_event(lash_event_t* ev) {
 	int type = lash_event_get_type(ev);
 	const char*	str = lash_event_get_string(ev);
-	
 	
 	if (type == LASH_Restore_Data_Set) {
 		// FIXME - send this AFTER recv. config
@@ -99,10 +107,10 @@ void handle_event(lash_event_t* ev) {
 			printf("LASH saving data set\n");
 		unsigned int w,h;
 		int x,y;
+		Xgetpos(&x,&y); 
+		lcs_int("window_position",x<<16|y);
 		Xgetsize(&w,&h); 
 		lcs_int("window_size",w<<16|h);
-		Xgetpos(&x,&y); 
-		// lcs_int("window_position",x<<16|y);
 		lcs_int("x11_ontop",xj_ontop);
 		lcs_int("x11_fullscreen",xj_fullscreen); 
 		lcs_int("want_letterbox",want_letterbox); 
@@ -147,7 +155,7 @@ void handle_event(lash_event_t* ev) {
 			printf ("WARNING: unhandled LASH Event t:%i s:'%s'\n",type,str);
 }
 
-void handle_config(lash_config_t* conf) {
+void handle_config(lash_config_t* conf, jdo_config* jcfg) {
 	const char*    key      = NULL;
 	key      = lash_config_get_key(conf);
 
@@ -208,19 +216,22 @@ void handle_config(lash_config_t* conf) {
 	} else if (!strcmp(key,"syncsource")) {
 		switch(lash_config_get_value_int(conf)) {
 			case 1: 
-			printf("LASH: setting sync source to JACK\n");
+				if (want_verbose)
+					printf("LASH: setting sync source to JACK\n");
 				open_jack();
 	#ifdef HAVE_MIDI
 				midi_close();
 	#endif
 				break;
 			case 2: 
-			printf("LASH: setting sync source to midi\n");
+				if (want_verbose)
+					printf("LASH: setting sync source to midi\n");
 				close_jack();
 				//we'll connect to MIDI later when we know the port/channel
 				break;
 			default:
-			printf("LASH: setting no sync source. (manual seek)\n");
+				if (want_verbose)
+					printf("LASH: setting no sync source. (manual seek)\n");
 				close_jack();
 	#ifdef HAVE_MIDI
 				midi_close();
@@ -246,29 +257,35 @@ void handle_config(lash_config_t* conf) {
 	#endif
 			/* Window Settings  */
 	} else if (!strcmp(key,"want_letterbox")) {
-		unsigned int x,y;
 		want_letterbox= lash_config_get_value_long(conf);
-		Xgetsize(&x,&y); 
-		Xresize(x,y);
 	} else if (!strcmp(key,"window_size")) {
-	//	printf("LASH config: window size %ix%i\n", (lash_config_get_value_int(conf)>>16)&0xffff,lash_config_get_value_int(conf)&0xffff);
-		Xresize((lash_config_get_value_int(conf)>>16)&0xffff,lash_config_get_value_int(conf)&0xffff);
+		if (want_debug )
+			printf("LASH config: window size %ix%i\n",
+				(lash_config_get_value_int(conf)>>16)&0xffff,
+				lash_config_get_value_int(conf)&0xffff);
+		jcfg->winsize_x=(lash_config_get_value_int(conf)>>16)&0xffff,
+		jcfg->winsize_y=lash_config_get_value_int(conf)&0xffff;
+		jcfg->apply=1;
+		//Xresize((lash_config_get_value_int(conf)>>16)&0xffff,lash_config_get_value_int(conf)&0xffff);
 	} else if (!strcmp(key,"window_position")) {
-		Xposition((lash_config_get_value_int(conf)>>16)&0xffff,lash_config_get_value_int(conf)&0xffff);
+		jcfg->winpos_x=(lash_config_get_value_int(conf)>>16)&0xffff,
+		jcfg->winpos_y=lash_config_get_value_int(conf)&0xffff;
+		jcfg->apply=1;
+		//Xposition((lash_config_get_value_int(conf)>>16)&0xffff,lash_config_get_value_int(conf)&0xffff);
 	} else if (!strcmp(key,"x11_ontop")) {
 		Xontop(lash_config_get_value_int(conf));
 	} else if (!strcmp(key,"x11_fullscreen")) {
 		Xfullscreen(lash_config_get_value_int(conf));
 	} else {
 		unsigned long val_size = lash_config_get_value_size(conf);
-	//	if (want_debug)
-		printf ("WARNING: unhandled LASH Config.  Key = %s size: %ld\n",key,val_size);
+		if (want_debug)
+			printf ("WARNING: unhandled LASH Config.  Key = %s size: %ld\n",key,val_size);
 	}
 }
 
 
 /*************************
- *  public lash functions
+ *  public LASH functions
  */
 
 void lash_setup() {
@@ -297,14 +314,27 @@ void lash_process() {
 #ifdef HAVE_LASH
 	lash_event_t*  ev = NULL;
 	lash_config_t* conf = NULL;
+	jdo_config jcfg;
+	memset(&jcfg,0,sizeof(jdo_config));
 	while ((ev = lash_get_event(lash_client)) != NULL) {
 		handle_event(ev);
 		lash_event_destroy(ev);
 	}
 	while ((conf = lash_get_config(lash_client)) != NULL) {
-		handle_config(conf);
+		handle_config(conf, &jcfg);
 		lash_config_destroy(conf);
 	}
+	// activate accumulated config options.
+	if (jcfg.apply) {
+		if (jcfg.winpos_x > 0 && jcfg.winpos_y > 0)
+			Xposition(jcfg.winpos_x,jcfg.winpos_y);
+		if (jcfg.winsize_x < 2 || jcfg.winsize_y < 2)
+			Xgetsize(&jcfg.winsize_x,&jcfg.winsize_y); 
+		if (want_debug)
+			printf("LASH apply window size: %i %i\n",jcfg.winsize_x,jcfg.winsize_y);
+		Xresize(jcfg.winsize_x,jcfg.winsize_y);
+	}
+	
 #endif
 }
 

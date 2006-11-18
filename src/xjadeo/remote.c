@@ -749,8 +749,7 @@ Dcommand cmd_get[] = {
 
 	{"seekmode", ": display how video frames are searched ", NULL, xapi_pseekmode, 0 },
 	{"windowsize" , ": show current window size", NULL, xapi_pwinsize, 0 },
-// TODO:  complete the display backends and then enable this fn.
-//	{"windowpos" , ": show current window position", NULL, xapi_pwinpos, 0 },
+	{"windowpos" , ": show current window position", NULL, xapi_pwinpos, 0 },
 	{"videomode" , ": display current video mode", NULL, xapi_pvideomode, 0 },
 	{"midisync", ": display midi smpte conversion mode", NULL, xapi_pmidisync, 0 },
 	{"midiclk", ": MTC quarter frame precision", NULL, xapi_pmidiclk, 0 },

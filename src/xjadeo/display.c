@@ -352,6 +352,5 @@ void Xfullscreen (int a) {
 }
 
 void Xposition (int x, int y) {
-	printf("set window position to %i %i\n",x,y);
 	VO[VOutput].position(x,y);
 }
