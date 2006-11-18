@@ -1,18 +1,20 @@
 TODO < 0.4
 -----------
 
-* keystrokes for SDL & doc. keystokes (OSD help?)
-
-* bring SDL up to scratch - should behave as Xv.
-
-* remember and set window position when (re-)creating window
+* update SF project site - new screenshots, manual, etc.
 
 * update the build information in the .spec.in 
 
-* qjadeo
- - specify midi device to use
- - allow to set offset + "seek to" either as frame-integer or SMPTE string.
+* remember and set window position when (re-)creating window. (#)
 
+* bring SDL up to scratch - should behave as X11 (#)
+
+* qjadeo 
+ - specify midi device to use
+ - allow to set offset + "seek to" either as frame-integer or SMPTE string. (#)
+ - dialog window to call mencoder/transcode (#)
+
+(#) maybe not until 0.4 :-)
 
 TODO > 0.4.0
 -------------
@@ -22,8 +24,18 @@ TODO > 0.4.0
    - multiple instances - named message queues + list of avail queues.
 
 * ratain aspect ratio  - letterbox option for imlib (+ SDL? )
+  revisit window hinting + aspect ratio resize
+
+* XV/X11 brightness/contrast control
 
 * opt. cache cont. images from last keyframe. (backwards play)
+
+* testsuite for quality assurance and benchmarks.
+
+* map key bindings (cfg file -> to remote commands) 
+  and print help OSD 
+
+* xjadeorc man page 
 
 MIDI:
   - alsamidi - catch port re-assignments and remember em ?
@@ -42,6 +54,8 @@ TODO - next major version:
 * option: modularize time-sync + video-source 
   (send time information via message queues)
 
+* dig into ffmpeg.
+
 * vacuum the code and clean the bath tub.
 
 * translations and internationalization ?!
@@ -49,6 +63,9 @@ TODO - next major version:
 
 TODO - legacy and low priority issues / ideas
 ---------------------------------------------
+
+-  read image sequences (eg. sgi)
+
   DISPLAY:
 
  - SDL RGB SWSURFACE (new videomode)

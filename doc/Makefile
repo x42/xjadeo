@@ -23,7 +23,7 @@ validate:
 html: validate
 	mkdir -p html 
 	(cd html; xsltproc ../html.xsl ../xjadeo.xml)
-	cp -f *.css html
+	cp -f *.css favicon.ico html
 
 man: validate
 	xsltproc man.xsl xjadeo.xml

@@ -44,6 +44,8 @@
     of the documentation is still so hot that is not readably rendered.
     If you're already interested, see the NEWS and Changelog files
     provided with the source. This manual (as well as xjadeo itself) is work in progress..</para>
+
+    <para>As you might have noticed by the logo, we will need an upgrade from Super-16 to 35mm! XPMs are welcome.</para>
   </section>
 
   <section id="download">
@@ -222,9 +224,8 @@
 deb http://www.debian-multimedia.org sid main
 deb-src http://www.debian-multimedia.org sid main</screen>
       (replace <option>sid</option>  by your distribution name)
-      and run <command>apt-get install xjadeo</command>
-      </para>
-      <para>Note that xjadeo >v0.3 also works with <ulink url="http://packages.debian.org/unstable/libdevel/libavformat-dev">official debian ffmpeg</ulink> packages.</para>
+      and run <command>apt-get update</command> followed by <command>apt-get install xjadeo</command> (or use your favorite software package tool).</para>
+      <para>Note that xjadeo >v0.3 also works with <ulink url="http://packages.debian.org/unstable/libdevel/libavformat-dev">official debian ffmpeg</ulink> packages, you can <command>dpkg-buildpackage</command> the latest SVN.</para>
 
       <para>&#187;Packman&#171; kindly provides SVN-snapshot <ulink url="http://packman.links2linux.de/package/xjadeo">xjadeo RPM</ulink> packages for SuSE Linux.</para>
     </section>
@@ -380,11 +381,11 @@ make install # (requires root privileges) </screen></para>
     <title>Using xjadeo</title>
 
     <para>It's not that complicated: for the impatient: run <command>xjadeo video-file.avi</command> from an xterm to get a default monitor window displaying the specified video file synchronously to jack transport. You can use <command>qjackctl</command> or any jack transport aware application to start, stop or reposition the transport location. </para>
-    <para> <command>xjadeo --help</command> will give you a list of available command line options.  please refer to the manuals in the appendix. which is also available as manual page via <command>man xjadeo</command>.</para>
+    <para> <command>xjadeo --help</command> will give you a list of available command line options.  please refer to the manual in the appendix.</para>
 
-    <para>If you prefer, you can also use the graphical user interface <command>qjadeo</command>.</para>
+    <para>If you prefer, you can also use the graphical user interface <command>qjadeo</command>, be aware that qjadeo only provides a limited set of features.</para>
 
-    <para>But let's back off a little, first you need a suitable video file to display..</para>
+    <para>But let's back off a little, first you will need a suitable video file to display..</para>
 
     <section id="video_formats">
       <title>Video Formats</title>
@@ -460,7 +461,95 @@ make install # (requires root privileges) </screen></para>
         video file FPS format. followed by binding the displayed frame into
         the range of the video file duration.</para>
       </section>
+    </section>
 
+    <section id="interaction">
+      <title>Interacting with xjadeo</title>
+      <para>
+      In most cases you will start up xjadeo with your favorite command line options and not come back to bother again.
+      However you may find it useful to change some settings during runtime:</para>
+
+      <section id="remote_control_interaction">
+      	<title>Remote Control</title>
+      	<para>If you do not want to re-focus your keyboard to the xjadeo window use <xref linkend="xjremote" /> and jump <xref linkend="remote_control_interface" />.</para>
+      </section>
+
+      <section id="x_window_interaction">
+      	<title>Monitor Window - Key bindings</title>
+      	<para>xjadeo accepts keyboard input and can receive Drag and Drop URIs.</para>
+	<para> Key bindings are work in progress likely to change... that said,
+    <variablelist>
+        <varlistentry>
+          <term><option>Esc</option></term>
+          <listitem> <para>Terminates xjadeo.</para> </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>q</option></term>
+          <listitem> <para>same as pressing the Escape key.</para> </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>a</option></term>
+          <listitem> <para>toggle window always-on-top.</para> </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>f</option></term>
+          <listitem> <para>toggle fullscreen mode.</para> </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>o</option></term>
+          <listitem> <para>cycle offset OSD: video-frames / smpte / [off|osd-text].</para> </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>s</option></term>
+          <listitem> <para>Toggle OSD smpte.</para> </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>v</option></term>
+          <listitem> <para>Toggle OSD frame.</para> </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>b</option></term>
+          <listitem> <para>Draws a black box around the OSD items.</para> </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>C</option></term>
+          <listitem> <para>Clear all on screen display information.</para> </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>m</option></term>
+          <listitem> <para>Toggle mouse pointer visibilty.</para> </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>&lt;</option></term>
+          <listitem> <para>Decrease window size by a factor of 1.2 .</para> </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>&gt;</option></term>
+          <listitem> <para>Increase window size by a factor of 1.2 .</para> </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>.</option></term>
+          <listitem> <para>Resize window to original (moviefile) size.</para> </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>,</option></term>
+          <listitem> <para>Scale window to match movies aspect ratio.</para> </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>+</option></term>
+          <listitem> <para>Increment A/V offset by 1 videoframe.</para> </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>-</option></term>
+          <listitem> <para>Decrement A/V offset by 1 videoframe.</para> </listitem>
+        </varlistentry>
+    </variablelist>
+	</para>
+      </section>
+    </section>
+
+    <section id="Setups">
+      <title>Setups</title>
 
       <section id="examples" xreflabel="example commandlines">
         <title>Example Commandlines</title>
@@ -469,6 +558,14 @@ make install # (requires root privileges) </screen></para>
         <screen>xjadeo -m -1 -v video-file.avi</screen> (using xjadeo compiled with portmidi) autoconnect to first available midi-in port and use arriving MTC messages display video in sync.
         <screen>xjadeo -f 12.5 -m 80:0 video-file.avi</screen> (using xjadeo compiled with ALSA seq) connect to midi device 80 port 0 and  display video in sync with MTC messages, updating the screen every 80ms.
         </para>
+      </section>
+
+      <section id="howto_lash">
+        <title>LASH</title>
+	<para> All you need is to have a <command>lashd</command> running. If you set the environement variable
+	<command>LASH_START_SERVER</command> one will be
+	<ulink url="http://www.nongnu.org/lash/lash-manual.html#SEC16">started</ulink> automatically. 
+	Use <command>lash_panel</command> or fi. <ulink url="http://dino.nongnu.org/glashctl">glashctl</ulink> to manage your sessions.</para>
       </section>
 
       <section id="howto_ardour1">
@@ -1784,6 +1881,12 @@ add full list of replaceables and literals here
 	  <para>currently supported rc KEYS: fps, fontfile, lash, mq, quiet, seek, verbose and videomode.</para>
       </refsect1>
 
+      <refsect1>
+        <title>SEE ALSO</title>
+    	<para><xref linkend="qjadeo"/></para>
+    	<para><xref linkend="xjremote"/></para>
+      </refsect1>
+
     </refentry>
 
 
@@ -1845,6 +1948,12 @@ add full list of replaceables and literals here
 
         <para>if the XJADEO variable is set, qjadeo
         will assume that it holds the path to the xjadeo executable.</para>
+      </refsect1>
+
+      <refsect1>
+        <title>SEE ALSO</title>
+    	<para><xref linkend="xjadeo"/></para>
+    	<para><xref linkend="xjremote"/></para>
       </refsect1>
     </refentry>
  
@@ -1966,6 +2075,13 @@ add full list of replaceables and literals here
         <para>If the XJADEO variable is set, xjremote
         will assume that it holds the path to the xjadeo executable.</para>
       </refsect1>
+
+      <refsect1>
+        <title>SEE ALSO</title>
+    	<para><xref linkend="xjadeo"/></para>
+    	<para><xref linkend="qjadeo"/></para>
+      </refsect1>
+
     </refentry>
   </appendix>
 </article>

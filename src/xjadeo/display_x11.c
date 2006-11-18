@@ -563,7 +563,7 @@ void xj_handle_X_events (void) {
 					// resize to match movie aspect ratio
 					if( ((float)movie_width/(float)movie_height) < ((float)my_Width/(float)my_Height) )
 						my_Width=floor((float)my_Height * (float)movie_width / (float)movie_height);
-					else my_Height=floor((float)my_Width * (float)movie_height / (float)movie_width);
+					else	my_Height=floor((float)my_Width * (float)movie_height / (float)movie_width);
 
 					xj_resize(my_Width, my_Height);
 				}
@@ -581,34 +581,74 @@ void xj_handle_X_events (void) {
 
 					XLookupString(&event.xkey, buf, sizeof(buf), &keySym, &stat);
 					key = ((keySym & 0xff00) != 0 ? ((keySym & 0x00ff) + 256) : (keySym));
+				/* HARDCODED KEY BINDINGS */
+					if        (key == 0x11b) // 'Esc'
+						loop_flag=0;
+					else if   (key == 0x71 ) // 'q'
+						loop_flag=0; 
+					else if   (key == 0x61 ) //'a' // always-on-top
+						xj_set_ontop(xj_ontop^=1);
+					else if   (key == 0x66 ) //'f' // fullscreen
+						xj_set_fullscreen(xj_fullscreen^=1);
+					else if   (key == 0x6f ) { //'o' // OSD - offset in frames
+						if (OSD_mode&OSD_OFFF) {
+							OSD_mode&=~OSD_OFFF;
+							OSD_mode|=OSD_OFFS;
+						} else if (OSD_mode&OSD_OFFS) {
+							OSD_mode^=OSD_OFFS;
+						} else {
+							OSD_mode^=OSD_OFFF;
+						}
+						force_redraw=1;
+					} else if (key == 0x73 ) { //'s' // OSD - current smpte
+						OSD_mode^=OSD_SMPTE;
+						force_redraw=1;
+					} else if (key == 0x76 ) { //'v' // OSD - current video frame
+						OSD_mode^=OSD_FRAME; 
+						force_redraw=1;
+					} else if (key == 0x62 ) { //'b' // OSD - black box
+						OSD_mode^=OSD_BOX;
+						force_redraw=1;
+					} else if (key == 0x43 ) { //'C' // OSD - clear all
+						OSD_mode=0; 
+						force_redraw=1;
+					} else if (key == 0x2e ) { //'.' // resize 100%
+						xj_resize(movie_width, movie_height);
+					} else if (key == 0x2c ) { //',' // resize to aspect ratio
+						unsigned int my_Width,my_Height;
+						xj_get_window_size(&my_Width,&my_Height);
+						if( ((float)movie_width/(float)movie_height) < ((float)my_Width/(float)my_Height) )
+							my_Width=floor((float)my_Height * (float)movie_width / (float)movie_height);
+						else 	my_Height=floor((float)my_Width * (float)movie_height / (float)movie_width);
+						xj_resize(my_Width, my_Height);
+					} else if (key == 0x3c ) { //'<' // resize *.83
+						unsigned int my_Width,my_Height;
+						xj_get_window_size(&my_Width,&my_Height);
+						float step=0.2*my_Height;
+						my_Width-=floor(step*((float)movie_width/(float)movie_height));
+						my_Height-=step;
+						xj_resize(my_Width, my_Height);
 
-					if     (key == 0x11b ) loop_flag=0; // 'Esc'
-					else if (key == 0x71 ) loop_flag=0; // 'q'
-					else if (key == 0x61 ) xj_set_ontop(xj_ontop^=1); //'a'
-					else if (key == 0x66 ) xj_set_fullscreen(xj_fullscreen^=1); //'f' // fullscreen
-					else if (key == 0x6f ) { OSD_mode^=OSD_OFFF; //'o' // OSD - offset in frames
-						force_redraw=1;
-					} else if (key == 0x4f ) { OSD_mode^=OSD_OFFS; //'O' // OSD - offset in smpte
-						force_redraw=1;
-					} else if (key == 0x73 ) { OSD_mode^=OSD_SMPTE; //'s' // OSD - current smpte
-						force_redraw=1;
-					} else if (key == 0x76 ) { OSD_mode^=OSD_FRAME; //'v' // OSD - current video frame
-						force_redraw=1;
-					} else if (key == 0x62 ) { OSD_mode^=OSD_BOX; //'b' // OSD - black box
-						force_redraw=1;
-					} else if (key == 0x43 ) { OSD_mode=0; //'C' // OSD - clear all
-						force_redraw=1;
-					} else if (key == 0x2b ) { ts_offset++; //'+'  
+					} else if (key == 0x3e ) { //'>' // resize *1.2
+						unsigned int my_Width,my_Height;
+						xj_get_window_size(&my_Width,&my_Height);
+						float step=0.2*my_Height;
+						my_Width+=floor(step*((float)movie_width/(float)movie_height));
+						my_Height+=step;
+						xj_resize(my_Width, my_Height);
+					} else if (key == 0x2b ) { //'+' // A/V offset
+						ts_offset++;
 						force_redraw=1;
 						if (smpte_offset) free(smpte_offset);
 						smpte_offset= calloc(15,sizeof(char));
 						frame_to_smptestring(smpte_offset,ts_offset,midi_connected());
-					} else if (key == 0x2d ) { ts_offset--; //'-' 
+					} else if (key == 0x2d ) { //'-'  A/V offset
+						ts_offset--;
 						force_redraw=1;
 						if (smpte_offset) free(smpte_offset);
 						smpte_offset= calloc(15,sizeof(char));
 						frame_to_smptestring(smpte_offset,ts_offset,midi_connected());
-					} else if (key == 0x6d ) { 	// 'm'
+					} else if (key == 0x6d ) { // 'm' // toggle mouse pointer
 					    if (xj_mouse^=1) xj_hidecursor(); else xj_showcursor();
 					} else if (want_debug) {
 						printf("unassigned key pressed: '%c' 0x%x\n",key,key);
