@@ -1,3 +1,7 @@
+2006-11-19  x42  <robin@gareus.org>
+ - qt-gui improvements (mencoder dialog, prefs)
+   work in progres
+
 2006-11-18  x42  <robin@gareus.org>
  - LASH remember window position
  - key bindings to scale video output

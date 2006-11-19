@@ -1,5 +1,8 @@
 #include "mainwindow.h"
 #include <qsettings.h>
+#include "prefdialog.h"
+#include "importdialog.h"
+#include "importprogress.h"
 
 class QJadeo: public MainWindow
 {
@@ -22,6 +25,10 @@ private:
   int m_offset;
   int m_framerate;
   QString m_osdfont;
+  QString m_midiport;
+  QString m_importdir;
+  bool m_importdestination;
+  QString m_importcodec;
 
   void updateRecentFilesMenu();
   void updateRecentFiles(const QString & filename);
@@ -32,6 +39,9 @@ public slots:
 
   void fileOpen();
   void fileExit();
+  void fileImport();
+  void filePreferences();
+  void fileDisconnect();
   void helpAbout();
   void zoom50();
   void zoom100();

@@ -1,5 +1,7 @@
 # quick hack - else make dist won't include these files.
-EXTRA_DIST= qjadeo.cpp images/fileopen qjadeo.pro.in mainwindow.ui qjadeo.h
+EXTRA_DIST= qjadeo.cpp images/fileopen qjadeo.pro.in mainwindow.ui qjadeo.h\
+	importdialog.ui prefdialog.ui importprogress.ui \
+	importdialog.ui.h  importprogress.ui.h prefdialog.ui.h
 
 qmake   = @ac_qmake@
 qt3to4   = @ac_qt3to4@
@@ -13,14 +15,17 @@ name    = qjadeo
 headers = qjadeo.h
 
 sources = qjadeo.cpp \
-	mainwindow.ui
+	mainwindow.ui \
+	importdialog.ui prefdialog.ui importprogress.ui \
+	importdialog.ui.h  importprogress.ui.h prefdialog.ui.h
+
 
 all:	$(name)
 
 $(name).mak:	$(name).pro
 	if test "x$(qt3to4)" != "x"; then \
 	 $(MKDIR) -p qt3; \
-	 $(COPY) -f qjadeo.cpp qjadeo.h mainwindow.ui qt3; \
+	 $(COPY) -f qjadeo.cpp qjadeo.h mainwindow.ui importdialog.ui prefdialog.ui importprogress.ui importdialog.ui.h  importprogress.ui.h prefdialog.ui.h qt3; \
 	 $(qt3to4) -alwaysOverwrite $(name).pro; \
 	fi
 	$(qmake) -o $(name).mak $(name).pro
@@ -48,7 +53,7 @@ clean:	$(name).mak
 	$(DEL_FILE) -rf .moc
 	$(DEL_FILE) -f portinglog.txt
 	$(DEL_FILE) -rf .tmp
-	$(DEL_FILE) -f bindir.h
+	$(DEL_FILE) -f bindir.h mainwindow.h
 
 distclean:	clean
 

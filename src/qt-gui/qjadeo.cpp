@@ -8,6 +8,9 @@
 #include <qprogressbar.h>
 #include <qspinbox.h>
 #include <qslider.h>
+#include <qlineedit.h> 
+#include <qcombobox.h> 
+#include <qcheckbox.h> 
 #include <qdesktopwidget.h>
 
 #include "qjadeo.h"
@@ -49,6 +52,13 @@ QJadeo::QJadeo()
   if(m_recentFiles.count())
     updateRecentFilesMenu();
 
+  m_midiport = m_settings.readEntry("MIDI port");
+  // TODO: detect portmidi / alsamidi default. 'midi library' 
+  if (m_midiport.isEmpty()) m_midiport = QString("24");
+  m_importdir = m_settings.readEntry("Import Directory");
+  m_importdestination = m_settings.readBoolEntry("Import Destination");
+  m_importcodec = m_settings.readEntry("Import Codec");
+  if (m_importcodec.isEmpty()) m_importcodec = QString("mpeg4");
   m_osdfont = m_settings.readEntry("OSD font");
   xjadeo.writeToStdin("osd font " + m_osdfont + "\nosd text \n");
 
@@ -98,6 +108,10 @@ void QJadeo::saveOptions()
   for(int i = 0; i < int (m_recentFiles.count()); ++i)
     m_settings.writeEntry("File" + QString::number(i + 1), m_recentFiles[i]);
   m_settings.writeEntry("OSD font", m_osdfont);
+  m_settings.writeEntry("MIDI port", m_midiport);
+  m_settings.writeEntry("Import Command", m_importcodec);
+  m_settings.writeEntry("Import Directory", m_importdir);
+  m_settings.writeEntry("Import Destination", m_importdestination);
 }
 
 void QJadeo::fileOpen()
@@ -115,10 +129,80 @@ void QJadeo::fileOpen()
 
 }
 
-void QJadeo::fileExit()
+void QJadeo::fileDisconnect()
 {
   saveOptions();
   close();
+}
+
+void QJadeo::fileExit()
+{
+  xjadeo.writeToStdin(QString("quit\n"));
+  xjadeo.writeToStdin(QString("exit\n"));
+  saveOptions();
+  //close(); // we will terminate when xjadeo/xjremote does.
+}
+
+void QJadeo::filePreferences()
+{
+  PrefDialog *pdialog = new PrefDialog::PrefDialog(this);
+  if (pdialog) {
+    pdialog->prefLineMidi->setText(m_midiport);
+    pdialog->codecComboBox->setCurrentText(m_importcodec);
+    pdialog->destDirLineEdit->setText(m_importdir);
+    if (m_importdestination)
+      pdialog->prefDirCheckBox->toggle();
+    pdialog->destDirLineEdit->setEnabled(m_importdestination);
+    if( pdialog->exec()) {
+      m_importcodec = pdialog->codecComboBox->currentText();
+      if (!pdialog->prefLineMidi->text().isEmpty())
+	m_midiport = pdialog->prefLineMidi->text();
+      if (pdialog->prefDirCheckBox->isOn() && !pdialog->destDirLineEdit->text().isEmpty())
+	m_importdir = pdialog->destDirLineEdit->text();
+      m_importdestination = pdialog->prefDirCheckBox->isOn();
+      saveOptions();
+    }
+    delete pdialog;
+  }
+}
+
+void QJadeo::fileImport()
+{
+  ImportDialog *idialog = new ImportDialog::ImportDialog(this);
+  qDebug("Import: ");
+
+  if (idialog) {
+    QString src, dst;
+    QString fps = QString("");
+    ImportProgress *iprog = NULL;
+    int w,h;
+    w=h=0;
+    if (m_importdestination) 
+      idialog->dstDir = m_importdir;
+    /* get settings */
+    if(idialog->exec()) {
+      src = idialog->SourceLineEdit->text();
+      dst = idialog->DestLineEdit->text();
+      if (idialog->widthCheckBox->isOn()) {
+	w = idialog->widthSpinBox->value();
+        if (idialog->aspectCheckBox->isOn()) 
+	  h = idialog->heightSpinBox->value();
+      }
+      if (idialog->fpsCheckBox->isOn()) 
+	fps = idialog->fpsComboBox->currentText();
+    }
+    /* start encoding */
+    if(!src.isEmpty() && !dst.isEmpty()) 
+      iprog = new ImportProgress::ImportProgress(this);
+    if(iprog) { 
+      if(!iprog->encode(src,dst,w,h,fps,m_importcodec)) {
+	iprog->setModal(TRUE);
+	iprog->show(); 
+      } else
+	delete iprog;
+    }
+    delete idialog;
+  }
 }
 
 void QJadeo::helpAbout()
@@ -166,7 +250,8 @@ void QJadeo::syncJack()
 void QJadeo::syncMTC()
 {
   xjadeo.writeToStdin(QString("jack disconnect\n"));
-  xjadeo.writeToStdin(QString("midi reconnect\n"));
+  //xjadeo.writeToStdin(QString("midi reconnect\n"));
+  xjadeo.writeToStdin(QString("midi connect "+ m_midiport +"\n"));
   xjadeo.writeToStdin(QString("get syncsource\n"));
 }
 
@@ -410,3 +495,5 @@ int main(int argc, char **argv)
   QTimer::singleShot(5000, &xjadeo, SLOT(kill()));
 
 }
+
+/* vi:set ts=8 sts=2 sw=2: */

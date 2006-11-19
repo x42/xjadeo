@@ -8,7 +8,7 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>256</width>
+            <width>343</width>
             <height>120</height>
         </rect>
     </property>
@@ -223,8 +223,12 @@
     </property>
     <item text="&amp;File" name="fileMenu">
         <action name="fileOpenAction"/>
+        <action name="fileImportAction"/>
+        <separator/>
+        <action name="filePreferencesAction"/>
         <separator/>
         <action name="fileExitAction"/>
+        <action name="fileDisconnectAction"/>
         <separator/>
     </item>
     <item text="&amp;Sync" name="Sync">
@@ -275,7 +279,7 @@
             <string>Exit</string>
         </property>
         <property name="menuText">
-            <string>E&amp;xit</string>
+            <string>&amp;Close xjadeo</string>
         </property>
         <property name="accel">
             <string></string>
@@ -308,48 +312,48 @@
         <property name="usesDropDown">
             <bool>false</bool>
         </property>
-	    <action>
-		<property name="name">
-		    <cstring>syncJackAction</cstring>
-		</property>
-		<property name="toggleAction">
-		    <bool>true</bool>
-		</property>
-		<property name="text">
-		    <string>JACK Transport</string>
-		</property>
-		<property name="menuText">
-		    <string>JACK Transport</string>
-		</property>
-	    </action>
-	    <action>
-		<property name="name">
-		    <cstring>syncMTCAction</cstring>
-		</property>
-		<property name="toggleAction">
-		    <bool>true</bool>
-		</property>
-		<property name="text">
-		    <string>MTC</string>
-		</property>
-		<property name="menuText">
-		    <string>MTC</string>
-		</property>
-	    </action>
-	    <action>
-		<property name="name">
-		    <cstring>syncOffAction</cstring>
-		</property>
-		<property name="toggleAction">
-		    <bool>true</bool>
-		</property>
-		<property name="text">
-		    <string>off</string>
-		</property>
-		<property name="menuText">
-		    <string>off (slider)</string>
-		</property>
-	    </action>
+        <action>
+            <property name="name">
+                <cstring>syncJackAction</cstring>
+            </property>
+            <property name="toggleAction">
+                <bool>true</bool>
+            </property>
+            <property name="text">
+                <string>JACK Transport</string>
+            </property>
+            <property name="menuText">
+                <string>JACK Transport</string>
+            </property>
+        </action>
+        <action>
+            <property name="name">
+                <cstring>syncMTCAction</cstring>
+            </property>
+            <property name="toggleAction">
+                <bool>true</bool>
+            </property>
+            <property name="text">
+                <string>MTC</string>
+            </property>
+            <property name="menuText">
+                <string>MTC</string>
+            </property>
+        </action>
+        <action>
+            <property name="name">
+                <cstring>syncOffAction</cstring>
+            </property>
+            <property name="toggleAction">
+                <bool>true</bool>
+            </property>
+            <property name="text">
+                <string>off</string>
+            </property>
+            <property name="menuText">
+                <string>off (slider)</string>
+            </property>
+        </action>
     </actiongroup>
     <actiongroup>
         <property name="name">
@@ -446,6 +450,42 @@
         </property>
         <property name="menuText">
             <string>Font...</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>fileImportAction</cstring>
+        </property>
+        <property name="text">
+            <string>Import</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Import</string>
+        </property>
+        <property name="toolTip">
+            <string>Convert video files.</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>filePreferencesAction</cstring>
+        </property>
+        <property name="text">
+            <string>Preferences</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Preferences</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>fileDisconnectAction</cstring>
+        </property>
+        <property name="text">
+            <string>Disconnect</string>
+        </property>
+        <property name="menuText">
+            <string>Disconnect and &amp;Exit</string>
         </property>
     </action>
 </actions>
@@ -546,6 +586,24 @@
         <receiver>MainWindow</receiver>
         <slot>seekBarChanged(int)</slot>
     </connection>
+    <connection>
+        <sender>filePreferencesAction</sender>
+        <signal>activated()</signal>
+        <receiver>MainWindow</receiver>
+        <slot>filePreferences()</slot>
+    </connection>
+    <connection>
+        <sender>fileDisconnectAction</sender>
+        <signal>activated()</signal>
+        <receiver>MainWindow</receiver>
+        <slot>fileDisconnect()</slot>
+    </connection>
+    <connection>
+        <sender>fileImportAction</sender>
+        <signal>activated()</signal>
+        <receiver>MainWindow</receiver>
+        <slot>fileImport()</slot>
+    </connection>
 </connections>
 <includes>
     <include location="local" impldecl="in implementation">mainwindow.ui.h</include>
@@ -567,6 +625,9 @@
     <slot>osdSMPTEToggled( bool )</slot>
     <slot>osdFont()</slot>
     <slot>seekBarChanged( int )</slot>
+    <slot>filePreferences()</slot>
+    <slot>fileDisconnect()</slot>
+    <slot>fileImport()</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>

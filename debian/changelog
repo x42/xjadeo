@@ -1,5 +1,12 @@
-xjadeo (0.3.21) unstable; urgency=low
+xjadeo (0.3.23) unstable; urgency=low
+
+  * qjadeo import via mencoder and preferences panel.
+    work in progess
+
+ -- Robin Gareus <robin@gareus.org>  Mon, 19 Nov 2006 14:11:11 +0100
+
+xjadeo (0.3.22) unstable; urgency=low
 
   * resume debian packaging for beta devel.
 
- -- Robin Gareus <robin@gareus.org>  Mon, 14 Nov 2006 08:27:32 +0100
+ -- Robin Gareus <robin@gareus.org>  Mon, 18 Nov 2006 19:27:32 +0100

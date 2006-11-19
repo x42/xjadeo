@@ -9,10 +9,11 @@ TODO < 0.4
 
 * bring SDL up to scratch - should behave as X11 (#)
 
+* X11/XV take focus on DND.
+
 * qjadeo 
- - specify midi device to use
+ - debug mencoder import.
  - allow to set offset + "seek to" either as frame-integer or SMPTE string. (#)
- - dialog window to call mencoder/transcode (#)
 
 (#) maybe not until 0.4 :-)
 
@@ -34,6 +35,7 @@ TODO > 0.4.0
 
 * map key bindings (cfg file -> to remote commands) 
   and print help OSD 
+  -make key events generate remote-replies (notify GUI of changes) 
 
 * xjadeorc man page 
 

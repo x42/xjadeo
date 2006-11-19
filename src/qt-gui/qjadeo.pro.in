@@ -7,7 +7,7 @@ HEADERS	+= qjadeo.h
 
 SOURCES	+= qjadeo.cpp
 
-FORMS	= mainwindow.ui
+FORMS	= mainwindow.ui prefdialog.ui importdialog.ui importprogress.ui
 
 IMAGES	= images/fileopen
 
