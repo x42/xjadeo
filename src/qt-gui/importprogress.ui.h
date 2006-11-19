@@ -37,6 +37,7 @@ int ImportProgress::encode( QString src, QString dst, int w, int h, QString fps,
   if (fps.toInt() > 0) {
     encoder.addArgument("-ofps");
     encoder.addArgument(fps); 
+    qDebug("MENCODER OPTION: -ofps "+fps);
   }
   encoder.addArgument("-nosound");
   if (w > 0 && h == 0) {
@@ -52,6 +53,7 @@ int ImportProgress::encode( QString src, QString dst, int w, int h, QString fps,
     encoder.addArgument("-vf");
     Temp.sprintf("scale=%i:%i",w,h);
     encoder.addArgument(Temp);
+    qDebug("MENCODER OPTION: "+Temp);
   }
   encoder.addArgument(src);
   encoder.addArgument("-o");
