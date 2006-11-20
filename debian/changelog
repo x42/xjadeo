@@ -1,9 +1,12 @@
 xjadeo (0.3.23) unstable; urgency=low
 
-  * qjadeo import via mencoder and preferences panel.
-    work in progess
+ - qjadeo import via mencoder
+ - qt-gui preferences dialog update.
+ - xjadeo: 'l' key to toggle letterbox
+ - letterbox mode for imlib2
+ - xjadeo DnD fix
 
- -- Robin Gareus <robin@gareus.org>  Mon, 19 Nov 2006 14:11:11 +0100
+ -- Robin Gareus <robin@gareus.org>  Mon, 20 Nov 2006 16:21:51 +0100
 
 xjadeo (0.3.22) unstable; urgency=low
 

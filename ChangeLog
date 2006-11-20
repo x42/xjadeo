@@ -4,6 +4,7 @@
  - xjadeo: 'l' key to toggle letterbox
  - letterbox mode for imlib2
  - xjadeo DnD fix
+ * version v0.3.23
 
 2006-11-19  x42  <robin@gareus.org>
  - qt-gui improvements (mencoder dialog, prefs)
