@@ -5,17 +5,9 @@ TODO < 0.4
 
 * update the build information in the .spec.in 
 
-* remember and set window position when (re-)creating window. (#)
-
-* bring SDL up to scratch - should behave as X11 (#)
-
-* X11/XV take focus on DND.
-
 * qjadeo 
- - debug mencoder import.
- - allow to set offset + "seek to" either as frame-integer or SMPTE string. (#)
-
-(#) maybe not until 0.4 :-)
+ - read and display video-file info in import dialog. (#)
+ - allow to specify offset + "seek to" either as frame-integer or SMPTE string. (#)
 
 TODO > 0.4.0
 -------------
@@ -25,7 +17,8 @@ TODO > 0.4.0
    - multiple instances - named message queues + list of avail queues.
 
 * ratain aspect ratio  - letterbox option for imlib (+ SDL? )
-  revisit window hinting + aspect ratio resize
+  - cache imlib2 letterbox border 
+  - revisit window hinting + aspect ratio resize
 
 * XV/X11 brightness/contrast control
 
@@ -39,10 +32,11 @@ TODO > 0.4.0
 
 * xjadeorc man page 
 
+* bring SDL up to scratch - should behave as X11 + SDL-SWSURFACE
+
 MIDI:
   - alsamidi - catch port re-assignments and remember em ?
     don't clash with check with lash+qjackctl !
-
 
 TODO - next major version: 
 ------------------------------------------------
@@ -74,6 +68,8 @@ TODO - legacy and low priority issues / ideas
 
  - speed up YUV trancoding -
    have ffmpeg decode directly to shared-mem...
+
+ - remember and set window position when (re-)creating window.
 
  - put xjadeo-session name in window title ? 
    add some info and markups to the title (on top, offset, smpte)

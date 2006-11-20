@@ -71,10 +71,17 @@
 </tabstops>
 <includes>
     <include location="global" impldecl="in declaration">qprocess.h</include>
+    <include location="local" impldecl="in declaration">qjadeo.h</include>
     <include location="local" impldecl="in implementation">importprogress.ui.h</include>
 </includes>
 <variables>
+    <variable access="private">int enc_h;</variable>
+    <variable access="private">int enc_w;</variable>
     <variable access="private">QProcess encoder;</variable>
+    <variable access="private">QString enc_fps;</variable>
+    <variable access="private">QString enc_dst;</variable>
+    <variable access="private">QString enc_src;</variable>
+    <variable access="private">QString enc_codec;</variable>
 </variables>
 <slots>
     <slot>ImportCancel()</slot>
@@ -83,8 +90,9 @@
     <slot access="private">encodeFinished()</slot>
 </slots>
 <functions>
-    <function returnType="int">encode( QString src, QString dst, int w, int h, QString fps, QString vcodec )</function>
-    <function>newFunction()</function>
+    <function returnType="int">mencode( QString commandpath )</function>
+    <function returnType="int">setEncoderFiles( QString src, QString dst )</function>
+    <function>setEncoderArgs( QString codec, QString fps, int w, int h )</function>
 </functions>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>

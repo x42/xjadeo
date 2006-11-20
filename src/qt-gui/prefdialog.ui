@@ -8,8 +8,8 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>440</width>
-            <height>311</height>
+            <width>356</width>
+            <height>307</height>
         </rect>
     </property>
     <property name="caption">
@@ -26,22 +26,16 @@
             <property name="name">
                 <cstring>groupBox3</cstring>
             </property>
-            <property name="minimumSize">
-                <size>
-                    <width>0</width>
-                    <height>60</height>
-                </size>
-            </property>
             <property name="title">
-                <string>MTC Settings</string>
+                <string>General Settings</string>
             </property>
-            <hbox>
+            <vbox>
                 <property name="name">
                     <cstring>unnamed</cstring>
                 </property>
                 <widget class="QLayoutWidget">
                     <property name="name">
-                        <cstring>layout3</cstring>
+                        <cstring>layout11</cstring>
                     </property>
                     <hbox>
                         <property name="name">
@@ -52,26 +46,7 @@
                                 <cstring>textLabel1</cstring>
                             </property>
                             <property name="text">
-                                <string>Midi Port:</string>
-                            </property>
-                        </widget>
-                        <widget class="QLineEdit">
-                            <property name="name">
-                                <cstring>prefLineMidi</cstring>
-                            </property>
-                            <property name="sizePolicy">
-                                <sizepolicy>
-                                    <hsizetype>0</hsizetype>
-                                    <vsizetype>0</vsizetype>
-                                    <horstretch>0</horstretch>
-                                    <verstretch>0</verstretch>
-                                </sizepolicy>
-                            </property>
-                            <property name="minimumSize">
-                                <size>
-                                    <width>120</width>
-                                    <height>0</height>
-                                </size>
+                                <string>Midi port (MTC):</string>
                             </property>
                         </widget>
                         <spacer>
@@ -86,14 +61,144 @@
                             </property>
                             <property name="sizeHint">
                                 <size>
-                                    <width>190</width>
-                                    <height>16</height>
+                                    <width>90</width>
+                                    <height>20</height>
                                 </size>
                             </property>
                         </spacer>
+                        <widget class="QLineEdit">
+                            <property name="name">
+                                <cstring>prefLineMidi</cstring>
+                            </property>
+                            <property name="sizePolicy">
+                                <sizepolicy>
+                                    <hsizetype>0</hsizetype>
+                                    <vsizetype>0</vsizetype>
+                                    <horstretch>0</horstretch>
+                                    <verstretch>0</verstretch>
+                                </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                                <size>
+                                    <width>60</width>
+                                    <height>0</height>
+                                </size>
+                            </property>
+                            <property name="maxLength">
+                                <number>16</number>
+                            </property>
+                        </widget>
                     </hbox>
                 </widget>
-            </hbox>
+                <widget class="QLayoutWidget">
+                    <property name="name">
+                        <cstring>layout10</cstring>
+                    </property>
+                    <hbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>textLabel1_2</cstring>
+                            </property>
+                            <property name="text">
+                                <string>xjadeo/xjremote executable:</string>
+                            </property>
+                        </widget>
+                        <spacer>
+                            <property name="name">
+                                <cstring>spacer16_2</cstring>
+                            </property>
+                            <property name="orientation">
+                                <enum>Horizontal</enum>
+                            </property>
+                            <property name="sizeType">
+                                <enum>Expanding</enum>
+                            </property>
+                            <property name="sizeHint">
+                                <size>
+                                    <width>10</width>
+                                    <height>20</height>
+                                </size>
+                            </property>
+                        </spacer>
+                        <widget class="QLineEdit">
+                            <property name="name">
+                                <cstring>prefLineXjadeo</cstring>
+                            </property>
+                            <property name="sizePolicy">
+                                <sizepolicy>
+                                    <hsizetype>7</hsizetype>
+                                    <vsizetype>0</vsizetype>
+                                    <horstretch>1</horstretch>
+                                    <verstretch>0</verstretch>
+                                </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                                <size>
+                                    <width>160</width>
+                                    <height>0</height>
+                                </size>
+                            </property>
+                        </widget>
+                    </hbox>
+                </widget>
+                <widget class="QLayoutWidget">
+                    <property name="name">
+                        <cstring>layout12</cstring>
+                    </property>
+                    <hbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>textLabel2_2</cstring>
+                            </property>
+                            <property name="text">
+                                <string>mencoder executable:</string>
+                            </property>
+                        </widget>
+                        <spacer>
+                            <property name="name">
+                                <cstring>spacer17</cstring>
+                            </property>
+                            <property name="orientation">
+                                <enum>Horizontal</enum>
+                            </property>
+                            <property name="sizeType">
+                                <enum>Expanding</enum>
+                            </property>
+                            <property name="sizeHint">
+                                <size>
+                                    <width>38</width>
+                                    <height>21</height>
+                                </size>
+                            </property>
+                        </spacer>
+                        <widget class="QLineEdit">
+                            <property name="name">
+                                <cstring>prefLineMencoder</cstring>
+                            </property>
+                            <property name="sizePolicy">
+                                <sizepolicy>
+                                    <hsizetype>7</hsizetype>
+                                    <vsizetype>0</vsizetype>
+                                    <horstretch>1</horstretch>
+                                    <verstretch>0</verstretch>
+                                </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                                <size>
+                                    <width>160</width>
+                                    <height>0</height>
+                                </size>
+                            </property>
+                        </widget>
+                    </hbox>
+                </widget>
+            </vbox>
         </widget>
         <widget class="QGroupBox">
             <property name="name">
@@ -155,21 +260,6 @@
                     <item>
                         <property name="text">
                             <string>mpeg2video</string>
-                        </property>
-                    </item>
-                    <item>
-                        <property name="text">
-                            <string>flv</string>
-                        </property>
-                    </item>
-                    <item>
-                        <property name="text">
-                            <string>sqv1</string>
-                        </property>
-                    </item>
-                    <item>
-                        <property name="text">
-                            <string>dvvideo</string>
                         </property>
                     </item>
                     <property name="name">

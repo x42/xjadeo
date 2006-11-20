@@ -22,50 +22,44 @@ void ImportProgress::ImportCancel()
   close();
 }
 
-int ImportProgress::encode( QString src, QString dst, int w, int h, QString fps, QString vcodec )
+int ImportProgress::mencode(QString commandpath)
 {
-  QFileInfo qfi = QFileInfo(dst);
-  if ( qfi.exists() && QMessageBox::question( this, "Overwrite File?", "File exists. Do you want to overwrite it?", "&Yes", "&No", QString::null, 0, 1 ) ) return (1);
-  QDir d( qfi.dirPath() );       
-  if (!d.exists()) d.mkdir(qfi.dirPath(),TRUE);
-  encoder.addArgument("mencoder");
+  encoder.addArgument(commandpath);
   encoder.addArgument("-idx");
   encoder.addArgument("-ovc");
   encoder.addArgument("lavc");
   encoder.addArgument("-lavcopts");
-  encoder.addArgument("vcodec="+vcodec);
-  if (fps.toInt() > 0) {
+  encoder.addArgument("vcodec="+enc_codec);
+  if (!enc_fps.isEmpty()) {
     encoder.addArgument("-ofps");
-    encoder.addArgument(fps); 
-    qDebug("MENCODER OPTION: -ofps "+fps);
-  }
+    encoder.addArgument(enc_fps); 
+//  qDebug("MENCODER OPTION: -ofps "+enc_fps);
+  } 
   encoder.addArgument("-nosound");
-  if (w > 0 && h == 0) {
+  if (enc_w > 0 && enc_h == 0) {
     QString Temp;
     encoder.addArgument("-vf");
     encoder.addArgument("scale");
     encoder.addArgument("-zoom");
     encoder.addArgument("-xy");
-    Temp.sprintf("%i",w);
+    Temp.sprintf("%i",enc_w);
     encoder.addArgument(Temp);
-  } else if (w > 0 && h > 0) {
+  } else if (enc_w > 0 && enc_h > 0) {
     QString Temp;
     encoder.addArgument("-vf");
-    Temp.sprintf("scale=%i:%i",w,h);
+    Temp.sprintf("scale=%i:%i",enc_w,enc_h);
     encoder.addArgument(Temp);
-    qDebug("MENCODER OPTION: "+Temp);
+//  qDebug("MENCODER OPTION: -vf "+Temp);
   }
-  encoder.addArgument(src);
+  encoder.addArgument(enc_src);
   encoder.addArgument("-o");
-  encoder.addArgument(dst);
+  encoder.addArgument(enc_dst);
   encoder.setCommunication ( QProcess::Stdout|QProcess::Stderr );
 
   if(!encoder.start()) {
-    qDebug("Could not start encoder!");
-    //  QMessageBox::critical( 0, "Could not start encoder!");
+    QMessageBox::QMessageBox::warning( this, "Import Error","Could not launch encoder.","OK", QString::null, QString::null, 0, -1);
     return(1);
   } else {
-    qDebug("started encoder..");
     connect(&encoder, SIGNAL(readyReadStdout()), this, SLOT(readFromStdout()));
     connect(&encoder, SIGNAL(readyReadStderr()), this, SLOT(readFromStderr()));
     connect(&encoder, SIGNAL(processExited()), this, SLOT(encodeFinished()));
@@ -75,7 +69,11 @@ int ImportProgress::encode( QString src, QString dst, int w, int h, QString fps,
 
 void ImportProgress::readFromStderr()
 {
-  qDebug( encoder.readStderr() );
+  //qDebug("mencoder:"+ encoder.readStderr());
+  while(encoder.canReadLineStderr()) {
+    QString msg = encoder.readLineStderr();
+    qDebug("mencoder: " + msg);
+  }
 }
 
 void ImportProgress::readFromStdout()
@@ -91,15 +89,41 @@ void ImportProgress::readFromStdout()
 
 void ImportProgress::encodeFinished()
 {
-  qDebug("encoding done.");
+  // TODO: check return status.
+  if (encoder.exitStatus() != 0) {
+    QMessageBox::QMessageBox::warning(this, 
+	"Import failed",
+	"Transcode failed.","mmh.",QString::null,QString::null,0,-1);
+  } else if ( QMessageBox::QMessageBox::information(this, 
+	"Import Finished",
+	"Transcoding video file completed.","OK", "Open it",
+	QString::null, 0, 0) == 1 ) {
+    QJadeo *qj = (QJadeo*) parent();
+    qj->fileLoad(enc_dst);
+  }
   close();
 }
 
-/* vi:set ts=8 sts=2 sw=2: */
-
-
-
-void ImportProgress::newFunction()
+int ImportProgress::setEncoderFiles( QString src, QString dst )
 {
-
+  if (!QFile::exists(src)) {
+  	QMessageBox::QMessageBox::warning(this, "Import Error","Source file does not exist","OK", QString::null, QString::null, 0, -1);
+	return(1);
+  }
+  QFileInfo qfi = QFileInfo(dst);
+  if ( qfi.exists() && QMessageBox::question(this, "Overwrite File?", "File exists. Do you want to overwrite it?", "&Yes", "&No", QString::null, 1, 1 ) ) return (1);
+  QDir d( qfi.dirPath() );       
+  if (!d.exists()) d.mkdir(qfi.dirPath(),TRUE);
+  enc_src=src;
+  enc_dst=dst;
+  return(0);
 }
+
+void ImportProgress::setEncoderArgs( QString codec, QString fps, int w, int h )
+{
+  enc_fps=fps;
+  enc_codec=codec;
+  enc_w=w; enc_h=h;
+}
+
+/* vi:set ts=8 sts=2 sw=2: */

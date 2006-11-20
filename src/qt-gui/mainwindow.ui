@@ -227,8 +227,8 @@
         <separator/>
         <action name="filePreferencesAction"/>
         <separator/>
-        <action name="fileExitAction"/>
         <action name="fileDisconnectAction"/>
+        <action name="fileExitAction"/>
         <separator/>
     </item>
     <item text="&amp;Sync" name="Sync">
@@ -279,7 +279,7 @@
             <string>Exit</string>
         </property>
         <property name="menuText">
-            <string>&amp;Close xjadeo</string>
+            <string>&amp;Close xjadeo and Exit</string>
         </property>
         <property name="accel">
             <string></string>
@@ -471,10 +471,10 @@
             <cstring>filePreferencesAction</cstring>
         </property>
         <property name="text">
-            <string>Preferences</string>
+            <string>Configure qjadeo</string>
         </property>
         <property name="menuText">
-            <string>&amp;Preferences</string>
+            <string>&amp;Configure qjadeo</string>
         </property>
     </action>
     <action>
@@ -605,9 +605,6 @@
         <slot>fileImport()</slot>
     </connection>
 </connections>
-<includes>
-    <include location="local" impldecl="in implementation">mainwindow.ui.h</include>
-</includes>
 <slots>
     <slot>fileOpen()</slot>
     <slot>setFPS( const QString &amp; )</slot>

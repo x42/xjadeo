@@ -45,7 +45,7 @@ int			xj_fullscreen = 0;
 int			xj_mouse = 0; 
 
 int          		xj_dwidth, xj_dheight; // cache window size for rendering currently only Xv
-int			xj_box[4]; // letterbox site - currently only Xv
+int			xj_box[4]; // letterbox site - currently only Xv & imlib2
 
 
 /*******************************************************************************
@@ -260,6 +260,7 @@ void HandleEnter(XEvent * xe) {
 	long *l = xe->xclient.data.l;
     	xj_atom= None;
 	Atom ok = XInternAtom(xj_dpy, "text/uri-list", False);
+//	Atom ok2 = XInternAtom(xj_dpy, "text/plain", False);
 
 	int version = (int)(((unsigned long)(l[1])) >> 24);
 	if (version > xdnd_version) return;
@@ -302,54 +303,35 @@ void HandleEnter(XEvent * xe) {
 }
 
 void SendStatus (XEvent * xe) {
-	unsigned int w,h;
-	XClientMessageEvent response;
-	response.type = ClientMessage;
-	response.window = xj_win;
-	response.format = 32;
-	response.message_type = xj_a_XdndStatus;
-	response.data.l[0] = xj_win;
-
-	response.data.l[1] = 0x3; // bit0: accept ; bit1: want_position
-
-//	response.data.l[2] = 0; // x, y
-	response.data.l[2] = xe->xclient.data.l[2]; // x, y
-
-//	response.data.l[3] = (1024<<16) | (768&0xFFFFUL); // w, h 
-//	response.data.l[3] = (1<<16) | (1&0xFFFFUL); // w, h 
-	xj_get_window_size(&w,&h);
-	response.data.l[3] = (w<<16) | (h&0xFFFFUL); // w, h 
-
-	response.data.l[4] = xj_a_XdndActionCopy; // action
-//	response.data.l[4] = xe->xclient.data.l[4];
-
-	XSendEvent(xj_dpy, dnd_source, False, NoEventMask, (XEvent*)&response);
-#if 0
-	int x,y;
-	x= xe->xclient.data.l[2] >>16;
-	y= xe->xclient.data.l[2] & 0xFFFFUL;
-	w= response.data.l[3] >>16;
-	h= response.data.l[3] & 0xFFFFUL;
-	printf("x:%iy:%iw:%i:h:%i\n",x,y,w,h);
-#endif
+	XEvent xev;
+        xev.xany.type = ClientMessage;
+        xev.xany.display = xj_dpy;
+	xev.xclient.window       = dnd_source;
+	xev.xclient.message_type = xj_a_XdndStatus;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = xj_win; 
+	xev.xclient.data.l[1] = 0x3; // bit0: accept ; bit1: want_position
+	xev.xclient.data.l[2] = xe->xclient.data.l[2];
+//	xj_get_window_size(&w,&h);
+//	xev.xclient.data.l[3] = (w<<16) | (h&0xFFFFUL); // w, h 
+	xev.xclient.data.l[3] = (1<<16) | (1&0xFFFFUL); // w, h 
+	xev.xclient.data.l[4] = xj_a_XdndActionCopy; // action
+	XSendEvent(xj_dpy, dnd_source, False, NoEventMask, &xev);
 }
 
 void SendFinished (void) {
-	XClientMessageEvent finished;
-	finished.type = ClientMessage;
-	finished.display = xj_dpy;
-	finished.window = dnd_source; 
-	finished.format = 32;
-	finished.message_type = xj_a_XdndFinished;
-	finished.data.l[0] = xj_win;
-	finished.data.l[1] = (1)?1:0; // flags - isAccepted ? sure.
-	finished.data.l[2] = 0; // action atom
-	finished.data.l[3] = 0; 
-	finished.data.l[4] = 0;
-	XSendEvent(xj_dpy, dnd_source, False, NoEventMask, (XEvent*)&finished);
+	XEvent xev;
+	memset(&xev,0,sizeof(XEvent));
+        xev.xany.type = ClientMessage;
+        xev.xany.display = xj_dpy;
+	xev.xclient.window       = dnd_source;
+	xev.xclient.message_type = xj_a_XdndFinished;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = xj_win;
+	XSendEvent(xj_dpy, dnd_source, False, NoEventMask, &xev);
 }
 
-#define MAX_DND_FILES 64
+#define MAX_DND_FILES 8
 void xapi_open(void *d); 
 
 void getDragData (XEvent *xe) {
@@ -357,6 +339,8 @@ void getDragData (XEvent *xe) {
 	int f;
 	unsigned long n, a;
 	unsigned char *data;
+
+	if(xe->xselection.property != xj_a_XdndSelection) return;
 
 	XGetWindowProperty(xj_dpy, xe->xselection.requestor,
             xe->xselection.property, 0, 65536, 
@@ -461,6 +445,7 @@ void xj_handle_X_events (void) {
 		XNextEvent(xj_dpy, &event);
 		switch (event.type) {
 			case Expose:
+			// TODO: update only rect (ev.xexpose.x, ev.xexpose.y, ev.xexpose.width, ev.xexpose.height)
 				xj_render();
 				break;
 			case SelectionRequest:
@@ -489,18 +474,20 @@ void xj_handle_X_events (void) {
     					if (xj_atom!= None) {
 						XConvertSelection(xj_dpy, xj_a_XdndSelection, xj_atom, xj_a_XdndSelection, xj_win, CurrentTime);
 					}
-				//	SendFinished(); // called by getDragData(..)
+					SendFinished();
 				} else 
 #endif
 				if (event.xclient.data.l[0] == xj_del_atom) {
 				//	fprintf(stdout, "Window destoyed...\n");
 					loop_flag = 0;
 #if 0
-				} elseif (event.xclient.data.l[0] == xj_a_TakeFocus)  {
-					;
+				} else if (event.xclient.data.l[0] == xj_a_TakeFocus)  {
+		         		fprintf(stdout, "take X focus!\n");
 #endif
+#if 0
 				} else {
-		         	//	fprintf(stdout, "unhandled X-client event: %ld\n",(long) event.xclient.message_type);
+		         		fprintf(stdout, "unhandled X-client event: %ld\n",(long) event.xclient.message_type);
+#endif
 				}
 				break;
 			case ConfigureNotify: // from XV only 
@@ -603,6 +590,10 @@ void xj_handle_X_events (void) {
 					} else if (key == 0x73 ) { //'s' // OSD - current smpte
 						OSD_mode^=OSD_SMPTE;
 						force_redraw=1;
+					} else if (key == 0x6c ) { //'l' // OSD - letterbox
+						want_letterbox=!want_letterbox; 
+						xj_letterbox();
+						force_redraw=1;
 					} else if (key == 0x76 ) { //'v' // OSD - current video frame
 						OSD_mode^=OSD_FRAME; 
 						force_redraw=1;
@@ -658,9 +649,9 @@ void xj_handle_X_events (void) {
 			case ReparentNotify:
 				break;
 			default:
-			/* TODO: I get Xevents type 94 a lot - 
+			/* TODO: I get Xevents type 94 (0x5e) a lot - 
 			 * no what could that be ?  */
-			//	printf("unhandled X event: type: %ld\n",(long) event.type);
+			//	printf("unhandled X event: type: %ld =0x%x\n",(long) event.type ,(int) event.type);
 				break;
 		}
 	}
@@ -1097,7 +1088,6 @@ void render_imlib (uint8_t *mybuffer) {
 
     /* Render the original 24-bit Image data into a pixmap of size w * h */
 	Imlib_render(imlib,iimage, my_Width,my_Height );
-	//Imlib_render(imlib,iimage, my_Width-20,my_Height-20 );
 
     /* Extract the Image and mask pixmaps from the Image */
 	pxm=Imlib_move_image(imlib,iimage);
@@ -1105,7 +1095,6 @@ void render_imlib (uint8_t *mybuffer) {
 //	pxmmask=Imlib_move_mask(imlib,iimage);
     /* Put the Image pixmap in the background of the window */
 	XSetWindowBackgroundPixmap(xj_dpy,xj_win,pxm);       
-//	XPutImage(xj_dpy,xj_win,xj_gc,img, 0,0,0,0, my_Width, my_Height);
 	XClearWindow(xj_dpy,xj_win);       
     /* No need to sync. XPending will take care in the event loop. */
 //	XSync(display, True);     
@@ -1170,6 +1159,10 @@ int open_window_imlib2 (void) {
 	im_vis = DefaultVisual(xj_dpy, xj_screen);
 	im_cm = DefaultColormap(xj_dpy, xj_screen);
 
+	xj_dwidth = movie_width;
+	xj_dheight = movie_height;
+	xj_letterbox();
+
 	xj_win = XCreateSimpleWindow(
 		xj_dpy, xj_rwin,
 		0,             // x
@@ -1190,6 +1183,9 @@ int open_window_imlib2 (void) {
 	init_dnd();
 #endif
 	XMapRaised(xj_dpy, xj_win);
+
+	imlib_set_cache_size(4096 * 1024); // check 
+	imlib_context_set_dither(0); 
 
 	/* express interest in WM killing this app */
 	if ((xj_del_atom = XInternAtom(xj_dpy, "WM_DELETE_WINDOW", True)) != None)
@@ -1234,7 +1230,6 @@ void close_window_imlib2(void)
 
 
 void render_imlib2 (uint8_t *mybuffer) {
-	unsigned int my_Width,my_Height;
 	Imlib_Image im_scaled = NULL;
 	if (!mybuffer) return;
 
@@ -1283,17 +1278,33 @@ void render_imlib2 (uint8_t *mybuffer) {
 	//imlib_image_set_has_alpha(1); // beware. SLOW.
 #endif
 
-	xj_get_window_size(&my_Width,&my_Height);
-
 	if (im_image) {
 		imlib_context_set_image(im_image);
-		if (movie_width == my_Width && movie_height== my_Height)  {
-			imlib_render_image_on_drawable(0, 0);
+		if (xj_box[2] == movie_width && xj_box[3]== movie_height && xj_box[0] == 0 && xj_box[1]== 0)  {
+			imlib_render_image_on_drawable(xj_box[0], xj_box[1]);
 		} else {
-			im_scaled=imlib_create_cropped_scaled_image(0,0,movie_width, movie_height,my_Width,my_Height);
+			#if 1 // draw black letter boxes 
+			Imlib_Image im_letterbox = NULL;
+			int bw,bh,ox,oy;
+			if (xj_box[0]<xj_box[1]) {bw=xj_box[2]; bh=xj_box[1]; ox=0; oy=xj_box[1]+xj_box[3];}
+			else {bw=xj_box[0]; bh=xj_box[3]; oy=0; ox=xj_box[0]+xj_box[2];}
+		//	printf("DEBUG %i %i %i %i [%ix%i+%i+%i]\n",xj_box[0],xj_box[1],xj_box[2],xj_box[3],bw,bh,ox,oy);
+			if (bw>0 && bh > 0) {
+				im_letterbox=imlib_create_image(bw, bh);
+				imlib_context_set_image(im_letterbox);
+				imlib_context_set_color(0, 0, 0, 255);
+				imlib_image_fill_rectangle(0, 0, bw, bh);
+				imlib_render_image_on_drawable(0,0);
+				imlib_render_image_on_drawable(ox,oy);
+				imlib_free_image();
+			}
+			#endif
+
+			imlib_context_set_image(im_image);
+			im_scaled=imlib_create_cropped_scaled_image(0,0,movie_width, movie_height,xj_box[2],xj_box[3]);
 			imlib_context_set_image(im_scaled);
 			//imlib_image_set_has_alpha(0); // beware.
-			imlib_render_image_on_drawable(0, 0);
+			imlib_render_image_on_drawable(xj_box[0], xj_box[1]);
 			imlib_free_image();
 		}
 #ifndef IMC
@@ -1316,6 +1327,9 @@ void newsrc_imlib2 (void) {
 		im_image = NULL;
 	}
 #endif
+  	xj_dwidth = movie_width;
+	xj_dheight = movie_height;
+	xj_letterbox();
 }
 
 #if 1 // LEGACY 

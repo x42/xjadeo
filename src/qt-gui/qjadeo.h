@@ -1,3 +1,5 @@
+#ifndef QJADEO_H
+#define QJADEO_H
 #include "mainwindow.h"
 #include <qsettings.h>
 #include "prefdialog.h"
@@ -12,6 +14,9 @@ class QJadeo: public MainWindow
 public:
 
   QJadeo();
+  void fileLoad(const QString & filename);
+  void initialize();
+  QString m_xjadeopath;
 
 private:
 
@@ -29,11 +34,12 @@ private:
   QString m_importdir;
   bool m_importdestination;
   QString m_importcodec;
+  QString m_mencoderpath;
 
   void updateRecentFilesMenu();
   void updateRecentFiles(const QString & filename);
   void saveOptions();
-  void fileLoad(const QString & filename);
+  bool testexec(QString exe);
 
 public slots:
 
@@ -65,3 +71,4 @@ public slots:
   void seekBarChanged( int );
 
 };
+#endif

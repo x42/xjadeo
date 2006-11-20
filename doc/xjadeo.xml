@@ -485,15 +485,19 @@ make install # (requires root privileges) </screen></para>
         </varlistentry>
         <varlistentry>
           <term><option>q</option></term>
-          <listitem> <para>same as pressing the Escape key.</para> </listitem>
+          <listitem> <para>Identical to pressing the Escape key.</para> </listitem>
         </varlistentry>
         <varlistentry>
           <term><option>a</option></term>
-          <listitem> <para>toggle window always-on-top.</para> </listitem>
+          <listitem> <para>Toggle window always-on-top.</para> </listitem>
         </varlistentry>
         <varlistentry>
           <term><option>f</option></term>
-          <listitem> <para>toggle fullscreen mode.</para> </listitem>
+          <listitem> <para>Toggle fullscreen mode.</para> </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>l</option></term>
+          <listitem> <para>Toggle letterbox / scale breaking aspect-ratio.</para> </listitem>
         </varlistentry>
         <varlistentry>
           <term><option>o</option></term>
@@ -1496,7 +1500,7 @@ add full list of replaceables and literals here
 
             <listitem>
               <para>retain aspect ratio and draw a letterbox around the move if necessary.
-	      Note that this feature is only available with the Xv video mode.</para>
+	      Note that this feature is only available with the Xv and imlib2 video mode.</para>
             </listitem>
           </varlistentry>
 

@@ -53,17 +53,58 @@ QJadeo::QJadeo()
     updateRecentFilesMenu();
 
   m_midiport = m_settings.readEntry("MIDI port");
-  // TODO: detect portmidi / alsamidi default. 'midi library' 
-  if (m_midiport.isEmpty()) m_midiport = QString("24");
   m_importdir = m_settings.readEntry("Import Directory");
   m_importdestination = m_settings.readBoolEntry("Import Destination");
   m_importcodec = m_settings.readEntry("Import Codec");
-  if (m_importcodec.isEmpty()) m_importcodec = QString("mpeg4");
-  m_osdfont = m_settings.readEntry("OSD font");
-  xjadeo.writeToStdin("osd font " + m_osdfont + "\nosd text \n");
+  m_xjadeopath = m_settings.readEntry("XJADEO Path");
+  m_mencoderpath = m_settings.readEntry("MENCODER Path");
 
+  // TODO: detect portmidi / alsamidi default. 'midi library' 
+  if (m_midiport.isEmpty()) m_midiport = QString("24");
+  if (m_importcodec.isEmpty()) m_importcodec = QString("mpeg4");
+  if (m_mencoderpath.isEmpty()) m_mencoderpath = QString("mencoder");
+  if (m_xjadeopath.isEmpty()) m_xjadeopath = QString(BINDIR "xjremote");
+  m_osdfont = m_settings.readEntry("OSD font");
+
+  fileMenu->setItemEnabled(fileMenu->idAt(1),testexec(m_mencoderpath));
   statusBar()->hide();
 
+}
+
+void QJadeo::initialize () 
+{
+  xjadeo.writeToStdin("osd font " + m_osdfont + "\nosd text \n");
+  xjadeo.writeToStdin(QString("get width\n"));
+  xjadeo.writeToStdin(QString("get height\n"));
+  xjadeo.writeToStdin(QString("get frames\n"));
+  xjadeo.writeToStdin(QString("get framerate\n"));
+  xjadeo.writeToStdin(QString("get offset\n"));
+  xjadeo.writeToStdin(QString("get osdcfg\n"));
+  xjadeo.writeToStdin(QString("get syncsource\n"));
+  xjadeo.writeToStdin(QString("get position\n"));
+  xjadeo.writeToStdin(QString("notify frame\n"));
+
+
+}
+
+/* search for external executable 
+ * returns true if file is found in env(PATH) 
+ * and is executable.
+ */
+bool QJadeo::testexec(QString exe)
+{
+  int timeout=10;
+  QProcess testbin; 
+  /* FIXME: there MUST be a better way 
+   * than to simply try exeute it .. */
+  testbin.addArgument(exe);
+  testbin.addArgument("-V");
+//testbin.setCommunication(0);
+  if(!testbin.start()) return (0);
+  while (testbin.isRunning() && timeout--) usleep (10000);
+  if (timeout<1) testbin.kill();
+//if (testbin.exitStatus() != 0) return(0);
+  return(1);
 }
 
 // Recent files list
@@ -109,9 +150,11 @@ void QJadeo::saveOptions()
     m_settings.writeEntry("File" + QString::number(i + 1), m_recentFiles[i]);
   m_settings.writeEntry("OSD font", m_osdfont);
   m_settings.writeEntry("MIDI port", m_midiport);
-  m_settings.writeEntry("Import Command", m_importcodec);
+  m_settings.writeEntry("Import Codec", m_importcodec);
   m_settings.writeEntry("Import Directory", m_importdir);
   m_settings.writeEntry("Import Destination", m_importdestination);
+  m_settings.writeEntry("XJADEO Path", m_xjadeopath);
+  m_settings.writeEntry("MENCODER Path", m_mencoderpath);
 }
 
 void QJadeo::fileOpen()
@@ -147,19 +190,30 @@ void QJadeo::filePreferences()
 {
   PrefDialog *pdialog = new PrefDialog::PrefDialog(this);
   if (pdialog) {
+    /* set values */
     pdialog->prefLineMidi->setText(m_midiport);
+    pdialog->prefLineXjadeo->setText(m_xjadeopath);
+    pdialog->prefLineMencoder->setText(m_mencoderpath);
     pdialog->codecComboBox->setCurrentText(m_importcodec);
     pdialog->destDirLineEdit->setText(m_importdir);
     if (m_importdestination)
       pdialog->prefDirCheckBox->toggle();
     pdialog->destDirLineEdit->setEnabled(m_importdestination);
+    /* exec dialog */
     if( pdialog->exec()) {
+    /* apply settings */
       m_importcodec = pdialog->codecComboBox->currentText();
+      m_importdestination = pdialog->prefDirCheckBox->isOn();
+      m_mencoderpath = pdialog->prefLineMencoder->text();
+      // TODO check if mencoder executable.
+      fileMenu->setItemEnabled(fileMenu->idAt(1),testexec(m_mencoderpath));
+      if (!pdialog->prefLineXjadeo->text().isEmpty())
+	m_xjadeopath = pdialog->prefLineXjadeo->text();
       if (!pdialog->prefLineMidi->text().isEmpty())
 	m_midiport = pdialog->prefLineMidi->text();
       if (pdialog->prefDirCheckBox->isOn() && !pdialog->destDirLineEdit->text().isEmpty())
 	m_importdir = pdialog->destDirLineEdit->text();
-      m_importdestination = pdialog->prefDirCheckBox->isOn();
+    /* and save */
       saveOptions();
     }
     delete pdialog;
@@ -169,7 +223,6 @@ void QJadeo::filePreferences()
 void QJadeo::fileImport()
 {
   ImportDialog *idialog = new ImportDialog::ImportDialog(this);
-  qDebug("Import: ");
 
   if (idialog) {
     QString src, dst;
@@ -195,11 +248,12 @@ void QJadeo::fileImport()
     if(!src.isEmpty() && !dst.isEmpty()) 
       iprog = new ImportProgress::ImportProgress(this);
     if(iprog) { 
-      if(!iprog->encode(src,dst,w,h,fps,m_importcodec)) {
-	iprog->setModal(TRUE);
+      if(!iprog->setEncoderFiles(src,dst)) {
+        iprog->setEncoderArgs(m_importcodec,fps,w,h);
+        iprog->mencode(m_mencoderpath);
+	iprog->setModal(FALSE);
 	iprog->show(); 
-      } else
-	delete iprog;
+      } else delete iprog;
     }
     delete idialog;
   }
@@ -452,12 +506,16 @@ int main(int argc, char **argv)
 
   QApplication a(argc, argv);
 
+  QJadeo w;
+
 // Launch xjadeo
 
   QString xjadeoPath(getenv("XJADEO"));
 
-  // TODO: use "/xjadeo" ifndef HAVE_MQ  
-  // change env(XJADEO) -> env(XJREMOTE)
+  if(xjadeoPath.isEmpty())
+    xjadeoPath = w.m_xjadeopath;
+  else w.m_xjadeopath = xjadeoPath;
+
   if(xjadeoPath.isEmpty())
     xjadeoPath = BINDIR "/xjremote";
 
@@ -466,34 +524,26 @@ int main(int argc, char **argv)
 
   if(!xjadeo.start())
   {
+     QMessageBox::QMessageBox::critical( &w, "qjadeo","can not execute xjadeo/xjremote.","Exit", QString::null, QString::null, 0, -1);
+
     qFatal("Could not start xjadeo executable: " + xjadeoPath);
   }
-
-
-  QJadeo w;
 
   w.connect(&xjadeo, SIGNAL(readyReadStdout()), &w, SLOT(readFromStdout()));
   w.connect(&xjadeo, SIGNAL(processExited()), &w, SLOT(close()));
 
   w.show();
   a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
-  xjadeo.writeToStdin(QString("get width\n"));
-  xjadeo.writeToStdin(QString("get height\n"));
-  xjadeo.writeToStdin(QString("get frames\n"));
-  xjadeo.writeToStdin(QString("get framerate\n"));
-  xjadeo.writeToStdin(QString("get offset\n"));
-  xjadeo.writeToStdin(QString("get osdcfg\n"));
-  xjadeo.writeToStdin(QString("get syncsource\n"));
-  xjadeo.writeToStdin(QString("get position\n"));
-  xjadeo.writeToStdin(QString("notify frame\n"));
-
+  w.initialize();
   a.exec();
+
+  // clean up - 
 
   xjadeo.writeToStdin(QString("notify off\n"));
 
   xjadeo.tryTerminate();
   QTimer::singleShot(5000, &xjadeo, SLOT(kill()));
-
+  //FIXME : does the kill-timeout remain when we exit here??
 }
 
 /* vi:set ts=8 sts=2 sw=2: */
