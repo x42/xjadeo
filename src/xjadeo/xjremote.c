@@ -154,7 +154,7 @@ int testexec (char *filename) {
 	if (!filename) return (0);
 	int result= stat(filename, &s);
 	if (result != 0) return 0; /* stat() failed */
-	if (!S_ISREG(s.st_mode)) return 0; /* is not a regular file */
+	if (!S_ISREG(s.st_mode) && !S_ISLNK(s.st_mode)) return 0; /* is not a regular file */
 	if (s.st_mode & (S_IXUSR|S_IXGRP|S_IXOTH))  return 1; /* is executable */
         return(0); 
 }
@@ -166,11 +166,11 @@ void execjadeo(int flags) {
 	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo?xjadeo:"(?)"); xjadeo=NULL; }
 	if (!xjadeo) xjadeo = BINDIR "xjadeo";
 	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo?xjadeo:"(?)"); xjadeo=NULL; }
-	xjadeo = "./xjadeo"; // XXX DEVEL svn:trunk/src/xjadeo
+	if (!xjadeo) xjadeo = "./xjadeo"; // XXX DEVEL svn:trunk/src/xjadeo
 	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo?xjadeo:"(?)"); xjadeo=NULL; }
-	xjadeo = "src/xjadeo/xjadeo"; // XXX DEVEL svn:trunk/
+	if (!xjadeo) xjadeo = "src/xjadeo/xjadeo"; // XXX DEVEL svn:trunk/
 	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo?xjadeo:"(?)"); xjadeo=NULL; }
-	xjadeo = "../xjadeo/xjadeo"; // XXX DEVEL svn:trunk/src/qt-qui
+	if (!xjadeo) xjadeo = "../xjadeo/xjadeo"; // XXX DEVEL svn:trunk/src/qt-qui
 	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo?xjadeo:"(?)"); xjadeo=NULL; }
 
 	if (xjadeo) {
@@ -180,6 +180,8 @@ void execjadeo(int flags) {
 			execl(xjadeo,"xjadeo", "-R", NULL);
 		else 
 			execl(xjadeo,"xjadeo", "-Q", "-q", NULL);
+	} else {
+		printf("# no xjadeo executable found. try to set the XJADEO env. variable\n");
 	}
 }
 
@@ -194,9 +196,10 @@ void forkjadeo (void) {
 			exit(-1);
 		case 0:
 			execjadeo(1);
+			fprintf(stdout,"# exec failed.\n");
 			exit(0);
 		default:
-			fprintf(stdout,"# started xjadeo.\n");
+			fprintf(stdout,"# connecting to xjadeo...\n");
 	}
 }
 

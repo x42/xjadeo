@@ -1,4 +1,8 @@
 2006-11-21  x42  <robin@gareus.org>
+ - fixed xjremote, xjadeo path detection.
+ - xjinfo version '-V'
+
+2006-11-21  x42  <robin@gareus.org>
  - xjinfo 
  - fixed BINDIR, SYSCFGFIR '/' suffix
  - qtjadeo file-info via xjinfo

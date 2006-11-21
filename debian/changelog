@@ -1,3 +1,7 @@
+xjadeo (0.3.25) unstable; urgency=low
+ - fixed xjremote, xjadeo path detection.
+ - xjinfo version '-V'
+
 xjadeo (0.3.24) unstable; urgency=low
  - xjinfo
  - fixed BINDIR, SYSCFGFIR '/' suffix

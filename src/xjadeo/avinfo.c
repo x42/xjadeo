@@ -32,6 +32,12 @@
 
 #include <ffmpeg/avformat.h>
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+
+
 char *program_name;
 int want_quiet = 0;	/*< --quiet, --silent */
 int want_mode  = 0;	/*< 0:xml 1:time 2:videoinfo */
@@ -45,6 +51,7 @@ video file info\n", program_name);
   printf (""
 "Options:\n"
 "  -h   display this help and exit\n"
+"  -V   print version information and exit\n"
 "  -x   print XML (defualt).\n"
 "  -t   print duration of file in seconds.\n"
 "  -v   dump human readable video stream information.\n"
@@ -56,6 +63,11 @@ video file info\n", program_name);
   exit (status);
 }
 
+static void printversion (void) {
+	printf ("%s version %s\n", program_name, VERSION);
+}
+
+
 
 static struct option const long_options[] =
 {
@@ -64,6 +76,7 @@ static struct option const long_options[] =
   {"text", no_argument, 0, 'v'},
   {"time", no_argument, 0, 't'},
   {"duration", no_argument, 0, 't'},
+  {"version", no_argument, 0, 'V'},
   {NULL, 0, NULL, 0}
 };
 	
@@ -71,10 +84,11 @@ static int decode_switches (int argc, char **argv) {
   int c;
   while ((c = getopt_long (argc, argv, 
 		   "h"	/* help */
-		   "x"	/* xml out */
+		   "x"	/* xml output */
 		   "v"	/* video streams csv */
 		   "c"	/* video streams csv */
-		   "t",	/* file duration */
+		   "t" 	/* file duration */
+		   "V",	/* version */
 		   long_options, (int *) 0)) != EOF)
   { switch (c) {
     case 't':
@@ -89,6 +103,9 @@ static int decode_switches (int argc, char **argv) {
     case 'x':
       want_mode = 0;
       break;
+    case 'V':
+      printversion();
+      exit(0);
     case 'h':
       usage (0);
     default:
