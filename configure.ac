@@ -6,10 +6,19 @@ AC_CONFIG_SRCDIR(src/xjadeo/xjadeo.c)
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
+VERSION_MAJOR=0
+VERSION_MINOR=3
+# if SVN is not available and configure is re-created:
+VERSION_SUB="24-ns"
+
+dnl 'i=$1-XXX': svn-base-revision for current VERSION_MINOR - v0.3 : 79
+SUBVERSION=esyscmd((svnversion . /trunk||echo 0)| awk '{sub(":","_"); i=$1-79; i=i<0?0:i; printf("%i",i);}')
+if test 0 -eq $SUBVERSION ; then SUBVERSION=$VERSION_SUB ; fi
+#SUBVERSION="0-rc1"
+
 dnl Every other copy of the package version number gets its value from here
-#AM_INIT_AUTOMAKE(xjadeo, [0.4.]esyscmd((svnversion . /trunk||echo 0)|tr : _|tr -d \\012))
-AM_INIT_AUTOMAKE(xjadeo, 0.3.23)
-AC_REVISION([$Id: configure.ac $])
+AM_INIT_AUTOMAKE(xjadeo, [${VERSION_MAJOR}.${VERSION_MINOR}.${SUBVERSION}])
+#AC_REVISION([$Id: configure.ac $])
 
 dnl create a config.h file (Automake will add -DHAVE_CONFIG_H)
 AM_CONFIG_HEADER(config.h)
@@ -206,8 +215,8 @@ if test -z "$ffmpegprefix" ; then
 PKG_CONFIG_PATH=./ffmpeg:$PKG_CONFIG_PATH
 PKG_CHECK_MODULES(FFMPEG, libavformat libavcodec, HAVE_FFMPEG=yes, 
         AC_MSG_WARN([
-	Could not find ffmpeg package. please update PKG_CONFIG_PATH to point to a
-	ffmpegs source folder.
+	Could not find ffmpeg package. please update PKG_CONFIG_PATH to 
+	point to a ffmpegs source folder.
 	])) 
 fi 
 

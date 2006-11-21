@@ -58,12 +58,14 @@ QJadeo::QJadeo()
   m_importcodec = m_settings.readEntry("Import Codec");
   m_xjadeopath = m_settings.readEntry("XJADEO Path");
   m_mencoderpath = m_settings.readEntry("MENCODER Path");
+  m_xjinfopath = m_settings.readEntry("XJINFO Path");
 
   // TODO: detect portmidi / alsamidi default. 'midi library' 
   if (m_midiport.isEmpty()) m_midiport = QString("24");
   if (m_importcodec.isEmpty()) m_importcodec = QString("mpeg4");
   if (m_mencoderpath.isEmpty()) m_mencoderpath = QString("mencoder");
   if (m_xjadeopath.isEmpty()) m_xjadeopath = QString(BINDIR "xjremote");
+  if (m_xjinfopath.isEmpty()) m_xjinfopath = QString(BINDIR "xjinfo");
   m_osdfont = m_settings.readEntry("OSD font");
 
   fileMenu->setItemEnabled(fileMenu->idAt(1),testexec(m_mencoderpath));
@@ -82,6 +84,7 @@ void QJadeo::initialize ()
   xjadeo.writeToStdin(QString("get osdcfg\n"));
   xjadeo.writeToStdin(QString("get syncsource\n"));
   xjadeo.writeToStdin(QString("get position\n"));
+  xjadeo.writeToStdin(QString("get seekmode\n"));
   xjadeo.writeToStdin(QString("notify frame\n"));
 
 
@@ -154,6 +157,7 @@ void QJadeo::saveOptions()
   m_settings.writeEntry("Import Directory", m_importdir);
   m_settings.writeEntry("Import Destination", m_importdestination);
   m_settings.writeEntry("XJADEO Path", m_xjadeopath);
+  m_settings.writeEntry("XJINFO Path", m_xjinfopath);
   m_settings.writeEntry("MENCODER Path", m_mencoderpath);
 }
 
@@ -193,6 +197,7 @@ void QJadeo::filePreferences()
     /* set values */
     pdialog->prefLineMidi->setText(m_midiport);
     pdialog->prefLineXjadeo->setText(m_xjadeopath);
+    pdialog->prefLineXjinfo->setText(m_xjinfopath);
     pdialog->prefLineMencoder->setText(m_mencoderpath);
     pdialog->codecComboBox->setCurrentText(m_importcodec);
     pdialog->destDirLineEdit->setText(m_importdir);
@@ -205,10 +210,11 @@ void QJadeo::filePreferences()
       m_importcodec = pdialog->codecComboBox->currentText();
       m_importdestination = pdialog->prefDirCheckBox->isOn();
       m_mencoderpath = pdialog->prefLineMencoder->text();
-      // TODO check if mencoder executable.
       fileMenu->setItemEnabled(fileMenu->idAt(1),testexec(m_mencoderpath));
       if (!pdialog->prefLineXjadeo->text().isEmpty())
 	m_xjadeopath = pdialog->prefLineXjadeo->text();
+      if (!pdialog->prefLineXjinfo->text().isEmpty())
+	m_xjinfopath = pdialog->prefLineXjinfo->text();
       if (!pdialog->prefLineMidi->text().isEmpty())
 	m_midiport = pdialog->prefLineMidi->text();
       if (pdialog->prefDirCheckBox->isOn() && !pdialog->destDirLineEdit->text().isEmpty())
@@ -232,6 +238,7 @@ void QJadeo::fileImport()
     w=h=0;
     if (m_importdestination) 
       idialog->dstDir = m_importdir;
+    idialog->xjinfo = m_xjinfopath;
     /* get settings */
     if(idialog->exec()) {
       src = idialog->SourceLineEdit->text();
@@ -267,6 +274,23 @@ void QJadeo::helpAbout()
     "(c) 2006 Robin Gareus & Luis Garrido\n"
     "http://xjadeo.sf.net"
   );
+}
+
+void QJadeo::seekAnyFrame()
+{
+  xjadeo.writeToStdin(QString("set seekmode 2\n"));
+}
+
+
+void QJadeo::seekContinuously()
+{
+  xjadeo.writeToStdin(QString("set seekmode 1\n"));
+}
+
+
+void QJadeo::seekKeyFrames()
+{
+  xjadeo.writeToStdin(QString("set seekmode 3\n"));
 }
 
 void QJadeo::zoom50()
@@ -401,6 +425,8 @@ void QJadeo::readFromStdout()
       case 3:
       {
         int equalsign = response.find('=');
+        int comment = response.find('#');
+	if (comment > 0) response.truncate(comment);
         QString name = response.mid(5, equalsign - 5);
         QString value = response.right(response.length() - equalsign - 1);
         if(name == "position")
@@ -414,6 +440,19 @@ void QJadeo::readFromStdout()
           m_movie_width = value.toInt();
         else if(name == "movie_height")
           m_movie_height = value.toInt();
+        else if(name == "seekmode")
+	{
+	  Seek->setItemChecked(Seek->idAt(0),FALSE);
+	  Seek->setItemChecked(Seek->idAt(1),FALSE);
+	  Seek->setItemChecked(Seek->idAt(2),FALSE);
+	  if (value.toInt()==3) {  // key
+	    Seek->setItemChecked(Seek->idAt(1),TRUE);
+	  } else if (value.toInt()==1) {  // cont
+	    Seek->setItemChecked(Seek->idAt(2),TRUE);
+	  } else {
+	    Seek->setItemChecked(Seek->idAt(0),TRUE);
+	  }
+	}
         else if(name == "syncsource")
 	{
 	  Sync->setItemChecked(Sync->idAt(0),FALSE);

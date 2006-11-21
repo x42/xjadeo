@@ -1,5 +1,6 @@
 # quick hack - else make dist won't include these files.
-EXTRA_DIST= qjadeo.cpp images/fileopen qjadeo.pro.in mainwindow.ui qjadeo.h\
+EXTRA_DIST= qjadeo.cpp qjadeo.pro.in mainwindow.ui qjadeo.h\
+	images/fileopen images/info images/qjadeo\
 	importdialog.ui prefdialog.ui importprogress.ui \
 	importdialog.ui.h  importprogress.ui.h prefdialog.ui.h
 
@@ -68,4 +69,4 @@ revert:
 	rm -f qjadeo.pro
 
 bindir.h: Makefile
-	echo '#define BINDIR "$(DESTDIR)/$(bindir)"' >$@
+	echo '#define BINDIR "$(DESTDIR)/$(bindir)/"' >$@

@@ -9,6 +9,6 @@ SOURCES	+= qjadeo.cpp
 
 FORMS	= mainwindow.ui prefdialog.ui importdialog.ui importprogress.ui
 
-IMAGES	= images/fileopen
+IMAGES	= images/fileopen images/info images/qjadeo
 
 QMAKE_CXXFLAGS_WARN_ON += -Wno-non-virtual-dtor

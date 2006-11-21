@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- ...................................................................... -->
+<!ELEMENT av     (xmlversion,
+			length, duration, avtimebase, time, 
+			bitrate, size,
+			streamtitle?, streamcopyright?, streamauthor?,
+			muxrate?, streams?,
+			((video|audio)?, stream)* ) >
+
+<!ELEMENT stream (codec?, duration,
+			avtimebasenum, avtimebaseden, avtimerate,
+			bitrate, formatid?,
+			width?, height?, framerate?, pixelformat?,
+			channels?, samplerate?) >
+
+<!ATTLIST stream id CDATA #REQUIRED
+          type      CDATA #REQUIRED >
+
+<!ELEMENT xmlversion            (#PCDATA)>
+<!ELEMENT length                (#PCDATA)>
+<!ELEMENT duration              (#PCDATA)>
+<!ELEMENT avtimebase            (#PCDATA)>
+<!ELEMENT time                  (#PCDATA)>
+<!ELEMENT bitrate               (#PCDATA)>
+<!ELEMENT size                  (#PCDATA)>
+<!ELEMENT streamtitle           (#PCDATA)>
+<!ELEMENT streamcopyright       (#PCDATA)>
+<!ELEMENT streamauthor          (#PCDATA)>
+<!ELEMENT muxrate               (#PCDATA)>
+<!ELEMENT streams               (#PCDATA)>
+<!ELEMENT video                 (#PCDATA)>
+<!ELEMENT audio                 (#PCDATA)>
+<!ELEMENT codec                 (#PCDATA)>
+<!ELEMENT avtimebasenum         (#PCDATA)>
+<!ELEMENT avtimebaseden         (#PCDATA)>
+<!ELEMENT avtimerate            (#PCDATA)>
+<!ELEMENT formatid              (#PCDATA)>
+<!ELEMENT width                 (#PCDATA)>
+<!ELEMENT height                (#PCDATA)>
+<!ELEMENT framerate             (#PCDATA)>
+<!ELEMENT pixelformat           (#PCDATA)>
+<!ELEMENT channels              (#PCDATA)>
+<!ELEMENT samplerate            (#PCDATA)>
+<!-- ...................................................................... -->

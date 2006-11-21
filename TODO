@@ -6,7 +6,7 @@ TODO < 0.4
 * update the build information in the .spec.in 
 
 * qjadeo 
- - read and display video-file info in import dialog. (#)
+ - nicely parse xjinfo output.
  - allow to specify offset + "seek to" either as frame-integer or SMPTE string. (#)
 
 TODO > 0.4.0

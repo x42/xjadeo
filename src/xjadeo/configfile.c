@@ -17,7 +17,7 @@
 #ifdef SYSCONFDIR
 # define SYSCFGDIR SYSCONFDIR
 #else
-# define SYSCFGDIR "/etc"
+# define SYSCFGDIR "/etc/"
 #endif
 
 /* test if file exists and is a regular file - returns 1 if ok */

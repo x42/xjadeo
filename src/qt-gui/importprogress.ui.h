@@ -89,7 +89,6 @@ void ImportProgress::readFromStdout()
 
 void ImportProgress::encodeFinished()
 {
-  // TODO: check return status.
   if (encoder.exitStatus() != 0) {
     QMessageBox::QMessageBox::warning(this, 
 	"Import failed",

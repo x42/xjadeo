@@ -164,7 +164,7 @@ int testexec (char *filename) {
 void execjadeo(int flags) {
 	char *xjadeo = getenv("XJADEO");
 	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo?xjadeo:"(?)"); xjadeo=NULL; }
-	if (!xjadeo) xjadeo = BINDIR "/xjadeo";
+	if (!xjadeo) xjadeo = BINDIR "xjadeo";
 	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo?xjadeo:"(?)"); xjadeo=NULL; }
 	xjadeo = "./xjadeo"; // XXX DEVEL svn:trunk/src/xjadeo
 	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo?xjadeo:"(?)"); xjadeo=NULL; }
@@ -444,6 +444,8 @@ int main(int argc, char **argv) {
 	program_name = argv[0];
 
 	i = decode_switches (argc, argv);
+
+	if ((i)!= argc) usage (EXIT_FAILURE);
 
 	if (want_unlink) unlink_queues(qid);
 	if (want_unlink&2) exit(0);

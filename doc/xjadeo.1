@@ -1,11 +1,11 @@
 .\"     Title: xjadeo
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.71.0 <http://docbook.sf.net/>
-.\"      Date: 11/20/2006
+.\"      Date: 11/21/2006
 .\"    Manual: Manual Pages
 .\"    Source: 
 .\"
-.TH "XJADEO" "1" "11/20/2006" "" "Manual Pages"
+.TH "XJADEO" "1" "11/21/2006" "" "Manual Pages"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
@@ -14,7 +14,11 @@
 xjadeo \- displays a video clip in sync with an external timing source
 .SH "SYNOPSIS"
 .HP 7
-\fBxjadeo\fR [\-abfFhikKLmMoqQRtvVx] [videofile]
+\fBxjadeo\fR [\-abfFhikKLmMoqQRtvVx] \fI<videofile>\fR
+.HP 7
+\fBxjadeo\fR \-R [\-Q] [\-abfFhikKLmMoqtvVx] [\fI<videofile>\fR]
+.HP 7
+\fBxjadeo\fR \-Q [\-R] [\-abfFhikKLmMoqtvVx] [\fI<videofile>\fR]
 .SH "DESCRIPTION"
 .PP
 \fBxjadeo\fR
@@ -38,14 +42,14 @@ retain aspect ratio and draw a letterbox around the move if necessary. Note that
 use midi quarter frame timing for more exact sync.
 .RE
 .PP
-\fB\-f, \-\-fps \fR\fB\fI<n>\fR\fR
+\fB\-f \fR\fB\fI<n>\fR\fR, \fB\-\-fps \fR\fB\fI<n>\fR\fR
 .RS 3n
 Desired refresh rate of the video display in frames per second. Lower values lighten the CPU load at the cost of video quality. Admits non\-integer values. Defaults to 10.0 fps.
 .sp
 If this value is set to zero (or less), xjadeo will use the framerate of the video file as its video update frequency.
 .RE
 .PP
-\fB\-F, \-\-filefps \fR\fB\fI<n>\fR\fR
+\fB\-F \fR\fB\fI<n>\fR\fR, \fB\-\-filefps \fR\fB\fI<n>\fR\fR
 .RS 3n
 Override the (autodetected) framerate of the videofile.
 .RE
@@ -55,7 +59,7 @@ Override the (autodetected) framerate of the videofile.
 Prints usage help and exits.
 .RE
 .PP
-\fB\-i, \-\-info \fR\fB\fI<n>\fR\fR
+\fB\-i \fR\fB\fI<n>\fR\fR, \fB\-\-info \fR\fB\fI<n>\fR\fR
 .RS 3n
 Displays useful info using the OSD (on\-screen display.)
 .RS 3n
@@ -102,7 +106,7 @@ Decode video frame by frame, particularly only useful to read files where not ev
 Disable LASH support.
 .RE
 .PP
-\fB\-m, \-\-midi \fR\fB\fI<port>\fR\fR
+\fB\-m \fR\fB\fI<port>\fR\fR, \fB\-\-midi \fR\fB\fI<port>\fR\fR
 .RS 3n
 Get sync from MTC (MIDI Time Code) instead of jack.
 .sp
@@ -117,7 +121,7 @@ If using portmidi,
 is the portnumber of the midi input to use. value \-1 will attempt autoconnect. use \-v \-m \-1 to list midi ports during autodetection.
 .RE
 .PP
-\fB\-M, \-\-midifps \fR\fB\fI<n>\fR\fR
+\fB\-M\fR\fB\fI<n>\fR\fR, \fB\-\-midifps \fR\fB\fI<n>\fR\fR
 .RS 3n
 Conversion between MTC SMPTE and frame number.
 .RS 3n
@@ -139,7 +143,7 @@ Resample video frame rate / MTC.
 .RE
 .RE
 .PP
-\fB\-o, \-\-offset \fR\fB\fI<n>\fR\fR
+\fB\-o \fR\fB\fI<n>\fR\fR, \fB\-\-offset \fR\fB\fI<n>\fR\fR
 .RS 3n
 Offset the video player a certain number of (video) frames relative to the sync master time base. Admits negative values.
 .RE
@@ -183,7 +187,7 @@ Prints additional information during the execution.
 Display version and compile\-time configuration information and exit.
 .RE
 .PP
-\fB\-x, \-\-vo, \-\-videomode \fR\fB\fI<n>\fR\fR
+\fB\-x \fR\fB\fI<n>\fR\fR, \fB\-\-vo \fR\fB\fI<n>\fR\fR, \fB\-\-videomode \fR\fB\fI<n>\fR\fR
 .RS 3n
 Selects the video output driver. Defaults to 0 (autodetect.) A value of \-1 makes the program list the available drivers and exit.
 .RE
@@ -313,6 +317,8 @@ currently supported rc KEYS: fps, fontfile, lash, mq, quiet, seek, verbose and v
 qjadeo(1)
 .PP
 xjremote(1)
+.PP
+xjinfo(1)
 .SH "COPYRIGHT"
 Copyright \(co 2005, 2006 Robin Gareus, Luis Garrido
 .br

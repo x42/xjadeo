@@ -1,3 +1,12 @@
+xjadeo (0.3.24) unstable; urgency=low
+ - xjinfo
+ - fixed BINDIR, SYSCFGFIR '/' suffix
+ - qtjadeo file-info via xjinfo
+ - version via svnversion
+ - qjadeo icons + seek menu
+
+ -- Robin Gareus <robin@gareus.org>  Tue, 21 Nov 2006 01:36:52 +0100
+
 xjadeo (0.3.23) unstable; urgency=low
 
  - qjadeo import via mencoder

@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
-"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd" 
+	[
+	 <!ENTITY avinfodtd SYSTEM "../src/xjadeo/avinfo.dtd">
+	]
+>
 
 <article>
   <articleinfo>
@@ -1460,16 +1464,25 @@ make install # (requires root privileges) </screen></para>
       <refsynopsisdiv>
         <cmdsynopsis>
           <command>xjadeo</command>
+          <arg choice="opt">-abfFhikKLmMoqQRtvVx</arg>
+          <arg choice="plain"><replaceable>videofile</replaceable></arg>
 <!--
-add full list of replaceables and literals here 
-	xjadeo [options] <file>
-	xjadeo -Q [-R] [options] [<file>]
-	xjadeo -R [-Q] [options] [<file>]
-
 	options: -a , -b, -f <num>, -F <int>,...
 -->
-          <arg choice="opt">-abfFhikKLmMoqQRtvVx</arg>
- 	  <arg>videofile</arg>
+        </cmdsynopsis>
+        <cmdsynopsis>
+          <command>xjadeo</command>
+          <arg choice="plain">-R</arg>
+          <arg choice="opt">-Q</arg>
+          <arg choice="opt">-abfFhikKLmMoqtvVx</arg>
+          <arg choice="opt"><replaceable>videofile</replaceable></arg>
+        </cmdsynopsis>
+        <cmdsynopsis>
+          <command>xjadeo</command>
+          <arg choice="plain">-Q</arg>
+          <arg choice="opt">-R</arg>
+          <arg choice="opt">-abfFhikKLmMoqtvVx</arg>
+          <arg choice="opt"><replaceable>videofile</replaceable></arg>
         </cmdsynopsis>
       </refsynopsisdiv>
 
@@ -1513,8 +1526,8 @@ add full list of replaceables and literals here
           </varlistentry>
 
           <varlistentry>
-            <term><option>-f, --fps <replaceable
-            class="option">n</replaceable></option></term>
+            <term><option>-f <replaceable class="option">n</replaceable></option>,
+	    <option>--fps <replaceable class="option">n</replaceable></option></term>
 
             <listitem>
               <para>Desired refresh rate of the video display in frames per
@@ -1526,8 +1539,8 @@ add full list of replaceables and literals here
           </varlistentry>
 
           <varlistentry>
-            <term><option>-F, --filefps <replaceable
-            class="option">n</replaceable></option></term>
+            <term><option>-F <replaceable class="option">n</replaceable></option>, 
+	    <option>--filefps <replaceable class="option">n</replaceable></option></term>
 
             <listitem>
               <para>Override the (autodetected) framerate of the videofile.</para>
@@ -1543,8 +1556,8 @@ add full list of replaceables and literals here
           </varlistentry>
 
           <varlistentry>
-            <term><option>-i, --info <replaceable
-            class="option">n</replaceable></option></term>
+            <term><option>-i <replaceable class="option">n</replaceable></option>,
+	    <option>--info <replaceable class="option">n</replaceable></option></term>
 
             <listitem>
               <para>Displays useful info using the OSD (on-screen
@@ -1612,8 +1625,8 @@ add full list of replaceables and literals here
           </varlistentry>
 
           <varlistentry>
-            <term><option>-m, --midi <replaceable
-            class="option">port</replaceable></option></term>
+            <term><option>-m <replaceable class="option">port</replaceable></option>,
+	    <option>--midi <replaceable class="option">port</replaceable></option></term>
 
             <listitem>
               <para>Get sync from MTC (MIDI Time Code) instead of jack.</para>
@@ -1631,8 +1644,8 @@ add full list of replaceables and literals here
           </varlistentry>
 
           <varlistentry>
-            <term><option>-M, --midifps <replaceable
-            class="option">n</replaceable></option></term>
+            <term><option>-M<replaceable class="option">n</replaceable></option>,
+	    <option>--midifps <replaceable class="option">n</replaceable></option></term>
 
             <listitem>
               <para>Conversion between MTC SMPTE and frame number.
@@ -1665,8 +1678,8 @@ add full list of replaceables and literals here
           </varlistentry>
 
           <varlistentry>
-            <term><option>-o, --offset <replaceable
-            class="option">n</replaceable></option></term>
+            <term><option>-o <replaceable class="option">n</replaceable></option>,
+	    <option>--offset <replaceable class="option">n</replaceable></option></term>
 
             <listitem>
               <para>Offset the video player a certain number of (video) frames
@@ -1729,8 +1742,9 @@ add full list of replaceables and literals here
           </varlistentry>
 
           <varlistentry>
-            <term><option>-x, --vo, --videomode <replaceable
-            class="option">n</replaceable></option></term>
+            <term><option>-x <replaceable class="option">n</replaceable></option>,
+	    <option>--vo <replaceable class="option">n</replaceable></option>,
+	    <option>--videomode <replaceable class="option">n</replaceable></option></term>
 
             <listitem>
               <para>Selects the video output driver. Defaults to 0
@@ -1889,6 +1903,7 @@ add full list of replaceables and literals here
         <title>SEE ALSO</title>
     	<para><xref linkend="qjadeo"/></para>
     	<para><xref linkend="xjremote"/></para>
+    	<para><xref linkend="xjinfo"/></para>
       </refsect1>
 
     </refentry>
@@ -1898,29 +1913,6 @@ add full list of replaceables and literals here
       <refmeta>
         <refentrytitle>qjadeo</refentrytitle>
     	<manvolnum>1</manvolnum>
-	<!--
-        <authorgroup>
-          <author>
-            <firstname>Luis</firstname>
-
-            <surname>Garrido</surname>
-
-            <affiliation>
-              <address><email>luisgarrido@users.sourceforge.net</email></address>
-            </affiliation>
-          </author>
-
-          <author>
-            <firstname>Robin</firstname>
-
-            <surname>Gareus</surname>
-
-            <affiliation>
-              <address><email>robin@gareus.org</email></address>
-            </affiliation>
-          </author>
-        </authorgroup>
-	-->
       </refmeta>
 
       <refnamediv>
@@ -1933,7 +1925,6 @@ add full list of replaceables and literals here
         <cmdsynopsis>
           <command>qjadeo</command>
 
-          <arg>videofile</arg>
         </cmdsynopsis>
       </refsynopsisdiv>
 
@@ -2086,6 +2077,84 @@ add full list of replaceables and literals here
     	<para><xref linkend="qjadeo"/></para>
       </refsect1>
 
+    </refentry>
+
+
+    <refentry id="xjinfo">
+      <refmeta>
+        <refentrytitle>xjinfo</refentrytitle>
+    	<manvolnum>1</manvolnum>
+
+      </refmeta>
+
+      <refnamediv>
+        <refname>xjinfo</refname>
+
+        <refpurpose>Display A/V file info in XML format.</refpurpose>
+      </refnamediv>
+
+      <refsynopsisdiv>
+        <cmdsynopsis>
+          <command>xjinfo</command>
+          <arg choice="opt">-xvhct</arg>
+          <arg choice="plain"><replaceable>videofile</replaceable></arg>
+        </cmdsynopsis>
+      </refsynopsisdiv>
+
+      <refsect1>
+        <title>DESCRIPTION</title>
+
+        <para><command>xjinfo</command> does basically the same as
+	<command>ffmpeg -i</command> but displays the information in
+	XML or simple format that can be used for scripting.</para>
+
+      </refsect1>
+
+      <refsect1>
+        <title>OPTIONS</title>
+
+        <variablelist>
+          <varlistentry>
+            <term><option>-c, --csv</option></term>
+            <listitem>
+              <para>comma separated values, one line per video stream in file.
+	      Use the built-in help -h to learn about the format.</para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>-h, --help</option></term>
+            <listitem>
+              <para>Prints usage help and exits.</para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>-t, --time, --duration</option></term>
+            <listitem>
+              <para>output XML data. This is the default if no option is specified</para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>-v, --text</option></term>
+            <listitem>
+              <para>print a single line: duration, fps, geometry and codec info.</para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><option>-x, --xml</option></term>
+            <listitem>
+              <para>output XML data. This is the default if no option is specified.</para>
+	      <para>A DTD is available with the source or from
+	      <ulink url="http://svn.sourceforge.net/viewcvs.cgi/*checkout*/xjadeo/trunk/src/xjadeo/avinfo.dtd">xjadeo.sf.net</ulink>
+	      </para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+      </refsect1>
+
+      <refsect1>
+        <title>SEE ALSO</title>
+    	<para><xref linkend="xjadeo"/></para>
+      </refsect1>
     </refentry>
   </appendix>
 </article>

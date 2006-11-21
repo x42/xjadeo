@@ -35,6 +35,7 @@ private:
   bool m_importdestination;
   QString m_importcodec;
   QString m_mencoderpath;
+  QString m_xjinfopath;
 
   void updateRecentFilesMenu();
   void updateRecentFiles(const QString & filename);
@@ -57,6 +58,10 @@ public slots:
   void syncJack();
   void syncMTC();
   void syncOff();
+
+  void seekContinuously();
+  void seekAnyFrame();
+  void seekKeyFrames();
 
   void setFPS(const QString &);
   void setOffset(const QString &);

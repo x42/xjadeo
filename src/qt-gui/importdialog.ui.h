@@ -13,6 +13,8 @@
 #include <qfiledialog.h>
 #include <qlineedit.h> 
 #include <qfileinfo.h> 
+#include <qprocess.h>  
+#include <qmessagebox.h>  
 
 void ImportDialog::importSrcSelect()
 {
@@ -68,3 +70,34 @@ void ImportDialog::aspectCheckBox_toggled( bool t)
 {
   heightSpinBox->setEnabled(t);
 }
+
+
+void ImportDialog::readFromStdout()
+{
+  avInfoLabel->setText( infoproc->readStdout());
+}
+
+void ImportDialog::importAvInfo()
+{
+  infoproc = new QProcess( this );
+  infoproc->addArgument( xjinfo );
+  infoproc->addArgument( "-v" ); 
+  infoproc->addArgument( SourceLineEdit->text() );
+  connect( infoproc, SIGNAL(readyReadStdout()), this, SLOT(readFromStdout()) );
+  connect( infoproc, SIGNAL(processExited()), this, SLOT(infoFinished()));
+  if ( !infoproc->start() ) {
+     QMessageBox::warning( 0, "Warning", "Could not start the xjinfo command.", "OK" ); 
+  }
+}
+
+void ImportDialog::infoFinished()
+{
+  if (infoproc->exitStatus() != 0) {
+    avInfoLabel->setText(" ");
+    QMessageBox::QMessageBox::warning(this, 
+	"xjinfo failed",
+	"Error occured while detecting file informtaion.","aha.",QString::null,QString::null,0,-1);
+  }
+}
+
+/* vi:set ts=8 sts=2 sw=2: */

@@ -8,12 +8,15 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>343</width>
+            <width>347</width>
             <height>120</height>
         </rect>
     </property>
     <property name="caption">
         <string>qjadeo</string>
+    </property>
+    <property name="icon">
+        <pixmap>qjadeo</pixmap>
     </property>
     <vbox>
         <property name="name">
@@ -246,6 +249,11 @@
         <action name="osdFontAction"/>
         <action name="osdFrameAction"/>
         <action name="osdSMTPEAction"/>
+    </item>
+    <item text="&amp;Seek" name="Seek">
+        <action name="seekany_frameAction"/>
+        <action name="seekKeyFramesAction"/>
+        <action name="seekcontinuouslyAction"/>
     </item>
     <item text="&amp;Help" name="helpMenu">
         <action name="helpAboutAction"/>
@@ -488,6 +496,48 @@
             <string>Disconnect and &amp;Exit</string>
         </property>
     </action>
+    <action>
+        <property name="name">
+            <cstring>seekany_frameAction</cstring>
+        </property>
+        <property name="toggleAction">
+            <bool>true</bool>
+        </property>
+        <property name="text">
+            <string>to any frame</string>
+        </property>
+        <property name="menuText">
+            <string>to any frame</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>seekKeyFramesAction</cstring>
+        </property>
+        <property name="toggleAction">
+            <bool>true</bool>
+        </property>
+        <property name="text">
+            <string>keyframes only</string>
+        </property>
+        <property name="menuText">
+            <string>keyframes only</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>seekcontinuouslyAction</cstring>
+        </property>
+        <property name="toggleAction">
+            <bool>true</bool>
+        </property>
+        <property name="text">
+            <string>continuously</string>
+        </property>
+        <property name="menuText">
+            <string>continuously</string>
+        </property>
+    </action>
 </actions>
 <connections>
     <connection>
@@ -604,7 +654,28 @@
         <receiver>MainWindow</receiver>
         <slot>fileImport()</slot>
     </connection>
+    <connection>
+        <sender>seekany_frameAction</sender>
+        <signal>activated()</signal>
+        <receiver>MainWindow</receiver>
+        <slot>seekAnyFrame()</slot>
+    </connection>
+    <connection>
+        <sender>seekcontinuouslyAction</sender>
+        <signal>activated()</signal>
+        <receiver>MainWindow</receiver>
+        <slot>seekContinuously()</slot>
+    </connection>
+    <connection>
+        <sender>seekKeyFramesAction</sender>
+        <signal>activated()</signal>
+        <receiver>MainWindow</receiver>
+        <slot>seekKeyFrames()</slot>
+    </connection>
 </connections>
+<includes>
+    <include location="local" impldecl="in implementation">mainwindow.ui.h</include>
+</includes>
 <slots>
     <slot>fileOpen()</slot>
     <slot>setFPS( const QString &amp; )</slot>
@@ -625,6 +696,9 @@
     <slot>filePreferences()</slot>
     <slot>fileDisconnect()</slot>
     <slot>fileImport()</slot>
+    <slot>seekAnyFrame()</slot>
+    <slot>seekContinuously()</slot>
+    <slot>seekKeyFrames()</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>

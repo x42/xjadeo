@@ -1,3 +1,11 @@
+2006-11-21  x42  <robin@gareus.org>
+ - xjinfo 
+ - fixed BINDIR, SYSCFGFIR '/' suffix
+ - qtjadeo file-info via xjinfo
+ - version via svnversion
+ - qjadeo icons + seek menu
+ * version v0.3.24
+
 2006-11-20  x42  <robin@gareus.org>
  - qt-gui removed debug, added QMessageBoxes,
    qjadeo preferences dialog update.
