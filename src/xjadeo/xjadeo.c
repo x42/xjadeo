@@ -219,8 +219,8 @@ int open_movie(char* file_name) {
 	}
 
 	pFrameFMT = NULL;
-	movie_width  = 160;
-	movie_height = 90;
+	movie_width  = 320;
+	movie_height = 180;
 	framerate = duration = frames = 1;
 	videoStream=-1;
 	// recalc offset with new framerate
@@ -352,7 +352,7 @@ int open_movie(char* file_name) {
 }
 
 // TODO: set this high (1000) if transport stopped and to a low value (100) if transport is running.
-#define MAX_CONT_FRAMES (400)
+#define MAX_CONT_FRAMES (500)
 
 int my_seek_frame (AVPacket *packet, int timestamp) {
 	// TODO: assert  timestamp + ts_offset >0 && < length   
@@ -537,6 +537,44 @@ void display_frame(int64_t timestamp, int force_update) {
 		if (pFrameFMT) fprintf( stderr, "Error seeking frame\n");
 		// clear image (black / or YUV green)
 		memset(buffer,0,avpicture_get_size(render_fmt, movie_width, movie_height));
+#ifdef DRAW_CROSS
+		int x,y;
+		if (render_fmt == PIX_FMT_YUV420P) 
+		for (x=0,y=0;x< movie_width-1; x++,y= movie_height*x/movie_width) {
+			 int yoff=(x+movie_width*y);
+			 int uvoff=((x/2)+movie_width/2*(y/2));
+			 buffer[yoff]=127; buffer[yoff+1]=127; 
+
+			 yoff=(x+movie_width*(movie_height-y-1));
+			 uvoff=((x/2)+movie_width/2*((movie_height-y-1)/2));
+			 buffer[yoff]=127;
+			 buffer[yoff+1]=127;
+		}
+		if (render_fmt == PIX_FMT_RGB24) 
+		for (x=0,y=0;x< movie_width-1; x++,y= movie_height*x/movie_width) {
+			int yoff=3*(x+movie_width*y);
+			buffer[yoff]=255;
+			buffer[yoff+1]=255;
+			buffer[yoff+2]=255;
+			yoff=3*(x+movie_width*(movie_height-y-1));
+			buffer[yoff]=255;
+			buffer[yoff+1]=255;
+			buffer[yoff+2]=255;
+		}
+		if (render_fmt == PIX_FMT_RGBA32) 
+		for (x=0,y=0;x< movie_width-1; x++,y= movie_height*x/movie_width) {
+			int yoff=4*(x+movie_width*y);
+			buffer[yoff]=255;
+			buffer[yoff+1]=255;
+			buffer[yoff+2]=255;
+			buffer[yoff+3]=255;
+			yoff=4*(x+movie_width*(movie_height-y-1));
+			buffer[yoff]=255;
+			buffer[yoff+1]=255;
+			buffer[yoff+2]=255;
+			buffer[yoff+3]=255;
+		}
+#endif
 		render_buffer(buffer); // in pFrameFMT
 	}
 }

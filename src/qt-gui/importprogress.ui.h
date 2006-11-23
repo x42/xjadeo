@@ -51,9 +51,17 @@ int ImportProgress::mencode(QString commandpath)
     encoder.addArgument(Temp);
 //  qDebug("MENCODER OPTION: -vf "+Temp);
   }
-  encoder.addArgument(enc_src);
+
+  { // split enc_xargs by space and add as arguments
+  QStringList xargs = QStringList::split(" ",enc_xargs.simplifyWhiteSpace());
+   for ( QStringList::Iterator it = xargs.begin(); it != xargs.end(); ++it ) {
+    encoder.addArgument(*it);
+    qDebug("XOPTION: "+ *it);
+   }
+  }
   encoder.addArgument("-o");
   encoder.addArgument(enc_dst);
+  encoder.addArgument(enc_src);
   encoder.setCommunication ( QProcess::Stdout|QProcess::Stderr );
 
   if(!encoder.start()) {
@@ -123,6 +131,11 @@ void ImportProgress::setEncoderArgs( QString codec, QString fps, int w, int h )
   enc_fps=fps;
   enc_codec=codec;
   enc_w=w; enc_h=h;
+}
+
+void ImportProgress::setExtraArgs( QString args )
+{
+  enc_xargs=args;
 }
 
 /* vi:set ts=8 sts=2 sw=2: */

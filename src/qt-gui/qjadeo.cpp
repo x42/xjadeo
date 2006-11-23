@@ -58,6 +58,7 @@ QJadeo::QJadeo()
   m_importcodec = m_settings.readEntry("Import Codec");
   m_xjadeopath = m_settings.readEntry("XJADEO Path");
   m_mencoderpath = m_settings.readEntry("MENCODER Path");
+  m_mencoderopts = m_settings.readEntry("MENCODER Options");
   m_xjinfopath = m_settings.readEntry("XJINFO Path");
 
   // TODO: detect portmidi / alsamidi default. 'midi library' 
@@ -159,6 +160,7 @@ void QJadeo::saveOptions()
   m_settings.writeEntry("XJADEO Path", m_xjadeopath);
   m_settings.writeEntry("XJINFO Path", m_xjinfopath);
   m_settings.writeEntry("MENCODER Path", m_mencoderpath);
+  m_settings.writeEntry("MENCODER Options", m_mencoderopts);
 }
 
 void QJadeo::fileOpen()
@@ -199,6 +201,7 @@ void QJadeo::filePreferences()
     pdialog->prefLineXjadeo->setText(m_xjadeopath);
     pdialog->prefLineXjinfo->setText(m_xjinfopath);
     pdialog->prefLineMencoder->setText(m_mencoderpath);
+    pdialog->prefLineMcOptions->setText(m_mencoderopts);
     pdialog->codecComboBox->setCurrentText(m_importcodec);
     pdialog->destDirLineEdit->setText(m_importdir);
     if (m_importdestination)
@@ -211,6 +214,7 @@ void QJadeo::filePreferences()
       m_importdestination = pdialog->prefDirCheckBox->isOn();
       m_mencoderpath = pdialog->prefLineMencoder->text();
       fileMenu->setItemEnabled(fileMenu->idAt(1),testexec(m_mencoderpath));
+      m_mencoderopts = pdialog->prefLineMcOptions->text();
       if (!pdialog->prefLineXjadeo->text().isEmpty())
 	m_xjadeopath = pdialog->prefLineXjadeo->text();
       if (!pdialog->prefLineXjinfo->text().isEmpty())
@@ -233,16 +237,19 @@ void QJadeo::fileImport()
   if (idialog) {
     QString src, dst;
     QString fps = QString("");
+    QString xargs = QString("");
     ImportProgress *iprog = NULL;
     int w,h;
     w=h=0;
     if (m_importdestination) 
       idialog->dstDir = m_importdir;
+    idialog->mcOptionsLineEdit->setText(m_mencoderopts);
     idialog->xjinfo = m_xjinfopath;
     /* get settings */
     if(idialog->exec()) {
       src = idialog->SourceLineEdit->text();
       dst = idialog->DestLineEdit->text();
+      xargs = idialog->mcOptionsLineEdit->text();
       if (idialog->widthCheckBox->isOn()) {
 	w = idialog->widthSpinBox->value();
         if (idialog->aspectCheckBox->isOn()) 
@@ -257,6 +264,7 @@ void QJadeo::fileImport()
     if(iprog) { 
       if(!iprog->setEncoderFiles(src,dst)) {
         iprog->setEncoderArgs(m_importcodec,fps,w,h);
+        iprog->setExtraArgs(xargs);
         iprog->mencode(m_mencoderpath);
 	iprog->setModal(FALSE);
 	iprog->show(); 
@@ -549,7 +557,7 @@ int main(int argc, char **argv)
 
 // Launch xjadeo
 
-  QString xjadeoPath(getenv("XJADEO"));
+  QString xjadeoPath(getenv("XJREMOTE"));
 
   if(xjadeoPath.isEmpty())
     xjadeoPath = w.m_xjadeopath;
@@ -566,7 +574,7 @@ int main(int argc, char **argv)
      QMessageBox::QMessageBox::critical( &w, "qjadeo","can not execute xjadeo/xjremote.","Exit", QString::null, QString::null, 0, -1);
 
     qFatal("Could not start xjadeo executable: " + xjadeoPath);
-    qFatal("Try to set the XJADEO environement variable to point to xjadeo.");
+    qFatal("Try to set the XJREMOTE environement variable to point to xjadeo.");
   }
 
   w.connect(&xjadeo, SIGNAL(readyReadStdout()), &w, SLOT(readFromStdout()));

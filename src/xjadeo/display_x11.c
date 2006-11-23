@@ -29,8 +29,8 @@
 #include "xjadeo.h"
 #include "display.h"
 
-#define DND // drag-drop support
 #define IMC // cache imlib2 image
+#undef  IM_CUSTOM_COLORTABLE 
 
 
 #if (HAVE_LIBXV || HAVE_IMLIB || HAVE_IMLIB2)
@@ -53,15 +53,12 @@ int			xj_box[4]; // letterbox site - currently only Xv & imlib2
  */
 
 /* blatantly ripped off mplayer's libvo/x11_common.c - THX. */
-static int x11_get_property(Atom type, Atom ** args, unsigned long *nitems) {
-	int format;
-	unsigned long bytesafter;
-	return (Success == XGetWindowProperty(xj_dpy, xj_rwin, type, 0, 16384, False, AnyPropertyType, &type, &format, nitems, &bytesafter, (unsigned char **) args) && *nitems > 0);
-}
+
+#if 0 // DETECT NET_WM
 
 #define NET_WM_STATE_TEST(ARGX,ARGY) { \
-	Atom type= XInternAtom(xj_dpy, ARGX,0);\
-	if (atom == type) { \
+	Atom type= XInternAtom(xj_dpy, ARGX,True);\
+	if (type!=None && atom == type) { \
 		if (!want_quiet) fprintf(stderr,"[x11] Detected wm supports " #ARGX " state.\n" );\
 		return ARGY; } }
 
@@ -69,22 +66,30 @@ static int net_wm_support_state_test(Atom atom) {
 	NET_WM_STATE_TEST("_NET_WM_STATE_FULLSCREEN",1);
 	NET_WM_STATE_TEST("_NET_WM_STATE_ABOVE",2);
 	NET_WM_STATE_TEST("_NET_WM_STATE_STAYS_ON_TOP",4);
+	/* printf("DEBUG atom:%s\n", XGetAtomName(xj_dpy,atom)); */
 	return 0;
 }
 
 void check_wm_atoms(void) {
 	Atom *args;
-	int i;
+	int i, format;
 	int wm=0;
-	unsigned long nitems;
-	if (x11_get_property(XInternAtom(xj_dpy, "_NET_SUPPORTED",0), &args, &nitems)) {
+	unsigned long nitems, bytesafter;
+	Atom type = XInternAtom(xj_dpy, "_NET_SUPPORTED",0);
+	/* if ((args = XListProperties(xj_dpy,xj_win, &nitems))) { */
+	if (Success == XGetWindowProperty(xj_dpy, xj_rwin, type,
+		0, 16384, False, AnyPropertyType,
+		&type, &format, &nitems, &bytesafter, (unsigned char **) &args) && nitems > 0) {
 		if (!want_quiet) fprintf(stderr,"[x11] Detected wm supports NetWM.\n");
 		for (i = 0; i < nitems; i++) wm |= net_wm_support_state_test(args[i]);
 	}
 	XFree(args);
 }
+#else
+inline void check_wm_atoms(void) { ; }
+#endif
 
-static void net_wm_set_property(Window window, char *atom, int state) {
+static void net_wm_set_property(char *atom, int state) {
 	XEvent xev;
 	int set = _NET_WM_STATE_ADD;
 	Atom type, property;
@@ -92,12 +97,14 @@ static void net_wm_set_property(Window window, char *atom, int state) {
 	if (state == _NET_WM_STATE_TOGGLE) set = _NET_WM_STATE_TOGGLE;
 	else if (!state) set = _NET_WM_STATE_REMOVE;
 
-	type = XInternAtom(xj_dpy,"_NET_WM_STATE", 0);
+	type = XInternAtom(xj_dpy,"_NET_WM_STATE", True); // was ,0);
+	if (type == None) return;
 	property = XInternAtom(xj_dpy,atom, 0);
+	if (property == None) return;
 
 	xev.type = ClientMessage;
 	xev.xclient.type = ClientMessage;
-	xev.xclient.window = window ; //xj_win;
+	xev.xclient.window = xj_win;
 	xev.xclient.message_type = type;
 	xev.xclient.format = 32;
 	xev.xclient.data.l[0] = set;
@@ -153,14 +160,14 @@ void xj_set_hints (void) {
 void xj_set_ontop (int action) {
 	if (action==2) xj_ontop^=1;
 	else xj_ontop=action;
-	net_wm_set_property(xj_win, "_NET_WM_STATE_ABOVE", action); 
-//	net_wm_set_property(xj_win, "_NET_WM_STATE_STAYS_ON_TOP", action);
+	net_wm_set_property("_NET_WM_STATE_ABOVE", action); 
+//	net_wm_set_property("_NET_WM_STATE_STAYS_ON_TOP", action);
 }
 
 void xj_set_fullscreen (int action) {
 	if (action==2) xj_fullscreen^=1;
 	else xj_fullscreen=action;
-	net_wm_set_property(xj_win, "_NET_WM_STATE_FULLSCREEN", action);
+	net_wm_set_property("_NET_WM_STATE_FULLSCREEN", action);
 }
 
 /* also from mplayer's libvo/x11_common.c - thanks GPL !*/
@@ -259,14 +266,15 @@ void set_x11_icon_name(unsigned char *icon) {
 void HandleEnter(XEvent * xe) {
 	long *l = xe->xclient.data.l;
     	xj_atom= None;
-	Atom ok = XInternAtom(xj_dpy, "text/uri-list", False);
-//	Atom ok2 = XInternAtom(xj_dpy, "text/plain", False);
+	Atom ok0 = XInternAtom(xj_dpy, "text/uri-list", False);
+	Atom ok1 = XInternAtom(xj_dpy, "text/plain", False);
+	Atom ok2 = XInternAtom(xj_dpy, "UTF8_STRING", False);
 
 	int version = (int)(((unsigned long)(l[1])) >> 24);
 	if (version > xdnd_version) return;
 	dnd_source = l[0];
 
-        if (l[1] & 1) {
+        if (l[1] & 0x1UL) {
 		Atom type = 0;
 		int f,ll;
 		unsigned long n, a;
@@ -281,10 +289,9 @@ void HandleEnter(XEvent * xe) {
 				return;
 			}
 			for (ll=0; ll<n; ll++) {
-				//if (data[ll]!=None)
-				//	printf("DEBUG atom:%s\n", XGetAtomName(xj_dpy,data[ll]));
-				if (data[ll] == ok) {
-					xj_atom= ok;
+			//	if (data[ll]!=None) printf("DEBUG atom:%s\n", XGetAtomName(xj_dpy,data[ll]));
+				if ((data[ll] == ok1) || (data[ll]==ok1) || (data[ll] == ok2)) {
+					xj_atom= data[ll];
 					break;
 				}
 			}
@@ -293,13 +300,12 @@ void HandleEnter(XEvent * xe) {
 	} else {
 		int i;
 		for(i=2; i < 5; i++) {
-			//if(l[i]!=None)
-			//	printf("DEBUG atom:%s\n", XGetAtomName(xj_dpy,l[i]));
-			if (l[i] == ok) xj_atom= ok;
+		//	if(l[i]!=None) printf("DEBUG atom:%s\n", XGetAtomName(xj_dpy,l[i]));
+			if ((l[i] == ok0) || (l[i] == ok1) || (l[i] == ok2)) xj_atom= l[i];
 		}
 	}
 	if (want_debug)
-		printf("DEBUG: DND ok: %i\n",xj_atom==ok);
+		printf("DEBUG: DND ok: %i\n",xj_atom!=None);
 }
 
 void SendStatus (XEvent * xe) {
@@ -422,7 +428,18 @@ void disable_dnd () {
 /*******************************************************************************
  * X event callback handler
  */
+#define EQCLAMP(var) if((var)<-999) { var=-1000;} if((var)>999) { var=1000;}
+#define EQMOD(PROP,STEP) if(!xj_get_eq(PROP,&value)){value+=(STEP); EQCLAMP(value); xj_set_eq(PROP,value);} force_redraw=1;
 
+// EQ prototypes 
+#ifdef HAVE_LIBXV
+int xv_set_eq(char *name, int value);
+int xv_get_eq(char *name, int *value);
+#endif
+#ifdef HAVE_IMLIB2
+int im2_get_eq(char *name, int *value);
+int im2_set_eq(char *name, int value);
+#endif
 
 extern const vidout VO[];
 extern int VOutput;
@@ -437,8 +454,34 @@ inline void xj_render () {
 	VO[VOutput].render(buffer); 
 }
 
+int xj_get_eq(char *prop, int *value) {
+#ifdef COLOREQ
+# ifdef HAVE_LIBXV
+	if (VOutput == 1) return (xv_get_eq(prop,value));
+# endif
+# ifdef HAVE_IMLIB2
+	if (VOutput == 4) return (im2_get_eq(prop,value));
+# endif
+#endif
+	if (value) *value=0;
+	return (1); // error
+}
+
+void xj_set_eq (char *prop, int value) { 
+#ifdef COLOREQ
+# ifdef HAVE_LIBXV 
+	if (VOutput == 1) xv_set_eq(prop,value);
+# endif
+# ifdef HAVE_IMLIB2
+	if (VOutput == 4) im2_set_eq(prop,value);
+# endif
+#endif
+}
+
+
 void xj_handle_X_events (void) {
 	XEvent event;
+	int value=0;
 //	XSynchronize(xj_dpy,False );
 //	XLockDisplay(xj_dpy);
 	while(XPending(xj_dpy)) {
@@ -577,7 +620,11 @@ void xj_handle_X_events (void) {
 						xj_set_ontop(xj_ontop^=1);
 					else if   (key == 0x66 ) //'f' // fullscreen
 						xj_set_fullscreen(xj_fullscreen^=1);
-					else if   (key == 0x6f ) { //'o' // OSD - offset in frames
+					else if   (key == 0x65 ) {//'e' // toggle OSD EQ config
+						OSD_mode^=OSD_EQ;
+						if (VOutput!=1 && VOutput!=4) OSD_mode&=~OSD_EQ; // disable but for Xv&imlib2
+						force_redraw=1;
+					} else if   (key == 0x6f ) { //'o' // OSD - offset in frames
 						if (OSD_mode&OSD_OFFF) {
 							OSD_mode&=~OSD_OFFF;
 							OSD_mode|=OSD_OFFS;
@@ -602,6 +649,44 @@ void xj_handle_X_events (void) {
 						force_redraw=1;
 					} else if (key == 0x43 ) { //'C' // OSD - clear all
 						OSD_mode=0; 
+						force_redraw=1;
+					} else if (key == 0x21 ) { //'Shift-1' // 
+						EQMOD("brightness",-8)
+					} else if (key == 0x22 ) { //'Shift-2' // 
+						EQMOD("brightness",+8)
+					} else if (key == 0x23 || key == 0xa7) { //'Shift-3' // 
+						EQMOD("contrast",-8)
+					} else if (key == 0x24 ) { //'Shift-4' // 
+						EQMOD("contrast",+8)
+					} else if (key == 0x31 ) { //'1' // 
+						EQMOD("brightness",-50)
+					} else if (key == 0x32 ) { //'2' // 
+						EQMOD("brightness",+50)
+					} else if (key == 0x33 ) { //'3' // 
+						EQMOD("contrast",-50)
+					} else if (key == 0x34 ) { //'4' // 
+						EQMOD("contrast",+50)
+					} else if (key == 0x35 ) { //'5' // 
+						EQMOD("gamma",-8)
+					} else if (key == 0x36 ) { //'6' // 
+						EQMOD("gamma",+8)
+					} else if (key == 0x37 ) { //'7' // 
+						EQMOD("saturation",-50)
+					} else if (key == 0x38 ) { //'8' // 
+						EQMOD("saturation",+50)
+					} else if (key == 0x39 ) { //'9' // 
+						EQMOD("hue",-5)
+					} else if (key == 0x30 ) { //'0' // 
+						EQMOD("hue",+5)
+					} else if (key == 0x45 ) { //'E' // 
+						if (VOutput==1)
+							xj_set_eq("contrast",-500); // xvinfo default:64 (0..255)
+						else 
+							xj_set_eq("contrast",0);
+						xj_set_eq("brightness",0);
+						xj_set_eq("saturation",0);
+						xj_set_eq("hue",0);
+						xj_set_eq("gamma",0);
 						force_redraw=1;
 					} else if (key == 0x2e ) { //'.' // resize 100%
 						xj_resize(movie_width, movie_height);
@@ -728,9 +813,33 @@ void deallocate_xvimage(void) {
 	xv_buffer=NULL;
 }
 
+inline void xv_draw_colorkey(void)
+{
+  if ( 0 ) // manual fill 
+  {
+    unsigned long xv_colorkey = 0xaaffee;
+    XSetForeground( xj_dpy, xj_gc, xv_colorkey );
+    XFillRectangle( xj_dpy, xj_win, xj_gc, xj_box[0], xj_box[1], xj_box[2], xj_box[3] );
+  }
+
+  if ( 1 ) // bars
+  {
+    XSetForeground( xj_dpy, xj_gc, 0 );
+    if (xj_box[1] > 0 ) { 
+    	XFillRectangle( xj_dpy, xj_win, xj_gc, 0, 0, xj_box[2], xj_box[1]);
+    	XFillRectangle( xj_dpy, xj_win, xj_gc, 0, xj_box[1]+xj_box[3], xj_box[2], xj_box[1]+xj_box[3]+xj_box[1]);
+    } /* else */
+    if (xj_box[0] > 0 ) {
+    	XFillRectangle( xj_dpy, xj_win, xj_gc, 0, 0, xj_box[0], xj_box[3]);
+    	XFillRectangle( xj_dpy, xj_win, xj_gc, xj_box[0]+xj_box[2], 0, xj_box[0]+xj_box[2]+xj_box[0], xj_box[3]);
+    }
+  }
+}
+
 void render_xv (uint8_t *mybuffer) {
 
 	if (!xv_buffer || !mybuffer) return;
+	xv_draw_colorkey(); // TODO: only redraw on resize ?
 
 	size_t Ylen  = movie_width * movie_height;
 	size_t UVlen = movie_width * movie_height/4; 
@@ -785,6 +894,8 @@ void render_xv (uint8_t *mybuffer) {
 }
 
 void newsrc_xv (void) {
+	unsigned int my_Width,my_Height;
+
 	deallocate_xvimage();
 
   	xj_dwidth = xv_swidth = movie_width;
@@ -793,7 +904,6 @@ void newsrc_xv (void) {
 	allocate_xvimage();
 	xj_render();
 
-	unsigned int my_Width,my_Height;
 #if 1 // keep current window size when loading a new file ?? -> TODO config option
       // and also other video modes.. 
 	xj_get_window_size(&my_Width,&my_Height);
@@ -804,6 +914,129 @@ void newsrc_xv (void) {
 	// or just update xj_dwidth, xj_dheight
 	xj_resize( my_Width, my_Height);
 }
+
+#ifdef COLOREQ
+int xv_set_eq(char *name, int value)
+{
+    XvAttribute *attributes;
+    int i, howmany, xv_atom;
+
+    /* get available attributes */
+    attributes = XvQueryPortAttributes(xj_dpy, xv_port, &howmany);
+    for (i = 0; i < howmany && attributes; i++)
+        if (attributes[i].flags & XvSettable)
+        {
+            xv_atom = XInternAtom(xj_dpy, attributes[i].name, True);
+            if (xv_atom != None)
+            {
+                int hue = 0, port_value, port_min, port_max;
+
+                if (!strcmp(attributes[i].name, "XV_BRIGHTNESS") &&
+                    (!strcasecmp(name, "brightness")))
+                    port_value = value;
+                else if (!strcmp(attributes[i].name, "XV_CONTRAST") &&
+                         (!strcasecmp(name, "contrast")))
+                    port_value = value;
+                else if (!strcmp(attributes[i].name, "XV_SATURATION") &&
+                         (!strcasecmp(name, "saturation")))
+                    port_value = value;
+                else if (!strcmp(attributes[i].name, "XV_HUE") &&
+                         (!strcasecmp(name, "hue")))
+                {
+                    port_value = value;
+                    hue = 1;
+                } else
+                    /* Note: since 22.01.2002 GATOS supports these attrs for radeons (NK) */
+                if (!strcmp(attributes[i].name, "XV_RED_INTENSITY") &&
+                        (!strcasecmp(name, "red_intensity")))
+                    port_value = value;
+                else if (!strcmp(attributes[i].name, "XV_GREEN_INTENSITY")
+                         && (!strcasecmp(name, "green_intensity")))
+                    port_value = value;
+                else if (!strcmp(attributes[i].name, "XV_BLUE_INTENSITY")
+                         && (!strcasecmp(name, "blue_intensity")))
+                    port_value = value;
+                else
+                    continue;
+
+                port_min = attributes[i].min_value;
+                port_max = attributes[i].max_value;
+
+                /* nvidia hue workaround */
+                if (hue && port_min == 0 && port_max == 360)
+                    port_value = (port_value >= 0) ? (port_value - 1000) : (port_value + 1000);
+
+                /* -1000 <= val <= 1000 */
+                port_value = (int) rint((port_value + 1000.0) * (port_max - port_min) / 2000.0) + port_min;
+	//	printf("SET port value:%i\n",port_value);
+                XvSetPortAttribute(xj_dpy, xv_port, xv_atom, port_value);
+                return (0); // OK
+            }
+        }
+    return (1); // not found.
+}
+
+int xv_get_eq(char *name, int *value)
+{
+    XvAttribute *attributes;
+    int i, howmany, xv_atom;
+
+    /* get available attributes */
+    attributes = XvQueryPortAttributes(xj_dpy, xv_port, &howmany);
+    for (i = 0; i < howmany && attributes; i++)
+        if (attributes[i].flags & XvGettable)
+        {
+            xv_atom = XInternAtom(xj_dpy, attributes[i].name, True);
+            if (xv_atom != None)
+            {
+                int val, port_value = 0, port_min, port_max;
+
+                XvGetPortAttribute(xj_dpy, xv_port, xv_atom, &port_value);
+
+                port_min = attributes[i].min_value;
+                port_max = attributes[i].max_value;
+
+                /* -1000 <= val <= 1000 */
+                val = (port_value - port_min)*2000.0/(port_max - port_min) - 1000;
+	//	printf("DEBUG: got port att:%s value:%i\n",attributes[i].name,port_value);
+
+                if (!strcmp(attributes[i].name, "XV_BRIGHTNESS") &&
+                    (!strcasecmp(name, "brightness")))
+                    *value = val;
+                else if (!strcmp(attributes[i].name, "XV_CONTRAST") &&
+                         (!strcasecmp(name, "contrast")))
+                    *value = val;
+                else if (!strcmp(attributes[i].name, "XV_SATURATION") &&
+                         (!strcasecmp(name, "saturation")))
+                    *value = val;
+                else if (!strcmp(attributes[i].name, "XV_HUE") &&
+                         (!strcasecmp(name, "hue")))
+                {
+                    /* nasty nvidia detect */
+                    if (port_min == 0 && port_max == 360)
+                        *value = (val >= 0) ? (val - 100) : (val + 100);
+                    else
+                        *value = val;
+                }
+		else if (!strcmp(attributes[i].name, "XV_RED_INTENSITY") &&
+                        (!strcasecmp(name, "red_intensity")))
+                    *value = val;
+                else if (!strcmp(attributes[i].name, "XV_GREEN_INTENSITY")
+                         && (!strcasecmp(name, "green_intensity")))
+                    *value = val;
+                else if (!strcmp(attributes[i].name, "XV_BLUE_INTENSITY")
+                         && (!strcasecmp(name, "blue_intensity")))
+                    *value = val;
+                else
+                    continue;
+
+	//	printf( "xv_get_eq called! (%s, %d)\n", name, *value);
+                return (0); // all right
+            }
+        }
+    return (1); //error.
+}
+#endif
 
 int open_window_xv (void) {
 
@@ -954,6 +1187,10 @@ int open_window_xv (void) {
 	xj_set_fullscreen(xj_fullscreen);
 	xj_set_ontop(xj_ontop);
 
+	// XV_BRIGHTNESS  XV_CONTRAST, XV_SATURATION , XV_COLORKEY
+	Atom xj_a_colorkey = XInternAtom (xj_dpy, "XV_COLORKEY", True);
+	if (xj_a_colorkey!=None) 
+		XvSetPortAttribute(xj_dpy, xv_port, xj_a_colorkey, 0x00000000); // AARRGGBB
 	return 0;
 }
 
@@ -987,7 +1224,6 @@ void get_window_pos_xv (int *x,  int *y) {
 }
 
 void resize_xv (unsigned int x, unsigned int y) { 
-	printf("RSIZE TO %ix%i\n",x,y);
 	xj_resize(x, y);
 }
 
@@ -1228,6 +1464,75 @@ void close_window_imlib2(void)
 //	XCloseDisplay(xj_dpy);
 }
 
+#ifdef COLOREQ
+int im_gamma = 0;
+int im_brightness = 0;
+int im_contrast = 0;
+int im_colormod = 0;
+
+int im2_set_eq(char *name, int value) {
+	if (!strcasecmp(name, "brightness")) im_brightness = value;
+	else if (!strcasecmp(name, "contrast")) im_contrast = value;
+	else if (!strcasecmp(name, "gamma")) im_gamma = value;
+	else return -1;
+	im_colormod=1; // TODO: set to 0 if all values 'normal'
+	return 0; // ok
+}
+
+int im2_get_eq(char *name, int *value) {
+	if  (!value) return 1; 
+	if (!strcasecmp(name, "brightness")) *value = im_brightness;
+	else if (!strcasecmp(name, "contrast")) *value = im_contrast;
+	else if (!strcasecmp(name, "gamma")) *value = im_gamma;
+	else return -1;
+	return 0; // ok
+}
+
+#ifdef IM_CUSTOM_COLORTABLE
+
+#define N_CLAMP(VAR) if((VAR)<0){(VAR)=0;} if ((VAR)>1){(VAR) = 1;}
+
+void im_set_equalizer(void) {
+	DATA8 red_table[256], green_table[256], blue_table[256], alpha_table[256];
+	float gamma, brightness, contrast;
+	float rf, gf, bf;
+	int k;
+
+	brightness = im_brightness / 1000.0;
+	contrast = tan(0.00095 * (im_contrast + 1000) * M_PI / 4);
+	gamma = pow(2, im_gamma / -500.0);
+
+	rf = 1.0/255.0; gf = 1.0/255.0; bf = 1.0/255.0;
+
+	for (k = 0; k < 256; k++) {
+		float s;
+
+		s = pow(rf * k, gamma);
+		s = (s - 0.5) * contrast + 0.5;
+		s += brightness;
+		N_CLAMP(s)
+		red_table[k] = (DATA8) (s * 255);
+
+		s = pow(gf * k, gamma);
+		s = (s - 0.5) * contrast + 0.5;
+		s += brightness;
+		N_CLAMP(s)
+		green_table[k] = (DATA8) (s * 255);
+
+		s = pow(bf * k, gamma);
+		s = (s - 0.5) * contrast + 0.5;
+		s += brightness;
+		N_CLAMP(s)
+		blue_table[k] = (DATA8) (s * 255);
+
+		alpha_table[k] = 255;
+	}
+
+	imlib_set_color_modifier_tables(red_table, green_table, blue_table, alpha_table);
+}
+#endif
+
+#endif
 
 void render_imlib2 (uint8_t *mybuffer) {
 	Imlib_Image im_scaled = NULL;
@@ -1277,13 +1582,28 @@ void render_imlib2 (uint8_t *mybuffer) {
 	im_image = imlib_create_image_using_copied_data(movie_width, movie_height, (DATA32*)rgbabuf);
 	//imlib_image_set_has_alpha(1); // beware. SLOW.
 #endif
-
+#ifdef COLOREQ
+	if (im_colormod) {
+		Imlib_Color_Modifier imcm;
+		imcm = imlib_create_color_modifier();
+		imlib_context_set_color_modifier(imcm);
+	#ifdef IM_CUSTOM_COLORTABLE
+		im_set_equalizer();
+	#else
+		imlib_modify_color_modifier_brightness(im_brightness/1000.0); // -1.0 .. 1.0
+		imlib_modify_color_modifier_contrast(im_contrast/1000.0+1.0); // 0.0 .. 2.0
+		imlib_modify_color_modifier_gamma(im_gamma/1000.0+1.0); // 0.0 .. 2.0
+	#endif
+		imlib_apply_color_modifier();
+		imlib_free_color_modifier();
+	}
+#endif
 	if (im_image) {
 		imlib_context_set_image(im_image);
 		if (xj_box[2] == movie_width && xj_box[3]== movie_height && xj_box[0] == 0 && xj_box[1]== 0)  {
 			imlib_render_image_on_drawable(xj_box[0], xj_box[1]);
 		} else {
-			#if 1 // draw black letter boxes 
+			#if 1 // draw black letter box bars
 			Imlib_Image im_letterbox = NULL;
 			int bw,bh,ox,oy;
 			if (xj_box[0]<xj_box[1]) {bw=xj_box[2]; bh=xj_box[1]; ox=0; oy=xj_box[1]+xj_box[3];}
@@ -1320,6 +1640,7 @@ void render_imlib2 (uint8_t *mybuffer) {
 }
 
 void newsrc_imlib2 (void) { 
+	unsigned int my_Width,my_Height;
 #ifdef IMC
 	if (im_image) {
 		imlib_context_set_image(im_image);
@@ -1327,9 +1648,18 @@ void newsrc_imlib2 (void) {
 		im_image = NULL;
 	}
 #endif
-  	xj_dwidth = movie_width;
-	xj_dheight = movie_height;
+
+#if 1 // keep current window size when loading a new file ?? -> TODO config option
+      // and also other video modes.. 
+	xj_get_window_size(&my_Width,&my_Height);
+#else
+	my_Width=movie_width;
+	my_Height=movie_height;
+#endif
+	xj_dwidth= my_Width;
+	xj_dheight= my_Height;
 	xj_letterbox();
+	xj_resize( my_Width, my_Height);
 }
 
 #if 1 // LEGACY 

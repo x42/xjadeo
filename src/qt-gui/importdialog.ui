@@ -8,8 +8,8 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>293</width>
-            <height>315</height>
+            <width>301</width>
+            <height>391</height>
         </rect>
     </property>
     <property name="caption">
@@ -360,6 +360,24 @@
                 </widget>
             </grid>
         </widget>
+        <widget class="QGroupBox">
+            <property name="name">
+                <cstring>groupBox5</cstring>
+            </property>
+            <property name="title">
+                <string>extra mencoder options</string>
+            </property>
+            <vbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QLineEdit">
+                    <property name="name">
+                        <cstring>mcOptionsLineEdit</cstring>
+                    </property>
+                </widget>
+            </vbox>
+        </widget>
         <spacer>
             <property name="name">
                 <cstring>spacer8</cstring>
@@ -373,7 +391,7 @@
             <property name="sizeHint">
                 <size>
                     <width>20</width>
-                    <height>99</height>
+                    <height>30</height>
                 </size>
             </property>
         </spacer>

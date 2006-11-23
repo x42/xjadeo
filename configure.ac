@@ -119,8 +119,14 @@ AH_TEMPLATE([HAVE_XPM], [Define as 1 if you have libXpm])
 AH_TEMPLATE([HAVE_MQ], [Define as 1 if you have POSIX message queues (libc, librt)])
 AH_TEMPLATE([TTFFONTFILE], [absolute path to truetype default OSD font file])
 AH_TEMPLATE([CFG_WARN_ONLY], [errors in the resource config file only result in a warning message instead of forcing xjadeo to exit.])
+AH_TEMPLATE([DND], [enable xjadeo x11 drag and drop])
+AH_TEMPLATE([COLOREQ], [enable XV and imlib2 color equalizer])
+AH_TEMPLATE([DRAW_CROSS], [paint a X on screen when unable to decode or display a frame.])
 
 AC_DEFINE(CFG_WARN_ONLY)
+AC_DEFINE(DND)
+AC_DEFINE(DRAW_CROSS)
+AC_DEFINE(COLOREQ)
 
 AC_HEADER_MAJOR
 AC_FUNC_ALLOCA

@@ -35,6 +35,7 @@ private:
   bool m_importdestination;
   QString m_importcodec;
   QString m_mencoderpath;
+  QString m_mencoderopts;
   QString m_xjinfopath;
 
   void updateRecentFilesMenu();

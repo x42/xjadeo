@@ -224,7 +224,8 @@
 
       <para>A Debian package can be found at <ulink
       url="http://www.debian-multimedia.org/">debian-multimedia</ulink>
-      edit <filename>/etc/apt/sources.list</filename> to include <screen>
+      edit <filename>/etc/apt/sources.list</filename> to include
+      <screen>
 deb http://www.debian-multimedia.org sid main
 deb-src http://www.debian-multimedia.org sid main</screen>
       (replace <option>sid</option>  by your distribution name)
@@ -524,6 +525,14 @@ make install # (requires root privileges) </screen></para>
           <listitem> <para>Clear all on screen display information.</para> </listitem>
         </varlistentry>
         <varlistentry>
+          <term><option>e</option></term>
+          <listitem> <para>Toggle display of Color-Equalizer. (only XV and imlib2)</para> </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>E</option></term>
+          <listitem> <para>Reset Color-Equalizer to default values.</para> </listitem>
+        </varlistentry>
+        <varlistentry>
           <term><option>m</option></term>
           <listitem> <para>Toggle mouse pointer visibilty.</para> </listitem>
         </varlistentry>
@@ -550,6 +559,14 @@ make install # (requires root privileges) </screen></para>
         <varlistentry>
           <term><option>-</option></term>
           <listitem> <para>Decrement A/V offset by 1 videoframe.</para> </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>0-9</option></term>
+          <listitem> <para>change Color-EQ parameters with key pairs. 
+	  brightness:1+2, contrast:3+4, gamma:5+6, saturation:7+8, hue:9+0</para>
+	  <para>XV color balance is hardware dependant: Some boards to not support all parameters.
+	  The imlib2 software EQ is limited to bri/cont/gamma.</para>
+	  </listitem>
         </varlistentry>
     </variablelist>
 	</para>
@@ -1886,7 +1903,10 @@ make install # (requires root privileges) </screen></para>
 	<para>xjadeo reads the following resource config files in this order:</para>
           <orderedlist>
 		<listitem>
-			<para>/@SYSCONFDIR@/xjadeorc (usually /etc/xjadeorc or /usr/local/etc/xjadeorc, depends on settings when <xref linkend="build"/>)</para>
+			<para>/@SYSCONFDIR@/xjadeorc (usually /etc/xjadeorc
+			or /usr/local/etc/xjadeorc, which depends on your
+			distribution and on the configuration when
+			<xref linkend="build"/>)</para>
 		</listitem>
 		<listitem>
 			<para>$HOME/.xjadeorc</para>
@@ -1941,8 +1961,8 @@ make install # (requires root privileges) </screen></para>
       <refsect1>
         <title>ENVIRONMENT</title>
 
-        <para>if the XJADEO variable is set, qjadeo
-        will assume that it holds the path to the xjadeo executable.</para>
+        <para>If the XJREMOTE variable is set, qjadeo
+        will assume that it holds the path to the xjadeo/xjremote executable.</para>
       </refsect1>
 
       <refsect1>

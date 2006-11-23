@@ -172,6 +172,8 @@ void execjadeo(int flags) {
 	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo?xjadeo:"(?)"); xjadeo=NULL; }
 	if (!xjadeo) xjadeo = "../xjadeo/xjadeo"; // XXX DEVEL svn:trunk/src/qt-qui
 	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo?xjadeo:"(?)"); xjadeo=NULL; }
+	if (!xjadeo) xjadeo = "./bin/xjadeo"; // XXX ~/
+	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo?xjadeo:"(?)"); xjadeo=NULL; }
 
 	if (xjadeo) {
 		printf("# executing: %s\n",xjadeo);
@@ -411,7 +413,7 @@ void dothework (mqd_t mqfd_tx) {
 		}
 
 		while ((end = strchr(buf, '\n'))) {
-			int retry = 5;
+			int retry = 10;
 			*(end) = '\0';
 
 			if (!strncmp(buf,"exit",4)) {
@@ -423,7 +425,7 @@ void dothework (mqd_t mqfd_tx) {
 			mymsg.m[MQLEN-1]=0;
 
 			while (--retry && mq_send(mqfd_tx, (char*) &mymsg, num_bytes_to_send, priority_of_msg) == -1) {
-				sleep(1);
+				usleep(50000);
 			}
 			if (!retry) {
 				perror("mq_send failure on mqfd_tx");

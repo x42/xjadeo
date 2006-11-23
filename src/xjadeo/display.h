@@ -74,6 +74,7 @@ void handle_X_events_sdl (void) ;
 #if (HAVE_LIBXV || HAVE_IMLIB || HAVE_IMLIB2)
 
 void xj_set_fullscreen (int action);
+int xj_get_eq(char *prop, int *value);
 void xj_set_ontop (int action);
 void xj_position (int x, int y);
 void xj_resize (unsigned int x, unsigned int y);

@@ -3,11 +3,13 @@ TODO < 0.4
 
 * update SF project site - new screenshots, manual, etc.
 
-* update the build information in the .spec.in 
+* install icons (pixmaps are compiled in) - just for desktop-shortcuts..
+   src/qt-gui/images/qjadeo as
+	   $(DESTDIR)$(prefix)/share/icons/qjadeo.png
+   src/xjadeo/icons/xjadeo-color.xpm
+	   $(DESTDIR)$(prefix)/share/pixmaps/xjadeo.xpm
 
-* qjadeo 
- - nicely parse xjinfo output.
- - allow to specify offset + "seek to" either as frame-integer or SMPTE string. (#)
+* update the build information in the .spec.in 
 
 TODO > 0.4.0
 -------------
@@ -15,12 +17,20 @@ TODO > 0.4.0
    - FIX multiple remote clients one xjadeo -> who gets the replies ? 
    - multi drop queues and mq_notify()
    - multiple instances - named message queues + list of avail queues.
+   - queue length and timeouts..
 
 * ratain aspect ratio  - letterbox option for imlib (+ SDL? )
   - cache imlib2 letterbox border 
   - revisit window hinting + aspect ratio resize
 
+* qjadeo 
+ - nicely parse xjinfo output.
+ - allow to specify offset + "seek to" either as frame-integer or SMPTE string.
+
 * XV/X11 brightness/contrast control
+  - LASH save 
+  - remote commands
+  - restore prev/system settings on exit.
 
 * opt. cache cont. images from last keyframe. (backwards play)
 
@@ -33,6 +43,8 @@ TODO > 0.4.0
 * xjadeorc man page 
 
 * bring SDL up to scratch - should behave as X11 + SDL-SWSURFACE
+
+* decode DnD UTF8 etc.
 
 MIDI:
   - alsamidi - catch port re-assignments and remember em ?
