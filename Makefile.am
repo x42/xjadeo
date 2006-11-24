@@ -11,6 +11,7 @@ EXTRA_DIST= \
  doc/xjadeo.1 doc/qjadeo.1 doc/xjremote.1 doc/xjinfo.1\
  src/xjadeo/icons/xjadeo-color.xpm \
  src/xjadeo/icons/xjadeo.bitmap src/xjadeo/icons/xjadeo_mask.xbm\
+ src/xjadeo/icons/splash.bitmap src/xjadeo/icons/splash_mask.xbm\
  src/xjadeo/icons/brightness.bitmap src/xjadeo/icons/brightness_mask.xbm\
  src/xjadeo/icons/contrast.bitmap src/xjadeo/icons/contrast_mask.xbm\
  src/xjadeo/icons/gamma.bitmap src/xjadeo/icons/gamma_mask.xbm\

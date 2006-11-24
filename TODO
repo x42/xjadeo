@@ -3,13 +3,10 @@ TODO < 0.4
 
 * update SF project site - new screenshots, manual, etc.
 
-* install icons (pixmaps are compiled in) - just for desktop-shortcuts..
-   src/qt-gui/images/qjadeo as
-	   $(DESTDIR)$(prefix)/share/icons/qjadeo.png
-   src/xjadeo/icons/xjadeo-color.xpm
-	   $(DESTDIR)$(prefix)/share/pixmaps/xjadeo.xpm
+* check for rounding errors - timestamp typecasts
+  and use av_rational - test 24 hour file :)
 
-* update the build information in the .spec.in 
+* ffmpeg packet queues (#)
 
 TODO > 0.4.0
 -------------
@@ -86,7 +83,7 @@ TODO - legacy and low priority issues / ideas
  - put xjadeo-session name in window title ? 
    add some info and markups to the title (on top, offset, smpte)
 
- - freetype font config. outline font? color, xposition.
+ - freetype font config. outline font? color, xposition, size,..
 
   MIDI:
 

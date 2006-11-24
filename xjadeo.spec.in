@@ -4,44 +4,65 @@
 #  Luis Garrido <luisgarrido@users.sourceforge.net>
 #  Robin Gareus <robin@gareus.org>
 #
+%define useqt4 0
+%define svnbuild 1
+#
+#
 %define name xjadeo
 %define version @VERSION@
-%define release 3
-%define manifest %{_builddir}/%{name}-%{version}-%{release}.manifest
+%define release 1
 
-# required items
 Name: %{name}
+Summary: jack video monitor
 Version: %{version}
 Release: %{release}
 License: GPL
 Group: Application/Multimedia
 
-# optional items
-#Distribution:
-#Icon:
-#URL:
+URL: http://sourceforge.net/projects/xjadeo/
 Vendor: Robin Gareus <robin@gareus.org>, Luis Garrido <luisgarrido@users.sourceforge.net>
-Packager: Luis Garrido luisgarrido@users.sourceforge.net
+Packager: Robin Gareus <robin@gareus.org>
+#Icon:
 
 # source + patches
 Source: %{name}-%{version}.tar.gz
-#Source1:
-#Patch:
-#Patch1:
+Prefix: /usr
+BuildRoot: /var/tmp/%{name}-%{version}-build
 
 # RPM info
 Provides: xjadeo 
-Requires: ffmpeg >= 0.4.9, imlib >= 1:1.9, jack-audio-connection-kit >= 0.99
-#Conflicts:
-#Prereq:
-
-Prefix: /usr
-BuildRoot: /var/tmp/%{name}-%{version}
-
-Summary: jack video monitor
+Requires: ffmpeg >= 0.4.9
+Requires: jack-audio-connection-kit >= 0.101
+Requires: alsa-lib >= 1.0.10
+Requires: imlib >= 1.1.9
+Requires: imlib2 >= 1.3.0
+Requires: lash >= 0.4.0
+Requires: SDL >= 1.2.8
+#Requires: portmidi >= 20041117
+#Requires: libXv >= 1.0.1
+#Requires: libX11 >= 1.0.0
+##
+## if built with message queues:
+##Requires: 'librt' aka. glibc > 2.4.? + linux >= 2.6.9 (?)
+##
+BuildRequires:	jack-audio-connection-kit-devel >= 0.101
+BuildRequires:	ffmpeg-devel >= 0.4.9
+BuildRequires:	alsa-lib-devel >= 1.0.10
+BuildRequires:	imlib-devel >= 1.1.13
+BuildRequires:	imlib2-devel >= 1.3.0
+BuildRequires:	lash-devel >= 0.4.0
+BuildRequires:	zlib-devel >= 1.2.2
+BuildRequires:	SDL-devel >= 1.2.8
+#Requires: libXv-devel >= 1.0.1
+#Requires: libX11-devel >= 1.0.0
+%if "%{useqt4}" == "1"
+BuildRequires:	qt-devel >= 4.1
+BuildRequires:	qt-qt3support
+%else
+BuildRequires:	qt3-devel
+%endif
 
 %description
-jack video monitor
 xjadeo is a simple video player that receives sync from jackd or MTC.
 
 It has applications in soundtrack creation, video monitoring or any task that requires
@@ -60,56 +81,64 @@ Authors:
 	Robin Gareus <robin@gareus.org>
 %prep
 %setup -q
-#%patch0 -p1
+%if "%{svnbuild}" == "1"
+./autogen.sh
+%endif
 
 %build
-%configure
+./configure \
+	--prefix=%{_prefix} \
+	--mandir=%{_mandir} \
+	--sysconfdir=%{_sysconfdir} \
+	--enable-sdl 
+#%__make
 make
-
 %install
 rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT
 %makeinstall
+# icons
+%__install -dm 755 %{buildroot}%{_datadir}/pixmaps
+convert src/xjadeo/icons/xjadeo-color.xpm -resize 48x48! xjadeo.png
+convert src/qt-gui/images/qjadeo -resize 48x48! qjadeo.png
+%__install -m 644 xjadeo.png 	%{buildroot}%{_datadir}/pixmaps
+%__install -m 644 qjadeo.png 	%{buildroot}%{_datadir}/pixmaps
 
-# __os_install_post is implicitly expanded after the
-# install section... do it now, and then disable it,
-# so all work is done before building manifest.
+# menu-entry
+%__cat > %{name}.desktop << EOF
+[Desktop Entry]
+Name=%{name}
+Comment=A simple video player that gets sync from jack
+Exec=qjadeo
+Icon=qjadeo
+Terminal=0
+Type=Application
+EOF
+%__install -dm 755 %{buildroot}%{_datadir}/applications
+%__install -m 644 %{name}.desktop	%{buildroot}%{_datadir}/applications/%{name}.desktop
+#install -m 644  %{name}.desktop	${RPM_BUILD_ROOT}%{_sysconfdir}/X11/applnk/Multimedia/
 
-%{?__os_install_post}
-%define __os_install_post %{nil}
-
-# build the file list automagically into %{manifest}
-
-cd $RPM_BUILD_ROOT
-rm -f %{manifest}
-find . -type d \
-        | sed '1,2d;s,^\.,\%attr(-\,root\,root) \%dir ,' >> %{manifest}
-find . -type f \
-        | sed 's,^\.,\%attr(-\,root\,root) ,' >> %{manifest}
-find . -type l \
-        | sed 's,^\.,\%attr(-\,root\,root) ,' >> %{manifest}
-
-#%pre
-#%post
-#%preun
-#%postun
-
+#%__install -m 644 doc/xjadeorc	%{buildroot}%{_sysconfdir}/xjadeorc
 %clean
-rm -f %{manifest}
 rm -rf $RPM_BUILD_ROOT
 
-%files -f %{manifest}
+%files
 %defattr(-,root,root)
-%doc README
-%doc NEWS
-%doc AUTHORS
-%doc INSTALL
-%doc COPYING
-%doc TODO
-#%docdir
-#%config
+%doc AUTHORS COPYING ChangeLog INSTALL NEWS README TODO
+%{_bindir}/%{name}
+%{_bindir}/qjadeo
+%{_bindir}/xjremote
+%{_bindir}/xjinfo
+%{_mandir}/man1
+#%config %{_sysconfdir}/xjadeorc
+%{_datadir}/pixmaps/xjadeo.png
+%{_datadir}/pixmaps/qjadeo.png
+%{_datadir}/applications/%{name}.desktop
 
 %changelog
+* Tue Nov 23 2006 Robin Gareus <x42@users.sourceforge.net>
+- another draft of the spec file for version 0.3.26.
+
 * Thu Nov 3 2005 Luis Garrido <luisgarrido@users.sourceforge.net>
 - First draft of the spec file for version 0.1.1.
 

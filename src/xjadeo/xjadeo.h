@@ -41,6 +41,7 @@ enum { OSD_LEFT=-1, OSD_CENTER=-2, OSD_RIGHT=-3 }; ///< use positive values as p
 #ifdef HAVE_FT
 # define ST_WIDTH   (1024)
 # define ST_HEIGHT  (30)
+# define ST_PX      (24)
 #else 
 # define ST_WIDTH   (0)
 # define ST_HEIGHT  (0)
@@ -78,6 +79,7 @@ int vidoutsupported (int i);
 int getvidmode (void);
 const char *vidoutname (int i);
 int try_next_vidoutmode(int user_req);
+void splash (uint8_t *mybuffer);
 
 void render_buffer (uint8_t *mybuffer);
 void handle_X_events (void);

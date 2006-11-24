@@ -79,7 +79,7 @@ int render_font (char *fontfile, char *text)
 
 
   num_chars     = strlen( text );
-  angle         = ( 0.0 / 360 ) * 3.14159 * 2;      /* use 25 degrees     */
+  angle         = ( 0.0 / 360 ) * 3.14159 * 2; 
   target_height = ST_HEIGHT;
 
   error = FT_Init_FreeType( &library );              /* initialize library */
@@ -89,7 +89,7 @@ int render_font (char *fontfile, char *text)
   if ( error ) return(-1);
 
   /* use 25 at 72 dpi */
-  error = FT_Set_Char_Size( face, 25*64, 0, 72, 0 );  /* set character size */
+  error = FT_Set_Char_Size( face, ST_PX*64, 0, 72, 0 );  /* set character size */
   if ( error ) return(-1);
 
   slot = face->glyph;

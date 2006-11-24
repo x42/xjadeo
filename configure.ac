@@ -9,7 +9,7 @@ AC_CANONICAL_TARGET
 VERSION_MAJOR=0
 VERSION_MINOR=3
 # if SVN is not available and configure is re-created:
-VERSION_SUB="24-ns"
+VERSION_SUB="27-ns"
 
 dnl 'i=$1-XXX': svn-base-revision for current VERSION_MINOR - v0.3 : 79
 SUBVERSION=esyscmd((svnversion . /trunk||echo 0)| awk '{sub(":","_"); i=$1-79; i=i<0?0:i; printf("%i",i);}')
@@ -48,9 +48,10 @@ AC_ARG_ENABLE(midi, AC_HELP_STRING([--enable-midi=auto], [select MTC support: au
 
 AC_ARG_WITH(fontfile, AS_HELP_STRING([--with-fontfile], [specify an absolte path to a truetype font file to be used as default OSD font.]), fontfile="$withval", fontfile="")
 
-AC_ARG_WITH(portmidiprefix, AS_HELP_STRING([--with-portmidiprefix], [specifyprefix to portmidi source)]), portmidiprefix="$withval", portmidiprefix="")
+AC_ARG_WITH(portmidiprefix, AS_HELP_STRING([--with-portmidiprefix], [specify prefix to portmidi source)]), portmidiprefix="$withval", portmidiprefix="")
 
 AC_ARG_WITH(ffmpegprefix, AS_HELP_STRING([--with-ffmpegprefix], [prefix to ffmpeg source, if libavcodec and libavformat are not in the default path.)]), ffmpegprefix="$withval", ffmpegprefix="")
+AC_ARG_WITH(ffmpegldadd, AS_HELP_STRING([--with-ffmpegldadd], [ld options for static ffmpeg eg. "-lmp3lame -ldts -lfaac -logg -lxvidcore"]), ffmpegldadd="$withval", ffmpegldadd="")
 
 LIBPREF=lib
 LIBSUF=.a
@@ -150,8 +151,11 @@ fi
 AC_SUBST(MQ_LIBS)
 AC_DEFINE(MQLEN, 512, [ max length of a remote control line. ])
 
-AC_SEARCH_LIBS( XpmCreatePixmapFromData, Xpm, AC_DEFINE(HAVE_XPM) XPM_LIBS="-lXpm" HAVE_XPM=1 )
-##AC_SUBST(XPM_LIBS)
+dnl I experienced strange behaviour when using --with-ffmpegprefix:
+dnl if the first pkg_check_module fails,  subsequent calls will fail too!
+dnl workaround: move this one on top of ffmpeg detection..
+PKG_CHECK_MODULES(Xpm, xpm, [ AC_DEFINE(HAVE_XPM) HAVE_XPM=1 ], [ NULL=0] )
+#AC_SEARCH_LIBS( XpmCreatePixmapFromData, Xpm, AC_DEFINE(HAVE_XPM) XPM_LIBS="-lXpm" HAVE_XPM=1 )
 
 AC_CHECK_LIB([X11], [XOpenDisplay], , [AC_MSG_ERROR(*** X11: You need to install the X11 development package: libx11-dev ***)])
 
@@ -214,17 +218,21 @@ dnl ----------------------------------------------
 dnl Check for ffmpeg: avformat/avcodec 
 dnl ----------------------------------------------
 
-
+#
+#if test -z "$ffmpegprefix" ; then
+#dnl check for local ffmpeg ./ffmpeg copy
+#PKG_CONFIG_PATH=./ffmpeg:$PKG_CONFIG_PATH
+#else
+#PKG_CONFIG_PATH=$ffmpegprefix:$PKG_CONFIG_PATH
+#fi 
+#
 if test -z "$ffmpegprefix" ; then
-
-#check for local ffmpeg ./ffmpeg copy
-PKG_CONFIG_PATH=./ffmpeg:$PKG_CONFIG_PATH
-PKG_CHECK_MODULES(FFMPEG, libavformat libavcodec, HAVE_FFMPEG=yes, 
-        AC_MSG_WARN([
-	Could not find ffmpeg package. please update PKG_CONFIG_PATH to 
-	point to a ffmpegs source folder.
-	])) 
-fi 
+	PKG_CHECK_MODULES(FFMPEG, libavformat libavcodec, HAVE_FFMPEG=yes, 
+		AC_MSG_WARN([
+		Could not find ffmpeg package. please update PKG_CONFIG_PATH to 
+		point to a ffmpegs source folder.
+		])) 
+fi
 
 if test "x$HAVE_FFMPEG" != "xyes" ; then 
 	AC_CHECK_PROG(HAVE_FFMPEG_CONFIG, ffmpeg-config, yes)
@@ -263,7 +271,8 @@ if test  "x$HAVE_FFMPEG" != "xyes"; then
 	if test -n "$ffmpegprefix" ; then
 		FFMPEG_CFLAGS="-I$ffmpegprefix/libavcodec -I$ffmpegprefix/libavformat"
 		## FIXME add libavutil.a if present!
-		FFMPEG_LIBS="$ffmpegprefix/libavcodec/${LIBPREF}avcodec$LIBSUF $ffmpegprefix/libavformat/${LIBPREF}avformat$LIBSUF -lz" 
+		## FIXME - headers in source : <ffmpeg/avformat.h> -> <avformat.h>
+		FFMPEG_LIBS="$ffmpegprefix/libavcodec/${LIBPREF}avcodec$LIBSUF $ffmpegprefix/libavformat/${LIBPREF}avformat$LIBSUF -lz $ffmpegldadd" 
 		AC_CHECK_FILES([$ffmpegprefix/libavutil/${LIBPREF}avutil$LIBSUF],[FFMPEG_LIBS="$FFMPEG_LIBS $ffmpegprefix/libavutil/${LIBPREF}avutil$LIBSUF"])
 	elif test "x$HAVE_FFMPEG_LOCAL" != xyes; then
 		FFMPEG_CFLAGS="-I$/usr/include/ffmpeg"
@@ -329,8 +338,6 @@ AC_SUBST(FREETYPE_LIBS)
 dnl ----------------------------------------------
 dnl PKG checks - video display libraries
 dnl ----------------------------------------------
-
-#PKG_CHECK_MODULES(Xpm, xpm, [ AC_DEFINE(HAVE_XPM) HAVE_XPM=1 ], [ NULL=0] )
 
 if test "x${enable_imlib}" != "xno"; then
 	PKG_CHECK_MODULES(IMLIB,imlib,  [ AC_DEFINE(HAVE_IMLIB) HAVE_IMLIB=1 ], [ NULL=0 ])

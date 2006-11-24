@@ -31,6 +31,7 @@ clean:
 	dh_testdir
 	dh_testroot
 	rm -f build-stamp 
+	rm -f xjadeo.png qjadeo.png xjadeo.desktop
 
 	-$(MAKE) distclean
 
@@ -43,10 +44,31 @@ install: build
 	dh_installdirs
 
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/xjadeo
+	#install -m 644 doc/xjadeorc	$(CURDIR)/debian/xjadeo/etc/xjadeorc
 
 # Build architecture-independent files here.
 binary-indep: build install
-# We have nothing to do by default.
+	convert src/xjadeo/icons/xjadeo-color.xpm -resize 48x48! xjadeo.png
+	convert src/qt-gui/images/qjadeo -resize 48x48! qjadeo.png
+	# menu-entry
+	echo "[Desktop Entry]" > xjadeo.desktop 
+	echo "Encoding=UTF-8" >> xjadeo.desktop 
+	echo "Name=xjadeo" >> xjadeo.desktop 
+	echo "GenericName=X jack video monitor" >> xjadeo.desktop 
+	echo "Comment=A simple video player that gets sync from jack transport." >> xjadeo.desktop 
+	echo "Exec=/usr/bin/qjadeo" >> xjadeo.desktop 
+	echo "Icon=qjadeo" >> xjadeo.desktop 
+	echo "Terminal=False" >> xjadeo.desktop 
+	echo "Type=Application" >> xjadeo.desktop 
+	echo "Categories=Application;AudioVideo;Player;" >> xjadeo.desktop 
+
+	install -dm 755 $(CURDIR)/debian/xjadeo/usr/share/pixmaps
+	install -m 644 xjadeo.png 	$(CURDIR)/debian/xjadeo/usr/share/pixmaps
+	install -m 644 qjadeo.png 	$(CURDIR)/debian/xjadeo/usr/share/pixmaps
+	# menu-entry
+	install -dm 755 $(CURDIR)/debian/xjadeo/usr/share/applications
+	install -m 644 xjadeo.desktop	$(CURDIR)/debian/xjadeo/usr/share/applications/xjadeo.desktop
+	rm -f xjadeo.png qjadeo.png xjadeo.desktop
 
 # Build architecture-dependent files here.
 binary-arch: build install

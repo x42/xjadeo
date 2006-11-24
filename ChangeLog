@@ -1,3 +1,13 @@
+2006-11-24  x42  <robin@gareus.org>
+ - splash screen + config option
+ - '-A' --avverbose : print ffmpeg messages.
+ - spec.in updated.
+ - install icons and menu entry
+ - mpeg dts/pts timestamps
+ - --genpts, -P (ffmpeg option)
+ - --ignorefileoffset, -I for splitted avi/vob files.
+ * version v0.3.27
+
 2006-11-22  x42  <robin@gareus.org>
  - XV (hardware) color eq
  - imlib2 (software) color eq

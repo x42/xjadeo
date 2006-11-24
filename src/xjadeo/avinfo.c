@@ -156,6 +156,7 @@ int main(int argc, char *argv[])
   else usage (EXIT_FAILURE);
   
   av_register_all();
+  av_log_set_level(AV_LOG_QUIET);
 
   err = av_open_input_file(&ic, fn, file_iformat, 0, ap);
   if (err < 0) {

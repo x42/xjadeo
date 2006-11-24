@@ -63,6 +63,7 @@ extern int               render_fmt;
 extern double 	duration;
 extern double 	framerate;
 extern long	frames;
+extern double file_frame_offset;
 
 /* Option flags and variables */
 extern char *current_file;
@@ -75,6 +76,9 @@ extern int 	force_redraw;
 extern int want_quiet;
 extern int want_debug;
 extern int want_verbose;
+extern int want_avverbose;
+extern int want_genpts;
+extern int want_ignstart;
 extern int remote_en;
 extern int remote_mode;
 extern int mq_en;
@@ -87,6 +91,8 @@ extern int seekflags;
 extern char OSD_frame[48];
 extern char OSD_smpte[13];
 extern int OSD_mode;
+
+const AVRational c1_Q = { 1, 1 };
 
 //--------------------------------------------
 // main event loop
@@ -115,13 +121,15 @@ void event_loop(void) {
 	long		newFrame, offFrame;
 	long		nanos;
 	struct timespec	ts;
-	double dly;
+	double 		dly;
+	static int	splashed = -1;
 
+	if (want_verbose) printf("\nentering video update loop @%.2f fps.\n",delay>0?(1.0/delay):framerate);
 	gettimeofday(&clock1, NULL);
 
 	while(loop_flag) { /* MAIN LOOP */
 
-		if (loop_run==0) { 
+		if (loop_run==0) {  // CHECK: && !force_redraw 
 			/* video offline - (eg. window minimized)
 			 * do not update frame 
 			 */
@@ -148,9 +156,17 @@ void event_loop(void) {
 		 */
 			remote_printf(301,"position=%li",dispFrame);
 		}
-			
+
 		display_frame((int64_t)(offFrame), force_redraw);
 		force_redraw=0;
+
+		if (splashed) {
+			if (splashed == -1) {
+				splashed =  5.5/delay;	
+				splash(buffer);
+			}
+			if(!--splashed) force_redraw=1;
+		}
 
 		if(want_verbose) {
 		#if 0
@@ -205,12 +221,13 @@ void avinit (void) {
 	av_register_all();
 	avcodec_init();
 	avcodec_register_all();
-	if(!want_verbose) av_log_set_level(AV_LOG_QUIET);
+	if(!want_avverbose) av_log_set_level(AV_LOG_QUIET);
 }
 
 int open_movie(char* file_name) {
-	int                 i;
-	AVCodec             *pCodec;
+	int		i;
+	AVCodec		*pCodec;
+	AVStream	*av_stream;
 
 	if (pFrameFMT) {
 		/* close currently open movie */
@@ -222,6 +239,7 @@ int open_movie(char* file_name) {
 	movie_width  = 320;
 	movie_height = 180;
 	framerate = duration = frames = 1;
+	file_frame_offset = 0.0;
 	videoStream=-1;
 	// recalc offset with new framerate
 	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset,midi_connected());
@@ -260,8 +278,9 @@ int open_movie(char* file_name) {
 		return( -1 );
 	}
 
+	av_stream = pFormatCtx->streams[videoStream];
+
 // At LIBAVFORMAT_BUILD==4624 r_frame_rate becomes an AVRational. Before it was an int.
-	AVStream *av_stream = pFormatCtx->streams[videoStream];
 	if (filefps >0 ) framerate=filefps;
 #if LIBAVFORMAT_BUILD <= 4616
 	else framerate = (double) av_stream->codec.frame_rate / (double) av_stream->codec.frame_rate_base;
@@ -270,9 +289,7 @@ int open_movie(char* file_name) {
 #else
 	else if(av_stream->r_frame_rate.den && av_stream->r_frame_rate.num) {
 		framerate = av_q2d(av_stream->r_frame_rate);
-  	// av_q2d(av_stream->codec->time_base); also fails.
-	// workaround some buggy QT and mpeg1 files.. 
-		if ((framerate < 4 || framerate > 200 ) && (av_stream->time_base.num && av_stream->time_base.den))
+		if ((framerate < 4 || framerate > 100 ) && (av_stream->time_base.num && av_stream->time_base.den))
 			framerate = 1.0/av_q2d(av_stream->time_base);
 	}
 	else framerate = 1.0/av_q2d(av_stream->time_base);
@@ -283,16 +300,19 @@ int open_movie(char* file_name) {
 // 4byte-words are swapped. ?!
 // I wonder how this behaves on a 64bit arch 
 // - maybe it's bug in ffmpeg or all video files I tried had a bad header :D
-	int64_t dur = (int64_t) (pFormatCtx->duration - pFormatCtx->start_time);
+	int64_t dur = (int64_t) (pFormatCtx->duration);
 	duration = ( ((double) (((dur&0xffffffff)<<32)|((dur>>32)&0xffffffff))) / (double) AV_TIME_BASE );
 #else
-	duration = (double) (((double) (pFormatCtx->duration - pFormatCtx->start_time))/ (double) AV_TIME_BASE);
+//	duration = (double) (((double) (pFormatCtx->duration - pFormatCtx->start_time))/ (double) AV_TIME_BASE);
+	duration = (double) (((double) (pFormatCtx->duration))/ (double) AV_TIME_BASE);
 #endif
 	frames = (long) (framerate * duration);
+	if (!want_ignstart) 
+		file_frame_offset = (double) framerate*(pFormatCtx->start_time/ (double) AV_TIME_BASE);
 
 	// recalc offset with new framerate
 	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset,midi_connected());
-  
+
 	if (!want_quiet) {
 		if (filefps >0 ) 
 			fprintf(stdout, "overridden frame rate: %g\n", framerate);
@@ -311,6 +331,13 @@ int open_movie(char* file_name) {
   
 	movie_width = pCodecCtx->width;
 	movie_height = pCodecCtx->height;
+
+// somewhere around LIBAVFORMAT_BUILD  4630 
+#ifdef AVFMT_FLAG_GENPTS
+	if (want_genpts)
+		pFormatCtx->flags|=AVFMT_FLAG_GENPTS;
+	//pFormatCtx->flags|=AVFMT_FLAG_IGNIDX;
+#endif
 
 	if (!want_quiet) {
 		fprintf( stderr, "movie size:  %ix%i px\n", movie_width,movie_height);
@@ -354,15 +381,40 @@ int open_movie(char* file_name) {
 // TODO: set this high (1000) if transport stopped and to a low value (100) if transport is running.
 #define MAX_CONT_FRAMES (500)
 
-int my_seek_frame (AVPacket *packet, int timestamp) {
-	// TODO: assert  timestamp + ts_offset >0 && < length   
+
+//#define FFDEBUG 
+
+//FIXME:  use ffmpeg conversion fn  + overflow.. + double instead of long int 
+// av_rescale (a,b,c) = a*b/c ; all int64_t
+// av_rescale_q (a,B,C)  B,C: AVRational - a,rv = int64_t
+// c1_Q := 1.0
+
+int my_seek_frame (AVPacket *packet, int64_t timestamp) {
+	AVStream *v_stream;
 	int rv=1;
 	int nolivelock = 0;
 	int64_t mtsb = 0;
 	static int my_avprev = 0; // last recent seeked timestamp
 	static int ffdebug = 0;
+	double tpf; 
 
-	if (videoStream < 0) return (0); // just to be on the safe side.
+	if (videoStream < 0) return (0); 
+	v_stream = pFormatCtx->streams[videoStream];
+	tpf = 1.0/(av_q2d(v_stream->time_base)*framerate);
+	
+	if (want_ignstart)  // timestamps in the file start counting at ..->start_time 
+		timestamp+= (long int) ( framerate*(pFormatCtx->start_time/ (double) AV_TIME_BASE));
+
+	// TODO: assert  0 < timestamp + ts_offset - (..->start_time)   < length   
+	
+#ifdef FFDEBUG
+	printf("\nDEBUG: want frame=%i  ", timestamp);
+	timestamp*=tpf;
+	printf("ts=%i   ##\n", timestamp);
+#else
+	timestamp*=tpf;
+#endif
+
 #if LIBAVFORMAT_BUILD < 4617
 	rv= av_seek_frame(pFormatCtx, videoStream, timestamp / framerate * 1000000LL); 
 #else
@@ -372,7 +424,7 @@ int my_seek_frame (AVPacket *packet, int timestamp) {
 	} else if (seekflags==SEEK_KEY) { 
 		rv= av_seek_frame(pFormatCtx, videoStream, timestamp, AVSEEK_FLAG_BACKWARD) ;
 		avcodec_flush_buffers(pCodecCtx);
-	} else /* SEEK_CONTINUOUS */ if (my_avprev >= timestamp || ((my_avprev +32) < timestamp) ) { 
+	} else /* SEEK_CONTINUOUS */ if (my_avprev >= timestamp || ((my_avprev + 32*tpf) < timestamp) ) { 
 		// NOTE: only seek if last-frame is less then 32 frames behind 
 		// else read continuously until we get there :D
 		// FIXME 32: use keyframes interval of video file or cmd-line-arg as threshold.
@@ -396,7 +448,6 @@ int my_seek_frame (AVPacket *packet, int timestamp) {
 
   /* Find a video frame. */
 
-//	AVStream *v_stream = pFormatCtx->streams[videoStream];
 read_frame:
 	nolivelock++;
 	if(av_read_frame(pFormatCtx, packet)<0) {
@@ -422,12 +473,17 @@ read_frame:
 	return (1);
 #endif
 	if (seekflags!=SEEK_CONTINUOUS) return (1);
-
+#ifdef FFDEBUG
+	printf("\nDEBUG: got pts=%li dts:%li frame:%g/%g    ##\n", 
+		(long int) packet->pts , (long int) packet->dts,
+		packet->dts*av_q2d(v_stream->time_base)*framerate,
+		packet->pts*av_q2d(v_stream->time_base)*framerate);
+#endif
 	mtsb = packet->pts;  
+
 	if (mtsb == AV_NOPTS_VALUE) { 
 		mtsb = packet->dts;
-		//mtsb = av_q2d(v_stream->time_base)*packet->dts;
-		if (ffdebug==0) { ffdebug=1; fprintf(stderr,"WARNING: video file does not report pts information.\n         resorting to ffmpeg decompression timestamps.\n         consider to transcode the file.\n"); }
+		if (ffdebug==0) { ffdebug=1; fprintf(stderr,"WARNING: video file does not report pts information.\n         resorting to ffmpeg decompression timestamps.\n         consider to transcode the file or use the --genpts option.\n"); }
 	}
 
 	if (mtsb == AV_NOPTS_VALUE) { 
@@ -439,6 +495,9 @@ read_frame:
 	if (mtsb >= timestamp) return (1); // ok!
 
 	/* skip to next frame */
+#ifdef FFDEBUG
+	printf("To Skip %li -> %li\n",(long int) mtsb, (long int) timestamp);
+#endif
 
 	int frameFinished; 
 	avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet->data, packet->size);
@@ -447,7 +506,8 @@ read_frame:
 	// FIX: implement proper packet queues..
 	av_free_packet(packet); /* XXX*/
 	if (!frameFinished) {
-		fprintf(stderr, "seek decode not finished!\n"); /*XXX*/
+		if (want_verbose) /* XXX */
+			fprintf(stderr, "seek decode not finished!\n"); /*XXX*/
 		goto read_frame;
 	}
 //	fprintf(stderr, "seek %i-> %i\n", (int)mtsb, timestamp);
@@ -476,9 +536,9 @@ void display_frame(int64_t timestamp, int force_update) {
 	static AVPacket packet;
 	static int      fFirstTime=1;
 	int             frameFinished;
-  
-	if (timestamp < 0) timestamp=0;
-	else if(timestamp >= frames) timestamp = frames - 1;
+
+	if (timestamp - file_frame_offset< 0) timestamp=0;
+	else if(timestamp - file_frame_offset>= frames) timestamp = frames - 1;
 
 	if (!force_update && dispFrame == timestamp) return;
 
@@ -495,15 +555,21 @@ void display_frame(int64_t timestamp, int force_update) {
 	}
 
 	if (pFrameFMT && my_seek_frame(&packet, timestamp)) {
-		// FIXME pts/dts display might be wrong
-		// verbose out here - cause packet will be freed after loop.. mmh.
-		if(want_verbose && packet.pts != dispFrame)
-			fprintf(stdout, "\t\t\t\tdecoder:%07li  \r", (long int) packet.pts);
+		AVStream *v_stream = pFormatCtx->streams[videoStream];
+		long int myts = (packet.pts==AV_NOPTS_VALUE)?packet.dts:packet.pts;
+		long int myf = (long int) (myts*av_q2d(v_stream->time_base)*framerate);
+		if(want_verbose && myf != dispFrame) //< TODO: make it want_debug 
+			fprintf(stdout, "\t\t\t\tdecoder:%07li  \r", myf);
 		/* Decode video frame */
 		while (1) {
-			// FIXME: pts/dts stream->time_base
-			if (packet.pts> 0 && OSD_mode&OSD_FRAME && packet.pts != dispFrame) 
-				snprintf(OSD_frame,49,"Frame: %li", (long int)packet.pts);
+			if (packet.pts> 0 && OSD_mode&OSD_FRAME) {
+				myts = (packet.pts==AV_NOPTS_VALUE)?packet.dts:packet.pts;
+				myf = (long int) (myts*av_q2d(v_stream->time_base)*framerate);
+				if (want_ignstart)  // timestamps in the file start counting at ..->start_time 
+					myf-= (long int) ( framerate*(pFormatCtx->start_time/ (double) AV_TIME_BASE));
+				if (myf != dispFrame) 
+					snprintf(OSD_frame,49,"Frame: %li[%li]", dispFrame, myf);
+			}
 
 			if(packet.stream_index!=videoStream) frameFinished =0; // this should never happen.
 			else avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet.data, packet.size);

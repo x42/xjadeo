@@ -81,7 +81,7 @@ int               render_fmt = PIX_FMT_YUV420P; ///< needs to be set before call
 double	duration = 1;
 double	framerate = 1;
 long	frames = 1;
-
+double file_frame_offset = 0;
 
 /* Option flags and variables */
 char	*current_file = NULL;
@@ -94,6 +94,10 @@ int 	force_redraw = 0;
 int want_quiet   =0;	/* --quiet, --silent */
 int want_debug   =0;	/* -D --debug  (hidden option) */
 int want_verbose =0;	/* --verbose */
+int want_avverbose =0;	/* --avverbose */
+int want_genpts =0;	/* --genpts */
+int want_ignstart =0;	/* --ignorefileoffset */
+int want_nosplash =0;	/* --nosplash */
 int start_ontop =0;	/* --ontop // -a */
 int start_fullscreen =0;/* NY available */
 int want_letterbox =0;  /* --letterbox -b */
@@ -157,6 +161,11 @@ static struct option const long_options[] =
   {"quiet", no_argument, 0, 'q'},
   {"silent", no_argument, 0, 'q'},
   {"verbose", no_argument, 0, 'v'},
+  {"avverbose", no_argument, 0, 'A'},
+  {"genpts", no_argument, 0, 'P'},
+  {"ignorefileoffset", no_argument, 0, 'I'},
+  {"nofileoffset", no_argument, 0, 'I'},
+  {"nosplash", no_argument, 0, 'S'},
   {"keyframes", no_argument, 0, 'k'},
   {"continuous", required_argument, 0, 'K'},
   {"offset", no_argument, 0, 'o'},
@@ -195,7 +204,11 @@ decode_switches (int argc, char **argv)
   while ((c = getopt_long (argc, argv, 
 			   "q"	/* quiet or silent */
 			   "v"	/* verbose */
+			   "A"	/* avverbose */
+			   "P"	/* genpts */
+			   "I"	/* ignorefileoffset */
 			   "h"	/* help */
+			   "S"	/* nosplash */
 			   "R"	/* stdio remote control */
 			   "Q"	/* message queues */
 			   "k"	/* keyframes */
@@ -224,17 +237,31 @@ decode_switches (int argc, char **argv)
 	case 'q':		/* --quiet, --silent */
 	  want_quiet = 1;
 	  want_verbose = 0;
+	  want_avverbose = 0;
 	  break;
 	case 'D':		/* --debug */
 	  want_debug = 1;
 	  break;
+	case 'A':		/* --avverbose */
+	  want_avverbose = !remote_en;
+	  break;
 	case 'v':		/* --verbose */
 	  want_verbose = !remote_en;
+	  break;
+	case 'S':		/* --nosplash */
+	  want_nosplash = 1;
+	  break;
+	case 'I':		/* --ignorefileoffset */
+	  want_ignstart = 1;
+	  break;
+	case 'P':		/* --avverbose */
+	  want_genpts = 1;
 	  break;
 	case 'R':		/* --remote */
 	  remote_en = 1;
 	  want_quiet = 1;
 	  want_verbose = 0;
+	  want_avverbose = 0;
 	  break;
 	case 'Q':		/* --mq */
 	  mq_en = 1;
@@ -334,6 +361,8 @@ jack video monitor\n", program_name);
 "  -V, --version             print version information and exit\n"
 "  -q, --quiet, --silent     inhibit usual output\n"
 "  -v, --verbose             print more information\n"
+"  -A, --avverbose           dump ffmpeg messages.\n"
+"  -S, --nosplash            do not display splash image on startup.\n"
 "\n"
 "  -a, --ontop               stack xjadeo window on top of the desktop.\n"
 "                            requires x11 or xv videomode and EWMH.\n"
@@ -594,7 +623,8 @@ main (int argc, char **argv)
   if(remote_en) open_remote_ctrl();
 
   display_frame(0LL,1);
-  
+  splash(buffer); 
+
   event_loop();
   
   clean_up(0);

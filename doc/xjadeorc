@@ -71,4 +71,7 @@
 #midismpte=<1|2|3>
 ;midismpte=0
 
+# do not dispay xjadeo logo on screen on startup.
+;nosplash=no
+
 # END of xjadeorc

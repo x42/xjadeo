@@ -27,6 +27,7 @@
 
 extern long    ts_offset; // display on screen
 extern int want_verbose;
+extern int want_nosplash;
 
 /*******************************************************************************
  *
@@ -308,9 +309,9 @@ void OSD_bitmap(int rfmt, uint8_t *mybuffer, int yperc, int xoff, int w, int h, 
 
 	for (x=0; x<w && (x+xalign) < movie_width ;x++) {
 		for (y=0; y<h && (y+yalign) < movie_height;y++) {
-			int byte = ((y*w+x)>>3);
+			int byte = ((y*w+x)>>3); // PIXMAP width must be mult. of 8 !
 			int val = src[byte] & 1<<(x%8);
-			if (mask[byte] &  1<<(x%8))
+			if (!mask || mask[byte] &  1<<(x%8))
 				_render(mybuffer,&rv,(x+xalign),(y+yalign),val?0xee:0x11);
 		}
 	}
@@ -377,6 +378,19 @@ void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int yperc) {
 	}
 }
 
+
+#include "icons/splash.bitmap"
+//#include "icons/splash_mask.xbm"
+
+void splash (uint8_t *mybuffer) {
+	if (want_nosplash) return;
+	//if (check main.c:stat_osd_fontfile()) 
+	//	OSD_render (VO[VOutput].render_fmt, mybuffer, "Xjadeo!", OSD_CENTER, 45);
+	OSD_bitmap(VO[VOutput].render_fmt, mybuffer,45,0,
+		xj_splash_width, xj_splash_height, xj_splash_bits, NULL);
+	//	xj_splash_mask_bits);
+	render_buffer(mybuffer);
+}
 
 /*******************************************************************************
  *

@@ -37,6 +37,8 @@ extern int want_quiet;
 extern int want_debug;
 extern int want_verbose;
 extern int want_letterbox;
+extern int want_genpts;
+extern int want_ignstart;
 extern int remote_en;
 extern int remote_mode;
 
@@ -114,6 +116,8 @@ void handle_event(lash_event_t* ev) {
 		lcs_int("x11_ontop",xj_ontop);
 		lcs_int("x11_fullscreen",xj_fullscreen); 
 		lcs_int("want_letterbox",want_letterbox); 
+		lcs_int("want_genpts",want_genpts); 
+		lcs_int("want_ignstart",want_ignstart); 
 #ifdef HAVE_MIDI
 		if (midi_connected())  lcs_int("syncsource",2);
 		else
@@ -258,6 +262,10 @@ void handle_config(lash_config_t* conf, jdo_config* jcfg) {
 			/* Window Settings  */
 	} else if (!strcmp(key,"want_letterbox")) {
 		want_letterbox= lash_config_get_value_long(conf);
+	} else if (!strcmp(key,"want_genpts")) {
+		want_genpts= lash_config_get_value_long(conf);
+	} else if (!strcmp(key,"want_ignstart")) {
+		want_ignstart= lash_config_get_value_long(conf);
 	} else if (!strcmp(key,"window_size")) {
 		if (want_debug )
 			printf("LASH config: window size %ix%i\n",

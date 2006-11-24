@@ -39,6 +39,7 @@ extern int 		seekflags;
 extern int want_quiet;
 extern int want_verbose;
 extern int want_letterbox;
+extern int want_nosplash;
 extern int mq_en;
 extern int avoid_lash;
 
@@ -94,6 +95,8 @@ int parseoption (char *item, char *value) {
 		YES_OK (want_quiet);
 	} else if (!strncasecmp(item,"VERBOSE",7)) {
 		YES_OK (want_verbose);
+	} else if (!strncasecmp(item,"NOSPLASH",8)) {
+		YES_OK (want_nosplash);
 	} else if (!strncasecmp(item,"SEEK",4)) {
 		if (!strncasecmp(value,"any",3)){
 			seekflags=SEEK_ANY; rv=1;
