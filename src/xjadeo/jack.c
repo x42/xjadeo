@@ -27,12 +27,15 @@
 #include <jack/jack.h>
 #include <jack/transport.h>
 
+#include "xjadeo.h"
 
-//extern double            duration;
-//extern long              frames;
-extern double            framerate;
+
+//extern double duration;
+//extern long frames;
+extern double framerate;
 extern int want_quiet;
 extern int want_quiet;
+extern int jack_clkconvert;
 #ifdef HAVE_LASH
 extern lash_client_t *lash_client;
 #endif
@@ -87,17 +90,37 @@ void close_jack(void)
 
 long jack_poll_frame (void) {
 	jack_position_t	jack_position;
-	double		jack_time;
-	long 		frame;
+	long 		frame = 0;
+
+
+
 
 	if (!jack_client) return (-1);
-
-	/* Calculate frame. */
 	jack_transport_query(jack_client, &jack_position);
-	jack_time = jack_position.frame / (double) jack_position.frame_rate;
-//	fprintf(stdout, "jack calculated time: %lf sec\n", jack_time);
-//	frame = (long) floor((double) frames * (double) jack_time / (double) duration);
-	frame = floor(framerate * jack_time);
+
+#ifdef JACK_DEBUG
+	fprintf(stdout, "jack position: %lu %lu/ \n", (long unsigned) jack_position.frame, (long unsigned) jack_position.frame_rate);
+	fprintf(stdout, "jack frame position time: %g sec %g sec\n", jack_position.frame_time , jack_position.next_time);
+#endif
+
+#ifdef HAVE_JACK_VIDEO
+	if ((jack_position.valid & JackAudioVideoRatio) && jack_clkconvert == 0 ) {
+		frame = (long ) floor(jack_position.audio_frames_per_video_frame  * jack_position.frame / (double) jack_position.frame_rate);
+# ifdef JACK_DEBUG
+		fprintf(stdout, "jack calculated frame: %li\n", frame);
+# endif
+	} else
+#endif /* HAVE_JACK_VIDEO */
+	{
+		double jack_time = 0;
+		jack_time = jack_position.frame / (double) jack_position.frame_rate;
+	//	frame = (long) floor((double) frames * (double) jack_time / (double) duration);
+	//	frame = sec_to_frame(jack_time);
+		frame = floor(framerate * jack_time);
+#ifdef JACK_DEBUG
+		fprintf(stdout, "jack calculated time: %lf sec - frame: %li\n", jack_time, frame);
+#endif
+	}
 
 	return(frame);
 }

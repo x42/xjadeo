@@ -37,6 +37,8 @@ extern int want_quiet;
 extern int want_debug;
 extern int want_verbose;
 extern int want_letterbox;
+extern int want_dropframes;
+extern int want_autodrop;
 extern int want_genpts;
 extern int want_ignstart;
 extern int remote_en;
@@ -118,6 +120,8 @@ void handle_event(lash_event_t* ev) {
 		lcs_int("want_letterbox",want_letterbox); 
 		lcs_int("want_genpts",want_genpts); 
 		lcs_int("want_ignstart",want_ignstart); 
+		lcs_int("want_dropframes",want_dropframes); 
+		lcs_int("want_autodrop",want_autodrop); 
 #ifdef HAVE_MIDI
 		if (midi_connected())  lcs_int("syncsource",2);
 		else
@@ -187,10 +191,7 @@ void handle_config(lash_config_t* conf, jdo_config* jcfg) {
 //		framerate =  lash_config_get_value_double(conf); 
 	} else if (!strcmp(key,"file_fps")) {
 		filefps =  lash_config_get_value_double(conf);
-		if (filefps > 0) {
-			framerate =  filefps;
-			frames = (long) (framerate * duration); ///< TODO: check if we want that 
-		}
+		override_fps(filefps);
 
 // remote_en needs to be set on startup! - TODO
 // or we'd need to call remote_open here...
@@ -222,10 +223,10 @@ void handle_config(lash_config_t* conf, jdo_config* jcfg) {
 			case 1: 
 				if (want_verbose)
 					printf("LASH: setting sync source to JACK\n");
-				open_jack();
 	#ifdef HAVE_MIDI
 				midi_close();
 	#endif
+				open_jack();
 				break;
 			case 2: 
 				if (want_verbose)
@@ -266,6 +267,10 @@ void handle_config(lash_config_t* conf, jdo_config* jcfg) {
 		want_genpts= lash_config_get_value_long(conf);
 	} else if (!strcmp(key,"want_ignstart")) {
 		want_ignstart= lash_config_get_value_long(conf);
+	} else if (!strcmp(key,"want_dropframes")) {
+		want_dropframes= lash_config_get_value_long(conf);
+	} else if (!strcmp(key,"want_autodrop")) {
+		want_autodrop= lash_config_get_value_long(conf);
 	} else if (!strcmp(key,"window_size")) {
 		if (want_debug )
 			printf("LASH config: window size %ix%i\n",

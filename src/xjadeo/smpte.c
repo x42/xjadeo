@@ -48,7 +48,7 @@ extern int want_autodrop;
 #else			 /* Standalone */
 //#define FPS 25
 void dump(bcd *s, char *info);
-int framerate = 25;
+double framerate = 25.0;
 int want_dropframes = 0;
 int want_autodrop = 1;
 #define FPS framerate
@@ -302,3 +302,25 @@ long int smpte_to_frame(int type, int f, int s, int m, int h, int overflow) {
 	}
 	return(frame);
 }
+
+#if 0
+// never use this - this drops frames not smpte-timestamps!
+// it can "import" external non-drop timestamps to
+// local drop-frame timecode. 
+long int sec_to_frame(double secs) {
+	int frames = secs * framerate;
+	int type = -1 ;
+	bcd s;
+
+	if (framerate >29.9 && framerate < 30.0 ) type =2;
+
+	parse_int(&s, (int) frames);
+
+	return (smpte_to_frame(type, 
+			s.v[SMPTE_FRAME],
+			s.v[SMPTE_SEC],
+			s.v[SMPTE_MIN],
+			s.v[SMPTE_HOUR],
+			0));
+}
+#endif

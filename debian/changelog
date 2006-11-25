@@ -1,3 +1,12 @@
+xjadeo (0.3.28) unstable; urgency=low
+
+  * manual and xjadeorc typo
+  * xjadeo usage() and cosmetic code changes
+  * preliminary jack_position_t->audio_frames_per_video_frame 
+    support.
+
+ -- Robin Gareus <robin@gareus.org>  Sat, 25 Nov 2006 18:14:25 +0100
+
 xjadeo (0.3.27) unstable; urgency=low
 
   * splash screen + config option

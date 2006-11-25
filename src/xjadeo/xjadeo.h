@@ -105,6 +105,7 @@ void display_frame(int64_t timestamp, int force_update);
 int open_movie(char* file_name);
 int close_movie();
 void avinit (void);
+void override_fps (double fps);
 void init_moviebuffer(void);
 void event_loop(void);
 void do_try_this_file_and_exit(char *movie);

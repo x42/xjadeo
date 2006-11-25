@@ -121,6 +121,10 @@ int midi_clkconvert =0;	/* --midifps [0:MTC|1:VIDEO|2:RESAMPLE] */
 int midi_clkadj =0;	/* --midiclk  */
 #endif
 
+int jack_clkconvert =1; /* --jackfps  - NOT YET IMPLEMENTED
+                          [0:audio_frames_per_video_frame
+                           1:video-file] */
+
 #ifdef HAVE_LASH
 lash_client_t *lash_client;
 #endif
@@ -302,6 +306,7 @@ decode_switches (int argc, char **argv)
 	  break;
 	case 'K':		/* --anyframe */
 	  seekflags=SEEK_CONTINUOUS;
+	  if (!want_quiet)
 #if LIBAVFORMAT_BUILD < 4617
 	  printf("libavformat (ffmpeg) does not support continuous seeking...\n uprade your ffmpeg library and recompile xjadeo!\n");
 #else
@@ -373,6 +378,8 @@ jack video monitor\n", program_name);
 "  -f <val>, --fps <val>     video display update fps - default 10.0 fps\n"
 "  -i <int> --info <int>     render OnScreenDisplay info: 0:off, %i:frame,\n"
 "                            %i:smpte, %i:both. (use remote ctrl for more opts.)\n"
+"  -I, --ignorefileoffset    set the beginning of the file to SMPTE zero.\n"
+"                            override timestamps of splitted avi or vob files.\n"
 "  -k, --keyframes           seek to keyframes only\n"
 "  -K, --continuous          decode video source continuously. (extra latency\n"
 "                            when seeking to non-key frames.)\n"
@@ -410,6 +417,7 @@ jack video monitor\n", program_name);
 "                            unless you really know what you are doing.\n" 
 */
 "  -o <int>, --offset <int>  add/subtract <int> video-frames to/from timecode\n"
+"  -P , --genpts             ffmpeg option - ignore timestamps in the file.\n"
 #ifdef HAVE_MQ
 "  -Q, --mq                  set-up message queues for xjremote\n"
 #endif

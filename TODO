@@ -3,11 +3,6 @@ TODO < 0.4
 
 * update SF project site - new screenshots, manual, etc.
 
-* check for rounding errors - timestamp typecasts
-  and use av_rational - test 24 hour file :)
-
-* ffmpeg packet queues (#)
-
 TODO > 0.4.0
 -------------
 * mq:
@@ -30,6 +25,8 @@ TODO > 0.4.0
   - restore prev/system settings on exit.
 
 * opt. cache cont. images from last keyframe. (backwards play)
+
+* ffmpeg packet queues (#)
 
 * testsuite for quality assurance and benchmarks.
 

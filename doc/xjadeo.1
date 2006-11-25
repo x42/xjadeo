@@ -1,11 +1,11 @@
 .\"     Title: xjadeo
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.71.0 <http://docbook.sf.net/>
-.\"      Date: 11/23/2006
+.\"      Date: 11/25/2006
 .\"    Manual: Manual Pages
 .\"    Source: 
 .\"
-.TH "XJADEO" "1" "11/23/2006" "" "Manual Pages"
+.TH "XJADEO" "1" "11/25/2006" "" "Manual Pages"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
@@ -14,7 +14,7 @@
 xjadeo \- displays a video clip in sync with an external timing source
 .SH "SYNOPSIS"
 .HP 7
-\fBxjadeo\fR [\-abfFhikKLmMoqQRtvVx] \fI<videofile>\fR
+\fBxjadeo\fR [\-abfFhiIkKLmMoPqQRStvVx] \fI<videofile>\fR
 .HP 7
 \fBxjadeo\fR \-R [\-Q] [\-abfFhikKLmMoqtvVx] [\fI<videofile>\fR]
 .HP 7
@@ -88,6 +88,15 @@ Both frame number and SMPTE.
 The remote interface allows more complete control over the OSD.
 .RE
 .PP
+\fB\-I, \-\-ignorefileoffset\fR
+.RS 3n
+This option is only useful for video files that with a start\-offset, such as splitted avi or vob files. Per default xjadeo will honor offsets specified in the video\-file header and the file's pts/dts.
+\fB\-I\fR
+allows to override and subtract this offset and makes the file start at SMPTE position 00:00:00:00. (although you can archive the same result, this option is not related to
+\fB\-o\fR
+which actually changes the SMPTE.)
+.RE
+.PP
 \fB\-k, \-\-keyframes \fR
 .RS 3n
 Instructs the internal algorithm to seek only keyframes. This option may improve the performance for certain video encodings.
@@ -148,6 +157,13 @@ Resample video frame rate / MTC.
 Offset the video player a certain number of (video) frames relative to the sync master time base. Admits negative values.
 .RE
 .PP
+\fB\-P, \-\-genpts\fR
+.RS 3n
+This option passed on to ffmpeg and has no effect on older versions of libavformat.
+.sp
+it can be used to generate "presentation time stamps" if they are missing in the file, even if it requires parsing future frames.
+.RE
+.PP
 \fB\-q, \-\-quiet, \-\-silent\fR
 .RS 3n
 Suppresses normal output messages.
@@ -168,6 +184,11 @@ Enables interactive (stdin/stdout) control mode. Options
 and
 \fB\-\-verbose\fR
 have no effect in remote mode.
+.RE
+.PP
+\fB\-S, \-\-nosplash\fR
+.RS 3n
+Skip the on screen display startup sequence.
 .RE
 .PP
 \fB\-t, \-\-try\-codec\fR
@@ -311,7 +332,8 @@ becomes
 \fBvideomode=SDL\fR). Boolean values are specified as 'yes' or 'no' (eg.
 \fBquiet=yes\fR).
 .PP
-currently supported rc KEYS: fps, fontfile, lash, mq, quiet, seek, verbose and videomode.
+currently supported rc KEYS: fps, fontfile, lash, letterbox, midiclk, midismpte, mq, nosplash, quiet, seek, verbose and videomode. Which are commented on in the example
+[1]\&\fIxjadeorc\fR
 .SH "SEE ALSO"
 .PP
 qjadeo(1)
@@ -322,4 +344,7 @@ xjinfo(1)
 .SH "COPYRIGHT"
 Copyright \(co 2005, 2006 Robin Gareus, Luis Garrido
 .br
-
+.SH "REFERENCES"
+.TP 3
+1.\ xjadeorc
+\%http://svn.sourceforge.net/viewcvs.cgi/*checkout*/xjadeo/trunk/doc/xjadeorc

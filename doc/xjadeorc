@@ -34,11 +34,11 @@
 
 # en/disable message queues (remote control)
 #mq=[on|off]
-;my=off
+;mq=off
 
 # absolute path to a TTF font file to be used for on-screen-display
 #fontfile=<filename>
-;fonfile=/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf
+;fontfile=/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf
 
 # specify whether to retain the aspect ratio of the movie when scaling
 # the window.  (only Xv)

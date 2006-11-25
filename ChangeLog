@@ -1,3 +1,9 @@
+2006-11-25  x42  <robin@gareus.org>
+ - manual and xjadeorc typo
+ - xjadeo usage() and cosmetic code changes
+ - preliminary jack_position_t->audio_frames_per_video_frame 
+   support.
+
 2006-11-24  x42  <robin@gareus.org>
  - splash screen + config option
  - '-A' --avverbose : print ffmpeg messages.

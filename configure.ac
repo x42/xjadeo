@@ -123,6 +123,7 @@ AH_TEMPLATE([CFG_WARN_ONLY], [errors in the resource config file only result in 
 AH_TEMPLATE([DND], [enable xjadeo x11 drag and drop])
 AH_TEMPLATE([COLOREQ], [enable XV and imlib2 color equalizer])
 AH_TEMPLATE([DRAW_CROSS], [paint a X on screen when unable to decode or display a frame.])
+AH_TEMPLATE([HAVE_JACK_VIDEO], [experimental code to use jack_video, jack-svn >= r591])
 
 AC_DEFINE(CFG_WARN_ONLY)
 AC_DEFINE(DND)
@@ -142,6 +143,7 @@ AC_STRUCT_TM
 LIBS="$LIBS -L/usr/X11R6/lib"
 #X_LIBS="-L/usr/X11R6/lib/"
 
+#PKG_CHECK_MODULES(JACK, jack, HAVE_JACK=1, HAVE_JACK=0)
 AC_CHECK_LIB([jack], [jack_client_new], , [AC_MSG_ERROR(*** AUDIO: You need to have the JACK audio development kit. ***)])
 
 MQ_LIBS=""

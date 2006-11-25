@@ -113,7 +113,7 @@
       <listitem>
         <para>Sync source:<itemizedlist>
             <listitem>
-              <para> <ulink url="http://jackit.sourceforge.net/">jack</ulink> transport.</para>
+              <para> <ulink url="http://jackaudio.org/">jack</ulink> transport.</para>
             </listitem>
 
             <listitem>
@@ -179,7 +179,7 @@
 
       <listitem>
         <para>jack: <ulink
-        url="http://jackit.sourceforge.net/docs/reference/transport-design.html">http://jackit.sourceforge.net/docs/reference/transport-design.html</ulink></para>
+        url="http://jackaudio.org/files/docs/html/transport-design.html">http://jackaudio.org/files/docs/html/transport-design.html</ulink></para>
       </listitem>
     </itemizedlist>
   </section>
@@ -193,7 +193,7 @@
 
     <para>xjadeo started as a collection of example code end is being used as that. People use it as code repository to spin-off c based video installations..   Parts of <application>xjadeo</application> have been re-used for various VJ purposes, mainly to synchronize playback on multiple screens (using <ulink url="netjack.sourceforge.net">netjack</ulink> and/or xjadeo remote-ctrl see <xref linkend="sync_remote_commands" /> ). check <ulink url="http://svn.sourceforge.net/viewcvs.cgi/xjadeo/trunk/contrib/">http://svn.sourceforge.net/viewcvs.cgi/xjadeo/trunk/contrib/</ulink> for further additions.</para>
 
-    <para>With minor modifications xjadeo can read video-frame-offset lists (EDL) and do the editing during playback. It is unlikely for this to be merged in the main distribution. video editing, although sometimes handy, is clearly beyond xjadeo's scope.  check out: <ulink url="http://openmovieeditor.sourceforge.net/">Open Movie Editor</ulink> or use the EDL capabilities of mplayer/mencoder. join the discussion <ulink url="http://openmtes.tomveens.nl/">Openmtes</ulink> </para>
+    <para>With minor modifications xjadeo can read video-frame-offset lists (EDL) and do the editing during playback. It is unlikely for this to be merged in the main distribution. video editing, although sometimes handy, is clearly beyond xjadeo's scope.  check out: <ulink url="http://openmovieeditor.sourceforge.net/">Open Movie Editor</ulink> or use the EDL capabilities of mplayer/mencoder, or go <ulink url="http://cinelerra.org/">cinelarra<ulink>. join the discussion <ulink url="http://openmtes.tomveens.nl/">Openmtes</ulink> </para>
   </section>
 
   </section>
@@ -1481,7 +1481,7 @@ make install # (requires root privileges) </screen></para>
       <refsynopsisdiv>
         <cmdsynopsis>
           <command>xjadeo</command>
-          <arg choice="opt">-abfFhikKLmMoqQRtvVx</arg>
+          <arg choice="opt">-abfFhiIkKLmMoPqQRStvVx</arg>
           <arg choice="plain"><replaceable>videofile</replaceable></arg>
 <!--
 	options: -a , -b, -f <num>, -F <int>,...
@@ -1616,6 +1616,18 @@ make install # (requires root privileges) </screen></para>
           </varlistentry>
 
           <varlistentry>
+            <term><option>-I, --ignorefileoffset</option></term>
+            <listitem>
+              <para>This option is only useful for video files that with a start-offset, such
+	      as splitted avi or vob files. Per default xjadeo will honor offsets specified in the 
+	      video-file header and the file's pts/dts. <option>-I</option> allows to override and 
+	      subtract this offset and makes the file start at SMPTE position 00:00:00:00.
+	      (although you can archive the same result, this option is not related to <option>-o</option>
+	      which actually changes the SMPTE.)</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
             <term><option>-k, --keyframes </option></term>
 
             <listitem>
@@ -1706,6 +1718,16 @@ make install # (requires root privileges) </screen></para>
           </varlistentry>
 
           <varlistentry>
+            <term><option>-P, --genpts</option></term>
+
+            <listitem>
+              <para>This option passed on to ffmpeg and has no effect on older versions of libavformat.</para>
+	      <para>it can be used to generate "presentation time stamps" if they are missing in the file,
+	      even if it requires parsing future frames.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
             <term><option>-q, --quiet, --silent</option></term>
 
             <listitem>
@@ -1729,6 +1751,14 @@ make install # (requires root privileges) </screen></para>
               <para>Enables interactive (stdin/stdout) control mode. Options
               <option>--quiet</option> and <option>--verbose</option> have no
               effect in remote mode.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>-S, --nosplash</option></term>
+
+            <listitem>
+              <para>Skip the on screen display startup sequence.</para>
             </listitem>
           </varlistentry>
 
@@ -1916,7 +1946,9 @@ make install # (requires root privileges) </screen></para>
 		</listitem>
           </orderedlist>
 	  <para>Each line in the config file must be in in the format:<screen>KEY=VALUE</screen>. If the first character on a line is either '#' or ';'. the line is ignored. <option>KEYS</option> are not case sensitive. <option>VALUES</option> can be case sensitive (fi. filenames) and are parsed identical to the corresponding command line arguments (eg. <option>-x SDL</option> becomes <option>videomode=SDL</option>). Boolean values are specified as 'yes' or 'no' (eg. <option>quiet=yes</option>).</para>
-	  <para>currently supported rc KEYS: fps, fontfile, lash, mq, quiet, seek, verbose and videomode.</para>
+	  <para>currently supported rc KEYS: fps, fontfile, lash, letterbox, midiclk, midismpte, mq, nosplash, quiet, seek, verbose and videomode. Which are commented on in the example <ulink 
+          url="http://svn.sourceforge.net/viewcvs.cgi/*checkout*/xjadeo/trunk/doc/xjadeorc" >xjadeorc</ulink>
+	  </para>
       </refsect1>
 
       <refsect1>
@@ -1954,8 +1986,8 @@ make install # (requires root privileges) </screen></para>
         <para><command>xjadeo</command> displays a video clip in sync with an
         external timing source. It is a handy tool to help with the
         synchronization of the soundtrack of a video file.
-        <command>xjadeo</command> supports different video file formats, video
-        output libraries and sync sources.</para>
+        <command>qjadeo</command> is a graphical frontend to xjadeo. It communicates
+	with xjadeo either directly (single session) or using xjremote.</para>
       </refsect1>
 
       <refsect1>

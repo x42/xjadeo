@@ -391,16 +391,7 @@ void xapi_sframerate(void *d) {
 		return;
 	}
         filefps= atof(off);
-       	framerate = filefps;
-	// recalc offset with new framerate
-	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset,midi_connected());
-//	if (filefps > 0) { 
-//        	framerate = filefps;
-//	} else { // reset framerate according to av_stream
-//		framerate = av_q2d(pFormatCtx->streams[videoStream]->r_frame_rate);
-//	}
-  	frames = (long) (framerate * duration); ///< TODO: check if we want that 
-
+	override_fps(filefps);
 	remote_printf(202, "framerate=%g", framerate);
 }
 
