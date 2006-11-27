@@ -39,7 +39,6 @@
 
 
 char *program_name;
-int want_quiet = 0;	/*< --quiet, --silent */
 int want_mode  = 0;	/*< 0:xml 1:time 2:videoinfo */
 
 

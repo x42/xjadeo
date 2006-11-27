@@ -8,13 +8,13 @@ AC_CANONICAL_TARGET
 
 VERSION_MAJOR=0
 VERSION_MINOR=3
-# if SVN is not available and configure is re-created:
-VERSION_SUB="27-ns"
+VERSION_SUB=28
 
 dnl 'i=$1-XXX': svn-base-revision for current VERSION_MINOR - v0.3 : 79
-SUBVERSION=esyscmd((svnversion . /trunk||echo 0)| awk '{sub(":","_"); i=$1-79; i=i<0?0:i; printf("%i",i);}')
-if test 0 -eq $SUBVERSION ; then SUBVERSION=$VERSION_SUB ; fi
-#SUBVERSION="0-rc1"
+dnl nice try better luck next time.
+#SUBVERSION=esyscmd((svnversion . /trunk||echo 0)| awk '{sub(":","_"); i=$1-79; i=i<0?0:i; printf("%i",i);}')
+#if test 0 -eq $SUBVERSION ; then SUBVERSION=$VERSION_SUB ; fi
+SUBVERSION=$VERSION_SUB
 
 dnl Every other copy of the package version number gets its value from here
 AM_INIT_AUTOMAKE(xjadeo, [${VERSION_MAJOR}.${VERSION_MINOR}.${SUBVERSION}])

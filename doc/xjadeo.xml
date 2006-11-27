@@ -193,7 +193,7 @@
 
     <para>xjadeo started as a collection of example code end is being used as that. People use it as code repository to spin-off c based video installations..   Parts of <application>xjadeo</application> have been re-used for various VJ purposes, mainly to synchronize playback on multiple screens (using <ulink url="netjack.sourceforge.net">netjack</ulink> and/or xjadeo remote-ctrl see <xref linkend="sync_remote_commands" /> ). check <ulink url="http://svn.sourceforge.net/viewcvs.cgi/xjadeo/trunk/contrib/">http://svn.sourceforge.net/viewcvs.cgi/xjadeo/trunk/contrib/</ulink> for further additions.</para>
 
-    <para>With minor modifications xjadeo can read video-frame-offset lists (EDL) and do the editing during playback. It is unlikely for this to be merged in the main distribution. video editing, although sometimes handy, is clearly beyond xjadeo's scope.  check out: <ulink url="http://openmovieeditor.sourceforge.net/">Open Movie Editor</ulink> or use the EDL capabilities of mplayer/mencoder, or go <ulink url="http://cinelerra.org/">cinelarra<ulink>. join the discussion <ulink url="http://openmtes.tomveens.nl/">Openmtes</ulink> </para>
+    <para>With minor modifications xjadeo can read video-frame-offset lists (EDL) and do the editing during playback. It is unlikely for this to be merged in the main distribution. video editing, although sometimes handy, is clearly beyond xjadeo's scope.  check out: <ulink url="http://openmovieeditor.sourceforge.net/">Open Movie Editor</ulink> or use the EDL capabilities of mplayer/mencoder, or go <ulink url="http://cinelerra.org/">cinelarra</ulink>. join the discussion <ulink url="http://openmtes.tomveens.nl/">Openmtes</ulink> </para>
   </section>
 
   </section>
@@ -219,20 +219,25 @@
       information on how to access it.</para>
 
       <para><application>xjadeo</application> is also available for <ulink
-      url="http://sourceforge.net/project/showfiles.php?group_id=131926">download</ulink>
-      as source and binary package.</para>
+      url="http://sourceforge.net/project/showfiles.php?group_id=131926">download from Sourceforge</ulink>
+      as source or FC4-RPM binary package.</para>
 
-      <para>A Debian package can be found at <ulink
-      url="http://www.debian-multimedia.org/">debian-multimedia</ulink>
-      edit <filename>/etc/apt/sources.list</filename> to include
-      <screen>
+      <section id="deb">
+      <title>Debian packages</title>
+        <para>A Debian package can be found at <ulink
+        url="http://www.debian-multimedia.org/">debian-multimedia</ulink>
+        edit <filename>/etc/apt/sources.list</filename> to include
+        <screen>
 deb http://www.debian-multimedia.org sid main
 deb-src http://www.debian-multimedia.org sid main</screen>
-      (replace <option>sid</option>  by your distribution name)
-      and run <command>apt-get update</command> followed by <command>apt-get install xjadeo</command> (or use your favorite software package tool).</para>
-      <para>Note that xjadeo >v0.3 also works with <ulink url="http://packages.debian.org/unstable/libdevel/libavformat-dev">official debian ffmpeg</ulink> packages, you can <command>dpkg-buildpackage</command> the latest SVN.</para>
-
-      <para>&#187;Packman&#171; kindly provides SVN-snapshot <ulink url="http://packman.links2linux.de/package/xjadeo">xjadeo RPM</ulink> packages for SuSE Linux.</para>
+        (replace <option>sid</option>  by your distribution name)
+        and run <command>apt-get update</command> followed by <command>apt-get install xjadeo</command> (or use your favorite software package tool).</para>
+        <para>Note that xjadeo >v0.3 also works with <ulink url="http://packages.debian.org/unstable/libdevel/libavformat-dev">official debian ffmpeg</ulink> packages, you can <command>dpkg-buildpackage</command> the latest SVN or tar ball.</para>
+      </section>
+      <section id="suse">
+      <title>SuSE RPMs</title>
+        <para>&#187;Packman&#171; kindly provides SVN-snapshot <ulink url="http://packman.links2linux.de/package/xjadeo">xjadeo RPM</ulink> packages for SuSE Linux.</para>
+      </section>
     </section>
 
     <section id="build_depends" xreflabel="build dependencies">
