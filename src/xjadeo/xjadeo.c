@@ -295,7 +295,7 @@ int open_movie(char* file_name) {
 
 	// TODO: detect drop frame timecode !
 
-#if defined(__BIG_ENDIAN__) //  (__ppc__) ?
+#if defined(__BIG_ENDIAN__) && (__ppc__) 
 // this cast is weird, but it works.. the bytes seem to be in 'correct' order, but the two
 // 4byte-words are swapped. ?!
 // I wonder how this behaves on a 64bit arch 
@@ -471,26 +471,26 @@ int my_seek_frame (AVPacket *packet, int64_t timestamp) {
 		timestamp+= (long int) ( framerate*(pFormatCtx->start_time/ (double) AV_TIME_BASE));
 
 	// TODO: assert  0 < timestamp + ts_offset - (..->start_time)   < length   
-	
-#ifdef FFDEBUG
-	printf("\nDEBUG: want frame=%li  ", (long int) timestamp);
-#endif
-
-#if 1  // TODO -> -F <ratio>
-	timestamp*=tpf;
-#else	// THIS is eqivalent - or even better at rounding but
-	// does not work with -F <double> 
-	timestamp=av_rescale_q(timestamp,c1_Q,v_stream->time_base); 
-	timestamp=av_rescale_q(timestamp,c1_Q,v_stream->r_frame_rate); //< timestamp/=framerate; 
-#endif
-
-#ifdef FFDEBUG
-	printf("ts=%li   ##\n", (long int) timestamp);
-#endif
-
 #if LIBAVFORMAT_BUILD < 4617
 	rv= av_seek_frame(pFormatCtx, videoStream, timestamp / framerate * 1000000LL); 
 #else
+	
+# ifdef FFDEBUG
+	printf("\nDEBUG: want frame=%li  ", (long int) timestamp);
+# endif
+
+# if 1  // TODO -> -F <ratio>
+	timestamp*=tpf;
+# else	// THIS is eqivalent - or even better at rounding but
+	// does not work with -F <double> 
+	timestamp=av_rescale_q(timestamp,c1_Q,v_stream->time_base); 
+	timestamp=av_rescale_q(timestamp,c1_Q,v_stream->r_frame_rate); //< timestamp/=framerate; 
+# endif
+
+# ifdef FFDEBUG
+	printf("ts=%li   ##\n", (long int) timestamp);
+# endif
+
 	if (seekflags==SEEK_ANY) { 
 		rv= av_seek_frame(pFormatCtx, videoStream, timestamp, AVSEEK_FLAG_ANY | AVSEEK_FLAG_BACKWARD) ;
 		avcodec_flush_buffers(pCodecCtx);
@@ -511,10 +511,10 @@ int my_seek_frame (AVPacket *packet, int64_t timestamp) {
 		rv= av_seek_frame(pFormatCtx, videoStream, timestamp, AVSEEK_FLAG_BACKWARD) ;
 		avcodec_flush_buffers(pCodecCtx);
 	} 
-#endif
+#endif 
+
 	my_avprev = timestamp;
 	if (rv < 0) return (0); // seek failed.
-
 
 read_frame:
 	nolivelock++;
@@ -561,9 +561,7 @@ read_frame:
 		return (0);
 	}
 
-
 	if (mtsb >= timestamp) return (1); // ok!
-
 
 	/* skip to next frame */
 #ifdef FFDEBUG
