@@ -260,7 +260,7 @@ int open_movie(char* file_name) {
 
 	/* Find the first video stream */
 	for(i=0; i<pFormatCtx->nb_streams; i++)
-#if LIBAVFORMAT_BUILD >  4629
+#if LIBAVFORMAT_BUILD > 4629
 		if(pFormatCtx->streams[i]->codec->codec_type==CODEC_TYPE_VIDEO)
 #else
 		if(pFormatCtx->streams[i]->codec.codec_type==CODEC_TYPE_VIDEO)
@@ -471,10 +471,8 @@ int my_seek_frame (AVPacket *packet, int64_t timestamp) {
 		timestamp+= (long int) ( framerate*(pFormatCtx->start_time/ (double) AV_TIME_BASE));
 
 	// TODO: assert  0 < timestamp + ts_offset - (..->start_time)   < length   
-#if LIBAVFORMAT_BUILD < 4617
-	rv= av_seek_frame(pFormatCtx, videoStream, timestamp / framerate * 1000000LL); 
-#else
 	
+#if LIBAVFORMAT_BUILD > 4629 // verify this version 
 # ifdef FFDEBUG
 	printf("\nDEBUG: want frame=%li  ", (long int) timestamp);
 # endif
@@ -490,7 +488,11 @@ int my_seek_frame (AVPacket *packet, int64_t timestamp) {
 # ifdef FFDEBUG
 	printf("ts=%li   ##\n", (long int) timestamp);
 # endif
+#endif
 
+#if LIBAVFORMAT_BUILD < 4617
+	rv= av_seek_frame(pFormatCtx, videoStream, timestamp / framerate * 1000000LL); 
+#else
 	if (seekflags==SEEK_ANY) { 
 		rv= av_seek_frame(pFormatCtx, videoStream, timestamp, AVSEEK_FLAG_ANY | AVSEEK_FLAG_BACKWARD) ;
 		avcodec_flush_buffers(pCodecCtx);
