@@ -1,3 +1,12 @@
+xjadeo (0.3.29-1) unstable; urgency=low
+  * updated xjinfo + dtd
+   - rational values
+   - added sample aspect ratio
+   - updated information fields  (title,author,..)
+   - xml-version 0.2
+
+ -- Robin Gareus <robin@gareus.org>  Wed, 29 Nov 2006 22:14:05 +0100
+
 xjadeo (0.3.29) unstable; urgency=low
   * qjadeo disable frame notification on disconnect,
     terminate xjadeo when disconnecting.

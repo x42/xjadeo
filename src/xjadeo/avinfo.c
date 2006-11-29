@@ -17,10 +17,10 @@
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
  *
  *
- *
  * Parts of this go back to code found "for free" on the ffmpeg mailing list:
- * thanks Paul Curtis! It basically does what 'ffmpeg -i' does, but has a 
- * couple of features that can be used in scripts.
+ * thanks Paul Curtis! Andrea Gianarro helped improving this tool.
+ * It basically does what 'ffmpeg -i' does, but has a couple of features
+ * that can be used in scripts.
  *
  * compile with:
  *   gcc avinfo.c -o xjinfo -lavcodec -lavformat ##FFMPEG##
@@ -47,7 +47,7 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #else
-# define VERSION 0.1
+# define VERSION 0.2
 #endif
 
 
@@ -65,7 +65,7 @@ video file info\n", program_name);
 "Options:\n"
 "  -h   display this help and exit\n"
 "  -V   print version information and exit\n"
-"  -x   print XML (defualt).\n"
+"  -x   print XML (default).\n"
 "  -t   print duration of file in seconds.\n"
 "  -v   dump human readable video stream information.\n"
 "  -c   dump comma separated video stream information.\n"
@@ -77,7 +77,8 @@ video file info\n", program_name);
 }
 
 static void printversion (void) {
-	printf ("%s version %s\n", program_name, VERSION);
+  printf ("%s version %s\n", program_name, VERSION);
+  printf("compiled with LIBAVFORMAT_BUILD 0x%x = %i\n", LIBAVFORMAT_BUILD, LIBAVFORMAT_BUILD);
 }
 
 
@@ -251,6 +252,7 @@ int main(int argc, char *argv[])
 #endif
 	printf("%d,", codec->width);
 	printf("%d,", codec->height);
+	printf("%d:%d,", codec->sample_aspect_ratio.num,codec->sample_aspect_ratio.den);
 	if (p) printf("%s,", p->name);
 	printf("%s", avcodec_get_pix_fmt_name(codec->pix_fmt));
 	printf("\n");
@@ -261,13 +263,14 @@ int main(int argc, char *argv[])
 
   /* XML output */
   printf("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-  printf("<!DOCTYPE av PUBLIC \"-//ffmpeg//AV file info//EN\"\n"
+  printf("<!DOCTYPE av PUBLIC \"-//ffmpeg//AV file info//EN\" "
   "\"http://xjadeo.svn.sourceforge.net/viewvc/*checkout*/xjadeo/trunk/src/xjadeo/avinfo.dtd\" >\n");
   printf("<av>\n");
-  printf(" <xmlversion>0.1</xmlversion>\n");
-  printf(" <length>%lld</length>\n", secs);
-  printf(" <duration>%lld</duration>\n", ic->duration);
-  printf(" <avtimebase>%d</avtimebase>\n", AV_TIME_BASE);
+  printf("  <xmlversion>0.2</xmlversion>\n");
+  printf("  <filename>%s</filename>\n", ic->filename);
+  printf("  <length>%lld</length>\n", secs);
+  printf("  <duration>%lld</duration>\n", ic->duration);
+  printf("  <avtimebase>%d</avtimebase>\n", AV_TIME_BASE);
 
   us = ic->duration % AV_TIME_BASE;
   mins = secs / 60;
@@ -278,11 +281,17 @@ int main(int argc, char *argv[])
   printf("  <time>%02lld:%02lld:%02lld.%01lld</time>\n", hours, mins, secs, (us * 10) / AV_TIME_BASE);
   printf("  <bitrate>%d</bitrate>\n", ic->bit_rate);
   printf("  <size>%lld</size>\n", ic->file_size);
-  if (ic->title) printf("  <streamtitle>%s</streamtitle>\n", ic->title);
+  printf("  <startoffset>%lld</startoffset>\n", ic->start_time);
+  if (ic->title) printf("  <title>%s</title>\n", ic->title);
 
-  if (ic->copyright) printf("  <streamcopyright>%s</streamcopyright>\n", ic->copyright);
+  if (ic->copyright) printf("  <copyright>%s</copyright>\n", ic->copyright);
 
-  if (ic->author) printf("  <streamauthor>%s</streamauthor>\n", ic->author);
+  if (ic->author) printf("  <author>%s</author>\n", ic->author);
+  if (ic->album) printf("  <album>%s</album>\n", ic->album);
+  if (ic->comment) printf("  <comment>%s</comment>\n", ic->comment);
+  if (ic->year) printf("  <year>%d</year>\n", ic->year);
+  if (ic->track) printf("  <track>%d</track>\n", ic->track);
+  if (ic->genre) printf("  <genre>%s</genre>\n", ic->genre);
 
 #if LIBAVFORMAT_BUILD > 4629
   printf("  <muxrate>%d</muxrate>\n", ic->mux_rate);
@@ -301,17 +310,17 @@ int main(int argc, char *argv[])
     switch (codec->codec_type) {
     case CODEC_TYPE_VIDEO:
       printf("  <video>%s</video>\n", str);
-      printf("  <stream id='%d' type='video'>\n", i);
+      printf("  <stream id=\"%d\" type=\"video\">\n", i);
       break;
     case CODEC_TYPE_AUDIO:
       printf("  <audio>%s</audio>\n", str);
-      printf("  <stream id='%d' type='audio'>\n", i);
+      printf("  <stream id=\"%d\" type=\"audio\">\n", i);
       break;
     case CODEC_TYPE_DATA:
-      printf("  <stream id='%d' type='data'>\n", i);
+      printf("  <stream id=\"%d\" type=\"data\">\n", i);
       break;
     default:
-      printf("  <stream id='%d' type='unknown'>\n", i);
+      printf("  <stream id=\"%d\" type=\"unknown\">\n", i);
       break;
     }
 
@@ -322,13 +331,9 @@ int main(int argc, char *argv[])
     else printf("    <codec>unknown</codec>\n");
 
     printf("    <duration>%lld</duration>\n", st->duration);
-    printf("    <avtimebasenum>%d</avtimebasenum>\n", st->time_base.num);
-    printf("    <avtimebaseden>%d</avtimebaseden>\n", st->time_base.den);
-#if LIBAVFORMAT_BUILD <= 4629
-    printf("    <avtimerate>%.2f</avtimerate>\n", 1.0/av_q2d(st->time_base));
-#else
-    printf("    <avtimerate>%.2f</avtimerate>\n", 1.0/av_q2d(st->time_base));
-#endif
+    printf("    <timebase>\n      <numerator>%d</numerator>\n", st->time_base.num);
+    printf("      <denominator>%d</denominator>\n    </timebase>\n", st->time_base.den);
+    printf("    <timerate>%.2f</timerate>\n", 1.0/av_q2d(st->time_base));
     printf("    <bitrate>%d</bitrate>\n", codec->bit_rate);
 
 #if LIBAVFORMAT_BUILD > 4629
@@ -339,6 +344,10 @@ int main(int argc, char *argv[])
     if (codec->width) {
       printf("    <width>%d</width>\n", codec->width);
       printf("    <height>%d</height>\n", codec->height);
+      if (codec->sample_aspect_ratio.num && codec->sample_aspect_ratio.den) {
+	printf("    <sampleaspect>\n      <numerator>%d</numerator>\n", codec->sample_aspect_ratio.num);
+	printf("      <denominator>%d</denominator>\n    </sampleaspect>\n", codec->sample_aspect_ratio.den);
+      }
 #if LIBAVFORMAT_BUILD <= 4629
       printf("    <framerate>%.2f</framerate>\n", (double) codec->frame_rate / (double) codec->frame_rate_base);
 #else
