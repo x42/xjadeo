@@ -21,11 +21,19 @@
  *
  *
  * examples:
- *  ./xjadeo-rcli | xjadeo -R &>/dev/null
- *  ./xjadeo-rcli | rsh <host> xjadeo -R <file> 
- *  ./xjadeo-rcli | ssh <[user@]host> rjadeo.sh -R <file> 
+ *  ./xjadeo-rcli | xjadeo -R <file> &>/dev/null
+ *  ./xjadeo-rcli | rsh <host> xjadeo -R <remote-file> 
+ *  ./xjadeo-rcli | ssh <[user@]host> rjadeo.sh -R <remote-file> 
  *
  */
+
+/* THESE SHOULD BECOME COMMAND LINE ARGUMENTS:
+ *
+ * values for jack.c time conversion:
+ *   = x * frames / duration
+ */ 
+long frames = 25;
+double duration =1;
 
 
 #include <stdio.h>
@@ -34,32 +42,41 @@
 #include <math.h>
 #include <xjadeo.h>
 
-/* values for jack.c time conversion:
- *   = x * frames / duration
- */ 
-long frames = 25;
-double duration =1;
-
-/* value for midi.c time conversion 
- *   = x * framerate 
- * this is also used as timebase for the internal loop, 
- */ 
 double framerate;  // =  frames / duration;
+char *program_name;
 
 /* hardcoded settings */
 int want_quiet = 1;
 int want_verbose = 0;
+int want_debug = 0;
 int midi_clkconvert = 0;
+int midi_clkadj = 0;
 char *midiid = NULL;
+int want_autodrop =1;   /* --nodropframes -n (hidden option) */
+int want_dropframes =0; /* --dropframes -N  BEWARE! */
+double 	delay = 0.04; // HERE: for MTC timeout only 
+
+#ifdef HAVE_LASH
+lash_client_t *lash_client;
+#endif
 
 /* mode of operation */
 int jack = 1;
 int readfromstdin = 1; // set to 0 or 1!
 
+void usage(int status) {
+	printf("usage %s [fps]\n",program_name);
+	exit(status);
+}
 
 int main (int argc, char **argv) {
 	int run;
 	long frame, pframe;
+	program_name = argv[0];
+
+	if (argc>2) usage(1);
+	if (argc==2) frames=atol(argv[1]);
+	if (frames < 1) usage(1);
 
 	framerate = (double) frames / (double) duration;
 
@@ -78,7 +95,6 @@ int main (int argc, char **argv) {
 
 	printf ("jack disconnect\n");
 //	printf ("window resize 880x545\n");
-//	printf ("osd font /var/lib/defoma/gs.d/dirs/fonts/FreeMonoBold.ttf\n");
 	printf ("osd font /usr/share/fonts/truetype/freefont/FreeMonoBold.ttf\n");
 	printf ("osd off\n");
 	printf ("osd smpte 100\n");

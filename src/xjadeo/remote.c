@@ -289,6 +289,10 @@ void xapi_swinpos(void *d) {
 	}
 }
 
+void xapi_exit(void *d) {
+	remote_printf(489,"exit is not a xjadeo command - use 'quit' to terminate this session.");
+}
+
 void xapi_quit(void *d) {
 	remote_printf(100,"quit.");
 	loop_flag=0;
@@ -754,6 +758,7 @@ Dcommand cmd_notify[] = {
 	{"frame" , ": enable async frame-update messages", NULL, xapi_bidir_frame, 0 },
 	{"loop" , ": enable continuous frame position messages", NULL, xapi_bidir_loop, 0 },
 	{"disable" , ": disable async messages", NULL, xapi_bidir_noframe, 0 },
+	{"off" , ": disable async messages", NULL, xapi_bidir_noframe, 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 
@@ -795,8 +800,9 @@ Dcommand cmd_root[] = {
 
 	{"list videomodes" , ": displays a list of possible video modes", NULL, xapi_lvideomodes, 0 },
 	{"ping", ": claim a pong", NULL , xapi_ping, 0 },
+	{"exit", ": [close MQ-session]", NULL , xapi_exit, 0 },
 	{"help", ": show a quick help", NULL , api_help, 0 },
-	{"quit", ": quit xjadeo", NULL , xapi_quit, 0 },
+	{"quit", ": terminate  xjadeo", NULL , xapi_quit, 0 },
 	{NULL, NULL, NULL , NULL, 0},
 };
 

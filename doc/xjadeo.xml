@@ -232,7 +232,7 @@ deb http://www.debian-multimedia.org sid main
 deb-src http://www.debian-multimedia.org sid main</screen>
         (replace <option>sid</option>  by your distribution name)
         and run <command>apt-get update</command> followed by <command>apt-get install xjadeo</command> (or use your favorite software package tool).</para>
-        <para>Note that xjadeo >v0.3 also works with <ulink url="http://packages.debian.org/unstable/libdevel/libavformat-dev">official debian ffmpeg</ulink> packages, you can <command>dpkg-buildpackage</command> the latest SVN or tar ball.</para>
+        <para>Note that xjadeo >v0.3 also works with <ulink url="http://packages.debian.org/unstable/libdevel/libavformat-dev">official debian ffmpeg</ulink> packages, you can <command>dpkg-buildpackage</command> the latest SVN or tar ball (Note: run <command>./autoconf.sh</command> when using the sources from SVN before building a debian package).</para>
       </section>
       <section id="suse">
       <title>SuSE RPMs</title>
@@ -253,6 +253,9 @@ deb-src http://www.debian-multimedia.org sid main</screen>
           </listitem>
           <listitem>
             <para><ulink url="http://ffmpeg.mplayerhq.hu/">ffmpeg</ulink> (libavcodec, libavformat/libavutil)</para>
+	    <para>Note that linking against ffmpeg requires all of ffmpeg's dependencies.
+	    Depending on the configuration of ffmpeg, these can include development packages of:
+	    libxvidcore, liblame, libfaac, libfaad, libvorbis, libogg, libx264, liba52, libdts,... </para>
           </listitem>
 	 </itemizedlist>
      </para>
@@ -681,6 +684,7 @@ make install # (requires root privileges) </screen></para>
         <listitem>
           <para>ask for help and/or share your experience: <ulink
 	  url="https://sourceforge.net/forum/?group_id=131926">https://sourceforge.net/forum/?group_id=131926</ulink>
+	  please include the output of <command>xjadeo -V</command>.
 	  </para>
         </listitem>
       </itemizedlist>

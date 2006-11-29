@@ -652,7 +652,7 @@ void xj_handle_X_events (void) {
 						force_redraw=1;
 					} else if (key == 0x21 ) { //'Shift-1' // 
 						EQMOD("brightness",-8)
-					} else if (key == 0x22 ) { //'Shift-2' // 
+					} else if (key == 0x22 || key == 0x40) { //'Shift-2' // 
 						EQMOD("brightness",+8)
 					} else if (key == 0x23 || key == 0xa7) { //'Shift-3' // 
 						EQMOD("contrast",-8)
@@ -673,7 +673,7 @@ void xj_handle_X_events (void) {
 					} else if (key == 0x37 ) { //'7' // 
 						EQMOD("saturation",-50)
 					} else if (key == 0x38 ) { //'8' // 
-						EQMOD("saturation",+50)
+						EQMOD("saturation",+100)
 					} else if (key == 0x39 ) { //'9' // 
 						EQMOD("hue",-5)
 					} else if (key == 0x30 ) { //'0' // 

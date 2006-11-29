@@ -1,3 +1,13 @@
+xjadeo (0.3.29) unstable; urgency=low
+  * qjadeo disable frame notification on disconnect,
+    terminate xjadeo when disconnecting.
+  * xjadeo remote commands: 'notify off' alias for 'notify disable'
+    'exit' - print warning that xjadeo is not xjremote 
+  * fixed contrib build
+  * added xml-preamble and DOCTYPE to xjinfo
+
+ -- Robin Gareus <robin@gareus.org>  Tue, 28 Nov 2006 23:46:50 +0100
+
 xjadeo (0.3.28-3) unstable; urgency=low
   * new seek code only for AVFORMAT_BUILD > 2629
   * missing manual page xjinfo.1

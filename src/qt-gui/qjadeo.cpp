@@ -180,8 +180,12 @@ void QJadeo::fileOpen()
 
 void QJadeo::fileDisconnect()
 {
+  xjadeo.writeToStdin(QString("notify disable\n"));
+  xjadeo.writeToStdin(QString("exit\n"));
   saveOptions();
-  close();
+  // xjremote will exit and we'll go down with it
+  // xjadeo will return a @489 error message 
+  //close();
 }
 
 void QJadeo::fileExit()
@@ -420,6 +424,9 @@ void QJadeo::readFromStdout()
         {
           case 410:   // get filename -> no open video file
             break;
+          case 489:   // -> tried "exit" on xjadeo (not xjremote)
+	    xjadeo.writeToStdin(QString("quit\n"));
+	    break;
           default:
             QMessageBox::critical(
               this,
@@ -587,7 +594,9 @@ int main(int argc, char **argv)
 
   // clean up - 
 
-  xjadeo.writeToStdin(QString("notify off\n"));
+  xjadeo.writeToStdin(QString("notify disable\n"));
+  xjadeo.writeToStdin(QString("exit\n"));
+  //sleep(1); // TODO: flush pipe to xjadeo/xjremote !
 
   xjadeo.tryTerminate();
   QTimer::singleShot(5000, &xjadeo, SLOT(kill()));

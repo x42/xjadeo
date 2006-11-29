@@ -1,4 +1,6 @@
-/* xjadeo - jack video monitor
+/* xjinfo - write Audio/Video file information in XML format
+ *
+ * (c) 2006  Robin Gareus <robin@gareus.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,11 +16,21 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
  *
- * (c) 2006  Robin Gareus <robin@gareus.org>
  *
- * parts of this go back to code found "for free" on the ffmpeg mailing list:
- * thanks Paul Curtis! It basically does what 'ffmpeg -i' 
- * does, but has a couple of features that can be used in scripts.
+ *
+ * Parts of this go back to code found "for free" on the ffmpeg mailing list:
+ * thanks Paul Curtis! It basically does what 'ffmpeg -i' does, but has a 
+ * couple of features that can be used in scripts.
+ *
+ * compile with:
+ *   gcc avinfo.c -o xjinfo -lavcodec -lavformat ##FFMPEG##
+ *
+ * replace ##FFMPEG## with the arguments corresponding to your ffmpeg
+ * installation as returned by  `ffmpeg-config  --libs avcodec avformat`
+ * eg:
+ *    -lavcodec -lavformat -lavutil -lx264 -ldts -lmp3lame -logg 
+ *    -lvorbis -lvorbisenc -ltheora -la52 -lraw1394 -ldc1394_control -lgsm 
+ *    -lz -lm -L/usr/local/lib/
  *
  */
 
@@ -34,6 +46,8 @@
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
+#else
+# define VERSION 0.1
 #endif
 
 
@@ -169,9 +183,9 @@ int main(int argc, char *argv[])
     return 1;
   }
 
-#if defined(__BIG_ENDIAN__) //  (__ppc__) ?
+#if defined(__BIG_ENDIAN__) && (__ppc__) 
 // this cast is weird, but it works.. the bytes seem to be in 'correct' order, but the two
-// 4byte-words are swapped. ?!
+// 4byte-words are swapped. ?! - maybe it's only the files I tried..
   int64_t dur = (int64_t) (ic->duration);
   secs = (int) ( ((double) (((dur&0xffffffff)<<32)|((dur>>32)&0xffffffff))) / (double) AV_TIME_BASE );
 #else
@@ -246,7 +260,9 @@ int main(int argc, char *argv[])
   }
 
   /* XML output */
-
+  printf("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+  printf("<!DOCTYPE av PUBLIC \"-//ffmpeg//AV file info//EN\"\n"
+  "\"http://xjadeo.svn.sourceforge.net/viewvc/*checkout*/xjadeo/trunk/src/xjadeo/avinfo.dtd\" >\n");
   printf("<av>\n");
   printf(" <xmlversion>0.1</xmlversion>\n");
   printf(" <length>%lld</length>\n", secs);
