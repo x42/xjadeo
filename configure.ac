@@ -398,17 +398,17 @@ EOF
 
  $ac_qmake -project -nopwd -t lib -o conftest.pro "CONFIG+=qt warn_on release" conftest.c &> /dev/null
  if test $? -ne 0; then
-  AC_MSG_ERROR([TEST_QT3: could not create a project file])
+  AC_MSG_ERROR([TEST_QT3: could not create a project file. Try to set the QTDIR env. variable of use --disable-qtgui])
  fi
 
  $ac_qmake -makefile -o conftest.mak conftest.pro &> /dev/null
  if test $? -ne 0; then
-  AC_MSG_ERROR([TEST_QT3: could not create a Makefile])
+  AC_MSG_ERROR([TEST_QT3: could not create a Makefile. try --disable-qtgui])
  fi
 
  make -s -f conftest.mak &>/dev/null
  if test $? -ne 0; then
-  AC_MSG_ERROR([TEST_QT3: version of Qt is too old])
+  AC_MSG_ERROR([TEST_QT3: version of Qt is too old. update Qt or try --disable-qtgui])
  else
   make -s -f conftest.mak distclean &>/dev/null
   AC_MSG_NOTICE([Found Qt >= 3])
@@ -430,12 +430,12 @@ EOF
 
  $ac_qmake -project -nopwd -t lib -o conftest.pro "CONFIG+=qt warn_on release" conftest.c &> /dev/null
  if test $? -ne 0; then
-  AC_MSG_ERROR([TEST_QT4: could not create a project file])
+  AC_MSG_ERROR([TEST_QT4: could not create a project file. Try to set the QTDIR env. variable of use --disable-qtgui])
  fi
 
  $ac_qmake -makefile -o conftest.mak conftest.pro &> /dev/null
  if test $? -ne 0; then
-  AC_MSG_ERROR([TEST_QT4: could not create a Makefile])
+  AC_MSG_ERROR([TEST_QT4: could not create a Makefile. try --disable-qtgui])
  fi
 
  make -s -f conftest.mak &>/dev/null

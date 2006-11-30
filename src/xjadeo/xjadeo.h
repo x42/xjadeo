@@ -85,6 +85,8 @@ void render_buffer (uint8_t *mybuffer);
 void handle_X_events (void);
 void Xresize (unsigned int x, unsigned int y);
 void Xfullscreen (int a);
+void Xmousepointer (int a);
+void Xletterbox (int a);
 void Xontop (int a);
 void Xgetsize (unsigned int *x, unsigned int *y);
 void Xposition (int x, int y);

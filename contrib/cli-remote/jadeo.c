@@ -27,14 +27,6 @@
  *
  */
 
-/* THESE SHOULD BECOME COMMAND LINE ARGUMENTS:
- *
- * values for jack.c time conversion:
- *   = x * frames / duration
- */ 
-long frames = 25;
-double duration =1;
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,6 +36,9 @@ double duration =1;
 
 double framerate;  // =  frames / duration;
 char *program_name;
+
+long frames = 25;
+double duration =1;
 
 /* hardcoded settings */
 int want_quiet = 1;
@@ -65,7 +60,7 @@ int jack = 1;
 int readfromstdin = 1; // set to 0 or 1!
 
 void usage(int status) {
-	printf("usage %s [fps]\n",program_name);
+	printf("usage %s [fps-num:=25] [fps-den:=1]\n",program_name);
 	exit(status);
 }
 
@@ -74,9 +69,10 @@ int main (int argc, char **argv) {
 	long frame, pframe;
 	program_name = argv[0];
 
-	if (argc>2) usage(1);
-	if (argc==2) frames=atol(argv[1]);
-	if (frames < 1) usage(1);
+	if (argc>3) usage(1);
+	if (argc==3) duration=atol(argv[2]);
+	if (argc>1) frames=atol(argv[1]);
+	if (frames < 1 || duration < 1) usage(1);
 
 	framerate = (double) frames / (double) duration;
 
@@ -111,7 +107,7 @@ int main (int argc, char **argv) {
 			size_t rv;
 			char buf[BUFSIZ];
 			if ((rv=read(0,buf,BUFSIZ)) > 0) {
-				if (!strncmp(buf,"die",3)) { 
+				if (!strncmp(buf,"exit",3)) { 
 					printf ("quit\n");
 					run=0;
 				}else 

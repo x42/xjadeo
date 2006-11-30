@@ -15,7 +15,7 @@ endif
 
 config.status: configure
 	dh_testdir
-
+	./autogen.sh
 	CFLAGS="$(CFLAGS)" ./configure --host=$(DEB_HOST_GNU_TYPE) \
 	--build=$(DEB_BUILD_GNU_TYPE) --prefix=/usr --mandir=\$${prefix}/share/man
 

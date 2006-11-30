@@ -22,7 +22,7 @@
     clip in sync with an external time source, which comes quite handy when you want to create a
     soundtrack for a movie.</para>
     
-    <para>It has applications in soundtrack creation, video monitoring or 
+    <para>It has applications in soundtrack composition, video monitoring or 
     any task that requires to associate movie frames with audio events.</para>
 
     <para><application>xjadeo</application> supports different video file

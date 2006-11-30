@@ -41,6 +41,7 @@ typedef struct {
 	void (*getpos)(int *x, int *y);
 	void (*fullscreen)(int action);
 	void (*ontop)(int action);
+	void (*mousepointer)(int action);
 }vidout;
 
 /*******************************************************************************
@@ -74,6 +75,7 @@ void handle_X_events_sdl (void) ;
 #if (HAVE_LIBXV || HAVE_IMLIB || HAVE_IMLIB2)
 
 void xj_set_fullscreen (int action);
+void xj_mousepointer (int action);
 int xj_get_eq(char *prop, int *value);
 void xj_set_ontop (int action);
 void xj_position (int x, int y);

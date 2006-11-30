@@ -193,6 +193,13 @@ void xj_showcursor (void) {
 	XDefineCursor(xj_dpy,xj_win, 0);
 }
 
+void xj_mousepointer (int action) {
+	if (action==2) xj_mouse^=1;
+	else xj_mouse=action?0:1;
+	if (xj_mouse) xj_hidecursor();
+	else xj_showcursor();
+}
+
 void xj_get_window_pos (int *x,  int *y) {
 	Window	dummy;
 	XTranslateCoordinates( xj_dpy, xj_win, xj_rwin,0,0,x,y,&dummy );
@@ -725,7 +732,7 @@ void xj_handle_X_events (void) {
 						smpte_offset= calloc(15,sizeof(char));
 						frame_to_smptestring(smpte_offset,ts_offset,midi_connected());
 					} else if (key == 0x6d ) { // 'm' // toggle mouse pointer
-					    if (xj_mouse^=1) xj_hidecursor(); else xj_showcursor();
+						xj_mousepointer(2);
 					} else if (want_debug) {
 						printf("unassigned key pressed: '%c' 0x%x\n",key,key);
 					}

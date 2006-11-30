@@ -26,6 +26,8 @@ TODO
 
 * testsuite for quality assurance and benchmarks.
 
+* remote commands to query mouse, fullscreen and on_top mode
+
 * map key bindings (cfg file -> to remote commands) 
   and print help OSD 
   -make key events generate remote-replies (notify GUI of changes) 
@@ -62,7 +64,7 @@ TODO - next major version:
 TODO - legacy and low priority issues / ideas
 ---------------------------------------------
 
--  read image sequences (eg. sgi)
+-  read image sequences (eg. sgi) and playlists (vob)
 
   DISPLAY:
 

@@ -209,21 +209,19 @@ void xapi_lvideomodes(void *d) {
 }
 
 void xapi_pletterbox(void *d) {
-	unsigned int x,y;
 	if (want_letterbox)
 		remote_printf(201,"videomode=1 # fixed aspect ratio");
 	else
 		remote_printf(201,"letterbox=0 # free scaling");
-	Xgetsize(&x,&y); 
-	Xresize(x,y);
 }
 
 void xapi_sletterbox(void *d) {
-	if (!strcmp(d,"on") || atoi(d)==1 || !strcmp(d,"yes")) want_letterbox=1;
-	else want_letterbox=0;
+	int action=2;
+	if (!strcmp(d,"on") || atoi(d)==1) action=1;
+	else if (!strcmp(d,"off")) action=0;
+	Xletterbox (action);
 	xapi_pletterbox(NULL);
 }
-
 
 void xapi_pwinpos(void *d) {
 	int x,y;
@@ -261,16 +259,27 @@ void xapi_swinsize(void *d) {
 void xapi_ontop(void *d) {
 	int action=_NET_WM_STATE_TOGGLE;
 	if (!strcmp(d,"on") || atoi(d)==1) action=_NET_WM_STATE_ADD;
-	else if (!strcmp(d,"off") || atoi(d)==0) action=_NET_WM_STATE_REMOVE;
+	else if (!strcmp(d,"off")) action=_NET_WM_STATE_REMOVE;
+	remote_printf(100,"ok.");
 	Xontop(action);
 }
 
 void xapi_fullscreen(void *d) {
 	int action=_NET_WM_STATE_TOGGLE;
 	if (!strcmp(d,"on") || atoi(d)==1) action=_NET_WM_STATE_ADD;
-	else if (!strcmp(d,"off") || atoi(d)==0) action=_NET_WM_STATE_REMOVE;
+	else if (!strcmp(d,"off")) action=_NET_WM_STATE_REMOVE;
+	remote_printf(100,"ok.");
 	Xfullscreen(action);
 }
+
+void xapi_mousepointer(void *d) {
+	int action=2;
+	if (!strcmp(d,"on") || atoi(d)==1) action=1;
+	else if (!strcmp(d,"off")) action=0;
+	Xmousepointer (action);
+	remote_printf(100,"ok.");
+}
+
 
 void xapi_swinpos(void *d) {
 	int x,y;
@@ -769,9 +778,10 @@ Dcommand cmd_window[] = {
 	{"resize " , "<int>|<int>x<int>: resize window (percent of movie or abs)", NULL, xapi_swinsize, 0 },
 	{"position " , "<int>x<int>: move window to absolute position", NULL, xapi_swinpos, 0 },
 	{"pos " , "<int>x<int>: alias for 'window position'", NULL, xapi_swinpos, 0 },
-	{"fullscreen " , "[on|off|toggle]: en/disable fullscreen (only XV/x11 )", NULL, xapi_fullscreen, 0 },
+	{"fullscreen " , "[on|off|toggle]: en/disable fullscreen (only XV/x11)", NULL, xapi_fullscreen, 0 },
+	{"letterbox " , "[on|off|toggle]: don't break aspect ratio (only XV/x11-imlib2)", NULL, xapi_sletterbox, 0 },
+	{"mouse " , "[on|off|toggle]: en/disable mouse cursor display (only XV/x11)", NULL, xapi_mousepointer, 0 },
 	{"ontop " , "[on|off|toggle]: en/disable 'on top' (only XV/x11)", NULL, xapi_ontop, 0 },
-	{"letterbox " , "[on|off]: retain aspect movie ratio (only Xv)", NULL, xapi_sletterbox, 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 

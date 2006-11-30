@@ -1,3 +1,11 @@
+xjadeo (0.3.29-2) unstable; urgency=low
+  * debian control imlib2-dev -> libimlib2-dev
+  * xjadeo new remote command 
+   - 'window mouse [on|off|toggle]' 
+   - 'window letterbox [on|off|toggle]' 
+
+ -- Robin Gareus <robin@gareus.org>  Thu, 30 Nov 2006 01:34:36 +0100
+
 xjadeo (0.3.29-1) unstable; urgency=low
   * updated xjinfo + dtd
    - rational values
