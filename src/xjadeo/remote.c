@@ -235,6 +235,19 @@ void xapi_pwinsize(void *d) {
 	remote_printf(210,"windowsize=%ux%u",x,y);
 }
 
+void xapi_saspect (void *d) {
+	unsigned int my_Width,my_Height;
+	Xgetsize(&my_Width,&my_Height); 
+	// resize to match movie aspect ratio
+	// dup code in display_x11.c (!)
+	if( ((float)movie_width/(float)movie_height) < ((float)my_Width/(float)my_Height) )
+		my_Width=floor((float)my_Height * (float)movie_width / (float)movie_height);
+	else	my_Height=floor((float)my_Width * (float)movie_height / (float)movie_width);
+
+	remote_printf(100,"resizing window to %ux%u",my_Width, my_Height);
+	Xresize(my_Width, my_Height);
+}
+
 void xapi_swinsize(void *d) {
 	unsigned int x,y;
 	char *size= (char*)d;
@@ -760,6 +773,8 @@ Dcommand cmd_get[] = {
 	{"osdcfg", ": display status on screen display", NULL, xapi_posd, 0 },
 	{"syncsource", ": display currently used sync source", NULL, xapi_psync, 0 },
 	{"letterbox" , ": query video scaling mode", NULL, xapi_pletterbox, 0 },
+	{"fullscreen" , ": is xjadeo displayed on full screen", NULL, xapi_null, 0 },
+	{"ontop" , ": query window on top mode", NULL, xapi_null, 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 
@@ -776,12 +791,14 @@ Dcommand cmd_window[] = {
 	{"open", ": open window", NULL, xapi_open_window, 0 },
 	{"mode " , "<int>: changes video mode and opens window", NULL, xapi_set_videomode, 0 },
 	{"resize " , "<int>|<int>x<int>: resize window (percent of movie or abs)", NULL, xapi_swinsize, 0 },
+	{"size " , "<int>|<int>x<int>: alias for resize", NULL, xapi_swinsize, 0 },
 	{"position " , "<int>x<int>: move window to absolute position", NULL, xapi_swinpos, 0 },
 	{"pos " , "<int>x<int>: alias for 'window position'", NULL, xapi_swinpos, 0 },
 	{"fullscreen " , "[on|off|toggle]: en/disable fullscreen (only XV/x11)", NULL, xapi_fullscreen, 0 },
 	{"letterbox " , "[on|off|toggle]: don't break aspect ratio (only XV/x11-imlib2)", NULL, xapi_sletterbox, 0 },
 	{"mouse " , "[on|off|toggle]: en/disable mouse cursor display (only XV/x11)", NULL, xapi_mousepointer, 0 },
 	{"ontop " , "[on|off|toggle]: en/disable 'on top' (only XV/x11)", NULL, xapi_ontop, 0 },
+	{"fixaspect" , ": scale window to match aspect ration (same as mouse btn 3)", NULL, xapi_saspect, 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 

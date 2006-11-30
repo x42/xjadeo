@@ -15,8 +15,10 @@
 
 #include "qjadeo.h"
 #include "bindir.h"
-// Global variables
 
+#include <math.h>
+
+// Global variables
 QProcess xjadeo;
 
 ///////////////////////////////////////////////////////
@@ -507,7 +509,7 @@ void QJadeo::readFromStdout()
         }
 	else if(name == "framerate")
         {
-          m_framerate = value.toInt();
+          m_framerate = (int)rint(value.toDouble()); // TODO: round value / allow
           fpsSpinBox->setValue(m_framerate);
           xjadeo.writeToStdin("set fps " + value + "\n");
         }

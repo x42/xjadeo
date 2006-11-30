@@ -1,3 +1,11 @@
+xjadeo (0.3.29-3) unstable; urgency=low
+  * qjadeo - round update fps
+  * xjadeo remote commands
+   - 'window size' -> 'window resize'
+   - 'window fixaspect' -> RMB
+
+ -- Robin Gareus <robin@gareus.org>  Thu, 30 Nov 2006 16:46:23 +0100
+
 xjadeo (0.3.29-2) unstable; urgency=low
   * debian control imlib2-dev -> libimlib2-dev
   * xjadeo new remote command 

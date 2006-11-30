@@ -220,7 +220,7 @@
 
       <para><application>xjadeo</application> is also available for <ulink
       url="http://sourceforge.net/project/showfiles.php?group_id=131926">download from Sourceforge</ulink>
-      as source or FC4-RPM binary package.</para>
+      as source package.</para>
 
       <section id="deb">
       <title>Debian packages</title>
@@ -280,7 +280,7 @@ deb-src http://www.debian-multimedia.org sid main</screen>
       <para>Optional libraries:
         <itemizedlist>
           <listitem>
-            <para><ulink url="http://freetype.org">Freetype 2</ulink> (actually libfreetype6_2) - for On Screen display.</para>
+            <para><ulink url="http://freetype.org">Freetype 2</ulink> (actually libfreetype6_2) - for On Screen Display.</para>
           </listitem>
           <listitem>
             <para><ulink url="http://www.cs.cmu.edu/~music/portmusic/portmidi/">portmidi</ulink> - Midi Clock</para>
@@ -346,7 +346,7 @@ make install # (requires root privileges) </screen></para>
             <term><option>--enable-midi=auto</option></term>
 
             <listitem>
-              <para>Choose midi library to use. good values are <option>auto</option>
+              <para>Choose midi library to use. good values are <option>auto</option>,
 	      <option>portmidi</option>, <option>alsamidi</option>, <option>none</option>.
               The current default is to to use alsa-midi
               if available and fall back to using portmidi.</para>
@@ -572,8 +572,8 @@ make install # (requires root privileges) </screen></para>
           <term><option>0-9</option></term>
           <listitem> <para>change Color-EQ parameters with key pairs. 
 	  brightness:1+2, contrast:3+4, gamma:5+6, saturation:7+8, hue:9+0</para>
-	  <para>XV color balance is hardware dependant: Some boards to not support all parameters.
-	  The imlib2 software EQ is limited to bri/cont/gamma.</para>
+	  <para>XV color balance is hardware dependant: Some boards do not support all parameters.
+	  The imlib2 software EQ is limited to brightness/contrast and gamma correction.</para>
 	  </listitem>
         </varlistentry>
     </variablelist>
@@ -631,6 +631,7 @@ make install # (requires root privileges) </screen></para>
       <section id="howto_ardour2">
         <title>Configure Ardour 2 to sync to jack</title>
 	<para> You have not even started ardour2 before, have you? There's a nice looking button next to the SMPTE display.</para>
+	<para>For both ardour 0.99 and ardour2 there is the alternative option to hook up xjadeo as a MTC slave.</para>
       </section>
 
       <section id="howto_rg">
@@ -1917,7 +1918,7 @@ make install # (requires root privileges) </screen></para>
           </listitem>
           <listitem>
 	    <para> xjadeo >= v0.3.8 supports keyboard events. Pressing 'Esc' and 'q' will end the program.
-	    depending on your display setup xjadeo supports 'f' toggle fullscreen, 'a' toggle always-on-top and 'm' to hide mouse cursor keystrokes.</para>
+	    depending on your display setup xjadeo supports 'f' toggle fullscreen, 'a' toggle always-on-top and 'm' to hide mouse cursor keystrokes. see <xref linkend="x_window_interaction" /> in the documentation for more recent additions.</para>
           </listitem>
         </itemizedlist>
       </refsect1>

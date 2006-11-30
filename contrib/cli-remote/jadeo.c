@@ -90,6 +90,10 @@ int main (int argc, char **argv) {
 	}
 
 	printf ("jack disconnect\n");
+//	printf ("load %s\n",filename);
+	printf ("window mouse off\n");
+	printf ("window letterbox on\n");
+//	printf ("window fullscreen on\n");
 //	printf ("window resize 880x545\n");
 	printf ("osd font /usr/share/fonts/truetype/freefont/FreeMonoBold.ttf\n");
 	printf ("osd off\n");
