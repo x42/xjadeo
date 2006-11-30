@@ -1,3 +1,8 @@
+xjadeo (0.4.0-rc1) unstable; urgency=low
+  * bump version to 0.4.0-rc1
+
+ -- Robin Gareus <robin@gareus.org>  Thu, 30 Nov 2006 22:20:52 +0100
+
 xjadeo (0.3.29-3) unstable; urgency=low
   * qjadeo - round update fps
   * xjadeo remote commands

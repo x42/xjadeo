@@ -7,8 +7,8 @@ AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
 VERSION_MAJOR=0
-VERSION_MINOR=3
-VERSION_SUB=29
+VERSION_MINOR=4
+VERSION_SUB="0-rc1"
 
 dnl 'i=$1-XXX': svn-base-revision for current VERSION_MINOR - v0.3 : 79
 dnl nice try better luck next time.
