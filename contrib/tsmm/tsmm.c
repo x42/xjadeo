@@ -36,7 +36,9 @@ int want_quiet = 1;
 int want_verbose = 0;
 int want_debug = 0;
 int want_dropframes =0; /* --dropframes -N  BEWARE! */
+#ifdef HAVE_MIDI
 int midi_clkconvert =0;	/* --midifps [0:MTC|1:VIDEO|2:RESAMPLE] */
+#endif
 int want_autodrop =1;   /* --nodropframes -n (hidden option) */
 double	framerate = 25;
 
@@ -165,7 +167,7 @@ int test_dir(char *d) {
 #define MAX_PATH 1024 
 int main (int argc, char **argv) {
 	char filename[MAX_PATH];
-	char *filepath;
+	char *filepath = NULL;
 	text_element *te = calloc(5,sizeof(text_element));
 	int i;
 	int err = 0;

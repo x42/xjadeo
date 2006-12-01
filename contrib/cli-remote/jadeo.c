@@ -44,9 +44,11 @@ double duration =1;
 int want_quiet = 1;
 int want_verbose = 0;
 int want_debug = 0;
+#ifdef HAVE_MIDI
 int midi_clkconvert = 0;
 int midi_clkadj = 0;
 char *midiid = NULL;
+#endif
 int want_autodrop =1;   /* --nodropframes -n (hidden option) */
 int want_dropframes =0; /* --dropframes -N  BEWARE! */
 double 	delay = 0.04; // HERE: for MTC timeout only 
@@ -91,8 +93,11 @@ int main (int argc, char **argv) {
 		open_jack();
 		run= jack_connected();
 	} else{
+#ifdef HAVE_MIDI
 		midi_open(midiid);
+#endif
 		run= midi_connected();
+		
 	}
 
 	printf ("jack disconnect\n");
@@ -126,7 +131,11 @@ int main (int argc, char **argv) {
 		}
 
 		if (jack) frame= jack_poll_frame();
+#ifdef HAVE_MIDI
 		else frame= midi_poll_frame();
+#else
+		else exit (1);
+#endif
 		if (pframe!=frame)
 			printf ("seek %li\n",frame);
 		pframe=frame;
@@ -134,11 +143,10 @@ int main (int argc, char **argv) {
 		fflush(stdout);
 	}
 
-	//fprintf(stderr,"Live long and prosper.\n");
-
 	if (jack) close_jack();
+#ifdef HAVE_MIDI
 	else midi_close();
-
+#endif
 	return (0);
 }
 /* vim:set ts=8 sts=8 sw=8: */
