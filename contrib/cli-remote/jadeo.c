@@ -66,13 +66,19 @@ void usage(int status) {
 
 int main (int argc, char **argv) {
 	int run;
+	char *filename = NULL;
 	long frame, pframe;
 	program_name = argv[0];
 
 	if (argc>3) usage(1);
-	if (argc==3) duration=atol(argv[2]);
-	if (argc>1) frames=atol(argv[1]);
+	if (argc==3) {
+		filename=argv[2];
+		frames=atol(argv[1]);
+	}
+	else if (argc>1) filename=argv[1];
+
 	if (frames < 1 || duration < 1) usage(1);
+	if (!filename) usage(1);
 
 	framerate = (double) frames / (double) duration;
 
@@ -90,10 +96,10 @@ int main (int argc, char **argv) {
 	}
 
 	printf ("jack disconnect\n");
-//	printf ("load %s\n",filename);
+	printf ("load %s\n",filename);
 	printf ("window mouse off\n");
 	printf ("window letterbox on\n");
-//	printf ("window fullscreen on\n");
+	printf ("window fullscreen on\n");
 //	printf ("window resize 880x545\n");
 	printf ("osd font /usr/share/fonts/truetype/freefont/FreeMonoBold.ttf\n");
 	printf ("osd off\n");

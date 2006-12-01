@@ -1,3 +1,10 @@
+xjadeo (0.4.0-rc2) unstable; urgency=low
+  * fixed version to comply with RPM '-' -> '.' -> 0.4.0.rc2 
+  * added contrib/tsmm - time stamp movie maker
+  * added autogen.sh to debian/rules
+
+ -- Robin Gareus <robin@gareus.org>  Fri, 01 Dec 2006 21:17:03 +0100
+
 xjadeo (0.4.0-rc1) unstable; urgency=low
   * bump version to 0.4.0-rc1
 

@@ -13,9 +13,11 @@ else
 	CFLAGS += -O2
 endif
 
+configure:
+	./autogen.sh
+
 config.status: configure
 	dh_testdir
-	./autogen.sh
 	CFLAGS="$(CFLAGS)" ./configure --host=$(DEB_HOST_GNU_TYPE) \
 	--build=$(DEB_BUILD_GNU_TYPE) --prefix=/usr --mandir=\$${prefix}/share/man
 
@@ -28,6 +30,7 @@ build-stamp: config.status
 	touch build-stamp
 
 clean:
+	test -f configure || ./autogen.sh
 	dh_testdir
 	dh_testroot
 	rm -f build-stamp 

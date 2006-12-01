@@ -8,7 +8,7 @@ AC_CANONICAL_TARGET
 
 VERSION_MAJOR=0
 VERSION_MINOR=4
-VERSION_SUB="0.rc1"
+VERSION_SUB="0.rc2"
 
 dnl 'i=$1-XXX': svn-base-revision for current VERSION_MINOR - v0.3 : 79
 dnl nice try better luck next time.
@@ -31,6 +31,7 @@ AC_ARG_ENABLE(ft,    AC_HELP_STRING([--disable-ft],  [Disable freetype On-Screen
 AC_ARG_ENABLE(qtgui, AC_HELP_STRING([--disable-qtgui],[Don't build the Qt GUI controller]))
 AC_ARG_ENABLE(contrib,  AC_HELP_STRING([--enable-contrib],  [Compile and install code in contrib folder]))
 AC_ARG_ENABLE(lash, AC_HELP_STRING([--disable-lash],[disable LASH support]))
+AC_ARG_ENABLE(tiff, AC_HELP_STRING([--disable-tiff],[disable libtiff support]))
 AC_ARG_ENABLE(mq, AC_HELP_STRING([--disable-mq],[disable mq remote support]))
 
 dnl FPU emulation core.
@@ -118,6 +119,7 @@ AH_TEMPLATE([HAVE_MIDI], [Define as 1 if you have either alsa or portmidi])
 AH_TEMPLATE([HAVE_LASH], [Define as 1 if you have lash])
 AH_TEMPLATE([HAVE_XPM], [Define as 1 if you have libXpm])
 AH_TEMPLATE([HAVE_MQ], [Define as 1 if you have POSIX message queues (libc, librt)])
+AH_TEMPLATE([HAVE_TIFF], [Define as 1 if you have libtiff (contrib/tsmm)])
 AH_TEMPLATE([TTFFONTFILE], [absolute path to truetype default OSD font file])
 AH_TEMPLATE([CFG_WARN_ONLY], [errors in the resource config file only result in a warning message instead of forcing xjadeo to exit.])
 AH_TEMPLATE([DND], [enable xjadeo x11 drag and drop])
@@ -372,6 +374,25 @@ if test "x$enable_lash" != "xno"; then
 fi
 
 dnl ----------------------------------------------
+dnl contrib/tsmm
+dnl ----------------------------------------------
+
+if test "x${enable_contrib}" != "xno"; then
+  AC_CHECK_HEADERS(tiffio.h, [FOUND_H_TIFF=yes])
+  AC_CHECK_LIB([tiff], [TIFFOpen], [FOUND_L_TIFF=yes])
+
+  if test "x$FOUND_H_TIFF$FOUND_L_TIFF" = "xyesyes"; then
+    AC_DEFINE(HAVE_TIFF) HAVE_TIFF=1 
+    TIFF_LIBS="-ltiff"	
+    TIFF_CFLAGS=""	
+    AC_SUBST(TIFF_CFLAGS)
+    AC_SUBST(TIFF_LIBS)
+  else
+    PKG_CHECK_MODULES(TIFF,tiff,  [ AC_DEFINE(HAVE_TIFF) HAVE_TIFF=1 ], [ NULL=0 ])
+  fi
+fi
+
+dnl ----------------------------------------------
 dnl Qt GUI stuff
 dnl ----------------------------------------------
 
@@ -467,15 +488,19 @@ AC_SUBST(ac_qtgui_dir)
 dnl ---------- End of Qt GUI stuff ---------------
 
 
+ac_contrib_dir=""
+
 if test "x$enable_contrib" = "xyes"; then
   ac_contrib_dir="contrib/cli-remote/"
-else 
-  ac_contrib_dir=""
+  if test -n "$HAVE_TIFF"; then 
+    ac_contrib_dir="$ac_contrib_dir contrib/tsmm"
+  fi 
 fi
+
 AC_SUBST(ac_contrib_dir)
 
 if test "x$enable_contrib" = "xyes"; then
-  AC_CONFIG_FILES([contrib/cli-remote/Makefile])
+  AC_CONFIG_FILES([contrib/cli-remote/Makefile contrib/tsmm/Makefile])
 fi
 
 AC_CONFIG_FILES([Makefile src/Makefile src/xjadeo/Makefile xjadeo.lsm xjadeo.spec])
@@ -523,7 +548,10 @@ if test -n "$HAVE_QT4"; then echo "QT4";
 else if test -n "$HAVE_QT3"; then echo "QT3"
      else echo "none"; fi
 fi
-#echo -n " build contib/*:     ";	if test "x$enable_contrib" = "xyes"; then echo "yes."; else echo "no."; fi
+echo -n " build contib/*:     ";	if test "x$enable_contrib" = "xyes"; then echo "yes."; else echo "no."; fi
+if test "x$enable_contrib" = "xyes"; then
+     echo -n " libtiff (xjtsmm):   ";	if test -n "$HAVE_TIFF"; then echo "ok"; else echo "not avail."; fi
+fi
 echo " "
 echo "now type 'make'; followed by 'make install' as root."
 echo " "
