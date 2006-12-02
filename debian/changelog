@@ -1,3 +1,9 @@
+xjadeo (0.4.0-rc3) unstable; urgency=low
+  * fixed fontfile=<file> config option
+  * fixed build --enable-contrib --enable-midi=off
+
+ -- Robin Gareus <robin@gareus.org>  Sat, 02 Dec 2006 02:16:13 +0100
+
 xjadeo (0.4.0-rc2) unstable; urgency=low
   * fixed version to comply with RPM '-' -> '.' -> 0.4.0.rc2 
   * added contrib/tsmm - time stamp movie maker

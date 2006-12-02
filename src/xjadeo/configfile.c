@@ -74,7 +74,10 @@ int parseoption (char *item, char *value) {
 			videomode = vmode; rv=1;
 		}
 	} else if (!strncasecmp(item,"FPS",3)) {
-		delay = 1.0 / atof(value); rv=1;
+		if (atof(value) > 0) {
+			delay = 1.0 / atof(value);
+		} else  delay = -1 ; // use file-framerate
+		rv=1;
 	} else if (!strncasecmp(item,"MIDICLK",7)) {
 		rv=1;
 	#ifdef HAVE_MIDI

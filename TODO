@@ -1,6 +1,8 @@
 TODO 
 -------------
 
+* fix maintainer-clean: removes icons ?!
+
 * mq:
    - FIX multiple remote clients one xjadeo -> who gets the replies ? 
    - multi drop queues and mq_notify()

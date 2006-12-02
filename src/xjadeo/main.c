@@ -473,7 +473,6 @@ static void printversion (void) {
 void stat_osd_fontfile(void) {
 #ifdef HAVE_FT
   struct stat s;
-  strcpy(OSD_fontfile,FONT_FILE);
 
   if (stat(OSD_fontfile, &s)==0 ) {
     if (want_verbose) fprintf(stdout,"OSD font file: %s\n",OSD_fontfile);
