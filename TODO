@@ -3,6 +3,10 @@ TODO
 
 * fix maintainer-clean: removes icons ?!
 
+* XV + ffmpeg pixel aspect ratio.
+
+* complete contrib/tsmm and perform tests.
+
 * mq:
    - FIX multiple remote clients one xjadeo -> who gets the replies ? 
    - multi drop queues and mq_notify()

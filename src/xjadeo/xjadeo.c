@@ -157,10 +157,11 @@ void event_loop(void) {
 		}
 		display_frame((int64_t)(offFrame), force_redraw);
 		force_redraw=0;
+		dly = delay>0?delay:(1.0/framerate);
 
 		if (splashed) {
 			if (splashed == -1) {
-				splashed =  5.5/delay;	
+				splashed =  5.5/dly;	
 				splash(buffer);
 			}
 			if(!--splashed) force_redraw=1;
@@ -179,7 +180,6 @@ void event_loop(void) {
 
 		handle_X_events();
 		lash_process();
-		dly = delay>0?delay:(1.0/framerate);
     
 		gettimeofday(&clock2, NULL);
 		elapsed_time = ((double) (clock2.tv_sec-clock1.tv_sec)) + ((double) (clock2.tv_usec-clock1.tv_usec)) / 1000000.0;

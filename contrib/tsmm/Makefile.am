@@ -6,5 +6,5 @@ xjtsmm_LDADD = $(TIFF_LIBS) @FREETYPE_LIBS@
 
 MAINTAINERCLEANFILES = Makefile.in
 
-# TODO: properly install sh-script this when it's completed
-EXTRA_DIST=timestampmoviemaker.sh
+# TODO: properly install perl-script this when it's completed
+EXTRA_DIST=tsmm.pl

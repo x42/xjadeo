@@ -32,7 +32,7 @@
 
 char *program_name;
 /* hardcoded settings */
-int want_quiet = 1;
+int want_quiet = 0;
 int want_verbose = 0;
 int want_debug = 0;
 int want_dropframes =0; /* --dropframes -N  BEWARE! */
@@ -121,7 +121,7 @@ int render_frame (char *filename, int w, int h, text_element *te)  {
 		return (1);
 	}
 
-	if (!want_quiet) {
+	if (want_verbose) {
 		printf ("myInfo:  w:%u h:%u bps:%u spp:%u rps:%u\n",w,h,bps,spp,rps);
 		printf ("extInfo: nos:%u strip-size:%u\n",nos,imageStripsize);
 	}
@@ -177,9 +177,22 @@ int main (int argc, char **argv) {
 	program_name=argv[0];
 
 	if (argc>1) filepath=argv[1];
-	else usage(1);
-
-	//last_frame=10*60*framerate;
+	if (argc>2) {
+		framerate=atof(argv[2]);
+		if (framerate == 25) want_dropframes =0;
+		else if (framerate == 29.97) want_dropframes=1;
+		else if (framerate == 24) want_dropframes=0;
+		else if (framerate == 30) want_dropframes=0;
+		else {
+			printf("\nWARNING: untested video framerate!\n\n");
+		}
+	}
+	if (argc>3) {
+	  	last_frame=smptestring_to_frame(argv[3],want_dropframes);
+	} else {
+	  	last_frame=smptestring_to_frame("2:10:15",want_dropframes);
+	}
+	if (argc>4) usage(1);
 
 	if (test_dir(filepath)) {
 		printf("directory %s does not exist\n",filepath);
@@ -196,7 +209,10 @@ int main (int argc, char **argv) {
 
 	for (i=0;i<last_frame && !err;i++) {
 		snprintf(filename,MAX_PATH,"%s/frame_%07i.tif",filepath,i);
-		printf(" file: %s%c",filename,want_verbose?'\n':'\r');
+		if (!want_quiet && !(i%7)) {
+			printf(" file: %s%c",filename,want_verbose?'\n':'\r');
+			fflush(stdout);
+		}
 		if (want_verbose) fflush(stdout);
 		if (te[0].text) free(te[0].text); 
 		if (te[1].text) free(te[1].text);
@@ -205,7 +221,6 @@ int main (int argc, char **argv) {
 		frame_to_smptestring(te[1].text,i,want_dropframes);
 		err = render_frame(filename,w,h,te);
 	}
-	snprintf(filename,MAX_PATH,"/tmp/test/frame_%04i.tif",i);
 	if (te[0].text) free(te[0].text);
 	if (te[1].text) free(te[1].text);
 
@@ -225,7 +240,10 @@ int main (int argc, char **argv) {
 	te[3].xpos=OSD_LEFT;
 	te[3].yperc=100;
 
-	return(render_frame(filename,w,h,te));
+	snprintf(filename,MAX_PATH,"/%s/frame_%07i.tif",filepath,i);
+	render_frame(filename,w,h,te); i++;
+	snprintf(filename,MAX_PATH,"/%s/frame_%07i.tif",filepath,i);
+	render_frame(filename,w,h,te);
 
 	// clean up
 	if (te[0].text) free(te[0].text);
@@ -233,4 +251,5 @@ int main (int argc, char **argv) {
 	if (te[2].text) free(te[2].text);
 	if (te[3].text) free(te[3].text);
 	free(te);
+	return(0);
 }

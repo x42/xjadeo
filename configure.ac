@@ -402,7 +402,7 @@ if test "x$enable_qtgui" != "xno"; then
  AC_PATH_PROG(ac_qmake, qmake, [no], $QTDIR/bin:${PATH})
  if test "x$ac_qmake" = "xno"; then
     AC_MSG_ERROR([qmake not found: please install the Qt development
-    package of your distribution (either QT3 or QT4+qt3compat)])
+    package of your distribution (either QT3 or QT4+qt3compat). try setting the QTDIR env. variable; or use --disable-qtgui to compile xjadeo.])
  fi
  AC_SUBST(ac_qmake)
 
@@ -419,17 +419,17 @@ EOF
 
  $ac_qmake -project -nopwd -t lib -o conftest.pro "CONFIG+=qt warn_on release" conftest.c &> /dev/null
  if test $? -ne 0; then
-  AC_MSG_ERROR([TEST_QT3: could not create a project file. Try to set the QTDIR env. variable of use --disable-qtgui])
+  AC_MSG_WARN([TEST_QT3: could not create a project file. Try to set the QTDIR env. variable.])
  fi
 
  $ac_qmake -makefile -o conftest.mak conftest.pro &> /dev/null
  if test $? -ne 0; then
-  AC_MSG_ERROR([TEST_QT3: could not create a Makefile. try --disable-qtgui])
+  AC_MSG_WARN([TEST_QT3: could not create a Makefile.])
  fi
 
  make -s -f conftest.mak &>/dev/null
  if test $? -ne 0; then
-  AC_MSG_ERROR([TEST_QT3: version of Qt is too old. update Qt or try --disable-qtgui])
+  AC_MSG_WARN([TEST_QT3: QT3 is not installed or version of Qt is too old.])
  else
   make -s -f conftest.mak distclean &>/dev/null
   AC_MSG_NOTICE([Found Qt >= 3])
@@ -451,12 +451,12 @@ EOF
 
  $ac_qmake -project -nopwd -t lib -o conftest.pro "CONFIG+=qt warn_on release" conftest.c &> /dev/null
  if test $? -ne 0; then
-  AC_MSG_ERROR([TEST_QT4: could not create a project file. Try to set the QTDIR env. variable of use --disable-qtgui])
+  AC_MSG_WARN([TEST_QT4: could not create a project file. Try to set the QTDIR env. variable.])
  fi
 
  $ac_qmake -makefile -o conftest.mak conftest.pro &> /dev/null
  if test $? -ne 0; then
-  AC_MSG_ERROR([TEST_QT4: could not create a Makefile. try --disable-qtgui])
+  AC_MSG_WARN([TEST_QT4: could not create a Makefile.])
  fi
 
  make -s -f conftest.mak &>/dev/null
@@ -484,6 +484,10 @@ else
 fi
 
 AC_SUBST(ac_qtgui_dir)
+
+if test -z "$HAVE_QT4" -a -z "$HAVE_QT3"; then 
+  AC_MSG_ERROR([TEST_QT3/4: no usable Qt installation found. try --disable-qtgui])
+fi
 
 dnl ---------- End of Qt GUI stuff ---------------
 
