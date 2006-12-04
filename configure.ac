@@ -478,16 +478,16 @@ EOF
 
  AC_CONFIG_FILES(src/qt-gui/Makefile src/qt-gui/qjadeo.pro)
 
+ if test -z "$HAVE_QT4" -a -z "$HAVE_QT3"; then 
+     AC_MSG_ERROR([TEST_QT3/4: no usable Qt installation found. try --disable-qtgui])
+ fi
+
 else
  ac_qtgui_dir=""
 
 fi
 
 AC_SUBST(ac_qtgui_dir)
-
-if test -z "$HAVE_QT4" -a -z "$HAVE_QT3"; then 
-  AC_MSG_ERROR([TEST_QT3/4: no usable Qt installation found. try --disable-qtgui])
-fi
 
 dnl ---------- End of Qt GUI stuff ---------------
 
