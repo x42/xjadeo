@@ -217,7 +217,7 @@ int main(int argc, char *argv[])
 
 	printf("%02lld:%02lld:%02lld.%01lld - ", hours, mins, secs, (us * 10) / AV_TIME_BASE);
 #if LIBAVFORMAT_BUILD <= 4629
-	printf("fps:%.2f ", (double) codec->frame_rate / (double) codec->frame_rate_base);
+	printf("fps:%.2f ", av_q2d(st->r_frame_rate) );
 #else
 	printf("fps:%.2f ",1.0/av_q2d(st->time_base));
 #endif
@@ -246,7 +246,7 @@ int main(int argc, char *argv[])
 	printf("%lld,", secs);
 	printf("%.2f,",1.0/av_q2d(st->time_base));
 #if LIBAVFORMAT_BUILD <= 4629
-	printf("%.2f,", (double) codec->frame_rate / (double) codec->frame_rate_base);
+	printf("%.2f,", av_q2d(st->r_frame_rate));
 #else
 	printf("%.2f,", 1/av_q2d(codec->time_base));
 #endif
@@ -351,7 +351,7 @@ int main(int argc, char *argv[])
 #if LIBAVFORMAT_BUILD <= 4629
       printf("    <framerate>%.2f</framerate>\n", (double) codec->frame_rate / (double) codec->frame_rate_base);
 #else
-      printf("    <framerate>%.2f</framerate>\n", 1/av_q2d(codec->time_base));
+      printf("    <framerate>%.2f</framerate>\n", av_q2d(st->r_frame_rate));
 #endif
       printf("    <pixelformat>%s</pixelformat>\n", avcodec_get_pix_fmt_name(codec->pix_fmt));
     }
