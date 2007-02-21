@@ -73,6 +73,7 @@ void open_jack(void )
 		fprintf(stderr, "could not connect to jack server.\n");
 	} else { 
 		jack_on_shutdown (jack_client, jack_shutdown, 0);
+		jack_activate(jack_client);
 		if (!want_quiet) 
 			fprintf(stdout, "connected as jack client '%s'\n",jackid);
 #ifdef HAVE_LASH

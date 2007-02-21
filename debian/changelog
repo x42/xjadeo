@@ -1,3 +1,10 @@
+xjadeo (0.4.0) unstable; urgency=low
+  * added call to jack_activate
+  * fixed segfault when movie is smaller than splashscreen (neg. x-offset)
+  * disabled splash-screen when it's larger than current movie anyway.
+  * added POSIX sys includes
+  * added -lavutil -lmp3lame to auto-detected ffmpeg configuration.
+
 xjadeo (0.4.0-rc3) unstable; urgency=low
   * fixed fontfile=<file> config option
   * fixed build --enable-contrib --enable-midi=off

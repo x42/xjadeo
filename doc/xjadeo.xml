@@ -410,8 +410,13 @@ make install # (requires root privileges) </screen></para>
       url="http://ffmpeg.sourceforge.net/">ffmpeg</ulink> to decode the video
       file and supports only seekable video streams. Probably you
       first need to encode your video file to a <ulink
-      url="http://ffmpeg.sourceforge.net/faq.html">supported
+      url="http://ffmpeg.mplayerhq.hu/faq.html">supported
       format</ulink>.</para>
+      <para>Be aware that some Codecs are governed by licenses or patents in many countries. 
+      This is an issue with ffmpeg and not xjadeo:
+      Nevertheless, you (any end-users) are responsible to for to comply to the licenses of the Codecs you are using. see 
+      <ulink url="http://ffmpeg.mplayerhq.hu/legal.html">FFmpeg-License</ulink>.
+      </para>
 
       <para>We recommend <application>mencoder</application> that comes with
       mplayer: <screen> mencoder -idx -ovc lavc -lavcopts keyint=1 -nosound input-file.xxx -o output-file.avi</screen>
@@ -431,6 +436,7 @@ make install # (requires root privileges) </screen></para>
       url="http://svn.sourceforge.net/viewcvs.cgi/*checkout*/xjadeo/trunk/contrib/xjadeo-example.avi"><filename>contrib/</filename></ulink>
       folder there is an example video and a shell script that can help you
       finding an appropriate codec.</para>
+      <para>qjadeo has an experimental "import dialog" available from the File menu, that will invoke mencoder with these arguments.</para>
     </section>
 
     <section id="invoking_xjadeo">
@@ -467,11 +473,11 @@ make install # (requires root privileges) </screen></para>
         </orderedlist>
 
         <para>per default <application>xjadeo</application> connects to jackd
-        on startup. This behavior can be overridden by command line arguments
+        on startup. This behavior can be overridden by command line arguments, in resource configuration file,
         or using the remote control interface.</para>
 
-        <para>the offset value is added after converting the frames to the
-        video file FPS format. followed by binding the displayed frame into
+        <para>any offset value is added after converting the frames to the
+        video file FPS format, followed by clamping the displayed frame into
         the range of the video file duration.</para>
       </section>
     </section>
@@ -1517,7 +1523,7 @@ make install # (requires root privileges) </screen></para>
         <title>DESCRIPTION</title>
 
         <para><command>xjadeo</command> displays a video clip in sync with an
-        external timing source. It is a handy tool to help with the
+        external time source. It is a handy tool to help with the
         synchronization of the soundtrack of a video file.
         <command>xjadeo</command> supports different video file formats, video
         output libraries and sync sources.</para>
@@ -1994,7 +2000,7 @@ make install # (requires root privileges) </screen></para>
         <title>DESCRIPTION</title>
 
         <para><command>xjadeo</command> displays a video clip in sync with an
-        external timing source. It is a handy tool to help with the
+        external time source. It is a handy tool to help with the
         synchronization of the soundtrack of a video file.
         <command>qjadeo</command> is a graphical frontend to xjadeo. It communicates
 	with xjadeo either directly (single session) or using xjremote.</para>
@@ -2037,7 +2043,7 @@ make install # (requires root privileges) </screen></para>
         <title>DESCRIPTION</title>
 
         <para><command>xjadeo</command> displays a video clip in sync with an
-        external timing source. It is a handy tool to help with the
+        external time source. It is a handy tool to help with the
         synchronization of the soundtrack of a video file.</para>
 
         <para><command>xjremote</command>  connects to a 
@@ -2096,7 +2102,7 @@ make install # (requires root privileges) </screen></para>
             <term><option>-u, --unlink</option></term>
 
             <listitem>
-              <para>remove existing queues. unless combined with <option>-f</option>. This will launch a new xjadeo instance.</para>
+              <para>remove existing queues. unless combined with <option>-f</option>. This will launch always a new xjadeo instance after unlinking the queues. Note: active connections are not affected.</para>
             </listitem>
           </varlistentry>
 
@@ -2131,6 +2137,14 @@ make install # (requires root privileges) </screen></para>
 
         <para>If the XJADEO variable is set, xjremote
         will assume that it holds the path to the xjadeo executable.</para>
+      </refsect1>
+
+      <refsect1>
+        <title>Note</title>
+	<para>Xjadeo message queues are experiemental and not completed! 
+	With the upcoming introduction of queue-names or a operation mode that allows multiple
+	clients per connection, xjremote's command line options will change.
+	</para>
       </refsect1>
 
       <refsect1>

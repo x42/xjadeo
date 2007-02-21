@@ -3,6 +3,8 @@
 #include <math.h>
 #include <stdint.h> 	/* uint8_t */
 #include <string.h> 	/* memcpy */
+#include <sys/select.h> 
+
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>

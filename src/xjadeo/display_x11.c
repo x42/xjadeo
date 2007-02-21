@@ -1339,8 +1339,8 @@ void render_imlib (uint8_t *mybuffer) {
     /* Put the Image pixmap in the background of the window */
 	XSetWindowBackgroundPixmap(xj_dpy,xj_win,pxm);       
 	XClearWindow(xj_dpy,xj_win);       
-    /* No need to sync. XPending will take care in the event loop. */
-//	XSync(display, True);     
+   //	No need to sync. XPending will take care in the event loop.
+   //	XSync(xj_dpy, False);     
 	Imlib_free_pixmap(imlib, pxm);
 	Imlib_kill_image(imlib, iimage);
 }

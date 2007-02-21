@@ -303,8 +303,10 @@ void OSD_bitmap(int rfmt, uint8_t *mybuffer, int yperc, int xoff, int w, int h, 
 	rv.Voff = rv.Uoff + movie_width * movie_height/4; 
 	rv.bpp = 0;
 
-	xalign= (movie_width - w)/2.0; // TODO xoffset
+	xalign= (movie_width - w)/2; 
 	yalign= (movie_height - h) * yperc /100.0;
+	if (xalign < 0 ) xalign=0; 
+	if (yalign < 0 ) yalign=0;
 
 	SET_RFMT(rfmt,_render,rv,render)
 
@@ -387,9 +389,10 @@ void splash (uint8_t *mybuffer) {
 	if (want_nosplash) return;
 	//if (check main.c:stat_osd_fontfile()) 
 	//	OSD_render (VO[VOutput].render_fmt, mybuffer, "Xjadeo!", OSD_CENTER, 45);
-	OSD_bitmap(VO[VOutput].render_fmt, mybuffer,45,0,
-		xj_splash_width, xj_splash_height, xj_splash_bits, NULL);
-	//	xj_splash_mask_bits);
+	if (w >= xj_splash_height && h >= xj_splash_width)
+		OSD_bitmap(VO[VOutput].render_fmt, mybuffer,45,0,
+			xj_splash_width, xj_splash_height, xj_splash_bits, NULL);
+		//	xj_splash_mask_bits);
 	render_buffer(mybuffer);
 }
 
