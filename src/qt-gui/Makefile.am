@@ -2,7 +2,8 @@
 EXTRA_DIST= qjadeo.cpp qjadeo.pro.in mainwindow.ui qjadeo.h\
 	images/fileopen images/info images/qjadeo\
 	importdialog.ui prefdialog.ui importprogress.ui \
-	importdialog.ui.h  importprogress.ui.h prefdialog.ui.h
+	importdialog.ui.h  importprogress.ui.h prefdialog.ui.h \
+	qjadeo_fr.ts qjadeo_fr.qm
 
 qmake   = @ac_qmake@
 qt3to4   = @ac_qt3to4@
@@ -13,7 +14,8 @@ MKDIR = /bin/mkdir
 
 name    = qjadeo
 
-headers = qjadeo.h
+headers = qjadeo.h \
+	  config.h
 
 sources = qjadeo.cpp \
 	mainwindow.ui \
@@ -31,7 +33,7 @@ $(name).mak:	$(name).pro
 	fi
 	$(qmake) -o $(name).mak $(name).pro
 
-$(name):	$(name).mak $(sources) $(headers) bindir.h
+$(name):	$(name).mak $(sources) $(headers) mydirs.h
 	$(MAKE) -f $(name).mak
 
 install:	$(name)
@@ -54,7 +56,7 @@ clean:	$(name).mak
 	$(DEL_FILE) -rf .moc
 	$(DEL_FILE) -f portinglog.txt
 	$(DEL_FILE) -rf .tmp
-	$(DEL_FILE) -f bindir.h mainwindow.h
+	$(DEL_FILE) -f mydirs.h mainwindow.h
 
 distclean:	clean
 
@@ -68,5 +70,7 @@ revert:
 	svn revert qjadeo.cpp
 	rm -f qjadeo.pro
 
-bindir.h: Makefile
+mydirs.h: Makefile
 	echo '#define BINDIR "$(DESTDIR)/$(bindir)/"' >$@
+	echo '#define CONFIG_PREFIX "$(prefix)/share/locale"' >>$@
+

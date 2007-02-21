@@ -12,9 +12,10 @@
 #include <qcombobox.h> 
 #include <qcheckbox.h> 
 #include <qdesktopwidget.h>
+#include <qtextcodec.h>
 
 #include "qjadeo.h"
-#include "bindir.h"
+#include "mydirs.h"
 
 #include <math.h>
 
@@ -561,6 +562,20 @@ int main(int argc, char **argv)
 {
 
   QApplication a(argc, argv);
+
+    // Load translation support.
+    QTranslator translator(0);
+    QString sLocale = QTextCodec::locale();
+    if (sLocale != "C") {
+        QString sLocName = "qjadeo_" + sLocale;
+        if (!translator.load(sLocName, ".")) {
+            QString sLocPath = CONFIG_PREFIX "/share/locale";
+            if (!translator.load(sLocName, sLocPath))
+                fprintf(stderr, "Warning: no locale found: %s/%s.qm\n", sLocPath.latin1(), sLocName.latin1());
+        }
+        a.installTranslator(&translator);
+    }
+
 
   QJadeo w;
 
