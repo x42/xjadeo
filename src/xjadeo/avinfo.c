@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
     return 1;
   }
 
-#if defined(__BIG_ENDIAN__) && (__ppc__) 
+#if defined(__BIG_ENDIAN__) && (__ppc__) && LIBAVFORMAT_BUILD <= 4616
 // this cast is weird, but it works.. the bytes seem to be in 'correct' order, but the two
 // 4byte-words are swapped. ?! - maybe it's only the files I tried..
   int64_t dur = (int64_t) (ic->duration);

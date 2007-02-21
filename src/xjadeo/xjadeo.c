@@ -295,7 +295,7 @@ int open_movie(char* file_name) {
 
 	// TODO: detect drop frame timecode !
 
-#if defined(__BIG_ENDIAN__) && (__ppc__) 
+#if defined(__BIG_ENDIAN__) && (__ppc__) && LIBAVFORMAT_BUILD <= 4616
 // this cast is weird, but it works.. the bytes seem to be in 'correct' order, but the two
 // 4byte-words are swapped. ?!
 // I wonder how this behaves on a 64bit arch 
