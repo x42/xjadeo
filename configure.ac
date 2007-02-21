@@ -271,7 +271,7 @@ if test  "x$HAVE_FFMPEG" != "xyes" -a "x$HAVE_SHARED_AVCODEC$HAVE_SHARED_AVCODEC
 fi
 
 if test  "x$HAVE_FFMPEG" != "xyes"; then
-	FFMPEG_LIBS="-L/usr/local/lib -L/usr/lib -lavformat -lavcodec -lavutil -lmp3lame -lz"
+	FFMPEG_LIBS="-L/usr/local/lib -L/usr/lib -lavformat -lavcodec -lz"
 	if test -n "$ffmpegprefix" ; then
 		FFMPEG_CFLAGS="-I$ffmpegprefix/libavcodec -I$ffmpegprefix/libavformat"
 		## FIXME add libavutil.a if present!

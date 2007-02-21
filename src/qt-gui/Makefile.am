@@ -13,8 +13,7 @@ MKDIR = /bin/mkdir
 
 name    = qjadeo
 
-headers = qjadeo.h \
-	  config.h
+headers = qjadeo.h 
 
 sources = qjadeo.cpp \
 	mainwindow.ui \
