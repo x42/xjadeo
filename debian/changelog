@@ -4,6 +4,7 @@ xjadeo (0.4.0) unstable; urgency=low
   * disabled splash-screen when it's larger than current movie anyway.
   * added POSIX sys includes
   * added -lavutil -lmp3lame to auto-detected ffmpeg configuration.
+  * disabled PPC duration workaround (only ffmpeg-0.4.9 - LIBAVFORMAT_BUILD 4616)
 
 xjadeo (0.4.0-rc3) unstable; urgency=low
   * fixed fontfile=<file> config option
