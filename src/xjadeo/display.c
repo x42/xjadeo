@@ -389,7 +389,7 @@ void splash (uint8_t *mybuffer) {
 	if (want_nosplash) return;
 	//if (check main.c:stat_osd_fontfile()) 
 	//	OSD_render (VO[VOutput].render_fmt, mybuffer, "Xjadeo!", OSD_CENTER, 45);
-	if (w >= xj_splash_height && h >= xj_splash_width)
+	if (movie_width >= xj_splash_height && movie_height >= xj_splash_width)
 		OSD_bitmap(VO[VOutput].render_fmt, mybuffer,45,0,
 			xj_splash_width, xj_splash_height, xj_splash_bits, NULL);
 		//	xj_splash_mask_bits);
