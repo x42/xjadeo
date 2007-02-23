@@ -217,7 +217,9 @@ int main(int argc, char *argv[])
 	mins %= 60;
 
 	printf("%02lld:%02lld:%02lld.%01lld - ", hours, mins, secs, (us * 10) / AV_TIME_BASE);
-#if LIBAVFORMAT_BUILD <= 4629
+#if LIBAVFORMAT_BUILD < 4624 
+	printf("fps:%.2f ", (double) codec->frame_rate / (double) codec->frame_rate_base);
+#elif LIBAVFORMAT_BUILD <= 4629
 	printf("fps:%.2f ", av_q2d(st->r_frame_rate) );
 #else
 	printf("fps:%.2f ",1.0/av_q2d(st->time_base));
@@ -246,7 +248,9 @@ int main(int argc, char *argv[])
       if (codec->width) {
 	printf("%lld,", secs);
 	printf("%.2f,",1.0/av_q2d(st->time_base));
-#if LIBAVFORMAT_BUILD <= 4629
+#if LIBAVFORMAT_BUILD < 4624 
+	printf("%.2f,", (double) codec->frame_rate / (double) codec->frame_rate_base);
+#elif LIBAVFORMAT_BUILD <= 4629
 	printf("%.2f,", av_q2d(st->r_frame_rate));
 #else
 	printf("%.2f,", 1/av_q2d(codec->time_base));
@@ -349,7 +353,9 @@ int main(int argc, char *argv[])
 	printf("    <sampleaspect>\n      <numerator>%d</numerator>\n", codec->sample_aspect_ratio.num);
 	printf("      <denominator>%d</denominator>\n    </sampleaspect>\n", codec->sample_aspect_ratio.den);
       }
-#if LIBAVFORMAT_BUILD <= 4629
+#if LIBAVFORMAT_BUILD < 4624 
+      printf("    <framerate>%.2f</framerate>\n", 1/av_q2d(codec->time_base));
+#elif LIBAVFORMAT_BUILD <= 4629
       printf("    <framerate>%.2f</framerate>\n", (double) codec->frame_rate / (double) codec->frame_rate_base);
 #else
       printf("    <framerate>%.2f</framerate>\n", av_q2d(st->r_frame_rate));
