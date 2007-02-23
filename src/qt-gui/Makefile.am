@@ -2,7 +2,8 @@
 EXTRA_DIST= qjadeo.cpp qjadeo.pro.in mainwindow.ui qjadeo.h\
 	images/fileopen images/info images/qjadeo\
 	importdialog.ui prefdialog.ui importprogress.ui \
-	importdialog.ui.h  importprogress.ui.h prefdialog.ui.h
+	importdialog.ui.h  importprogress.ui.h prefdialog.ui.h \
+	qjadeo_fr.ts
 
 qmake   = @ac_qmake@
 qt3to4   = @ac_qt3to4@
