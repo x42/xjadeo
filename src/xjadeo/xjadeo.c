@@ -307,9 +307,9 @@ int open_movie(char* file_name) {
 	duration = (double) (((double) (pFormatCtx->duration))/ (double) AV_TIME_BASE);
 #endif
 	frames = (long) (framerate * duration);
-#if LIBAVFORMAT_BUILD < 4624  // check if correct;
-	tpf = (double) framerate / (double) codec->frame_rate * (double) codec->frame_rate_base;
-#elif LIBAVFORMAT_BUILD <= 4623 // check if correct;
+#if LIBAVFORMAT_BUILD <= 4623  // check if correct;
+	tpf = (double) framerate / (double) av_stream->codec.frame_rate * (double) av_stream->codec.frame_rate_base;
+#elif LIBAVFORMAT_BUILD <= 4629 // check if correct;
 	tpf = (av_q2d(pFormatCtx->streams[videoStream]->r_frame_rate)/framerate);
 #else
 	tpf = 1.0/(av_q2d(pFormatCtx->streams[videoStream]->time_base)*framerate);
@@ -391,8 +391,8 @@ void override_fps (double fps) {
 
 	framerate =  fps;
 	frames = (long) (framerate * duration); 
-#if LIBAVFORMAT_BUILD < 4624  // check if correct;
-	tpf = (double) framerate / (double) codec->frame_rate * (double) codec->frame_rate_base;
+#if LIBAVFORMAT_BUILD <= 4623  // check if correct;
+	tpf = (double) framerate / (double) pCodecCtx->frame_rate * (double) pCodecCtx->frame_rate_base;
 #elif LIBAVFORMAT_BUILD <= 4629 // check if correct;
 	tpf = (av_q2d(pFormatCtx->streams[videoStream]->r_frame_rate)/framerate);
 #else

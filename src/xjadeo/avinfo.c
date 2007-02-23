@@ -354,9 +354,9 @@ int main(int argc, char *argv[])
 	printf("      <denominator>%d</denominator>\n    </sampleaspect>\n", codec->sample_aspect_ratio.den);
       }
 #if LIBAVFORMAT_BUILD < 4624 
-      printf("    <framerate>%.2f</framerate>\n", 1/av_q2d(codec->time_base));
-#elif LIBAVFORMAT_BUILD <= 4629
       printf("    <framerate>%.2f</framerate>\n", (double) codec->frame_rate / (double) codec->frame_rate_base);
+#elif LIBAVFORMAT_BUILD <= 4629
+      printf("    <framerate>%.2f</framerate>\n", 1/av_q2d(codec->time_base));
 #else
       printf("    <framerate>%.2f</framerate>\n", av_q2d(st->r_frame_rate));
 #endif
