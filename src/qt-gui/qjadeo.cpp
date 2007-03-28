@@ -569,7 +569,7 @@ int main(int argc, char **argv)
     if (sLocale != "C") {
         QString sLocName = "qjadeo_" + sLocale;
         if (!translator.load(sLocName, ".")) {
-            QString sLocPath = CONFIG_PREFIX "/share/locale";
+            QString sLocPath = CONFIG_PREFIX "/share/qjadeo/locale";
             if (!translator.load(sLocName, sLocPath))
                 fprintf(stderr, "Warning: no locale found: %s/%s.qm\n", sLocPath.latin1(), sLocName.latin1());
         }

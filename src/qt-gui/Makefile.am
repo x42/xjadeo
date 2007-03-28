@@ -39,9 +39,11 @@ $(name):	$(name).mak $(sources) $(headers) mydirs.h
 
 install:	$(name)
 	$(INSTALL) $(name) $(DESTDIR)/$(bindir)/
+	$(INSTALL) qjadeo_fr.qm $(DESTDIR)/share/qjadeo/locale/
 
 uninstall:	$(DESTDIR)/$(bindir)/$(name)
 	$(DEL_FILE) -vf $(DESTDIR)/$(bindir)/$(name)
+	cd $(DESTDIR)/share/qjadeo/locale/ && $(DEL_FILE) -vf *.qm
 
 .PHONY:	clean
 clean:	$(name).mak
