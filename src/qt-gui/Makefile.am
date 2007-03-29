@@ -39,11 +39,12 @@ $(name):	$(name).mak $(sources) $(headers) mydirs.h
 
 install:	$(name)
 	$(INSTALL) $(name) $(DESTDIR)/$(bindir)/
-	$(INSTALL) qjadeo_fr.qm $(DESTDIR)/share/qjadeo/locale/
+# TODO add target to translate .ts to .qm and install other langs... 
+	$(INSTALL) qjadeo_fr.qm $(prefix)/share/qjadeo/locale/
 
 uninstall:	$(DESTDIR)/$(bindir)/$(name)
 	$(DEL_FILE) -vf $(DESTDIR)/$(bindir)/$(name)
-	cd $(DESTDIR)/share/qjadeo/locale/ && $(DEL_FILE) -vf *.qm
+	cd $(prefix)/share/qjadeo/locale/ && $(DEL_FILE) -vf *.qm
 
 .PHONY:	clean
 clean:	$(name).mak
@@ -75,5 +76,5 @@ revert:
 
 mydirs.h: Makefile
 	echo '#define BINDIR "$(DESTDIR)/$(bindir)/"' >$@
-	echo '#define CONFIG_PREFIX "$(prefix)/share/locale"' >>$@
+	echo '#define CONFIG_PREFIX "$(prefix)/share/qjadeo/locale"' >>$@
 
