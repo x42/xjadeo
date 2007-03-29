@@ -39,12 +39,15 @@ $(name):	$(name).mak $(sources) $(headers) mydirs.h
 
 install:	$(name)
 	$(INSTALL) $(name) $(DESTDIR)/$(bindir)/
+	mkdir -p $(prefix)/share/qjadeo/locale/
 # TODO add target to translate .ts to .qm and install other langs... 
-	$(INSTALL) qjadeo_fr.qm $(prefix)/share/qjadeo/locale/
+	$(INSTALL) -t $(prefix)/share/qjadeo/locale/ qjadeo_fr.qm
 
 uninstall:	$(DESTDIR)/$(bindir)/$(name)
 	$(DEL_FILE) -vf $(DESTDIR)/$(bindir)/$(name)
 	cd $(prefix)/share/qjadeo/locale/ && $(DEL_FILE) -vf *.qm
+	rmdir $(prefix)/share/qjadeo/locale/
+
 
 .PHONY:	clean
 clean:	$(name).mak
