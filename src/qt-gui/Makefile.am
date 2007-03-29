@@ -40,8 +40,9 @@ $(name):	$(name).mak $(sources) $(headers) mydirs.h
 install:	$(name)
 	$(INSTALL) $(name) $(DESTDIR)/$(bindir)/
 	mkdir -p $(prefix)/share/qjadeo/locale/
-# TODO add target to translate .ts to .qm and install other langs... 
 	$(INSTALL) -t $(prefix)/share/qjadeo/locale/ qjadeo_fr.qm
+# TODO add target to translate .ts to .qm and install other langs... 
+#	$(INSTALL) -t $(prefix)/share/qjadeo/locale/ $(subst .ts,.qm,$(TRANSLATIONS))
 
 uninstall:	$(DESTDIR)/$(bindir)/$(name)
 	$(DEL_FILE) -vf $(DESTDIR)/$(bindir)/$(name)
