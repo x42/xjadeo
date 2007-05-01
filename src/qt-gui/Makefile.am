@@ -39,15 +39,15 @@ $(name):	$(name).mak $(sources) $(headers) mydirs.h
 
 install:	$(name)
 	$(INSTALL) $(name) $(DESTDIR)/$(bindir)/
-	mkdir -p $(prefix)/share/qjadeo/locale/
-	$(INSTALL) -t $(prefix)/share/qjadeo/locale/ qjadeo_fr.qm
+	mkdir -p $(DESTDIR)/$(datadir)/qjadeo/locale/
+	$(INSTALL) -t $(DESTDIR)/$(datadir)/qjadeo/locale/ qjadeo_fr.qm
 # TODO add target to translate .ts to .qm and install other langs... 
 #	$(INSTALL) -t $(prefix)/share/qjadeo/locale/ $(subst .ts,.qm,$(TRANSLATIONS))
 
 uninstall:	$(DESTDIR)/$(bindir)/$(name)
 	$(DEL_FILE) -vf $(DESTDIR)/$(bindir)/$(name)
-	cd $(prefix)/share/qjadeo/locale/ && $(DEL_FILE) -vf *.qm
-	rmdir $(prefix)/share/qjadeo/locale/
+	cd $(DESTDIR)/$(datadir)/qjadeo/locale/ && $(DEL_FILE) -vf *.qm
+	rmdir $(DESTDIR)/$(datadir)/qjadeo/locale/
 
 
 .PHONY:	clean
@@ -80,5 +80,5 @@ revert:
 
 mydirs.h: Makefile
 	echo '#define BINDIR "$(DESTDIR)/$(bindir)/"' >$@
-	echo '#define CONFIG_PREFIX "$(prefix)/share/qjadeo/locale"' >>$@
+	echo '#define CONFIG_PREFIX "$(DESTDIR)/$(datadir)/qjadeo/locale"' >>$@
 
