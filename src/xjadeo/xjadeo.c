@@ -211,6 +211,7 @@ void init_moviebuffer(void) {
 // Assign appropriate parts of buffer to image planes in pFrameFMT
 	if (pFrameFMT)
 		avpicture_fill((AVPicture *)pFrameFMT, buffer, render_fmt, pCodecCtx->width, pCodecCtx->height);
+	render_empty_frame(0);
 }
 
 /* Open video file */
@@ -404,9 +405,14 @@ void override_fps (double fps) {
 
 int64_t my_avprev = 0; // last recent seeked timestamp
 
-void render_empty_frame(void) {
+void render_empty_frame(int blit) {
 	// clear image (black / or YUV green)
-	memset(buffer,0,avpicture_get_size(render_fmt, movie_width, movie_height));
+	if (render_fmt == PIX_FMT_YUV420P) {
+		size_t Ylen  = movie_width * movie_height;
+		memset(buffer,0,Ylen);
+		memset(buffer+Ylen,0x80,Ylen/2);
+	} else
+		memset(buffer,0,avpicture_get_size(render_fmt, movie_width, movie_height));
 #ifdef DRAW_CROSS
 	int x,y;
 	if (render_fmt == PIX_FMT_YUV420P) 
@@ -445,7 +451,8 @@ void render_empty_frame(void) {
 		buffer[yoff+3]=255;
 	}
 #endif
-	render_buffer(buffer); 
+	if (blit)
+		render_buffer(buffer); 
 }
 
 void reset_video_head(AVPacket *packet) {
@@ -661,7 +668,7 @@ void display_frame(int64_t timestamp, int force_update) {
 				if(av_read_frame(pFormatCtx, &packet)<0) { 
 					fprintf( stderr, "read error!\n");
 					reset_video_head(&packet);
-					render_empty_frame();
+					render_empty_frame(1);
 					break;
 				}
 #if LIBAVFORMAT_BUILD >=4616
@@ -674,7 +681,7 @@ void display_frame(int64_t timestamp, int force_update) {
 		} /* end while !frame_finished */
 	} else {
 		if (pFrameFMT && want_debug) fprintf( stderr, "frame seek unsucessful.\n");
-		render_empty_frame();
+		render_empty_frame(1);
 	}
 }
   

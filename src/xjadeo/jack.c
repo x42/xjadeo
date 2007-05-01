@@ -84,8 +84,10 @@ void open_jack(void )
 
 void close_jack(void)
 {
-	if (jack_client)
+	if (jack_client) {
+		jack_deactivate (jack_client);
 		jack_client_close (jack_client);
+	}
 	jack_client=NULL;
 }
 
