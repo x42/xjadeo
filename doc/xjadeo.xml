@@ -13,6 +13,7 @@
      <copyright>
 	<year>2005</year>
 	<year>2006</year>
+	<year>2007</year>
 	<holder>Robin Gareus, Luis Garrido</holder>
      </copyright>
 							 
@@ -44,7 +45,7 @@
   <section id="news">
     <title>NEWS</title>
 
-    <para><application>xjadeo v0.4.0</application></para>
+    <para><application>xjadeo v0.4</application></para>
 
     <para>As you might have noticed by the logo, we will need an upgrade from Super-16 to 35mm! XPMs are welcome.</para>
   </section>
@@ -1573,8 +1574,10 @@ make install # (requires root privileges) </screen></para>
               <para>Desired refresh rate of the video display in frames per
               second. Lower values lighten the CPU load at the cost of video
               quality. Admits non-integer values. Defaults to 10.0 fps.</para>
+
 	      <para> If this value is set to zero (or less), xjadeo will use the framerate of the 
-	      video file as its video update frequency.</para>
+	      video file as its video update frequency. This is highly recommended when decoding the
+	      video-frames continuosly without seeking (<option>-K</option>)</para>
             </listitem>
           </varlistentry>
 
@@ -1844,6 +1847,10 @@ make install # (requires root privileges) </screen></para>
           <listitem>
             <para>MTC (MIDI Time Code) via portmidi.</para>
           </listitem>
+
+          <listitem>
+            <para>remote-ctrl seeks (not really a sync source).</para>
+          </listitem>
         </itemizedlist>
       </refsect1>
 
@@ -1863,7 +1870,7 @@ make install # (requires root privileges) </screen></para>
           </listitem>
 
           <listitem>
-            <para>ImLib (RGB / RGBA)</para>
+            <para>X11 + ImLib (RGB / RGBA)</para>
           </listitem>
 
         </itemizedlist>
@@ -2213,7 +2220,7 @@ make install # (requires root privileges) </screen></para>
           <varlistentry>
             <term><option>-t, --time, --duration</option></term>
             <listitem>
-              <para>output XML data. This is the default if no option is specified</para>
+              <para>print the duration in seconds (without trailing newline)</para>
             </listitem>
           </varlistentry>
           <varlistentry>

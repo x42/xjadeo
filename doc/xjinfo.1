@@ -1,11 +1,11 @@
 .\"     Title: xjinfo
 .\"    Author: 
-.\" Generator: DocBook XSL Stylesheets v1.71.0 <http://docbook.sf.net/>
-.\"      Date: 02/21/2007
+.\" Generator: DocBook XSL Stylesheets v1.72.0 <http://docbook.sf.net/>
+.\"      Date: 05/07/2007
 .\"    Manual: Manual Pages
 .\"    Source: 
 .\"
-.TH "XJINFO" "1" "02/21/2007" "" "Manual Pages"
+.TH "XJINFO" "1" "05/07/2007" "" "Manual Pages"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
@@ -14,7 +14,7 @@
 xjinfo \- Display A/V file info in XML format.
 .SH "SYNOPSIS"
 .HP 7
-\fBxjinfo\fR [\-xvhct] \fI<videofile>\fR
+\fBxjinfo\fR [\-xvhct] \efI<videofile>\efR
 .SH "DESCRIPTION"
 .PP
 \fBxjinfo\fR
@@ -24,39 +24,41 @@ but displays the information in XML or simple format that can be used for script
 .SH "OPTIONS"
 .PP
 \fB\-c, \-\-csv\fR
-.RS 3n
+.RS 4
 comma separated values, one line per video stream in file. Use the built\-in help \-h to learn about the format.
 .RE
 .PP
 \fB\-h, \-\-help\fR
-.RS 3n
+.RS 4
 Prints usage help and exits.
 .RE
 .PP
 \fB\-t, \-\-time, \-\-duration\fR
-.RS 3n
-output XML data. This is the default if no option is specified
+.RS 4
+print the duration in seconds (without trailing newline)
 .RE
 .PP
 \fB\-v, \-\-text\fR
-.RS 3n
+.RS 4
 print a single line: duration, fps, geometry and codec info.
 .RE
 .PP
 \fB\-x, \-\-xml\fR
-.RS 3n
+.RS 4
 output XML data. This is the default if no option is specified.
 .sp
 A DTD is available with the source or from
-[1]\&\fIxjadeo.sf.net\fR
+\fIxjadeo.sf.net\fR\&[1]
 .RE
 .SH "SEE ALSO"
 .PP
 xjadeo(1)
 .SH "COPYRIGHT"
-Copyright \(co 2005, 2006 Robin Gareus, Luis Garrido
+Copyright \(co 2005, 2006, 2007 Robin Gareus, Luis Garrido
 .br
 .SH "REFERENCES"
-.TP 3
-1.\ xjadeo.sf.net
+.IP " 1." 4
+xjadeo.sf.net
+.RS 4
 \%http://svn.sourceforge.net/viewcvs.cgi/*checkout*/xjadeo/trunk/src/xjadeo/avinfo.dtd
+.RE
