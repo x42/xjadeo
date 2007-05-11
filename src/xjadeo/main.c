@@ -443,11 +443,11 @@ static void printversion (void) {
 # else /* alsa midi */
   printf("alsa-midi ");
 # endif 
-# ifdef HAVE_LASH
-  printf("LASH ");
-# endif 
-  printf("]\n compiled with LIBAVFORMAT_BUILD 0x%x = %i\n", LIBAVFORMAT_BUILD, LIBAVFORMAT_BUILD);
 #endif /* HAVE_MIDI */
+#ifdef HAVE_LASH
+  printf("LASH ");
+#endif 
+  printf("]\n compiled with LIBAVFORMAT_BUILD 0x%x = %i\n", LIBAVFORMAT_BUILD, LIBAVFORMAT_BUILD);
   printf(" displays: "
 #if HAVE_LIBXV
 		"Xv "
