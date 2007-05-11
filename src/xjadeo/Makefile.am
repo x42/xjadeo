@@ -24,7 +24,9 @@ xjinfo_CFLAGS = -Wall -g -O3 @FFMPEG_CFLAGS@
 MAINTAINERCLEANFILES = Makefile.in
 
 CLEANFILES = paths.h
-BUILT_SOURCES = paths.h \
+BUILT_SOURCES = paths.h 
+
+xjadeo_DEPENDENCIES= \
 	icons/brightness.bitmap    icons/gamma.bitmap    icons/osd_bitmaps.h        icons/splash_mask.xbm \
 	icons/brightness_mask.xbm  icons/gamma_mask.xbm  icons/saturation.bitmap    icons/xjadeo-color.xpm \
 	icons/contrast.bitmap      icons/hue.bitmap      icons/saturation_mask.xbm  icons/xjadeo.bitmap \
