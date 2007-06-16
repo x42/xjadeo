@@ -504,7 +504,10 @@ fi
 AC_SUBST(ac_contrib_dir)
 
 if test "x$enable_contrib" = "xyes"; then
-  AC_CONFIG_FILES([contrib/cli-remote/Makefile contrib/tsmm/Makefile])
+  AC_CONFIG_FILES([contrib/cli-remote/Makefile])
+  if test -n "$HAVE_TIFF"; then 
+    AC_CONFIG_FILES([contrib/tsmm/Makefile])
+  fi
 fi
 
 AC_CONFIG_FILES([Makefile src/Makefile src/xjadeo/Makefile xjadeo.lsm xjadeo.spec])

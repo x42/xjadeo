@@ -198,6 +198,8 @@ void event_loop(void) {
 // Manage video file
 //--------------------------------------------
 
+void render_empty_frame(int blit);
+
 void init_moviebuffer(void) {
   
 	int     numBytes;

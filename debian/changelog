@@ -2,6 +2,7 @@ xjadeo (0.4.1) unstable; urgency=low
   * default black-YUV frame
   * minor updates in the manual.
   * preparing for 0.5 development branch.
+  * fixed contrib configure bug.
 
  -- Robin Gareus <robin@gareus.org>  Mon, 07 May 2007 16:11:39 +0200
 
