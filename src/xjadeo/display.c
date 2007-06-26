@@ -170,7 +170,7 @@ const vidout VO[] = {
 #else
 		NULLOUTPUT},
 #endif
-	{ PIX_FMT_YUV420P, SUP_SDL,	"SDL", 
+	{ PIX_FMT_YUV420P, SUP_SDL,	"SDL (obsolete)", 
 #if HAVE_SDL
 		&render_sdl, &open_window_sdl, &close_window_sdl,
 		&handle_X_events_sdl, &newsrc_sdl, &resize_sdl,
@@ -179,7 +179,7 @@ const vidout VO[] = {
 #else
 		NULLOUTPUT},
 #endif
-	{ PIX_FMT_RGB24,   SUP_IMLIB,   "x11 - ImLib",
+	{ PIX_FMT_RGB24,   SUP_IMLIB,   "x11 - ImLib (obsolete)",
 #if HAVE_IMLIB
 		&render_imlib, &open_window_imlib, &close_window_imlib,
 		&handle_X_events_imlib, &newsrc_imlib, &resize_imlib,

@@ -1515,14 +1515,14 @@ make install # (requires root privileges) </screen></para>
           <command>xjadeo</command>
           <arg choice="plain">-R</arg>
           <arg choice="opt">-Q</arg>
-          <arg choice="opt">-abfFhikKLmMoqtvVx</arg>
+          <arg choice="opt">-abfFhikKLmMoqsStvVx</arg>
           <arg choice="opt"><replaceable>videofile</replaceable></arg>
         </cmdsynopsis>
         <cmdsynopsis>
           <command>xjadeo</command>
           <arg choice="plain">-Q</arg>
           <arg choice="opt">-R</arg>
-          <arg choice="opt">-abfFhikKLmMoqtvVx</arg>
+          <arg choice="opt">-abfFhikKLmMoqsStvVx</arg>
           <arg choice="opt"><replaceable>videofile</replaceable></arg>
         </cmdsynopsis>
       </refsynopsisdiv>
@@ -1777,6 +1777,13 @@ make install # (requires root privileges) </screen></para>
               <para>Enables interactive (stdin/stdout) control mode. Options
               <option>--quiet</option> and <option>--verbose</option> have no
               effect in remote mode.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><option>-s, --fullscreen</option></term>
+            <listitem>
+              <para>Start xjadeo in full-screen mode (affects XV videomode only).</para>
             </listitem>
           </varlistentry>
 

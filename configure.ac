@@ -8,25 +8,18 @@ AC_CANONICAL_TARGET
 
 VERSION_MAJOR=0
 VERSION_MINOR=4
-VERSION_SUB="1"
-
-dnl 'i=$1-XXX': svn-base-revision for current VERSION_MINOR - v0.3 : 79
-dnl nice try better luck next time.
-#SUBVERSION=esyscmd((svnversion . /trunk||echo 0)| awk '{sub(":","_"); i=$1-79; i=i<0?0:i; printf("%i",i);}')
-#if test 0 -eq $SUBVERSION ; then SUBVERSION=$VERSION_SUB ; fi
-SUBVERSION=$VERSION_SUB
+VERSION_SUB="2-pre"
 
 dnl Every other copy of the package version number gets its value from here
-AM_INIT_AUTOMAKE(xjadeo, [${VERSION_MAJOR}.${VERSION_MINOR}.${SUBVERSION}])
+AM_INIT_AUTOMAKE(xjadeo, [${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_SUB}])
 #AC_REVISION([$Id: configure.ac $])
 
 dnl create a config.h file (Automake will add -DHAVE_CONFIG_H)
 AM_CONFIG_HEADER(config.h)
 
 AC_ARG_ENABLE(xv,    AC_HELP_STRING([--disable-xv],  [Disable Xvideo extension ]))
-AC_ARG_ENABLE(imlib, AC_HELP_STRING([--disable-imlib], [Disable use of imlib for display]))
+#AC_ARG_ENABLE(imlib, AC_HELP_STRING([--disable-imlib], [Disable use of imlib for display]))
 AC_ARG_ENABLE(imlib2, AC_HELP_STRING([--disable-imlib2], [Disable use of imlib2 for display]))
-AC_ARG_ENABLE(sdl,   AC_HELP_STRING([--enable-sdl], [Enable use of SDL for display]))
 AC_ARG_ENABLE(ft,    AC_HELP_STRING([--disable-ft],  [Disable freetype On-Screen.Display support]))
 AC_ARG_ENABLE(qtgui, AC_HELP_STRING([--disable-qtgui],[Don't build the Qt GUI controller]))
 AC_ARG_ENABLE(contrib,  AC_HELP_STRING([--enable-contrib],  [Compile and install code in contrib folder]))
@@ -110,9 +103,8 @@ AC_CHECK_HEADERS(time.h string.h jack/jack.h jack/transport.h)
 
 dnl Checks for libraries.
 
-AH_TEMPLATE([HAVE_SDL], [Define as 1 if you have libsdl])
 AH_TEMPLATE([HAVE_LIBXV], [Define as 1 if  you have the Xv library (-lXv)])
-AH_TEMPLATE([HAVE_IMLIB], [Define as 1 if you have imlib])
+#AH_TEMPLATE([HAVE_IMLIB], [Define as 1 if you have imlib])
 AH_TEMPLATE([HAVE_IMLIB2], [Define as 1 if you have imlib2])
 AH_TEMPLATE([HAVE_PORTMIDI], [Define as 1 if you have portmidi and not asound])
 AH_TEMPLATE([HAVE_MIDI], [Define as 1 if you have either alsa or portmidi])
@@ -164,7 +156,7 @@ PKG_CHECK_MODULES(Xpm, xpm, [ AC_DEFINE(HAVE_XPM) HAVE_XPM=1 ], [ NULL=0] )
 AC_CHECK_LIB([X11], [XOpenDisplay], , [AC_MSG_ERROR(*** X11: You need to install the X11 development package: libx11-dev ***)])
 
 if test "x$enable_xv" != "xno"; then
-	AC_CHECK_LIB(Xv, XvQueryAdaptors, [AC_DEFINE(HAVE_LIBXV) AC_SUBST(XV_LIBS) XV_LIBS='-lXv' HAVE_LIBXV=1 ], [AC_MSG_ERROR([Could not find XVideo Lib (libXv])], $X_LIBS)
+	AC_CHECK_LIB(Xv, XvQueryAdaptors, [AC_DEFINE(HAVE_LIBXV) AC_SUBST(XV_LIBS) AC_SUBST(XV_CFLAGS) XV_LIBS='-lXv' HAVE_LIBXV=1 ], [AC_MSG_ERROR([Could not find XVideo Lib (libXv])], $X_LIBS)
 fi
 
 dnl ----------------------------------------------
@@ -343,19 +335,17 @@ dnl ----------------------------------------------
 dnl PKG checks - video display libraries
 dnl ----------------------------------------------
 
-if test "x${enable_imlib}" != "xno"; then
-	PKG_CHECK_MODULES(IMLIB,imlib,  [ AC_DEFINE(HAVE_IMLIB) HAVE_IMLIB=1 ], [ NULL=0 ])
-fi
+#if test "x${enable_imlib}" != "xno"; then
+#	PKG_CHECK_MODULES(IMLIB,imlib,  [ AC_DEFINE(HAVE_IMLIB) HAVE_IMLIB=1 ], [ NULL=0 ])
+#fi
+AC_SUBST(IMLIB_CFLAGS)
+AC_SUBST(IMLIB_LIBS)
 
 if test "x${enable_imlib2}" != "xno"; then
 	PKG_CHECK_MODULES(IMLIB2, imlib2 >= 1.3.0,  [ AC_DEFINE(HAVE_IMLIB2) HAVE_IMLIB2=1 ], [ NULL=0 ])
 fi
-
-if test "x$enable_sdl" = "xyes"; then
-	PKG_CHECK_MODULES(SDL, sdl, [ AC_DEFINE(HAVE_SDL) HAVE_SDL=1 ], [ NULL=0 ])
-        #AM_PATH_SDL(1.1.6, [ AC_DEFINE(HAVE_SDL) ])
-        #AM_PATH_SDL(1.2.9, [ AC_DEFINE(HAVE_SDL) ])
-fi
+AC_SUBST(IMLIB2_CFLAGS)
+AC_SUBST(IMLIB2_LIBS)
 
 dnl ----------------------------------------------
 dnl http://lash.nongnu.org
@@ -368,10 +358,10 @@ if test "x$enable_lash" != "xno"; then
     HAVE_LASH=1;
     #LASH_VERSION=$( pkg-config --modversion lash-1.0 )
     #AC_DEFINE_UNQUOTED(LASH_VERSION, "$LASH_VERSION", [The version of lash we're compiling against])
-    AC_SUBST(LASH_CFLAGS)
-    AC_SUBST(LASH_LIBS)
   fi
 fi
+AC_SUBST(LASH_CFLAGS)
+AC_SUBST(LASH_LIBS)
 
 dnl ----------------------------------------------
 dnl contrib/tsmm
@@ -385,12 +375,12 @@ if test "x${enable_contrib}" != "xno"; then
     AC_DEFINE(HAVE_TIFF) HAVE_TIFF=1 
     TIFF_LIBS="-ltiff"	
     TIFF_CFLAGS=""	
-    AC_SUBST(TIFF_CFLAGS)
-    AC_SUBST(TIFF_LIBS)
   else
     PKG_CHECK_MODULES(TIFF,tiff,  [ AC_DEFINE(HAVE_TIFF) HAVE_TIFF=1 ], [ NULL=0 ])
   fi
 fi
+AC_SUBST(TIFF_CFLAGS)
+AC_SUBST(TIFF_LIBS)
 
 dnl ----------------------------------------------
 dnl Qt GUI stuff
@@ -526,14 +516,7 @@ echo    " System wide config: $sysconfdir/xjadeorc"
 echo " "
 echo    " Video Displays"
 echo -n "   - libxv:          ";	if test -n "$HAVE_LIBXV"; then echo "ok"; else echo "not avail."; fi
-echo -n "   - libsdl:         ";	if test -n "$HAVE_SDL"; then echo "ok"; else 
-    if test "x$enable_sdl" =  "xyes"; then
-	echo "not avail."; 
-    else 
-	echo "disabled. (use --enable-sdl to enable)"; 
-    fi
-fi
-echo -n "   - libx11/imlib:   ";	if test -n "$HAVE_IMLIB"; then echo "ok"; else echo "not avail."; fi
+#echo -n "   - libx11/imlib:   ";	if test -n "$HAVE_IMLIB"; then echo "ok"; else echo "not avail."; fi
 echo -n "   - libx11/imlib2:  ";	if test -n "$HAVE_IMLIB2"; then echo "ok"; else echo "not avail."; fi
 echo -n " MIDI:               ";
 if test -n "$HAVE_PORTMIDI"; then echo "portmidi";

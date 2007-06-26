@@ -99,7 +99,7 @@ int want_genpts =0;	/* --genpts */
 int want_ignstart =0;	/* --ignorefileoffset */
 int want_nosplash =0;	/* --nosplash */
 int start_ontop =0;	/* --ontop // -a */
-int start_fullscreen =0;/* NY available */
+int start_fullscreen =0;/* --fullscreen // -s */
 int want_letterbox =0;  /* --letterbox -b */
 int want_dropframes =0; /* --dropframes -N  BEWARE! */
 int want_autodrop =1;   /* --nodropframes -n (hidden option) */
@@ -184,6 +184,7 @@ static struct option const long_options[] =
   {"try-codec", no_argument, 0, 't'},
   {"info", no_argument, 0, 'i'},
   {"ontop", no_argument, 0, 'a'},
+  {"fullscreen", no_argument, 0, 's'},
   {"nolash", no_argument, 0, 'L'},
   {"dropframes", no_argument, 0, 'N'},
   {"nodropframes", no_argument, 0, 'n'},
@@ -223,6 +224,7 @@ decode_switches (int argc, char **argv)
 			   "F:"	/* file FPS */
 			   "x:"	/* video-mode */
 			   "a"	/* always on top */
+			   "s"	/* start in full-screen mode */
 			   "i:"	/* info - OSD-mode */
 			   "b"	/* letterbox */
 #ifdef HAVE_MIDI
@@ -341,6 +343,9 @@ decode_switches (int argc, char **argv)
 	case 'V':
 	  printversion();
 	  exit(0);
+	case 's':
+	  start_fullscreen=1;
+	  break;
 	case 'a':
 	  start_ontop=1;
 	  break;
@@ -369,6 +374,8 @@ jack video monitor\n", program_name);
 "  -A, --avverbose           dump ffmpeg messages.\n"
 "  -S, --nosplash            do not display splash image on startup.\n"
 "\n"
+"  -s, --fullscreen          start xjadeo in fullscreen mode.\n"
+  "                            requires x11 or xv videomode.\n"
 "  -a, --ontop               stack xjadeo window on top of the desktop.\n"
 "                            requires x11 or xv videomode and EWMH.\n"
 "  -b, --letterbox           retain apect ratio when scaling (Xv only).\n"
@@ -434,7 +441,12 @@ jack video monitor\n", program_name);
 }
 
 static void printversion (void) {
-  printf ("xjadeo version %s [ ", VERSION);
+  printf ("xjadeo ");
+#ifdef SUBVERSION
+  printf ("version %s svn-%s [ ", VERSION, SUBVERSION);
+#else
+  printf ("version %s [ ", VERSION);
+#endif
 #ifndef HAVE_MIDI
   printf("no MIDI ");
 #else /* have Midi */
