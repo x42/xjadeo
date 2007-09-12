@@ -1,3 +1,8 @@
+xjadeo (0.4.2) unstable; urgency=low
+  * added ffmpeg swscale support
+
+ -- Robin Gareus <robin@gareus.org>  Wed, 12 Sep 2007 01:56:14 +0200
+
 xjadeo (0.4.2-pre) unstable; urgency=low
   * added -s --fullscreen command line option
   * removed SDL video mode

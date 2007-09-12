@@ -8,7 +8,7 @@ AC_CANONICAL_TARGET
 
 VERSION_MAJOR=0
 VERSION_MINOR=4
-VERSION_SUB="2-pre"
+VERSION_SUB="2"
 
 dnl Every other copy of the package version number gets its value from here
 AM_INIT_AUTOMAKE(xjadeo, [${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_SUB}])
@@ -118,6 +118,7 @@ AH_TEMPLATE([DND], [enable xjadeo x11 drag and drop])
 AH_TEMPLATE([COLOREQ], [enable XV and imlib2 color equalizer])
 AH_TEMPLATE([DRAW_CROSS], [paint a X on screen when unable to decode or display a frame.])
 AH_TEMPLATE([HAVE_JACK_VIDEO], [experimental code to use jack_video, jack-svn >= r591])
+AH_TEMPLATE([HAVE_SWSCALE], [Define as 1 if you have ffmpeg with swscale support])
 
 AC_DEFINE(CFG_WARN_ONLY)
 AC_DEFINE(DND)
@@ -280,6 +281,12 @@ if test  "x$HAVE_FFMPEG" != "xyes"; then
 	located a ffmpeg installation without pkg-information.
 	])
 fi
+
+
+ac_save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $FFMPEG_CFLAGS"
+AC_CHECK_HEADERS(swscale.h , [HAVE_SWSCALE=1 AC_DEFINE(HAVE_SWSCALE) FFMPEG_LIBS="$FFMPEG_LIBS -lswscale"])
+CFLAGS="$ac_save_CFLAGS"
 
 AC_SUBST(FFMPEG_CFLAGS)
 AC_SUBST(FFMPEG_LIBS)

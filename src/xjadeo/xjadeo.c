@@ -33,8 +33,12 @@
  */
 #include "xjadeo.h"
 
-#include <ffmpeg/avcodec.h>
-#include <ffmpeg/avformat.h>
+#include <avcodec.h>
+#include <avformat.h>
+#ifdef HAVE_SWSCALE
+#include <avutil.h>
+#include <swscale.h>
+#endif
 
 #include <time.h>
 #include <getopt.h>
@@ -55,6 +59,7 @@ extern AVCodecContext    *pCodecCtx;
 extern AVFrame           *pFrame;
 extern AVFrame           *pFrameFMT;
 extern uint8_t           *buffer;
+struct SwsContext *pSWSCtx; 
 
 // needs to be set before calling movie_open
 extern int	render_fmt;
@@ -213,6 +218,7 @@ void init_moviebuffer(void) {
 // Assign appropriate parts of buffer to image planes in pFrameFMT
 	if (pFrameFMT)
 		avpicture_fill((AVPicture *)pFrameFMT, buffer, render_fmt, pCodecCtx->width, pCodecCtx->height);
+	pSWSCtx = sws_getContext(pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height, render_fmt, SWS_BICUBIC, NULL, NULL, NULL);
 	render_empty_frame(0);
 }
 
@@ -657,10 +663,13 @@ void display_frame(int64_t timestamp, int force_update) {
 			/* Did we get a video frame? */
 			if(frameFinished) {
 				/* Convert the image from its native format to FMT */
+#ifdef HAVE_SWSCALE
+				sws_scale(pSWSCtx, pFrame->data, pFrame->linesize, 0, pCodecCtx->height, pFrameFMT->data, pFrameFMT->linesize);
+#else
 				img_convert((AVPicture *)pFrameFMT, render_fmt, 
 					(AVPicture*)pFrame, pCodecCtx->pix_fmt, pCodecCtx->width, 
 					pCodecCtx->height);
-
+#endif
 				render_buffer(buffer); // in pFrameFMT
 				av_free_packet(&packet); /* XXX */
 				break;
@@ -692,6 +701,8 @@ int close_movie() {
 	current_file=NULL;
 
 	if (!pFrameFMT) return(-1);
+	// Free the software scaler
+	sws_freeContext(pSWSCtx); 
 
 	// Free the formatted image 
 	if(buffer) free(buffer);
