@@ -704,7 +704,9 @@ int close_movie() {
 
 	if (!pFrameFMT) return(-1);
 	// Free the software scaler
+#ifdef HAVE_SWSCALE
 	sws_freeContext(pSWSCtx); 
+#endif
 
 	// Free the formatted image 
 	if(buffer) free(buffer);
