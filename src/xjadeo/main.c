@@ -35,8 +35,8 @@
 
 #include "xjadeo.h"
 
-#include <ffmpeg/avcodec.h>
-#include <ffmpeg/avformat.h>
+#include <avcodec.h>
+#include <avformat.h>
 
 #include <getopt.h>
 

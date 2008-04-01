@@ -8,7 +8,7 @@ AC_CANONICAL_TARGET
 
 VERSION_MAJOR=0
 VERSION_MINOR=4
-VERSION_SUB="3"
+VERSION_SUB="4"
 
 dnl Every other copy of the package version number gets its value from here
 AM_INIT_AUTOMAKE(xjadeo, [${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_SUB}])
@@ -266,10 +266,9 @@ fi
 if test  "x$HAVE_FFMPEG" != "xyes"; then
 	FFMPEG_LIBS="-L/usr/local/lib -L/usr/lib -lavformat -lavcodec -lz"
 	if test -n "$ffmpegprefix" ; then
-		FFMPEG_CFLAGS="-I$ffmpegprefix/libavcodec -I$ffmpegprefix/libavformat"
-		## FIXME add libavutil.a if present!
-		## FIXME - headers in source : <ffmpeg/avformat.h> -> <avformat.h>
-		FFMPEG_LIBS="$ffmpegprefix/libavcodec/${LIBPREF}avcodec$LIBSUF $ffmpegprefix/libavformat/${LIBPREF}avformat$LIBSUF -lz $ffmpegldadd" 
+		FFMPEG_CFLAGS="-I$ffmpegprefix/libavcodec -I$ffmpegprefix/libavformat -I$ffmpegprefix"
+		#FFMPEG_LIBS="$ffmpegprefix/libavcodec/${LIBPREF}avcodec$LIBSUF $ffmpegprefix/libavformat/${LIBPREF}avformat$LIBSUF -lz $ffmpegldadd" 
+		FFMPEG_LIBS="-L$ffmpegprefix/libavdevice -L$ffmpegprefix/libavformat -L$ffmpegprefix/libavcodec -L$ffmpegprefix/libavutil -Wl,-rpath-link,$ffmpegprefix/libavcodec -Wl,-rpath-link,$ffmpegprefix/libavformat -Wl,-rpath-link,$ffmpegprefix/libavutil -Wl,-Bsymbolic -lavdevice -lavformat -lavcodec -lavutil  -lz -lm $ffmpegldadd" 
 		AC_CHECK_FILES([$ffmpegprefix/libavutil/${LIBPREF}avutil$LIBSUF],[FFMPEG_LIBS="$FFMPEG_LIBS $ffmpegprefix/libavutil/${LIBPREF}avutil$LIBSUF"])
 	elif test "x$HAVE_FFMPEG_LOCAL" != xyes; then
 		FFMPEG_CFLAGS="-I$/usr/include/ffmpeg"

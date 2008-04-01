@@ -43,7 +43,7 @@
 
 #include <getopt.h>
 
-#include <ffmpeg/avformat.h>
+#include <avformat.h>
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>

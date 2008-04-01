@@ -1,3 +1,8 @@
+xjadeo (0.4.4) unstable; urgency=low
+  * updates for ffmpeg-svn compat (ffmpeg-svn 12642,12665)
+
+ -- Robin Gareus <robin@gareus.org>  Tue, 01 Apr 2008 16:59:01 +0200
+
 xjadeo (0.4.3) unstable; urgency=low
   * fixed backwards compat ffmpeg  w/o swscale
   * fixed segfault using remote-mode w/o video-file (swscale)

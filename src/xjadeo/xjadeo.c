@@ -219,7 +219,7 @@ void init_moviebuffer(void) {
 	if (pFrameFMT) {
 		avpicture_fill((AVPicture *)pFrameFMT, buffer, render_fmt, pCodecCtx->width, pCodecCtx->height);
 #ifdef HAVE_SWSCALE
-	pSWSCtx = sws_getContext(pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height, render_fmt, SWS_BICUBIC, NULL, NULL, NULL);
+		pSWSCtx = sws_getContext(pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height, render_fmt, SWS_BICUBIC, NULL, NULL, NULL);
 #endif
 	}
 	render_empty_frame(0);
