@@ -1074,6 +1074,7 @@ int open_window_xv (void) {
 	}
 
 	for(i = 0, got_port = False; i < ad_cnt; ++i) {
+		xv_port = ad_info[i].base_id;
 		if (!want_quiet) fprintf(stdout,
 			"Xv: %s: ports %ld - %ld\n",
 			ad_info[i].name,
@@ -1195,9 +1196,20 @@ int open_window_xv (void) {
 	xj_set_ontop(xj_ontop);
 
 	// XV_BRIGHTNESS  XV_CONTRAST, XV_SATURATION , XV_COLORKEY
+	#if 0 // broken with some gfx boards. 
+	/* 004:<:003e: 20: Request(16): InternAtom only-if-exists=true(0x01)  name='XV_COLORKEY'
+	 * 004:>:0x003e:32: Reply to InternAtom: atom=0x59("XV_COLORKEY")
+	 * 004:<:003f: 12: XVideo-Request(141,14): unknown 
+	 * 004:>:003f:32: unexpected reply
+	 * 004:<:0040: 52: XVideo-Request(141,19): unknown 
+	 * 004:<:0041: 52: XVideo-Request(141,19): unknown 
+	 */
+	int value=0;
 	Atom xj_a_colorkey = XInternAtom (xj_dpy, "XV_COLORKEY", True);
-	if (xj_a_colorkey!=None) 
+	if (xj_a_colorkey!=None && Success == XvGetPortAttribute(xj_dpy, xv_port, xj_a_colorkey, &value)) {
 		XvSetPortAttribute(xj_dpy, xv_port, xj_a_colorkey, 0x00000000); // AARRGGBB
+ 	}
+	#endif
 	return 0;
 }
 

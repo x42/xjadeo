@@ -84,10 +84,10 @@ typedef struct {
 
 void _overlay_YUV (uint8_t *mybuffer, rendervars *rv, int dx, int dy, int val) {
 	int yoff=(dx+movie_width*dy);
-	int uvoff=((dx/2)+movie_width/2*(dy/2));
 	// YUV
 	mybuffer[yoff]=255-(mybuffer[yoff]+val)/2;
 #if 0
+	int uvoff=((dx/2)+movie_width/2*(dy/2));
 	int tmp=mybuffer[rv->Voff+uvoff];
 	mybuffer[rv->Uoff+uvoff]=mybuffer[rv->Voff+uvoff];
 	mybuffer[rv->Voff+uvoff]=tmp;

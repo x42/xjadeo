@@ -144,7 +144,7 @@ void handle_event(lash_event_t* ev) {
 		lcs_int("OSD_fy",OSD_fy);
 		lcs_int("OSD_mode",OSD_mode);
 		lcs_int("OSD_mode",OSD_mode);
-		lcs_str("OSD_text",OSD_text?OSD_text:"");
+		lcs_str("OSD_text",strlen(OSD_text)>0?OSD_text:"");
 		lcs_str("OSD_fontfile",OSD_fontfile);
 		lcs_int("OSD_mode",OSD_mode);
 		lcs_int("OSD_mode",OSD_mode);
@@ -153,7 +153,7 @@ void handle_event(lash_event_t* ev) {
 	#ifdef HAVE_MIDI
 		lcs_int("MIDI_clkconvert",midi_clkconvert);
 		lcs_int("MIDI_clkadj",midi_clkadj);
-		lcs_str("MIDI_ID",(midiid && midi_connected())?midiid:"-2");
+		lcs_str("MIDI_ID",(strlen(midiid)>0 && midi_connected())?midiid:"-2");
 	#endif
 		lash_send_event(lash_client, lash_event_new_with_type(LASH_Save_Data_Set));
 	} else if (type == LASH_Quit) {

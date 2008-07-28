@@ -8,7 +8,7 @@ AC_CANONICAL_TARGET
 
 VERSION_MAJOR=0
 VERSION_MINOR=4
-VERSION_SUB="4"
+VERSION_SUB="5"
 
 dnl Every other copy of the package version number gets its value from here
 AM_INIT_AUTOMAKE(xjadeo, [${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_SUB}])
@@ -224,7 +224,7 @@ dnl ----------------------------------------------
 #fi 
 #
 if test -z "$ffmpegprefix" ; then
-	PKG_CHECK_MODULES(FFMPEG, libavformat libavcodec, HAVE_FFMPEG=yes, 
+	PKG_CHECK_MODULES(FFMPEG, libavformat libavcodec libavutil, HAVE_FFMPEG=yes, 
 		AC_MSG_WARN([
 		Could not find ffmpeg package. please update PKG_CONFIG_PATH to 
 		point to a ffmpegs source folder.
@@ -263,24 +263,29 @@ if test  "x$HAVE_FFMPEG" != "xyes" -a "x$HAVE_SHARED_AVCODEC$HAVE_SHARED_AVCODEC
 	])
 fi
 
+dnl backwards compat...
 if test  "x$HAVE_FFMPEG" != "xyes"; then
-	FFMPEG_LIBS="-L/usr/local/lib -L/usr/lib -lavformat -lavcodec -lz"
+	FFMPEG_LIBS="-L/usr/local/lib -L/usr/lib -lavformat -lavcodec -lavutil -lz"
 	if test -n "$ffmpegprefix" ; then
-		FFMPEG_CFLAGS="-I$ffmpegprefix/libavcodec -I$ffmpegprefix/libavformat -I$ffmpegprefix"
-		#FFMPEG_LIBS="$ffmpegprefix/libavcodec/${LIBPREF}avcodec$LIBSUF $ffmpegprefix/libavformat/${LIBPREF}avformat$LIBSUF -lz $ffmpegldadd" 
-		FFMPEG_LIBS="-L$ffmpegprefix/libavdevice -L$ffmpegprefix/libavformat -L$ffmpegprefix/libavcodec -L$ffmpegprefix/libavutil -Wl,-rpath-link,$ffmpegprefix/libavcodec -Wl,-rpath-link,$ffmpegprefix/libavformat -Wl,-rpath-link,$ffmpegprefix/libavutil -Wl,-Bsymbolic -lavdevice -lavformat -lavcodec -lavutil  -lz -lm $ffmpegldadd" 
-		AC_CHECK_FILES([$ffmpegprefix/libavutil/${LIBPREF}avutil$LIBSUF],[FFMPEG_LIBS="$FFMPEG_LIBS $ffmpegprefix/libavutil/${LIBPREF}avutil$LIBSUF"])
+		FFMPEG_INCDIR="$ffmpegprefix"
+		FFMPEG_LIBS="$ffmpegprefix/libavcodec/${LIBPREF}avcodec$LIBSUF $ffmpegprefix/libavformat/${LIBPREF}avformat$LIBSUF $ffmpegprefix/libavutil/${LIBPREF}avutil$LIBSUF -lz $ffmpegldadd" 
+		#FFMPEG_LIBS="-L$ffmpegprefix/libavdevice -L$ffmpegprefix/libavformat -L$ffmpegprefix/libavcodec -L$ffmpegprefix/libavutil -Wl,-rpath-link,$ffmpegprefix/libavcodec -Wl,-rpath-link,$ffmpegprefix/libavformat -Wl,-rpath-link,$ffmpegprefix/libavutil -Wl,-Bsymbolic -lavdevice -lavformat -lavcodec -lavutil  -lz -lm $ffmpegldadd" 
 	elif test "x$HAVE_FFMPEG_LOCAL" != xyes; then
-		FFMPEG_CFLAGS="-I$/usr/include/ffmpeg"
+		FFMPEG_INCDIR="/usr/local/include/ffmpeg/"
 	else
-		FFMPEG_CFLAGS="-I/usr/local/include/ffmpeg"
+		FFMPEG_INCDIR="/usr/include/ffmpeg/"
 	fi
 	HAVE_FFMPEG=yes
         AC_MSG_NOTICE([
 	located a ffmpeg installation without pkg-information.
 	])
-fi
 
+	FFMPEG_CFLAGS="-I$FFMPEG_INCDIR -I$FFMPEG_INCDIR/libavcodec -I$FFMPEG_INCDIR/libavformat -I$FFMPEG_INCDIR/libavutil -I$FFMPEG_INCDIR/libswscale"
+else
+dnl FFMPEG include workaround.
+FFMPEG_INCDIR="/usr/include/ffmpeg/"
+FFMPEG_CFLAGS="$FFMPEG_CFLAGS -I$FFMPEG_INCDIR/libavcodec -I$FFMPEG_INCDIR/libavformat -I$FFMPEG_INCDIR/libavutil -I$FFMPEG_INCDIR/libswscale"
+fi
 
 ac_save_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS $FFMPEG_CFLAGS"

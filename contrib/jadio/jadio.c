@@ -188,8 +188,8 @@ int testcls(jack_nframes_t p, audiocache *cache) {
 
 
 /////// FFMPEG  ///////
-#include <ffmpeg/avcodec.h>
-#include <ffmpeg/avformat.h>
+#include <avcodec.h>
+#include <avformat.h>
 
 AVFormatContext* m_formatContext;
 AVCodecContext*  m_codecContext;

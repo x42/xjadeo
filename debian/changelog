@@ -1,3 +1,10 @@
+xjadeo (0.4.5) unstable; urgency=low
+  * xjadeo now leaves XV-colorkey untouched.
+  * changed include paths for ffmpeg.
+  * fixed a compiler warnings for gcc-4.3.1
+
+ -- Robin Gareus <robin@gareus.org>  Mon, 28 Jul 2008 19:19:09 +0200
+
 xjadeo (0.4.4) unstable; urgency=low
   * updates for ffmpeg-svn compat (ffmpeg-svn 12642,12665)
 
