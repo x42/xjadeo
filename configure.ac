@@ -268,7 +268,7 @@ if test  "x$HAVE_FFMPEG" != "xyes"; then
 	FFMPEG_LIBS="-L/usr/local/lib -L/usr/lib -lavformat -lavcodec -lavutil -lz"
 	if test -n "$ffmpegprefix" ; then
 		FFMPEG_INCDIR="$ffmpegprefix"
-		FFMPEG_LIBS="$ffmpegprefix/libavcodec/${LIBPREF}avcodec$LIBSUF $ffmpegprefix/libavformat/${LIBPREF}avformat$LIBSUF $ffmpegprefix/libavutil/${LIBPREF}avutil$LIBSUF -lz $ffmpegldadd" 
+		FFMPEG_LIBS="$ffmpegprefix/libavformat/${LIBPREF}avformat$LIBSUF $ffmpegprefix/libavcodec/${LIBPREF}avcodec$LIBSUF $ffmpegprefix/libavutil/${LIBPREF}avutil$LIBSUF $ffmpegprefix/libswscale/${LIBPREF}swscale$LIBSUF $ffmpegprefix/libpostproc/${LIBPREF}postproc$LIBSUF $ffmpegprefix/libavdevice/${LIBPREF}avdevice$LIBSUF -lz $ffmpegldadd" 
 		#FFMPEG_LIBS="-L$ffmpegprefix/libavdevice -L$ffmpegprefix/libavformat -L$ffmpegprefix/libavcodec -L$ffmpegprefix/libavutil -Wl,-rpath-link,$ffmpegprefix/libavcodec -Wl,-rpath-link,$ffmpegprefix/libavformat -Wl,-rpath-link,$ffmpegprefix/libavutil -Wl,-Bsymbolic -lavdevice -lavformat -lavcodec -lavutil  -lz -lm $ffmpegldadd" 
 	elif test "x$HAVE_FFMPEG_LOCAL" != xyes; then
 		FFMPEG_INCDIR="/usr/local/include/ffmpeg/"
