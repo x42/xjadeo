@@ -14,6 +14,7 @@
 	<year>2005</year>
 	<year>2006</year>
 	<year>2007</year>
+	<year>2009</year>
 	<holder>Robin Gareus, Luis Garrido</holder>
      </copyright>
 							 
@@ -189,7 +190,7 @@
 
     <para>It's a thighrope walk between audio-helper-application (low profile) and pro-A/V-tool (exact video sync).</para>
 
-    <para>xjadeo started as a collection of example code end is being used as that. People use it as code repository to spin-off c based video installations..   Parts of <application>xjadeo</application> have been re-used for various VJ purposes, mainly to synchronize playback on multiple screens (using <ulink url="netjack.sourceforge.net">netjack</ulink> and/or xjadeo remote-ctrl see <xref linkend="sync_remote_commands" /> ). check <ulink url="http://svn.sourceforge.net/viewcvs.cgi/xjadeo/trunk/contrib/">http://svn.sourceforge.net/viewcvs.cgi/xjadeo/trunk/contrib/</ulink> for further additions.</para>
+    <para>xjadeo started as a collection of example code end is being used as that. People use it as code repository to spin-off c based video installations..   Parts of <application>xjadeo</application> have been re-used for various VJ purposes, mainly to synchronize playback on multiple screens (using <ulink url="netjack.sourceforge.net">netjack</ulink> and/or xjadeo remote-ctrl see <xref linkend="sync_remote_commands" /> ). check <ulink url="http://xjadeo.svn.sourceforge.net/svnroot/xjadeo/trunk/contrib/">http://xjadeo.svn.sourceforge.net/svnroot/xjadeo/trunk/contrib/</ulink> for further additions.</para>
 
     <para>With minor modifications xjadeo can read video-frame-offset lists (EDL) and do the editing during playback. It is unlikely for this to be merged in the main distribution. video editing, although sometimes handy, is clearly beyond xjadeo's scope.  check out: <ulink url="http://openmovieeditor.sourceforge.net/">Open Movie Editor</ulink> or use the EDL capabilities of mplayer/mencoder, go <ulink url="http://cinelerra.org/">cinelarra</ulink> or explore <ulink url="http://lives.sf.net/">lives</ulink>.</para>
   </section>
@@ -213,7 +214,7 @@
       <title>Source</title>
         <para><application>xjadeo</application> is developed using Subversion
         repositories at <ulink
-        url="http://svn.sourceforge.net/xjadeo/">http://svn.sourceforge.net/xjadeo/</ulink>.
+        url="http://xjadeo.svn.sourceforge.net/svnroot/xjadeo/">http://xjadeo.svn.sourceforge.net/svnroot/xjadeo/</ulink>.
         In case you are unfamiliar with SVN, Sourceforge <ulink
         url="http://sourceforge.net/svn/?group_id=131926">provides</ulink>
         information on how to access it.</para>
@@ -441,8 +442,8 @@ make install # (requires root privileges) </screen></para>
       for your audio software..</para>
 
       <para>In the <ulink
-      url="http://svn.sourceforge.net/viewcvs.cgi/*checkout*/xjadeo/trunk/contrib/xjadeo-example.avi"><filename>contrib/</filename></ulink>
-      folder there is an example video and a shell script that can help you
+      url="http://xjadeo.svn.sourceforge.net/svnroot/xjadeo/trunk/contrib/"><filename>contrib/</filename></ulink>
+      folder there is an <ulink url="http://xjadeo.svn.sourceforge.net/svnroot/xjadeo/trunk/contrib/xjadeo-example.avi">example video</ulink> and a shell script that can help you
       finding an appropriate codec.</para>
       <para>qjadeo has an experimental "import dialog" available from the File menu, that will invoke mencoder with these arguments.</para>
     </section>
@@ -693,7 +694,7 @@ make install # (requires root privileges) </screen></para>
 
         <listitem>
           <para>play the example from <ulink
-          url="http://svn.sourceforge.net/viewcvs.cgi/*checkout*/xjadeo/trunk/contrib/xjadeo-example.avi">http://svn.sourceforge.net/viewcvs.cgi/*checkout*/xjadeo/trunk/contrib/xjadeo-example.avi</ulink></para>
+          url="http://xjadeo.svn.sourceforge.net/svnroot/xjadeo/trunk/contrib/xjadeo-example.avi">http://xjadeo.svn.sourceforge.net/svnroot/xjadeo/trunk/contrib/xjadeo-example.avi</ulink></para>
         </listitem>
 
         <listitem>
@@ -1984,7 +1985,7 @@ make install # (requires root privileges) </screen></para>
           </orderedlist>
 	  <para>Each line in the config file must be in in the format:<screen>KEY=VALUE</screen>. If the first character on a line is either '#' or ';'. the line is ignored. <option>KEYS</option> are not case sensitive. <option>VALUES</option> can be case sensitive (fi. filenames) and are parsed identical to the corresponding command line arguments (eg. <option>-x SDL</option> becomes <option>videomode=SDL</option>). Boolean values are specified as 'yes' or 'no' (eg. <option>quiet=yes</option>).</para>
 	  <para>currently supported rc KEYS: fps, fontfile, lash, letterbox, midiclk, midismpte, mq, nosplash, quiet, seek, verbose and videomode. Which are commented on in the example <ulink 
-          url="http://svn.sourceforge.net/viewcvs.cgi/*checkout*/xjadeo/trunk/doc/xjadeorc" >xjadeorc</ulink>
+          url="http://xjadeo.svn.sourceforge.net/svnroot/xjadeo/trunk/doc/xjadeorc" >xjadeorc</ulink>
 	  </para>
       </refsect1>
 
@@ -2241,7 +2242,7 @@ make install # (requires root privileges) </screen></para>
             <listitem>
               <para>output XML data. This is the default if no option is specified.</para>
 	      <para>A DTD is available with the source or from
-	      <ulink url="http://svn.sourceforge.net/viewcvs.cgi/*checkout*/xjadeo/trunk/src/xjadeo/avinfo.dtd">xjadeo.sf.net</ulink>
+	      <ulink url="http://xjadeo.svn.sourceforge.net/svnroot/xjadeo/trunk/src/xjadeo/avinfo.dtd">xjadeo.sf.net</ulink>
 	      </para>
             </listitem>
           </varlistentry>

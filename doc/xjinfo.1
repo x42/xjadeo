@@ -1,11 +1,11 @@
 .\"     Title: xjinfo
 .\"    Author: 
-.\" Generator: DocBook XSL Stylesheets v1.72.0 <http://docbook.sf.net/>
-.\"      Date: 05/07/2007
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 02/02/2009
 .\"    Manual: Manual Pages
 .\"    Source: 
 .\"
-.TH "XJINFO" "1" "05/07/2007" "" "Manual Pages"
+.TH "XJINFO" "1" "02/02/2009" "" "Manual Pages"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
@@ -14,23 +14,23 @@
 xjinfo \- Display A/V file info in XML format.
 .SH "SYNOPSIS"
 .HP 7
-\fBxjinfo\fR [\-xvhct] \efI<videofile>\efR
+\fBxjinfo\fR [\-xvhct] \fI<videofile>\fR
 .SH "DESCRIPTION"
 .PP
 \fBxjinfo\fR
 does basically the same as
 \fBffmpeg \-i\fR
-but displays the information in XML or simple format that can be used for scripting.
+but displays the information in XML or simple format that can be used for scripting\&.
 .SH "OPTIONS"
 .PP
 \fB\-c, \-\-csv\fR
 .RS 4
-comma separated values, one line per video stream in file. Use the built\-in help \-h to learn about the format.
+comma separated values, one line per video stream in file\&. Use the built\-in help \-h to learn about the format\&.
 .RE
 .PP
 \fB\-h, \-\-help\fR
 .RS 4
-Prints usage help and exits.
+Prints usage help and exits\&.
 .RE
 .PP
 \fB\-t, \-\-time, \-\-duration\fR
@@ -40,25 +40,25 @@ print the duration in seconds (without trailing newline)
 .PP
 \fB\-v, \-\-text\fR
 .RS 4
-print a single line: duration, fps, geometry and codec info.
+print a single line: duration, fps, geometry and codec info\&.
 .RE
 .PP
 \fB\-x, \-\-xml\fR
 .RS 4
-output XML data. This is the default if no option is specified.
+output XML data\&. This is the default if no option is specified\&.
 .sp
 A DTD is available with the source or from
-\fIxjadeo.sf.net\fR\&[1]
+\fIxjadeo\&.sf\&.net\fR\&[1]
 .RE
 .SH "SEE ALSO"
 .PP
 xjadeo(1)
 .SH "COPYRIGHT"
-Copyright \(co 2005, 2006, 2007 Robin Gareus, Luis Garrido
+Copyright \(co 2005, 2006, 2007, 2009 Robin Gareus, Luis Garrido
 .br
-.SH "REFERENCES"
+.SH "NOTES"
 .IP " 1." 4
 xjadeo.sf.net
 .RS 4
-\%http://svn.sourceforge.net/viewcvs.cgi/*checkout*/xjadeo/trunk/src/xjadeo/avinfo.dtd
+\%http://xjadeo.svn.sourceforge.net/svnroot/xjadeo/trunk/src/xjadeo/avinfo.dtd
 .RE
