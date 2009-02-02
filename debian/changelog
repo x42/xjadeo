@@ -1,3 +1,8 @@
+xjadeo (0.4.6) unstable; urgency=low
+  * updated URLs in doc
+  * minor fixes for ffmpeg API changes 
+ -- Robin Gareus <robin@gareus.org>  Mon, 02 Feb 2009 03:41:13 +0100
+
 xjadeo (0.4.5) unstable; urgency=low
   * xjadeo now leaves XV-colorkey untouched.
   * changed include paths for ffmpeg.
