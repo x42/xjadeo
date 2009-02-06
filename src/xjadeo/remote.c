@@ -100,6 +100,12 @@ extern int midi_clkadj;
 extern char midiid[32];
 #endif
 
+#ifdef TIMEMAP
+extern long   timeoffset;
+extern double timescale;
+extern int    wraparound;
+#endif
+
 extern double 		delay;
 extern double 		filefps;
 extern int		videomode;
@@ -343,6 +349,23 @@ void xapi_poffset(void *d) {
 	remote_printf(201,"offset=%li",(long int) ts_offset);
 }
 
+void xapi_ptimescale(void *d) {
+#ifdef TIMEMAP
+	remote_printf(202,"timescale=%g", timescale);
+	remote_printf(201,"timeoffset=%li",(long int) timeoffset);
+#else
+	remote_printf(499,"timescale is not available.");
+#endif
+}
+
+void xapi_ploop(void *d) {
+#ifdef TIMEMAP
+	remote_printf(201,"loop=%d", wraparound);
+#else
+	remote_printf(499,"looping is not available.");
+#endif
+}
+
 void xapi_pseekmode (void *d) {
 	switch (seekflags) {
 		case SEEK_ANY:
@@ -376,10 +399,43 @@ void xapi_pmwidth(void *d) {
 void xapi_pmheight(void *d) {
 	remote_printf(201,"movie_height=%i", movie_height);
 }
+
 void xapi_soffset(void *d) {
   	//long int new = atol((char*)d);
 	ts_offset = smptestring_to_frame((char*)d,midi_connected());
 	remote_printf(101,"offset=%li",(long int) ts_offset);
+}
+
+void xapi_stimescale(void *d) {
+#ifdef TIMEMAP
+        char *t1;
+  	timescale = atof((char*)d);
+	if ((t1=strchr((char*)d,' ')) && ++t1) {
+  	  timeoffset = atol(t1);
+        }
+	xapi_ptimescale(NULL);
+	force_redraw=1;
+#else
+	remote_printf(499,"timescale is not available.");
+#endif
+}
+
+void xapi_sloop(void *d) {
+#ifdef TIMEMAP
+	wraparound = atoi((char*)d)?1:0;
+#else
+	remote_printf(499,"timescale is not available.");
+#endif
+}
+
+void xapi_sreverse(void *d) {
+#ifdef TIMEMAP
+  	timescale *= -1.0; 
+	if (timescale<0) 
+		timeoffset = (-2.0*timescale) *dispFrame; // TODO: check file-offset and ts_offset.
+	else 
+		timeoffset = 0; // TODO - applt diff dispFrame <> transport src
+#endif
 }
 
 void xapi_pposition(void *d) {
@@ -756,6 +812,8 @@ Dcommand cmd_get[] = {
 	{"smpte", ": return current frame position", NULL, xapi_psmpte , 0 },
 	{"fps", ": display current update frequency", NULL, xapi_pfps , 0 },
 	{"offset", ": show current frame offset", NULL, xapi_poffset , 0 },
+	{"timescale", ": show scale/offset", NULL, xapi_ptimescale , 0 },
+	{"loop", ": show loop/wrap-around setting", NULL, xapi_ploop , 0 },
 
 	{"file", ": print filename of current video buffer", NULL, xapi_pfilename , 0 },
 	{"duration", ": query length of video buffer in seconds", NULL, xapi_pduration , 0 },
@@ -805,6 +863,8 @@ Dcommand cmd_window[] = {
 Dcommand cmd_set[] = {
 	{"fps ", "<float>: set current update frequency", NULL, xapi_sfps , 0 },
 	{"offset", "<int>: set current frame offset", NULL, xapi_soffset , 0 },
+	{"timescale ", "<float> <int>: set timescale and offset", NULL, xapi_stimescale , 0 },
+	{"loop ", "<int>: 0: normal, 1:wrap around", NULL, xapi_sloop , 0 },
 	{"seekmode ", "<1-3>: seek continuous, to any or to keyframes only", NULL, xapi_sseekmode, 0 },
 	{"framerate", "<float>: show frame rate of video file", NULL, xapi_sframerate , 0 },
 	{NULL, NULL, NULL , NULL, 0}
@@ -824,6 +884,7 @@ Dcommand cmd_root[] = {
 	{"osd", " .. : on screen display commands", cmd_osd, NULL, 0 },
 	{"jack", " .. : jack commands", cmd_jack, NULL, 0 },
 	{"midi", " .. : midi commands", cmd_midi, NULL, 0 },
+	{"reverse", ": set timescale to reverse playback from now", NULL , xapi_sreverse, 0 },
 
 	{"list videomodes" , ": displays a list of possible video modes", NULL, xapi_lvideomodes, 0 },
 	{"ping", ": claim a pong", NULL , xapi_ping, 0 },

@@ -90,6 +90,12 @@ extern int	mq_en;
 extern double	delay;
 extern int	seekflags;
 
+#ifdef TIMEMAP
+long		timeoffset = 0;
+double		timescale = 1.0;
+int 		wraparound = 0;
+#endif
+
 // On screen display
 extern char	OSD_frame[48];
 extern char	OSD_smpte[13];
@@ -151,7 +157,18 @@ void event_loop(void) {
 
 		if (newFrame <0 ) newFrame=userFrame;
 
+#ifdef TIMEMAP
+		newFrame = (long) floor((double) newFrame * timescale) + timeoffset;
+		// TODO: calc newFrames/frames instead of while-loop
+		while (newFrame > frames && wraparound && frames!=0)
+			newFrame-=frames;
+		while (newFrame < 0 && wraparound && frames!=0) 
+			newFrame+=frames;
+#endif
+
 		offFrame = newFrame + ts_offset;
+
+		display_frame((int64_t)(offFrame), force_redraw);
 
 		if ((remote_en||mq_en) && ((remote_mode&1) || ((remote_mode&2)&& offFrame!=dispFrame)) ) {
 		/*call 	xapi_pposition ?? -> rv:200
@@ -160,7 +177,6 @@ void event_loop(void) {
 		 */
 			remote_printf(301,"position=%li",dispFrame);
 		}
-		display_frame((int64_t)(offFrame), force_redraw);
 		force_redraw=0;
 		dly = delay>0?delay:(1.0/framerate);
 
