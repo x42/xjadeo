@@ -325,6 +325,8 @@ void lash_setup() {
 
 void lash_process() {
 #ifdef HAVE_LASH
+	if (!lash_client) {return;}
+
 	lash_event_t*  ev = NULL;
 	lash_config_t* conf = NULL;
 	jdo_config jcfg;
