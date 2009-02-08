@@ -860,7 +860,7 @@ void render_xv (uint8_t *mybuffer) {
 
 	if (xv_pic_format == FOURCC_I420 && xv_one_memcpy) {
 		// copy YUV420P 
-		memcpy(xv_buffer,mybuffer,Ylen+UVlen+UVlen); // Y+U+V
+		fast_memcpy(xv_buffer,mybuffer,Ylen+UVlen+UVlen); // Y+U+V
 	} else if (xv_pic_format == FOURCC_I420) {
 	
 	// encode YV420P
@@ -1572,7 +1572,7 @@ void render_imlib2 (uint8_t *mybuffer) {
 # ifndef IMC
 	uint8_t * rgbabuf = mybuffer;
 # else
-	memcpy(data,mybuffer,4*sizeof(uint8_t)*movie_width*movie_height);
+	fast_memcpy(data,mybuffer,4*sizeof(uint8_t)*movie_width*movie_height);
 # endif 
 #else /* rgb24 -> rgba32 */
 # ifndef IMC

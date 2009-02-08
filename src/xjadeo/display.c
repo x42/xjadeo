@@ -47,6 +47,21 @@ void fullscreen_null (int a) { ; }
 void mousepointer_null (int a) { ; }
 void ontop_null (int a) { ; }
 
+/* 
+// experimental SSE2/MMX2 fast_memcopy 
+// see mplayer's libvo/aclib.c and libvo/aclib_template.c
+
+#define MMEMCPY
+#include "fast_memcpy.c"
+*/
+
+#ifndef MMEMCPY
+inline void *fast_memcpy(void * to, const void * from, size_t len) {
+  memcpy(to, from, len); 
+  return to;
+}
+#endif
+
 /*******************************************************************************
  * strided memcopy - convert pitches of video buffer
  */
@@ -55,9 +70,9 @@ inline void stride_memcpy(void * dst, const void * src, int width, int height, i
 {
         int i;
         if(dstStride == srcStride)
-                memcpy(dst, src, srcStride*height);
+                fast_memcpy(dst, src, srcStride*height);
         else for(i=0; i<height; i++) {
-		memcpy(dst, src, width);
+		fast_memcpy(dst, src, width);
 		src+= srcStride;
 		dst+= dstStride;
         }
