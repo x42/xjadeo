@@ -154,7 +154,7 @@ PKG_CHECK_MODULES(Xpm, xpm, [ AC_DEFINE(HAVE_XPM) HAVE_XPM=1 ], [ NULL=0] )
 
 
 if test "x$enable_xv" != "xno"; then
-	AC_CHECK_LIB(Xv, XvQueryAdaptors, [AC_DEFINE(HAVE_LIBXV) AC_SUBST(XV_LIBS) AC_SUBST(XV_CFLAGS) XV_LIBS='-lXv' HAVE_LIBXV=1 ], [AC_MSG_ERROR([Could not find XVideo Lib (libXv)]], $X_LIBS)
+	AC_CHECK_LIB(Xv, XvQueryAdaptors, [AC_DEFINE(HAVE_LIBXV) AC_SUBST(XV_LIBS) AC_SUBST(XV_CFLAGS) XV_LIBS='-lXv' HAVE_LIBXV=1 ], [AC_MSG_ERROR([Could not find XVideo Lib (libXv)])], $X_LIBS)
 fi
 
 AC_CHECK_LIB([X11], [XOpenDisplay], [XV_LIBS="$XV_LIBS -lXext"] , if [ -z "$HAVE_MACOSX" ]; then AC_MSG_ERROR([*** X11: You need to install the X11 development package: libx11-dev ***]) else AC_MSG_WARN([*** X11: Could not find X11 development libs. - This is only ok if you're compiling for a macintosh. ***]); fi )
