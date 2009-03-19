@@ -39,7 +39,7 @@ if [ -e $TMPFILE -o -e $DMGFILE -o ! -d $MNTPATH ]; then
   exit;
 fi
 
-hdiutil create -megabytes 40 $TMPFILE
+hdiutil create -megabytes 60 $TMPFILE
 DiskDevice=$(hdid -nomount "${TMPFILE}" | grep Apple_HFS | cut -f 1 -d ' ')
 newfs_hfs -v "${VOLNAME}" "${DiskDevice}"
 mount -t hfs "${DiskDevice}" "${MNTPATH}"
