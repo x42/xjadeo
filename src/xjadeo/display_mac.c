@@ -1526,7 +1526,9 @@ OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
     case mSyncMidi: {
 	if (jack_connected()) close_jack();
         char *mp = "-1";
+#ifdef HAVE_MIDI
 	if (!midi_connected()) midi_open(mp);
+#endif
 	if (!midi_connected()) {
           printf("MIDI CONNECT FAILED!\n");
           DialogRef alertDialog;
@@ -1537,7 +1539,9 @@ OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
       break;
     case mSyncNone:
 	if (jack_connected()) close_jack();
+#ifdef HAVE_MIDI
 	if (midi_connected()) midi_close();
+#endif
       break;
 #if 1
     case kHICommandNew:
