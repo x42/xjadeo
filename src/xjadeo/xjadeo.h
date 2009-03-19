@@ -14,6 +14,10 @@
 # include <lash/lash.h>
 #endif
 
+#include <avutil.h>
+#if LIBAVUTIL_BUILD >= 0x320000
+#define PIX_FMT_RGBA32 PIX_FMT_RGBA
+#endif
 
 /* xjadeo seek modes */
 enum { 	SEEK_ANY, ///< directly seek to givenvideo frame 

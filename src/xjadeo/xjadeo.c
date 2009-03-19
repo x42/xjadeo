@@ -36,7 +36,6 @@
 #include <avcodec.h>
 #include <avformat.h>
 #ifdef HAVE_SWSCALE
-#include <avutil.h>
 #include <swscale.h>
 #endif
 
