@@ -82,6 +82,24 @@ void open_jack(void )
 	}
 }
 
+void jackt_rewind() {
+	if (jack_client) {
+		jack_transport_locate (jack_client,0);
+	}
+}
+
+void jackt_start() {
+	if (jack_client) {
+		jack_transport_start (jack_client);
+	}
+}
+
+void jackt_stop() {
+	if (jack_client) {
+		jack_transport_stop (jack_client);
+	}
+}
+
 void close_jack(void)
 {
 	if (jack_client) {

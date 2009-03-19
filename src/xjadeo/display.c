@@ -97,6 +97,12 @@ typedef struct {
 	int bpp;
 } rendervars;
 
+void _overlay_YUV422 (uint8_t *mybuffer, rendervars *rv, int dx, int dy, int val) {
+       int yoff=(2*dx+movie_width*dy*2);
+       mybuffer[yoff+1]=255-(mybuffer[yoff+1]+val)/2;
+       mybuffer[yoff+3]=255-(mybuffer[yoff+3]+val)/2;
+}
+
 void _overlay_YUV (uint8_t *mybuffer, rendervars *rv, int dx, int dy, int val) {
 	int yoff=(dx+movie_width*dy);
 	// YUV
@@ -119,6 +125,13 @@ void _overlay_RGB (uint8_t *mybuffer, rendervars *rv, int dx, int dy, int val) {
 	mybuffer[pos+2]= 255-(mybuffer[pos+2]+val)/2;
 }
 
+void _render_YUV422 (uint8_t *mybuffer, rendervars *rv, int dx, int dy, int val) {
+       int yoff=(2*dx+movie_width*dy*2);
+       mybuffer[yoff+0]=0x80;
+       mybuffer[yoff+1]=val;
+       mybuffer[yoff+2]=0x80;
+       mybuffer[yoff+3]=val;
+}
 
 void _render_YUV (uint8_t *mybuffer, rendervars *rv, int dx, int dy, int val) {
 	int yoff=(dx+movie_width*dy);
@@ -216,6 +229,15 @@ const vidout VO[] = {
 #else
 		NULLOUTPUT},
 #endif
+       { PIX_FMT_UYVY422,   SUP_MACOSX,   "Mac OSX - quartz",
+#ifdef HAVE_MACOSX
+               &render_mac, &open_window_mac, &close_window_mac,
+               &handle_X_events_mac, &newsrc_mac, &resize_mac,
+               &getsize_mac, &position_mac, &getpos_mac,
+               &fullscreen_null, &ontop_null, &mousepointer_null},
+#else
+               NULLOUTPUT},
+#endif
 	{-1,-1,NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL} // the end.
 };
 
@@ -298,6 +320,8 @@ int vidoutmode(int user_req) {
 #define SET_RFMT(FORMAT, POINTER, VARS, FUNC) \
 	if ((FORMAT) == PIX_FMT_YUV420P) \
 		(POINTER) = &_##FUNC##_YUV; \
+	else if ((FORMAT) == PIX_FMT_UYVY422) \
+		(POINTER) = &_##FUNC##_YUV422; \
 	else if ((FORMAT) == PIX_FMT_RGB24) { \
 		 (POINTER) = &_##FUNC##_RGB; \
 		VARS.bpp = 3; \
@@ -427,7 +451,7 @@ void render_buffer (uint8_t *mybuffer) {
 	if (OSD_mode&OSD_FRAME) OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_frame, OSD_fx, OSD_fy);
 	if (OSD_mode&OSD_SMPTE) OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_smpte, OSD_sx, OSD_sy);
 
-
+#if ( HAVE_LIBXV || HAVE_IMLIB2 )
 	if (OSD_mode&OSD_EQ) {
 		char tempeq[48];
 		int v0,v1,v2,v3,v4;
@@ -460,7 +484,9 @@ void render_buffer (uint8_t *mybuffer) {
 			OSD_bar(VO[VOutput].render_fmt, mybuffer,90, -1000.0,1000.0,(double) v4, 0.0);
 		}
 
-	} else { 
+	} else 
+#endif
+	{ 
 		if (OSD_mode&OSD_TEXT )
 			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_text, OSD_tx, OSD_ty);
 

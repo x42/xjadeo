@@ -44,37 +44,30 @@ AC_ARG_ENABLE(midi, AC_HELP_STRING([--enable-midi=auto], [select MTC support: au
 AC_ARG_WITH(fontfile, AS_HELP_STRING([--with-fontfile], [specify an absolte path to a truetype font file to be used as default OSD font.]), fontfile="$withval", fontfile="")
 
 AC_ARG_WITH(portmidiprefix, AS_HELP_STRING([--with-portmidiprefix], [specify prefix to portmidi source)]), portmidiprefix="$withval", portmidiprefix="")
-
+AC_ARG_WITH(freetypeprefix, AS_HELP_STRING([--with-freetypeprefix], [specify prefix to freetype source)]), freetypeprefix="$withval", freetypeprefix="")
 AC_ARG_WITH(ffmpegprefix, AS_HELP_STRING([--with-ffmpegprefix], [prefix to ffmpeg source, if libavcodec and libavformat are not in the default path.)]), ffmpegprefix="$withval", ffmpegprefix="")
 AC_ARG_WITH(ffmpegldadd, AS_HELP_STRING([--with-ffmpegldadd], [ld options for static ffmpeg eg. "-lmp3lame -ldts -lfaac -logg -lxvidcore"]), ffmpegldadd="$withval", ffmpegldadd="")
 
 LIBPREF=lib
 LIBSUF=.a
 
-
-case $host in
-	ia32|x86|i386*|i486*|i586*|i686*) ARCH=ia32 ;;
-	ia64*) ARCH=ia64 ;;
-	powerpc64*|ppc64*) ARCH=powerpc64 ;;
-	powerpc*) ARCH=powerpc ;;
-	arm*) ARCH=arm ;;
-	amd64*) ARCH=amd64 ;;
-	x86_64*) ARCH=amd64 ;;
-	mips64*) ARCH=mips64 ;;
-	alpha*) ARCH=alpha ;;
-	*) AC_MSG_ERROR([
-	Unknown hardware architecture: $HOST.
-	Please specify hardware architecture using --host=ARCH.
-	]);;
-esac
-
-dnl set portmidi host architecture.
+target_os=$(uname -s | tr ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz)
+case $target_os in
+  darwin)
+  	PM_OS=mac
+  	AC_DEFINE([HAVE_MACOSX], [], [use macintosh's native display])
+	HAVE_MACOSX=1
+	LDFLAGS="-lz -lbz2 -framework Carbon -framework Quicktime"
 dnl 2006/11/13 : 32 bit RGBA is known not to work on OSX ffmpeg+imlib2
-case $ARCH in
-  powerpc*) PM_OS=mac ;;
-  *) 	PM_OS="linux";
+dnl IMLIB2RGBA 
+  	;;
+  linux)
+  	PM_OS="linux";
   	AC_DEFINE([IMLIB2RGBA], [], [use native RGB32 ffmpeg -> imlib.])
 	;;
+  *)	
+	AC_MSG_WARN([*** unknown target OS ***])
+  	;;
 esac
 
 AC_SUBST(VERSION)
@@ -159,11 +152,12 @@ dnl workaround: move this one on top of ffmpeg detection..
 PKG_CHECK_MODULES(Xpm, xpm, [ AC_DEFINE(HAVE_XPM) HAVE_XPM=1 ], [ NULL=0] )
 #AC_SEARCH_LIBS( XpmCreatePixmapFromData, Xpm, AC_DEFINE(HAVE_XPM) XPM_LIBS="-lXpm" HAVE_XPM=1 )
 
-AC_CHECK_LIB([X11], [XOpenDisplay], , [AC_MSG_ERROR(*** X11: You need to install the X11 development package: libx11-dev ***)])
 
 if test "x$enable_xv" != "xno"; then
 	AC_CHECK_LIB(Xv, XvQueryAdaptors, [AC_DEFINE(HAVE_LIBXV) AC_SUBST(XV_LIBS) AC_SUBST(XV_CFLAGS) XV_LIBS='-lXv' HAVE_LIBXV=1 ], [AC_MSG_ERROR([Could not find XVideo Lib (libXv])], $X_LIBS)
 fi
+
+AC_CHECK_LIB([X11], [XOpenDisplay], [XV_LIBS="$XV_LIBS -lXext"] , if [ -z "$HAVE_MACOSX" ]; then AC_MSG_ERROR([*** X11: You need to install the X11 development package: libx11-dev ***]) else AC_MSG_WARN([*** X11: Could not find X11 development libs. - This is only ok if you're compiling for a macintosh. ***]); fi )
 
 dnl ----------------------------------------------
 dnl alsamidi/portmidi 
@@ -288,13 +282,13 @@ if test  "x$HAVE_FFMPEG" != "xyes"; then
 	FFMPEG_CFLAGS="-I$FFMPEG_INCDIR -I$FFMPEG_INCDIR/libavcodec -I$FFMPEG_INCDIR/libavformat -I$FFMPEG_INCDIR/libavutil -I$FFMPEG_INCDIR/libswscale"
 else
 dnl FFMPEG include workaround.
-FFMPEG_INCDIR="/usr/include/ffmpeg/"
+test -d /usr/local/include/libavcodec && FFMPEG_INCDIR="/usr/local/include/" || FFMPEG_INCDIR="/usr/include/ffmpeg/"
 FFMPEG_CFLAGS="$FFMPEG_CFLAGS -I$FFMPEG_INCDIR/libavcodec -I$FFMPEG_INCDIR/libavformat -I$FFMPEG_INCDIR/libavutil -I$FFMPEG_INCDIR/libswscale"
 fi
 
 ac_save_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS $FFMPEG_CFLAGS"
-AC_CHECK_HEADERS(swscale.h , [HAVE_SWSCALE=1 AC_DEFINE(HAVE_SWSCALE) FFMPEG_LIBS="$FFMPEG_LIBS -lswscale"])
+AC_CHECK_HEADERS(swscale.h , [AC_DEFINE(HAVE_SWSCALE) HAVE_SWSCALE=1; if test -n "$ffmpegprefix" ; then FFMPEG_LIBS="$FFMPEG_LIBS $ffmpegprefix/libswscale/${LIBPREF}swscale$LIBSUF"; else FFMPEG_LIBS="$FFMPEG_LIBS -lswscale"; fi])
 CFLAGS="$ac_save_CFLAGS"
 
 AC_SUBST(FFMPEG_CFLAGS)
@@ -307,25 +301,38 @@ dnl ----------------------------------------------
 FREETYPE_LIBS=
 FREETYPE_CFLAGS=
 
-PKG_CHECK_MODULES(FREETYPE, freetype2, [freetype_pkgconfig=yes], [freetype_pkgconfig=no])
+FOUND_H_FREETYPE=
+FOUND_L_FREETYPE=
 
-if test "x$freetype_pkgconfig" = "xyes"; then
-	if test ! "x$enable_ft" = "xno"; then
-	  AC_DEFINE(HAVE_FREETYPE_H, 1, [Have FreeType2 include files])
-	  AC_DEFINE(HAVE_FT, 1, [Use freetype for OSD])
-	  HAVE_FT=1
+if test -n "$freetypeprefix" ; then
+	AC_CHECK_FILES([$freetypeprefix/include/ft2build.h],[FOUND_H_FREETYPE=yes])
+	AC_CHECK_FILES([$freetypeprefix/objs/.libs/${LIBPREF}freetime$LIBSUF],[FOUND_L_FREETYPE=yes])
+fi
+
+if test "x$FOUND_H_FREETYPE$FOUND_L_FREETYPE" = "xyesyes" ; then
+	FREETYPE_CFLAGS="-I$freetypeprefix/include/"
+	FREETYPE_LIBS="$freetypeprefix/objs/.libs/${LIBPREF}freetime$LIBSUF"
+else 
+	PKG_CHECK_MODULES(FREETYPE, freetype2, [freetype_pkgconfig=yes], [freetype_pkgconfig=no])
+
+	if test "x$freetype_pkgconfig" = "xyes"; then
+		if test ! "x$enable_ft" = "xno"; then
+		  AC_DEFINE(HAVE_FREETYPE_H, 1, [Have FreeType2 include files])
+		  AC_DEFINE(HAVE_FT, 1, [Use freetype for OSD])
+		  HAVE_FT=1
+		else
+			FREETYPE_LIBS=
+			FREETYPE_CFLAGS=
+		fi
 	else
-		FREETYPE_LIBS=
-		FREETYPE_CFLAGS=
-	fi
-else
-	AC_PATH_PROG(FREETYPE_CONFIG, freetype-config, no)
-	if test "x$FREETYPE_CONFIG" != "xno" -a ! "x$enable_ft" = "xno"; then
-		FREETYPE_CFLAGS=`$FREETYPE_CONFIG --cflags`
-		FREETYPE_LIBS=`$FREETYPE_CONFIG --libs`
-		AC_DEFINE(HAVE_FREETYPE_H, 1, [Have FreeType2 include files])
-		AC_DEFINE(HAVE_FT, 1, [Use freetype for OSD])
-		HAVE_FT=1
+		AC_PATH_PROG(FREETYPE_CONFIG, freetype-config, no)
+		if test "x$FREETYPE_CONFIG" != "xno" -a ! "x$enable_ft" = "xno"; then
+			FREETYPE_CFLAGS=`$FREETYPE_CONFIG --cflags`
+			FREETYPE_LIBS=`$FREETYPE_CONFIG --libs`
+			AC_DEFINE(HAVE_FREETYPE_H, 1, [Have FreeType2 include files])
+			AC_DEFINE(HAVE_FT, 1, [Use freetype for OSD])
+			HAVE_FT=1
+		fi
 	fi
 fi
 
@@ -534,6 +541,7 @@ echo    " Video Displays"
 echo -n "   - libxv:          ";	if test -n "$HAVE_LIBXV"; then echo "ok"; else echo "not avail."; fi
 #echo -n "   - libx11/imlib:   ";	if test -n "$HAVE_IMLIB"; then echo "ok"; else echo "not avail."; fi
 echo -n "   - libx11/imlib2:  ";	if test -n "$HAVE_IMLIB2"; then echo "ok"; else echo "not avail."; fi
+echo -n "   - mac/osx:        ";	if test -n "$HAVE_MACOSX"; then echo "ok"; else echo "not avail."; fi
 echo -n " MIDI:               ";
 if test -n "$HAVE_PORTMIDI"; then echo "portmidi";
 else if test -n "$HAVE_MIDI"; then echo "alsa"
@@ -549,6 +557,8 @@ else echo
 echo    "   - freetype:       ok";
 echo -n "   - default font:   ";	if test -n "$fontfile" ; then echo "$fontfile"; else echo " - "; fi
 fi
+echo -n " ffmpeg-scaling:     ";	
+if test -n "$HAVE_SWSCALE"; then echo "swscale"; else echo "img_convert"; fi
 echo -n " GUI:                ";	
 if test -n "$HAVE_QT4"; then echo "QT4";
 else if test -n "$HAVE_QT3"; then echo "QT3"

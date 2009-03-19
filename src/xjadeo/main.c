@@ -129,12 +129,16 @@ int jack_clkconvert =1; /* --jackfps  - NOT YET IMPLEMENTED
 lash_client_t *lash_client;
 #endif
 
-
+#ifdef HAVE_MACOSX
+// mac GUI defaults
+int 	seekflags    = SEEK_CONTINUOUS; 
+double 	delay = -1; // use file's FPS
+#else
+int 	seekflags    = SEEK_ANY; 
 double 	delay = 0.1; // default update rate 10 Hz
+#endif
 double 	filefps = -1.0; // if > 0 override autodetected video file frame rate
 int	videomode = 0; // --vo <int>  - default: autodetect
-
-int 	seekflags    = SEEK_ANY; 
 
 
 // On screen display
@@ -478,6 +482,9 @@ static void printversion (void) {
 		"(RGB24) "
 # endif 
 #endif 
+#ifdef HAVE_MACOSX
+		"OSX/quartz "
+#endif 
 		"\n"
   );
 }
@@ -574,7 +581,11 @@ main (int argc, char **argv)
 
   if ((i+1)== argc) movie = argv[i];
   else if ((remote_en || mq_en) && i==argc) movie = "";
+#ifndef HAVE_MACOSX
   else usage (EXIT_FAILURE);
+#else
+  else movie = "";
+#endif
 
   if (want_verbose) printf ("xjadeo %s\n", VERSION);
 

@@ -29,7 +29,7 @@
 ;lash=yes
 
 # select the video library/interface to use.
-#videomode=[xv|imlib2|x11|sdl]
+#videomode=[xv|imlib2|x11|sdl|mac]
 ;videomode=auto
 
 # en/disable message queues (remote control)

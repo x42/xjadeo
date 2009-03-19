@@ -174,3 +174,26 @@ void handle_X_events_imlib2 (void);
 void resize_imlib2 (unsigned int x, unsigned int y);
 void position_imlib2 (int x, int y);
 
+/*******************************************************************************
+ *
+ * Max Osx - quartz
+ */
+
+#ifdef HAVE_MACOSX
+
+# define SUP_MACOSX 1
+#else
+# define SUP_MACOSX 0
+#endif 
+
+void get_window_size_mac (unsigned int *my_Width, unsigned int *my_Height);
+void getpos_mac (int *x,  int *y);
+int open_window_mac (void);
+void close_window_mac(void);
+void render_mac (uint8_t *mybuffer);
+void newsrc_mac (void) ;
+void handle_X_events_mac (void);
+void resize_mac (unsigned int x, unsigned int y);
+void position_mac (int x, int y);
+void getsize_mac (unsigned int *x, unsigned int *y);
+

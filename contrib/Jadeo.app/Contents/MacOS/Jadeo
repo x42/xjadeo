@@ -1,0 +1,11 @@
+#!/bin/sh
+progname="$0"
+curdir=`dirname "$progname"`
+progbase=`basename "$progname"`
+#execname=${curdir}/xjadeo-ppc
+execname=${curdir}/${progbase}-bin
+
+if test -x "$execname"; then
+ cd "${curdir}"
+ exec "${execname}"
+fi
