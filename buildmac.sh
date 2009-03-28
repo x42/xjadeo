@@ -16,12 +16,12 @@ cp src/xjadeo/xjadeo contrib/Jadeo.app/Contents/MacOS/Jadeo-bin
 #
 # **reconfigure --arch i386 ?! - dual compile -arch ppc -arch i386 , link separately
 #cp  src/xjadeo/xjadeo src/xjadeo/xjadeo-i386
-#cp  src/xjadeo/xjadeo src/xjadeo/xjadeo-ppc
+#cp  src/xjadeo/xjadeo src/xjadeo/xjadeo-powerpc
 
-if [ -x src/xjadeo/xjadeo-i386 -a -x src/xjadeo/xjadeo-ppc ]; then
+if [ -x src/xjadeo/xjadeo-i386 -a -x src/xjadeo/xjadeo-powerpc ]; then
   echo "creating universal binary"
   rm contrib/Jadeo.app/Contents/MacOS/Jadeo-bin
-  lipo -create -output contrib/Jadeo.app/Contents/MacOS/Jadeo-bin src/xjadeo/xjadeo-ppc src/xjadeo/xjadeo-i386
+  lipo -create -output contrib/Jadeo.app/Contents/MacOS/Jadeo-bin src/xjadeo/xjadeo-powerpc src/xjadeo/xjadeo-i386
 fi
 
 

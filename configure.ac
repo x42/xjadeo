@@ -8,7 +8,7 @@ AC_CANONICAL_TARGET
 
 VERSION_MAJOR=0
 VERSION_MINOR=4
-VERSION_SUB="6"
+VERSION_SUB=7
 
 dnl Every other copy of the package version number gets its value from here
 AM_INIT_AUTOMAKE(xjadeo, [${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_SUB}])
@@ -25,9 +25,9 @@ AC_ARG_ENABLE(qtgui, AC_HELP_STRING([--disable-qtgui],[Don't build the Qt GUI co
 AC_ARG_ENABLE(contrib,  AC_HELP_STRING([--enable-contrib],  [Compile and install code in contrib folder]))
 AC_ARG_ENABLE(lash, AC_HELP_STRING([--disable-lash],[disable LASH support]))
 AC_ARG_ENABLE(timescale, AC_HELP_STRING([--disable-timescale],[disable time-mapping/loop-playback support]))
-AC_ARG_ENABLE(framecrop, AC_HELP_STRING([--enable-framecrop],[enable frame cropping]))
-AC_ARG_ENABLE(tiff, AC_HELP_STRING([--disable-tiff],[disable libtiff support]))
-AC_ARG_ENABLE(mq, AC_HELP_STRING([--disable-mq],[disable mq remote support]))
+AC_ARG_ENABLE(framecrop, AC_HELP_STRING([--enable-framecrop],[hardcoded frame cropping - DO NOT USE]))
+AC_ARG_ENABLE(tiff, AC_HELP_STRING([--disable-tiff],[disable libtiff support (affects only contrib/tsmm/)]))
+AC_ARG_ENABLE(mq, AC_HELP_STRING([--disable-mq],[disable POSIX message-queue remote control]))
 AC_ARG_ENABLE(osc, AC_HELP_STRING([--disable-osc],[disable OSC remote support]))
 
 dnl FPU emulation core.
@@ -43,11 +43,12 @@ AC_ARG_ENABLE(midi, AC_HELP_STRING([--enable-midi=auto], [select MTC support: au
   esac
 ], [ MIDI=yes PORTMIDI=yes ALSAMIDI=yes])
 
-AC_ARG_WITH(fontfile, AS_HELP_STRING([--with-fontfile], [specify an absolte path to a truetype font file to be used as default OSD font.]), fontfile="$withval", fontfile="")
+AC_ARG_WITH(fontfile, AS_HELP_STRING([--with-fontfile=file.ttf], [specify a path to a truetype font file to be used as default OSD font.]), fontfile="$withval", fontfile="")
 
-AC_ARG_WITH(portmidiprefix, AS_HELP_STRING([--with-portmidiprefix], [specify prefix to portmidi source)]), portmidiprefix="$withval", portmidiprefix="")
-AC_ARG_WITH(freetypeprefix, AS_HELP_STRING([--with-freetypeprefix], [specify prefix to freetype source)]), freetypeprefix="$withval", freetypeprefix="")
-AC_ARG_WITH(ffmpegprefix, AS_HELP_STRING([--with-ffmpegprefix], [prefix to ffmpeg source, if libavcodec and libavformat are not in the default path.)]), ffmpegprefix="$withval", ffmpegprefix="")
+AC_ARG_WITH(portmidisrc, AS_HELP_STRING([--with-portmidisrc], [statically link against portmidi]), portmidisrc="$withval", portmidisrc="")
+AC_ARG_WITH(freetypesrc, AS_HELP_STRING([--with-freetypesrc], [statically link against freetype]), freetypesrc="$withval", freetypesrc="")
+AC_ARG_WITH(ffmpegprefix, AS_HELP_STRING([--with-ffmpegprefix], [override pkg-config - specify prefix to ffmpeg installation]), ffmpegprefix="$withval", ffmpegprefix="")
+AC_ARG_WITH(ffmpegsrc, AS_HELP_STRING([--with-ffmpegsrc], [location of ffmpeg source, use to statically link against ffmpeg]), ffmpegsrc="$withval", ffmpegsrc="")
 AC_ARG_WITH(ffmpegldadd, AS_HELP_STRING([--with-ffmpegldadd], [ld options for static ffmpeg eg. "-lmp3lame -ldts -lfaac -logg -lxvidcore"]), ffmpegldadd="$withval", ffmpegldadd="")
 
 LIBPREF=lib
@@ -118,6 +119,7 @@ AH_TEMPLATE([CROPIMG], [enable frame cropping])
 AH_TEMPLATE([DRAW_CROSS], [paint a X on screen when unable to decode or display a frame.])
 AH_TEMPLATE([HAVE_JACK_VIDEO], [experimental code to use jack_video, jack-svn >= r591])
 AH_TEMPLATE([HAVE_SWSCALE], [Define as 1 if you have ffmpeg with swscale support])
+AH_TEMPLATE([OLD_FFMPEG], [Define as 1 if you older versions of ffmpeg that provide all include headers in one folder. ])
 
 AC_DEFINE(CFG_WARN_ONLY)
 AC_DEFINE(DND)
@@ -160,12 +162,8 @@ fi
 AC_SUBST(LIBLO_CFLAGS)
 AC_SUBST(LIBLO_LIBS)
 
-dnl I experienced strange behaviour when using --with-ffmpegprefix:
-dnl if the first pkg_check_module fails,  subsequent calls will fail too!
-dnl workaround: move this one on top of ffmpeg detection..
 PKG_CHECK_MODULES(Xpm, xpm, [ AC_DEFINE(HAVE_XPM) HAVE_XPM=1 ], [ NULL=0] )
 #AC_SEARCH_LIBS( XpmCreatePixmapFromData, Xpm, AC_DEFINE(HAVE_XPM) XPM_LIBS="-lXpm" HAVE_XPM=1 )
-
 
 if test "x$enable_xv" != "xno"; then
 	AC_CHECK_LIB(Xv, XvQueryAdaptors, [AC_DEFINE(HAVE_LIBXV) AC_SUBST(XV_LIBS) AC_SUBST(XV_CFLAGS) XV_LIBS='-lXv' HAVE_LIBXV=1 ], [AC_MSG_ERROR([Could not find XVideo Lib (libXv)])], $X_LIBS)
@@ -179,7 +177,7 @@ dnl ----------------------------------------------
 if test "x$MIDI" != "xno"; then
 	MIDI_CFLAGS=""
 	MIDI_CFLAGS=""
-	if test "x$PORTMIDI" != "xno" -a -z "$portmidiprefix" ; then
+	if test "x$PORTMIDI" != "xno" -a -z "$portmidisrc" ; then
 		AC_CHECK_HEADERS(portmidi.h porttime.h , [FOUND_H_PORTMIDI=yes])
 		BACKUPLIBS="$LIBS"
 		LIBS="$LIBS -lporttime"
@@ -188,15 +186,15 @@ if test "x$MIDI" != "xno"; then
 		MIDI_LIBS="-lportmidi -lporttime"
 	fi
 
-	if test "x$PORTMIDI" != "xno" -a -n "$portmidiprefix" -a -n "$PM_OS"; then
-		AC_CHECK_FILES([$portmidiprefix/porttime/porttime.h $portmidiprefix/pm_common/portmidi.h],[FOUND_H_PORTMIDI=yes])
+	if test "x$PORTMIDI" != "xno" -a -n "$portmidisrc" -a -n "$PM_OS"; then
+		AC_CHECK_FILES([$portmidisrc/porttime/porttime.h $portmidisrc/pm_common/portmidi.h],[FOUND_H_PORTMIDI=yes])
 	# magic ppc-portmidi :  cc -dynamiclib pm_mac/*.o porttime/*.o -flat_namespace -undefined suppress -o portmidi.dylib
 
-		AC_CHECK_FILES([$portmidiprefix/porttime/${LIBPREF}porttime$LIBSUF $portmidiprefix/pm_${PM_OS}/${LIBPREF}portmidi$LIBSUF],[FOUND_L_PORTMIDI=yes MIDI_LIBS="$portmidiprefix/porttime/${LIBPREF}porttime$LIBSUF $portmidiprefix/pm_${PM_OS}/${LIBPREF}portmidi$LIBSUF"])
-		AC_CHECK_FILES([$portmidiprefix/pm_${PM_OS}/build/${LIBPREF}portmidi$LIBSUF],[FOUND_L_PORTMIDI=yes MIDI_LIBS="$portmidiprefix/pm_${PM_OS}/build/${LIBPREF}portmidi$LIBSUF"])
+		AC_CHECK_FILES([$portmidisrc/porttime/${LIBPREF}porttime$LIBSUF $portmidisrc/pm_${PM_OS}/${LIBPREF}portmidi$LIBSUF],[FOUND_L_PORTMIDI=yes MIDI_LIBS="$portmidisrc/porttime/${LIBPREF}porttime$LIBSUF $portmidisrc/pm_${PM_OS}/${LIBPREF}portmidi$LIBSUF"])
+		AC_CHECK_FILES([$portmidisrc/pm_${PM_OS}/build/${LIBPREF}portmidi$LIBSUF],[FOUND_L_PORTMIDI=yes MIDI_LIBS="$portmidisrc/pm_${PM_OS}/build/${LIBPREF}portmidi$LIBSUF"])
 		if test $PM_OS = "mac" ; then MIDI_LIBS="$MIDI_LIBS -framework CoreMIDI -framework CoreFoundation -framework CoreAudio"; fi
 
-		MIDI_CFLAGS="-I$portmidiprefix/porttime/ -I$portmidiprefix/pm_common/"
+		MIDI_CFLAGS="-I$portmidisrc/porttime/ -I$portmidisrc/pm_common/"
 	fi
 
 	if test "x$ALSAMIDI" != "xno"; then
@@ -228,84 +226,70 @@ dnl ----------------------------------------------
 dnl Check for ffmpeg: avformat/avcodec 
 dnl ----------------------------------------------
 
-#
-#if test -z "$ffmpegprefix" ; then
-#dnl check for local ffmpeg ./ffmpeg copy
-#PKG_CONFIG_PATH=./ffmpeg:$PKG_CONFIG_PATH
-#else
-#PKG_CONFIG_PATH=$ffmpegprefix:$PKG_CONFIG_PATH
-#fi 
-#
-if test -z "$ffmpegprefix" ; then
+if test -z "$ffmpegprefix" -a -z "$ffmpegsrc" ; then
 	PKG_CHECK_MODULES(FFMPEG, libavformat libavcodec libavutil, HAVE_FFMPEG=yes, 
 		AC_MSG_WARN([
-		Could not find ffmpeg package. please update PKG_CONFIG_PATH to 
-		point to a ffmpegs source folder.
+		Could not find ffmpeg package. please set PKG_CONFIG_PATH to 
+		where FFMPEG .
 		])) 
 fi
 
-if test "x$HAVE_FFMPEG" != "xyes" ; then 
-	AC_CHECK_PROG(HAVE_FFMPEG_CONFIG, ffmpeg-config, yes)
-fi
 
-if test -z "$ffmpegprefix" -a "x$HAVE_FFMPEG_CONFIG" == xyes; then
-	FFMPEG_CFLAGS=`ffmpeg-config --cflags`
-	FFMPEG_LIBS=`ffmpeg-config --libs avformat`
-	HAVE_FFMPEG=yes
-        AC_MSG_NOTICE([
-	located a ffmpeg installation without pkg-information.
+if test -n "$ffmpegsrc" ; then
+	AC_CHECK_FILES([$ffmpegsrc/libavcodec/${LIBPREF}avcodec$LIBSUF $ffmpegsrc/libavformat/${LIBPREF}avformat$LIBSUF],[
+		FFMPEG_LIBS="$ffmpegsrc/libavformat/${LIBPREF}avformat$LIBSUF $ffmpegsrc/libavcodec/${LIBPREF}avcodec$LIBSUF $ffmpegsrc/libavutil/${LIBPREF}avutil$LIBSUF $ffmpegsrc/libavdevice/${LIBPREF}avdevice$LIBSUF -lz $ffmpegldadd" 
+		HAVE_FFMPEG=yes
+		FFMPEG_INCDIR="$ffmpegsrc"
+		FFMPEG_CFLAGS="-I$FFMPEG_INCDIR -I$FFMPEG_INCDIR/libavcodec -I$FFMPEG_INCDIR/libavformat -I$FFMPEG_INCDIR/libavutil"
+		AC_MSG_NOTICE([located a ffmpeg installation without pkg-information.])
 	])
+
+elif test -n "$ffmpegprefix" ; then
+	FFMPEG_LIBS="-L$ffmpegprefix/lib -lavcodec -lavutil -lavformat -lswscale"
+	FFMPEG_INCDIR="$ffmpegprefix/include"
+	FFMPEG_CFLAGS="-I$FFMPEG_INCDIR" #default
+	FFMPEG_CFLAGS="$FFMPEG_CFLAGS -I$FFMPEG_INCDIR/libavcodec -I$FFMPEG_INCDIR/libavformat -I$FFMPEG_INCDIR/libavutil" # new
+	FFMPEG_CFLAGS="$FFMPEG_CFLAGS -I$FFMPEG_INCDIR/ffmpeg/" # old
+	FFMPEG_CFLAGS="$FFMPEG_CFLAGS -I$FFMPEG_INCDIR/ffmpeg/libavcodec -I$FFMPEG_INCDIR/ffmpeg/libavformat -I$FFMPEG_INCDIR/ffmpeg/libavutil" # even older
+	HAVE_FFMPEG=yes
+	AC_MSG_NOTICE([located a ffmpeg installation without pkg-information.])
 fi
 
-if test  "x$HAVE_FFMPEG" != "xyes" -a -z "$ffmpegprefix" ; then
-		AC_CHECK_HEADER(ffmpeg/avcodec.h,[HAVE_SHARED_AVCODEC=yes])
-		AC_CHECK_HEADER(ffmpeg/avformat.h, [HAVE_SHARED_AVFORMAT=yes])
-		AC_CHECK_FILE(/usr/local/include/ffmpeg, [HAVE_FFMPEG_LOCAL=yes])
-fi
-
-if test  "x$HAVE_FFMPEG" != "xyes" -a -n "$ffmpegprefix" ; then
-		AC_CHECK_FILES([$ffmpegprefix/libavcodec/${LIBPREF}avcodec$LIBSUF $ffmpegprefix/libavformat/${LIBPREF}avformat$LIBSUF],[HAVE_SHARED_AVCODEC=yes HAVE_SHARED_AVFORMAT=yes])
-fi
-
-if test  "x$HAVE_FFMPEG" != "xyes" -a "x$HAVE_SHARED_AVCODEC$HAVE_SHARED_AVCODEC" != xyesyes; then
+if test "x$HAVE_FFMPEG" != "xyes"; then
 		AC_MSG_ERROR([
-	libavcodec and libavformat from ffmpeg are required.
+	libavcodec, libavformat and libavutil from ffmpeg are required.
 	If you are sure that ffmpeg is installed, point
 	configure to your local copy with f.i.
-	./configure --with-ffmpegprefix=/usr/local/src/ffmpeg
+	./configure --with-ffmpegprefix=/usr/local/
+        or
+	./configure --with-ffmpegsrc=/usr/local/src/ffmpeg/
 	])
 fi
 
-dnl backwards compat...
-if test  "x$HAVE_FFMPEG" != "xyes"; then
-	FFMPEG_LIBS="-L/usr/local/lib -L/usr/lib -lavformat -lavcodec -lavutil -lz"
-	if test -n "$ffmpegprefix" ; then
-		FFMPEG_INCDIR="$ffmpegprefix"
-		FFMPEG_LIBS="$ffmpegprefix/libavformat/${LIBPREF}avformat$LIBSUF $ffmpegprefix/libavcodec/${LIBPREF}avcodec$LIBSUF $ffmpegprefix/libavutil/${LIBPREF}avutil$LIBSUF $ffmpegprefix/libswscale/${LIBPREF}swscale$LIBSUF $ffmpegprefix/libavdevice/${LIBPREF}avdevice$LIBSUF -lz $ffmpegldadd" 
-		#FFMPEG_LIBS="$ffmpegprefix/libavformat/${LIBPREF}avformat$LIBSUF $ffmpegprefix/libavcodec/${LIBPREF}avcodec$LIBSUF $ffmpegprefix/libavutil/${LIBPREF}avutil$LIBSUF $ffmpegprefix/libswscale/${LIBPREF}swscale$LIBSUF $ffmpegprefix/libpostproc/${LIBPREF}postproc$LIBSUF $ffmpegprefix/libavdevice/${LIBPREF}avdevice$LIBSUF -lz $ffmpegldadd" 
-		#FFMPEG_LIBS="-L$ffmpegprefix/libavdevice -L$ffmpegprefix/libavformat -L$ffmpegprefix/libavcodec -L$ffmpegprefix/libavutil -Wl,-rpath-link,$ffmpegprefix/libavcodec -Wl,-rpath-link,$ffmpegprefix/libavformat -Wl,-rpath-link,$ffmpegprefix/libavutil -Wl,-Bsymbolic -lavdevice -lavformat -lavcodec -lavutil  -lz -lm $ffmpegldadd" 
-	elif test "x$HAVE_FFMPEG_LOCAL" != xyes; then
-		FFMPEG_INCDIR="/usr/local/include/ffmpeg/"
-	else
-		FFMPEG_INCDIR="/usr/include/ffmpeg/"
-	fi
-	HAVE_FFMPEG=yes
-        AC_MSG_NOTICE([
-	located a ffmpeg installation without pkg-information.
-	])
-
-	FFMPEG_CFLAGS="-I$FFMPEG_INCDIR -I$FFMPEG_INCDIR/libavcodec -I$FFMPEG_INCDIR/libavformat -I$FFMPEG_INCDIR/libavutil -I$FFMPEG_INCDIR/libswscale"
-else
-dnl FFMPEG include workaround.
-test -d /usr/local/include/libavcodec && FFMPEG_INCDIR="/usr/local/include/" || FFMPEG_INCDIR="/usr/include/ffmpeg/"
-FFMPEG_CFLAGS="$FFMPEG_CFLAGS -I$FFMPEG_INCDIR/libavcodec -I$FFMPEG_INCDIR/libavformat -I$FFMPEG_INCDIR/libavutil -I$FFMPEG_INCDIR/libswscale"
-fi
 
 ac_save_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS $FFMPEG_CFLAGS"
-AC_CHECK_HEADERS(swscale.h , [AC_DEFINE(HAVE_SWSCALE) HAVE_SWSCALE=1; if test -n "$ffmpegprefix" ; then FFMPEG_LIBS="$FFMPEG_LIBS $ffmpegprefix/libswscale/${LIBPREF}swscale$LIBSUF"; else FFMPEG_LIBS="$FFMPEG_LIBS -lswscale"; fi])
+dnl backwards compat
+AC_CHECK_HEADERS([ffmpeg/avcodec.h], [AC_DEFINE(OLD_FFMPEG) OLD_FFMPEG=1;])
+
+dnl check for libswscale (required for ffmpeg > 0.49)
+if test -n "$ffmpegsrc"; then 
+	AC_CHECK_HEADERS($ffmpegsrc/libswscale/swscale.h , [AC_DEFINE(HAVE_SWSCALE) HAVE_SWSCALE=1; FFMPEG_LIBS="$FFMPEG_LIBS $ffmpegsrc/libswscale/${LIBPREF}swscale$LIBSUF"; FFMPEG_CFLAGS="$FFMPEG_CFLAGS -I$FFMPEG_INCDIR/libswscale"])
+elif test -n "$ffmpegprefix"; then 
+	AC_CHECK_HEADERS($ffmpegprefix/include/libswscale/swscale.h , [AC_DEFINE(HAVE_SWSCALE) HAVE_SWSCALE=1; FFMPEG_LIBS="$FFMPEG_LIBS -lswscale"; FFMPEG_CFLAGS="$FFMPEG_CFLAGS -I$ffmpegprefix/include/libswscale/"]) # new
+	AC_CHECK_HEADERS($ffmpegprefix/include/ffmpeg/libswscale/swscale.h , [AC_DEFINE(HAVE_SWSCALE) HAVE_SWSCALE=1; FFMPEG_LIBS="$FFMPEG_LIBS -lswscale"; FFMPEG_CFLAGS="$FFMPEG_CFLAGS -I$ffmpegprefix/include/ffmpeg/"]) # old
+	AC_CHECK_HEADERS($ffmpegprefix/include/ffmpeg/swscale.h , [AC_DEFINE(HAVE_SWSCALE) HAVE_SWSCALE=1; FFMPEG_LIBS="$FFMPEG_LIBS -lswscale"; FFMPEG_CFLAGS="$FFMPEG_CFLAGS -I$ffmpegprefix/include/ffmpeg/libswscale/"]) # older
+elif test -n "$OLD_FFMPEG"; then 
+	AC_CHECK_HEADERS(swscale.h , [AC_DEFINE(HAVE_SWSCALE) HAVE_SWSCALE=1; FFMPEG_LIBS="$FFMPEG_LIBS -lswscale"])
+else 
+	PKG_CHECK_MODULES(SWSCALE, libswscale, [AC_DEFINE(HAVE_SWSCALE) HAVE_SWSCALE=1; FFMPEG_LIBS="$FFMPEG_LIBS $SWSCALE_LIBS"; FFMPEG_CFLAGS="$FFMPEG_CFLAGS $SWSCALE_CFLAGS"])
+	if -z "$HAVE_SWSCALE";then
+		AC_CHECK_HEADERS(libswscale/swscale.h , [AC_DEFINE(HAVE_SWSCALE) HAVE_SWSCALE=1; FFMPEG_LIBS="$FFMPEG_LIBS -lswscale";])
+	fi
+fi
 CFLAGS="$ac_save_CFLAGS"
 
+dnl phew, done with ffmpeg.
 AC_SUBST(FFMPEG_CFLAGS)
 AC_SUBST(FFMPEG_LIBS)
 
@@ -319,14 +303,14 @@ FREETYPE_CFLAGS=
 FOUND_H_FREETYPE=
 FOUND_L_FREETYPE=
 
-if test -n "$freetypeprefix" ; then
-	AC_CHECK_FILES([$freetypeprefix/include/ft2build.h],[FOUND_H_FREETYPE=yes])
-	AC_CHECK_FILES([$freetypeprefix/objs/.libs/${LIBPREF}freetime$LIBSUF],[FOUND_L_FREETYPE=yes])
+if test -n "$freetypesrc" ; then
+	AC_CHECK_FILES([$freetypesrc/include/ft2build.h],[FOUND_H_FREETYPE=yes])
+	AC_CHECK_FILES([$freetypesrc/objs/.libs/${LIBPREF}freetime$LIBSUF],[FOUND_L_FREETYPE=yes])
 fi
 
 if test "x$FOUND_H_FREETYPE$FOUND_L_FREETYPE" = "xyesyes" ; then
-	FREETYPE_CFLAGS="-I$freetypeprefix/include/"
-	FREETYPE_LIBS="$freetypeprefix/objs/.libs/${LIBPREF}freetime$LIBSUF"
+	FREETYPE_CFLAGS="-I$freetypesrc/include/"
+	FREETYPE_LIBS="$freetypesrc/objs/.libs/${LIBPREF}freetime$LIBSUF"
 else 
 	PKG_CHECK_MODULES(FREETYPE, freetype2, [freetype_pkgconfig=yes], [freetype_pkgconfig=no])
 
