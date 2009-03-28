@@ -105,6 +105,7 @@ int want_dropframes =0; /* --dropframes -N  BEWARE! */
 int want_autodrop =1;   /* --nodropframes -n (hidden option) */
 int avoid_lash   =0;	/* --nolash */
 int remote_en =0;	/* --remote, -R */
+int osc_port =0;	/* --osc, -O */
 int mq_en =0;		/* --mq, -Q */
 int remote_mode =0;	/* 0: undirectional ; >0: bidir
 			 * bitwise enable async-messages 
@@ -198,6 +199,9 @@ static struct option const long_options[] =
   {"midifps", required_argument, 0, 'M'},
   {"midiclk", required_argument, 0, 'C'},
 #endif
+#ifdef HAVE_LIBLO
+  {"osc", required_argument, 0, 'O'},
+#endif
   {"debug", no_argument, 0, 'D'},
   {NULL, 0, NULL, 0}
 };
@@ -238,6 +242,9 @@ decode_switches (int argc, char **argv)
 #endif
 			   "N"	/* --dropframes */
 			   "n"	/* --nodropframes */
+#ifdef HAVE_LIBLO
+			   "O:"	/* --osc  */
+#endif
 			   "D"	/* debug */
 			   "L"	/* no lash */
 			   "V",	/* version */
@@ -275,6 +282,9 @@ decode_switches (int argc, char **argv)
 	  break;
 	case 'Q':		/* --mq */
 	  mq_en = 1;
+	  break;
+	case 'O':		/* --avverbose */
+	  osc_port=atoi(optarg);
 	  break;
 	case 'n':		/* --nodropframes */
 	  want_autodrop = 0;
@@ -432,6 +442,9 @@ jack video monitor\n", program_name);
 #ifdef HAVE_MQ
 "  -Q, --mq                  set-up message queues for xjremote\n"
 #endif
+#ifdef HAVE_LIBLO
+"  -O <port>, --osc <port>   listen for OSC messages on given port.\n"
+#endif
 "  -R, --remote              remote control (stdin) - implies non verbose&quiet\n"
 "  -t, --try-codec           checks if the video-file can be played by jadeo.\n"
 "                            exits with code 1 if the file is not supported.\n"
@@ -514,7 +527,8 @@ void clean_up (int status) {
 #ifdef HAVE_MQ
   if(mq_en) close_mq_ctrl();
 #endif
-  
+  shutdown_osc();
+
   close_window();
   
   close_movie();
@@ -607,6 +621,8 @@ main (int argc, char **argv)
 
   signal (SIGHUP, catchsig);
   signal (SIGINT, catchsig);
+
+  if (osc_port > 0) initialize_osc(osc_port);
 
   open_movie(movie);
   

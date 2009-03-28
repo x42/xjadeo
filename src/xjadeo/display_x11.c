@@ -32,6 +32,9 @@
 #define IMC // cache imlib2 image
 #undef  IM_CUSTOM_COLORTABLE 
 
+#ifdef CROPIMG
+	int xoffset = 0;
+#endif
 
 #if (HAVE_LIBXV || HAVE_IMLIB || HAVE_IMLIB2)
 
@@ -46,7 +49,6 @@ int			xj_mouse = 0;
 
 int          		xj_dwidth, xj_dheight; // cache window size for rendering currently only Xv
 int			xj_box[4]; // letterbox site - currently only Xv & imlib2
-
 
 /*******************************************************************************
  * common X11 code 
@@ -733,6 +735,16 @@ void xj_handle_X_events (void) {
 						frame_to_smptestring(smpte_offset,ts_offset,midi_connected());
 					} else if (key == 0x6d ) { // 'm' // toggle mouse pointer
 						xj_mousepointer(2);
+#ifdef CROPIMG
+					} else if (key == 0x5b ) { // '[' // 
+						xoffset-=2;
+						if (xoffset<0) xoffset=0;
+						force_redraw=1;
+					} else if (key == 0x5d ) { // ']' // 
+						xoffset+=2;
+						if (xoffset>movie_width) xoffset=movie_width;
+						force_redraw=1;
+#endif
 					} else if (want_debug) {
 						printf("unassigned key pressed: '%c' 0x%x\n",key,key);
 					}
@@ -853,11 +865,24 @@ void render_xv (uint8_t *mybuffer) {
 	size_t mw2 = movie_width /2; 
 	size_t mh2 = movie_height /2; 
 
+#ifdef CROPIMG
+	Ylen*=2;
+	UVlen*=2;
+	mw2*=2;
+	size_t stride = xv_swidth*2; // XXX
+#else 
+	size_t stride = xv_swidth;
+#endif
 	// decode ffmpeg - YUV 
 	uint8_t *Yptr=mybuffer; // Y 
 	uint8_t *Uptr=Yptr + Ylen; // U
 	uint8_t *Vptr=Uptr + UVlen; // V
 
+#ifdef CROPIMG
+	Yptr+= xoffset;
+	Uptr+= xoffset/2;
+	Vptr+= xoffset/2;
+#endif
 	if (xv_pic_format == FOURCC_I420 && xv_one_memcpy) {
 		// copy YUV420P 
 		fast_memcpy(xv_buffer,mybuffer,Ylen+UVlen+UVlen); // Y+U+V
@@ -865,7 +890,7 @@ void render_xv (uint8_t *mybuffer) {
 	
 	// encode YV420P
 		stride_memcpy(xv_buffer+xv_image->offsets[0],
-			Yptr, xv_swidth, xv_sheight, xv_image->pitches[0], xv_swidth);
+			Yptr, xv_swidth, xv_sheight, xv_image->pitches[0], stride);
 
 		stride_memcpy(xv_buffer+xv_image->offsets[1],
 			Uptr, mw2, mh2, xv_image->pitches[1], mw2);
@@ -875,7 +900,7 @@ void render_xv (uint8_t *mybuffer) {
 	} else {
 	// encode YV12
 		stride_memcpy(xv_buffer+xv_image->offsets[0],
-			Yptr, xv_swidth, xv_sheight, xv_image->pitches[0], xv_swidth);
+			Yptr, xv_swidth, xv_sheight, xv_image->pitches[0], stride);
 
 		stride_memcpy(xv_buffer+xv_image->offsets[1],
 			Vptr, mw2, mh2, xv_image->pitches[1], mw2);

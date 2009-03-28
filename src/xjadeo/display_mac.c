@@ -49,8 +49,11 @@ extern double filefps;
 extern int start_fullscreen;
 extern int start_ontop;
 
-int keep_aspect = 0 ;; // don't allow resizing window other than in aspect.
+int keep_aspect = 0 ; // don't allow resizing window other than in aspect.
 
+#ifdef CROPIMG
+  extern int xoffset;
+#endif
 
 #define memcpy_pic(d, s, b, h, ds, ss) memcpy_pic2(d, s, b, h, ds, ss, 0)
 static inline void * memcpy_pic2(void * dst, const void * src, 
@@ -950,9 +953,16 @@ static int draw_frame(uint8_t *src) {
     case PIX_FMT_YUV420P:
     case PIX_FMT_YUYV422:
     case PIX_FMT_UYVY422:
+#ifdef CROPIMG
+{
+      stride_memcpy(yuvbuf, src+(xoffset*2),
+          movie_width*2,movie_height, movie_width*2, movie_width*4);
+}
+#else 
       memcpy_pic(((char*)yuvbuf), src, 
       imgRect.right * 2, imgRect.bottom, 
       imgRect.right * 2, imgRect.right * 2);
+#endif
       return 0;
   }
   return -1;
@@ -1428,6 +1438,18 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       my_Height+=step;
       resize_mac(my_Width, my_Height);
     } break;
+#ifdef CROPIMG
+    case '[': { 
+      xoffset-=2;
+      if (xoffset<0) xoffset=0;
+      force_redraw=1;
+    } break;
+    case ']': { 
+      xoffset+=2;
+      if (xoffset>movie_width) xoffset=movie_width;
+      force_redraw=1;
+    } break;
+#endif
     default: 
       printf("yet unhandled keyboard event: '%c' %0x\n",c,c);
       break;

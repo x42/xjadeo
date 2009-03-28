@@ -2,11 +2,11 @@ SVNREV = $(shell svnversion -n $(topdir) 2>/dev/null)
 
 bin_PROGRAMS=xjadeo xjremote xjinfo
 
-xjadeo_SOURCES=xjadeo.c ../../aclocal.m4 ../../config.h getopt.c getopt1.c getopt.h display.c jack.c midi.c freetype.c xjadeo.h display.h display_x11.c smpte.c main.c remote.c configfile.c lash.c mqueue.c icons/osd_bitmaps.h display_mac.c
+xjadeo_SOURCES=xjadeo.c ../../aclocal.m4 ../../config.h getopt.c getopt1.c getopt.h display.c jack.c midi.c freetype.c xjadeo.h display.h display_x11.c smpte.c main.c remote.c configfile.c lash.c mqueue.c icons/osd_bitmaps.h display_mac.c xjosc.c
 
-xjadeo_LDADD = -ljack -lXext @MQ_LIBS@ @FFMPEG_LIBS@ @XV_LIBS@ @IMLIB_LIBS@ @MIDI_LIBS@ @FREETYPE_LIBS@ @IMLIB2_LIBS@ @LASH_LIBS@ @Xpm_LIBS@
+xjadeo_LDADD = -ljack -lXext @MQ_LIBS@ @FFMPEG_LIBS@ @XV_LIBS@ @IMLIB_LIBS@ @MIDI_LIBS@ @FREETYPE_LIBS@ @IMLIB2_LIBS@ @LASH_LIBS@ @Xpm_LIBS@ @LIBLO_LIBS@
 
-xjadeo_CFLAGS = -Wall -g -O3 @FFMPEG_CFLAGS@ @XV_CFLAGS@ @IMLIB_CFLAGS@ @MIDI_CFLAGS@ @FREETYPE_CFLAGS@ @IMLIB2_CFLAGS@ @LASH_CFLAGS@ "-DSUBVERSION=\"$(SVNREV)\""
+xjadeo_CFLAGS = -Wall -g -O3 @FFMPEG_CFLAGS@ @XV_CFLAGS@ @IMLIB_CFLAGS@ @MIDI_CFLAGS@ @FREETYPE_CFLAGS@ @IMLIB2_CFLAGS@ @LASH_CFLAGS@ @LIBLO_CFLAGS@ "-DSUBVERSION=\"$(SVNREV)\""
 
 
 xjremote_SOURCES = xjremote.c getopt.c getopt1.c getopt.h

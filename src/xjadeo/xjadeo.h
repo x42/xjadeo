@@ -137,6 +137,10 @@ void midi_open(char *midiid);
 void midi_close(void);
 #endif
 
+/* xjosc.c */
+int initialize_osc(int osc_port);
+void shutdown_osc(void);
+
 /* configfile.c */
 void xjadeorc (void);
 

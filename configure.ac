@@ -25,8 +25,10 @@ AC_ARG_ENABLE(qtgui, AC_HELP_STRING([--disable-qtgui],[Don't build the Qt GUI co
 AC_ARG_ENABLE(contrib,  AC_HELP_STRING([--enable-contrib],  [Compile and install code in contrib folder]))
 AC_ARG_ENABLE(lash, AC_HELP_STRING([--disable-lash],[disable LASH support]))
 AC_ARG_ENABLE(timescale, AC_HELP_STRING([--disable-timescale],[disable time-mapping/loop-playback support]))
+AC_ARG_ENABLE(framecrop, AC_HELP_STRING([--enable-framecrop],[enable frame cropping]))
 AC_ARG_ENABLE(tiff, AC_HELP_STRING([--disable-tiff],[disable libtiff support]))
 AC_ARG_ENABLE(mq, AC_HELP_STRING([--disable-mq],[disable mq remote support]))
+AC_ARG_ENABLE(osc, AC_HELP_STRING([--disable-osc],[disable OSC remote support]))
 
 dnl FPU emulation core.
 AC_ARG_ENABLE(midi, AC_HELP_STRING([--enable-midi=auto], [select MTC support: auto,alsa,portmidi,off]),
@@ -105,12 +107,14 @@ AH_TEMPLATE([HAVE_MIDI], [Define as 1 if you have either alsa or portmidi])
 AH_TEMPLATE([HAVE_LASH], [Define as 1 if you have lash])
 AH_TEMPLATE([HAVE_XPM], [Define as 1 if you have libXpm])
 AH_TEMPLATE([HAVE_MQ], [Define as 1 if you have POSIX message queues (libc, librt)])
+AH_TEMPLATE([HAVE_LIBLO], [Define as 1 if you have the loblo OSC library])
 AH_TEMPLATE([HAVE_TIFF], [Define as 1 if you have libtiff (contrib/tsmm)])
 AH_TEMPLATE([TTFFONTFILE], [absolute path to truetype default OSD font file])
 AH_TEMPLATE([CFG_WARN_ONLY], [errors in the resource config file only result in a warning message instead of forcing xjadeo to exit.])
 AH_TEMPLATE([DND], [enable xjadeo x11 drag and drop])
 AH_TEMPLATE([COLOREQ], [enable XV and imlib2 color equalizer])
 AH_TEMPLATE([TIMEMAP], [enable dynamic time scaling])
+AH_TEMPLATE([CROPIMG], [enable frame cropping])
 AH_TEMPLATE([DRAW_CROSS], [paint a X on screen when unable to decode or display a frame.])
 AH_TEMPLATE([HAVE_JACK_VIDEO], [experimental code to use jack_video, jack-svn >= r591])
 AH_TEMPLATE([HAVE_SWSCALE], [Define as 1 if you have ffmpeg with swscale support])
@@ -132,6 +136,10 @@ if test "x$enable_timescale" != "xno"; then
   AC_DEFINE(TIMEMAP)
 fi
 
+if test "x$enable_framecrop" == "xyes"; then
+  AC_DEFINE(CROPIMG)
+fi
+
 # FIXME - needed fi. on osx
 LIBS="$LIBS -L/usr/X11R6/lib"
 #X_LIBS="-L/usr/X11R6/lib/"
@@ -145,6 +153,12 @@ if test "x$enable_mq" != "xno"; then
 fi
 AC_SUBST(MQ_LIBS)
 AC_DEFINE(MQLEN, 512, [ max length of a remote control line. ])
+
+if test "x$enable_osc" != "xno"; then
+	PKG_CHECK_MODULES(LIBLO, liblo, [ AC_DEFINE(HAVE_LIBLO) HAVE_LIBLO=1 ], [ NULL=0] )
+fi
+AC_SUBST(LIBLO_CFLAGS)
+AC_SUBST(LIBLO_LIBS)
 
 dnl I experienced strange behaviour when using --with-ffmpegprefix:
 dnl if the first pkg_check_module fails,  subsequent calls will fail too!
@@ -551,6 +565,7 @@ fi
 echo -n " LASH:               ";	if test -n "$HAVE_LASH"; then echo "ok"; else echo "not avail."; fi
 #echo -n " Xpm:                ";	if test -n "$HAVE_XPM"; then echo "ok"; else echo "not avail."; fi
 echo -n " POSIX msg queue:    ";	if test -n "$HAVE_MQ"; then echo "ok"; else echo "not avail."; fi
+echo -n " OSC remote control: ";	if test -n "$HAVE_LIBLO"; then echo "ok"; else echo "not avail."; fi
 echo -n " On screen display:  ";
 if test -z "$HAVE_FT"; then 
 echo "disabled";

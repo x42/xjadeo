@@ -227,7 +227,11 @@ void init_moviebuffer(void) {
 	if (want_debug)
 		printf("DEBUG: init_moviebuffer - render_fmt: %i\n",render_fmt);
 	/* Determine required buffer size and allocate buffer */
+#ifdef CROPIMG
+	numBytes=avpicture_get_size(render_fmt, movie_width*2, movie_height);
+#else
 	numBytes=avpicture_get_size(render_fmt, movie_width, movie_height);
+#endif
 	buffer=(uint8_t *) calloc(1,numBytes);
 
 // Assign appropriate parts of buffer to image planes in pFrameFMT
@@ -363,8 +367,13 @@ int open_movie(char* file_name) {
 	pCodecCtx=&(pFormatCtx->streams[videoStream]->codec);
 #endif
   
+#ifdef CROPIMG
+	movie_width = pCodecCtx->width / 2; // TODO allow configuration
+	movie_height = pCodecCtx->height;
+#else
 	movie_width = pCodecCtx->width;
 	movie_height = pCodecCtx->height;
+#endif
 
 // somewhere around LIBAVFORMAT_BUILD  4630 
 #ifdef AVFMT_FLAG_GENPTS
