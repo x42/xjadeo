@@ -23,7 +23,6 @@
  *
  */
 #include "xjadeo.h"
-#include <avutil.h>
 
 void xapi_open(void *d);
 void jackt_stop();

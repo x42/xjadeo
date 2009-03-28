@@ -22,8 +22,13 @@
 #include "xjadeo.h"
 #include "display.h"
 
+#ifdef OLD_FFMPEG
 #include <avcodec.h> // needed for PIX_FMT 
 #include <avformat.h>
+#else
+#include <libavcodec/avcodec.h> // needed for PIX_FMT 
+#include <libavformat/avformat.h>
+#endif
 
 extern long    ts_offset; // display on screen
 extern int want_verbose;

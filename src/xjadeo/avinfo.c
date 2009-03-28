@@ -43,7 +43,6 @@
 
 #include <getopt.h>
 
-#include <avformat.h>
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -51,7 +50,11 @@
 # define VERSION 0.2
 #endif
 
-
+#ifdef OLD_FFMPEG
+#include <avformat.h>
+#else
+#include <libavformat/avformat.h>
+#endif
 
 char *program_name;
 int want_mode  = 0;	/*< 0:xml 1:time 2:videoinfo */

@@ -14,7 +14,12 @@
 # include <lash/lash.h>
 #endif
 
+#ifdef OLD_FFMPEG
 #include <avutil.h>
+#else
+#include <libavutil/avutil.h>
+#endif
+
 #if LIBAVUTIL_BUILD >= 0x320000
 #define PIX_FMT_RGBA32 PIX_FMT_RGBA
 #endif

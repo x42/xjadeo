@@ -35,8 +35,13 @@
 
 #include "xjadeo.h"
 
-#include <avcodec.h>
+#ifdef OLD_FFMPEG
+#include <avcodec.h> // needed for PIX_FMT 
 #include <avformat.h>
+#else
+#include <libavcodec/avcodec.h> // needed for PIX_FMT 
+#include <libavformat/avformat.h>
+#endif
 
 #include <getopt.h>
 
