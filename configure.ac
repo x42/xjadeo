@@ -158,7 +158,7 @@ AC_SUBST(MQ_LIBS)
 AC_DEFINE(MQLEN, 512, [ max length of a remote control line. ])
 
 if test "x$enable_osc" != "xno"; then
-	if test -n "$liblosrc" != "xno"; then
+	if test -n "$liblosrc"; then
 		AC_CHECK_FILES([$liblosrc/src/.libs/liblo.a $liblosrc/lo/lo.h],[AC_DEFINE(HAVE_LIBLO) HAVE_LIBLO=1 ])
 	else
 		PKG_CHECK_MODULES(LIBLO, liblo, [ AC_DEFINE(HAVE_LIBLO) HAVE_LIBLO=1 ], [ NULL=0] )
@@ -319,7 +319,7 @@ fi
 
 if test "x$FOUND_H_FREETYPE$FOUND_L_FREETYPE" = "xyesyes" ; then
 	FREETYPE_CFLAGS="-I$freetypesrc/include/"
-	FREETYPE_LIBS="$freetypesrc/objs/.libs/${LIBPREF}freetime$LIBSUF"
+	FREETYPE_LIBS="$freetypesrc/objs/.libs/${LIBPREF}freetype$LIBSUF"
 else 
 	PKG_CHECK_MODULES(FREETYPE, freetype2, [freetype_pkgconfig=yes], [freetype_pkgconfig=no])
 
