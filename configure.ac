@@ -254,7 +254,7 @@ if test -n "$ffmpegsrc" ; then
 	])
 
 elif test -n "$ffmpegprefix" ; then
-	FFMPEG_LIBS="-L$ffmpegprefix/lib -lavcodec -lavutil -lavformat -lswscale"
+	FFMPEG_LIBS="-L$ffmpegprefix/lib -lavcodec -lavutil -lavformat"
 	FFMPEG_INCDIR="$ffmpegprefix/include"
 	FFMPEG_CFLAGS="-I$FFMPEG_INCDIR" #default
 	FFMPEG_CFLAGS="$FFMPEG_CFLAGS -I$FFMPEG_INCDIR/libavcodec -I$FFMPEG_INCDIR/libavformat -I$FFMPEG_INCDIR/libavutil" # new
