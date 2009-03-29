@@ -314,7 +314,7 @@ FOUND_L_FREETYPE=
 
 if test -n "$freetypesrc" ; then
 	AC_CHECK_FILES([$freetypesrc/include/ft2build.h],[FOUND_H_FREETYPE=yes])
-	AC_CHECK_FILES([$freetypesrc/objs/.libs/${LIBPREF}freetime$LIBSUF],[FOUND_L_FREETYPE=yes])
+	AC_CHECK_FILES([$freetypesrc/objs/.libs/${LIBPREF}freetype$LIBSUF],[FOUND_L_FREETYPE=yes])
 fi
 
 if test "x$FOUND_H_FREETYPE$FOUND_L_FREETYPE" = "xyesyes" ; then
