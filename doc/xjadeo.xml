@@ -224,9 +224,16 @@
         as source package.</para>
       </section>
 
+      <section id="ubuntu">
+      <title>Ubuntu/deb packages</title>
+        <para>Ubuntu packages for various versions (Hardy, Interepid, Jaunty,..) are available at <ulink
+        url="https://launchpad.net/~stochastic/+archive/ppa">stochaic's ubuntu archive</ulink>
+	</para>
+      </section>
+
       <section id="deb">
       <title>Debian packages</title>
-        <para>A Debian package can be found at <ulink
+        <para>A Debian (alas still v0.1.1 as of April 2009) package can be found at <ulink
         url="http://www.debian-multimedia.org/">debian-multimedia</ulink>
         edit <filename>/etc/apt/sources.list</filename> to include
         <screen>
@@ -308,6 +315,9 @@ deb-src http://www.debian-multimedia.org sid main</screen>
           </listitem>
           <listitem>
             <para>librt (from the <ulink url="http://www.gnu.org/software/libc/">GNU C Library</ulink> > 2.3.2(?)) - POSIX message queues (requires kernel support - Linux >= 2.6.6)</para>
+          </listitem>
+          <listitem>
+            <para><ulink url="http://liblo.sourceforge.net/">liblo</ulink> (Lightweight OSC implementation) remote control via <ulink url="http://opensoundcontrol.org/">Opensoundcontrol</ulink></para>
           </listitem>
 	 </itemizedlist>
       </para>
