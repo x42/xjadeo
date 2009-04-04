@@ -176,7 +176,7 @@ if test "x$enable_xv" != "xno"; then
 fi
 
 dnl remove this if IFF you want to build an X11 version for OSX
-if -z "$HAVE_MACOSX"; then
+if test -z "$HAVE_MACOSX"; then
 	AC_CHECK_LIB([X11], [XOpenDisplay], [XV_LIBS="$XV_LIBS -lXext"] , if [ -z "$HAVE_MACOSX" ]; then AC_MSG_ERROR([*** X11: You need to install the X11 development package: libx11-dev ***]) else AC_MSG_WARN([*** X11: Could not find X11 development libs. - This is only ok if you're compiling for a macintosh. ***]); fi )
 fi
 
