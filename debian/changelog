@@ -1,8 +1,8 @@
 xjadeo (0.4.7) unstable; urgency=low
   * added basic OSC control support
-  * cleaned ffmpeg-header file include mess
+  * cleaned up configure.ac - ffmpeg-header include files
   * framecropping (for sahra's installation)
- -- Robin Gareus <robin@gareus.org>  Sat, 28 Mar 2009 20:06:18 +0100
+ -- Robin Gareus <robin@gareus.org>  Sat, 04 Apr 2009 16:44:56 +0200
 
 xjadeo (0.4.6) unstable; urgency=low
   * updated URLs in doc
