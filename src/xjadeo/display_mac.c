@@ -1453,8 +1453,7 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
     case 0x8: jackt_rewind(); break;
     case ' ': jackt_toggle(); break;
     default: 
-      if (want_debug)
-        printf("yet unhandled keyboard event: '%c' 0x%x\n",c,c);
+      printf("yet unhandled keyboard event: '%c' 0x%x\n",c,c);
       break;
   }
   checkMyMenu();
