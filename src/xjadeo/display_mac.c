@@ -27,6 +27,7 @@
 void xapi_open(void *d);
 void jackt_stop();
 void jackt_start();
+void jackt_toggle();
 void jackt_rewind();
 
 int midi_connected(void);
@@ -1449,8 +1450,11 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       force_redraw=1;
     } break;
 #endif
+    case 0x8: jackt_rewind(); break;
+    case ' ': jackt_toggle(); break;
     default: 
-      printf("yet unhandled keyboard event: '%c' %0x\n",c,c);
+      if (want_debug)
+        printf("yet unhandled keyboard event: '%c' 0x%x\n",c,c);
       break;
   }
   checkMyMenu();
