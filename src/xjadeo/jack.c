@@ -100,6 +100,21 @@ void jackt_stop() {
 	}
 }
 
+void jackt_toggle() {
+	if (jack_client) {
+		switch (jack_transport_query(jack_client, NULL)) { 
+			case JackTransportRolling:	
+				jackt_stop();
+				break;
+			case JackTransportStopped:
+				jackt_start();
+				break;
+			default:
+				break;
+		}
+	}
+}
+
 void close_jack(void)
 {
 	if (jack_client) {
