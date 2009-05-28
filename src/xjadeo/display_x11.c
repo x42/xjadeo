@@ -36,6 +36,9 @@
 	int xoffset = 0;
 #endif
 
+void jackt_toggle();
+void jackt_rewind();
+
 #if (HAVE_LIBXV || HAVE_IMLIB || HAVE_IMLIB2)
 
 Display      		*xj_dpy = NULL;
@@ -745,6 +748,10 @@ void xj_handle_X_events (void) {
 						if (xoffset>movie_width) xoffset=movie_width;
 						force_redraw=1;
 #endif
+					} else if (key == 0x108 ) { // BACKSPACE
+						jackt_rewind();
+					} else if (key == 0x20 ) { // ' ' // SPACE 
+						jackt_toggle();
 					} else if (want_debug) {
 						printf("unassigned key pressed: '%c' 0x%x\n",key,key);
 					}
