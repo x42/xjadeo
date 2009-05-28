@@ -191,6 +191,72 @@ int oscb_load (const char *path, const char *types, lo_arg **argv, int argc, lo_
   return(0);
 }
 
+// OSD
+extern char OSD_fontfile[1024]; 
+extern int OSD_mode;
+
+int oscb_osdfont (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+  if (1 || want_verbose) fprintf(stderr, "OSC: %s <- s:%s\n", path, &argv[0]->s);
+  snprintf(OSD_fontfile,1024,"%s",(char*) &argv[0]->s);
+  return(0);
+}
+
+int oscb_osdframe (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+  if (want_verbose) fprintf(stderr, "OSC: %s <- i:%i\n", path, argv[0]->i);
+  if (argv[0]->i) 
+    OSD_mode|=OSD_FRAME;
+  else
+    OSD_mode&=~OSD_FRAME;
+  force_redraw=1;
+  return(0);
+}
+
+int oscb_osdsmtpe (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+  if (want_verbose) fprintf(stderr, "OSC: %s <- i:%i\n", path, argv[0]->i);
+  if (argv[0]->i) 
+    OSD_mode|=OSD_SMPTE;
+  else
+    OSD_mode&=~OSD_SMPTE;
+  force_redraw=1;
+  return(0);
+}
+
+int oscb_osdbox (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+  if (want_verbose) fprintf(stderr, "OSC: %s <- i:%i\n", path, argv[0]->i);
+  if (argv[0]->i) 
+    OSD_mode|=OSD_BOX;
+  else
+    OSD_mode&=~OSD_BOX;
+  force_redraw=1;
+  return(0);
+}
+
+// X11 options
+
+/*
+int oscb_fullscreen (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+  if (want_verbose) fprintf(stderr, "OSC: %s <- i:%i\n", path, argv[0]->i);
+  int action=_NET_WM_STATE_TOGGLE;
+  if (!strcmp(d,"on") || atoi(d)==1) action=_NET_WM_STATE_ADD;
+  else if (!strcmp(d,"off")) action=_NET_WM_STATE_REMOVE;
+  remote_printf(100,"ok.");
+  Xfullscreen(action);
+  return(0);
+}
+
+int oscb_mousepointer (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+  if (want_verbose) fprintf(stderr, "OSC: %s <- i:%i\n", path, argv[0]->i);
+  int action=2;
+  if (!strcmp(d,"on") || atoi(d)==1) action=1;
+  else if (!strcmp(d,"off")) action=0;
+  Xmousepointer (action);
+  remote_printf(100,"ok.");
+  return(0);
+}
+*/
+
+// general
+
 int oscb_quit (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   fprintf(stderr, "OSC 'quit' command recv.\n");
   loop_flag=0;
@@ -212,10 +278,10 @@ int initialize_osc(int osc_port) {
   snprintf(tmp, sizeof(tmp), "%d", port);
   fprintf(stderr, "OSC trying port:%i\n",port);
   osc_server = lo_server_thread_new (tmp, oscb_error);
-  fprintf (stderr,"OSC port %i is in use.\n", port);
+//fprintf (stderr,"OSC port %i is in use.\n", port);
 
   if (!osc_server) {
-    if(want_verbose) fprintf(stderr, "OSC start failed.");
+    if(!want_quiet) fprintf(stderr, "OSC start failed.");
     return(1);
   }
 
@@ -226,7 +292,7 @@ int initialize_osc(int osc_port) {
     free (urlstr);
   }
 
-  lo_server_thread_add_method(osc_server, "/jadeo/seek", "i", &oscb_seek, NULL);
+  lo_server_thread_add_method(osc_server, "/jadeo/seek", "i", &oscb_seek, NULL); // IFF no MIDI-TC and no JACK-TS - seek to this frame
   lo_server_thread_add_method(osc_server, "/jadeo/load", "S", &oscb_load, NULL);
 #ifdef CROPIMG
   lo_server_thread_add_method(osc_server, "/jadeo/pan", "i", &oscb_pan, NULL);
@@ -237,10 +303,10 @@ int initialize_osc(int osc_port) {
   lo_server_thread_add_method(osc_server, "/jadeo/loop", "i", &oscb_loop, NULL);
   lo_server_thread_add_method(osc_server, "/jadeo/reverse", "", &oscb_reverse, NULL);
 #endif
-  lo_server_thread_add_method(osc_server, "/jadeo/fps", "f", &oscb_fps, NULL);
-  lo_server_thread_add_method(osc_server, "/jadeo/framerate", "f", &oscb_framerate, NULL);
-  lo_server_thread_add_method(osc_server, "/jadeo/offset", "i", &oscb_offset, NULL);
-  lo_server_thread_add_method(osc_server, "/jadeo/offset", "s", &oscb_offsetsmpte, NULL);
+  lo_server_thread_add_method(osc_server, "/jadeo/fps", "f", &oscb_fps, NULL); // set screen update fps
+  lo_server_thread_add_method(osc_server, "/jadeo/framerate", "f", &oscb_framerate, NULL); //  override file's fps
+  lo_server_thread_add_method(osc_server, "/jadeo/offset", "i", &oscb_offset, NULL); // set offset by frame-number
+  lo_server_thread_add_method(osc_server, "/jadeo/offset", "s", &oscb_offsetsmpte, NULL); // set offset as SMPTE
 
   lo_server_thread_add_method(osc_server, "/jadeo/jack/connect", "", &oscb_jackconnect, NULL);
   lo_server_thread_add_method(osc_server, "/jadeo/jack/disconnect", "", &oscb_jackdisconnect, NULL);
@@ -250,6 +316,12 @@ int initialize_osc(int osc_port) {
   lo_server_thread_add_method(osc_server, "/jadeo/midi/quarterframes", "i", &oscb_midiquarterframes, NULL);
   lo_server_thread_add_method(osc_server, "/jadeo/midi/clkconvert", "i", &oscb_midiclkconvert, NULL);
 #endif
+
+  lo_server_thread_add_method(osc_server, "/jadeo/osd/font", "s", &oscb_osdfont, NULL);
+  lo_server_thread_add_method(osc_server, "/jadeo/osd/smtpe", "i", &oscb_osdsmtpe, NULL);
+  lo_server_thread_add_method(osc_server, "/jadeo/osd/frame", "i", &oscb_osdframe, NULL);
+  lo_server_thread_add_method(osc_server, "/jadeo/osd/box", "i", &oscb_osdbox, NULL);
+
 
   lo_server_thread_add_method(osc_server, "/jadeo/quit", "", &oscb_quit, NULL);
 
