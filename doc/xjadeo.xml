@@ -7,6 +7,7 @@
 >
 
 <article>
+
   <articleinfo>
     <title><application>xjadeo</application> - X Jack Video Monitor</title>
     <subtitle><ulink url="http://xjadeo.sourceforge.net"></ulink></subtitle>
@@ -18,6 +19,14 @@
 	<holder>Robin Gareus, Luis Garrido</holder>
      </copyright>
 							 
+     <author>
+	<firstname>Robin</firstname>
+	<surname>Gareus</surname>
+	<personblurb>
+	  <para>linuxaudio.org</para>
+	</personblurb>
+     </author>
+
      <abstract>
 
     <para><application>xjadeo</application> is a program that displays a video
@@ -268,7 +277,7 @@ deb-src http://www.debian-multimedia.org sid main</screen>
             <para><ulink url="http://jackaudio.org/">jack-audio-connection-kit</ulink></para>
           </listitem>
           <listitem>
-            <para><ulink url="http://ffmpeg.mplayerhq.hu/">ffmpeg</ulink> (libavcodec, libavformat/libavutil)</para>
+            <para><ulink url="http://ffmpeg.mplayerhq.hu/">ffmpeg</ulink> (libavcodec, libavformat/libavutil/libswscale)</para>
 	    <para>Note that linking against ffmpeg requires all of ffmpeg's dependencies.
 	    Depending on the configuration of ffmpeg, these can include development packages of:
 	    libxvidcore, liblame, libfaac, libfaad, libvorbis, libogg, libx264, liba52, libdts,... </para>
@@ -592,6 +601,14 @@ make install # (requires root privileges) </screen></para>
         <varlistentry>
           <term><option>-</option></term>
           <listitem> <para>Decrement A/V offset by 1 videoframe.</para> </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>SPACE</option></term>
+          <listitem> <para>If xjadeo is sync'ed to JACK-transport, toggle JACK transport play/pause.</para> </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><option>BACKSPACE</option></term>
+          <listitem> <para>If xjadeo is sync'ed to JACK-transport, rewind the playhead.</para> </listitem>
         </varlistentry>
         <varlistentry>
           <term><option>0-9</option></term>
@@ -1502,8 +1519,12 @@ make install # (requires root privileges) </screen></para>
 
     <refentry id="xjadeo">
     <refmeta>
-    <refentrytitle>xjadeo</refentrytitle>
-    <manvolnum>1</manvolnum>
+	<refentrytitle>xjadeo</refentrytitle>
+	<manvolnum>1</manvolnum>
+	<refmiscinfo class="source">http://xjadeo.sf.net</refmiscinfo>
+	<refmiscinfo class="version">0.4.X</refmiscinfo>
+<!--
+-->
     </refmeta>
 
     <refnamediv>
@@ -2013,6 +2034,8 @@ make install # (requires root privileges) </screen></para>
       <refmeta>
         <refentrytitle>qjadeo</refentrytitle>
     	<manvolnum>1</manvolnum>
+	<refmiscinfo class="source">http://xjadeo.sf.net</refmiscinfo>
+	<refmiscinfo class="version">0.4.X</refmiscinfo>
       </refmeta>
 
       <refnamediv>
@@ -2056,6 +2079,8 @@ make install # (requires root privileges) </screen></para>
       <refmeta>
         <refentrytitle>xjremote</refentrytitle>
     	<manvolnum>1</manvolnum>
+	<refmiscinfo class="source">http://xjadeo.sf.net</refmiscinfo>
+	<refmiscinfo class="version">0.4.X</refmiscinfo>
       </refmeta>
 
       <refnamediv>
@@ -2192,7 +2217,8 @@ make install # (requires root privileges) </screen></para>
       <refmeta>
         <refentrytitle>xjinfo</refentrytitle>
     	<manvolnum>1</manvolnum>
-
+	<refmiscinfo class="source">http://xjadeo.sf.net</refmiscinfo>
+	<refmiscinfo class="version">0.4.X</refmiscinfo>
       </refmeta>
 
       <refnamediv>

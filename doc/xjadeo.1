@@ -1,23 +1,31 @@
+'\" t
 .\"     Title: xjadeo
-.\"    Author: 
-.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 04/04/2009
+.\"    Author: Robin Gareus
+.\" Generator: DocBook XSL Stylesheets v1.75.0 <http://docbook.sf.net/>
+.\"      Date: 05/29/2009
 .\"    Manual: Manual Pages
-.\"    Source: 
+.\"    Source: http://xjadeo.sf.net 0.4.X
+.\"  Language: English
 .\"
-.TH "XJADEO" "1" "04/04/2009" "" "Manual Pages"
+.TH "XJADEO" "1" "05/29/2009" "http://xjadeo\&.sf\&.net 0\&.4" "Manual Pages"
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
 .SH "NAME"
 xjadeo \- displays a video clip in sync with an external timing source
 .SH "SYNOPSIS"
-.HP 7
+.HP \w'\fBxjadeo\fR\ 'u
 \fBxjadeo\fR [\-abfFhiIkKLmMoPqQRStvVx] \fI<videofile>\fR
-.HP 7
+.HP \w'\fBxjadeo\fR\ 'u
 \fBxjadeo\fR \-R [\-Q] [\-abfFhikKLmMoqsStvVx] [\fI<videofile>\fR]
-.HP 7
+.HP \w'\fBxjadeo\fR\ 'u
 \fBxjadeo\fR \-Q [\-R] [\-abfFhikKLmMoqsStvVx] [\fI<videofile>\fR]
 .SH "DESCRIPTION"
 .PP
@@ -218,19 +226,47 @@ Selects the video output driver\&. Defaults to 0 (autodetect\&.) A value of \-1 
 currently supports the following synchronization sources:
 .sp
 .RS 4
-\h'-04'\(bu\h'+03'Jack transport\&.
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Jack transport\&.
 .RE
 .sp
 .RS 4
-\h'-04'\(bu\h'+03'MTC (MIDI Time Code) via ALSA sequencer\&.
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+MTC (MIDI Time Code) via ALSA sequencer\&.
 .RE
 .sp
 .RS 4
-\h'-04'\(bu\h'+03'MTC (MIDI Time Code) via portmidi\&.
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+MTC (MIDI Time Code) via portmidi\&.
 .RE
 .sp
 .RS 4
-\h'-04'\(bu\h'+03'remote\-ctrl seeks (not really a sync source)\&.
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+remote\-ctrl seeks (not really a sync source)\&.
 .RE
 .SH "VIDEO DRIVERS"
 .PP
@@ -238,36 +274,65 @@ currently supports the following synchronization sources:
 currently supports the following video output drivers:
 .sp
 .RS 4
-\h'-04'\(bu\h'+03'xv (YUV / YV12)
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+xv (YUV / YV12)
 .RE
 .sp
 .RS 4
-\h'-04'\(bu\h'+03'SDL (YUV / YV12)
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+SDL (YUV / YV12)
 .RE
 .sp
 .RS 4
-\h'-04'\(bu\h'+03'X11 + ImLib (RGB / RGBA)
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+X11 + ImLib (RGB / RGBA)
 .RE
 .SH "VIDEO FORMATS"
 .PP
 \fBxjadeo\fR
 uses the ffmpeg libraries to decode video files, so a wide range of codecs is available\&. Note, however, that not all the formats support frame seeking\&. You can use a command like:
 .sp
+.if n \{\
 .RS 4
+.\}
 .nf
 mencoder \-idx \-ovc lavc \-lavcopts keyint=1 \-nosound input_file\&.xxx \-o output_file\&.avi
 .fi
+.if n \{\
 .RE
+.\}
 .PP
 This creates from your input\-file\&.xxx an AVI mpeg4 encoded video file with no sound, an index (\-idx) and no compression between frames (every frame is a keyframe)\&. The file thus can become really BIG, so watch out your disk space\&.
 .PP
 You may also want to shrink the size of the frame by adding the option
 .sp
+.if n \{\
 .RS 4
+.\}
 .nf
 \-vf scale=width:height
 .fi
+.if n \{\
 .RE
+.\}
 .PP
 This will reduce the size of the avi file, will tax less the system resources when displayed and will leave more space in the screen for your audio software\&.
 .SH "USER INPUT"
@@ -276,28 +341,70 @@ This will reduce the size of the avi file, will tax less the system resources wh
 window accepts the following input:
 .sp
 .RS 4
-\h'-04'\(bu\h'+03'Resizing the window will resize the movie as well\&. (CAVEAT: resizing a video frame to make it fit the window is a CPU expensive operation unless you are using hardware overlay\&. If you are not comfortable with the frame size of your movie it is more CPU efficient that you re\-encode the video file with the desired size beforehand\&.)
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Resizing the window will resize the movie as well\&. (CAVEAT: resizing a video frame to make it fit the window is a CPU expensive operation unless you are using hardware overlay\&. If you are not comfortable with the frame size of your movie it is more CPU efficient that you re\-encode the video file with the desired size beforehand\&.)
 .RE
 .sp
 .RS 4
-\h'-04'\(bu\h'+03'Pressing mouse button 1 will resize the window to the original movie size\&.
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Pressing mouse button 1 will resize the window to the original movie size\&.
 .RE
 .sp
 .RS 4
-\h'-04'\(bu\h'+03'Mouse button 2 and 3 resize the window to match the movie aspect ratio\&.
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Mouse button 2 and 3 resize the window to match the movie aspect ratio\&.
 .RE
 .sp
 .RS 4
-\h'-04'\(bu\h'+03'Scroll Wheel (buttons 4,5) stepwise decreases/increases the window size maintaining the original aspect ratio\&.
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Scroll Wheel (buttons 4,5) stepwise decreases/increases the window size maintaining the original aspect ratio\&.
 .RE
 .sp
 .RS 4
-\h'-04'\(bu\h'+03'Closing the window or pressing ctrl\-C will terminate
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Closing the window or pressing ctrl\-C will terminate
 \fBxjadeo\fR\&.
 .RE
 .sp
 .RS 4
-\h'-04'\(bu\h'+03'xjadeo >= v0\&.3\&.8 supports keyboard events\&. Pressing \'Esc\' and \'q\' will end the program\&. depending on your display setup xjadeo supports \'f\' toggle fullscreen, \'a\' toggle always\-on\-top and \'m\' to hide mouse cursor keystrokes\&. see
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+xjadeo >= v0\&.3\&.8 supports keyboard events\&. Pressing \'Esc\' and \'q\' will end the program\&. depending on your display setup xjadeo supports \'f\' toggle fullscreen, \'a\' toggle always\-on\-top and \'m\' to hide mouse cursor keystrokes\&. see
 the section called \(lqMonitor Window - Key bindings\(rq
 in the documentation for more recent additions\&.
 .RE
@@ -323,25 +430,50 @@ to get a quick overview of all available commands\&. please refer to the docbook
 xjadeo reads the following resource config files in this order:
 .sp
 .RS 4
-\h'-04' 1.\h'+02'/@SYSCONFDIR@/xjadeorc (usually /etc/xjadeorc or /usr/local/etc/xjadeorc, which depends on your distribution and on the configuration when
+.ie n \{\
+\h'-04' 1.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  1." 4.2
+.\}
+/@SYSCONFDIR@/xjadeorc (usually /etc/xjadeorc or /usr/local/etc/xjadeorc, which depends on your distribution and on the configuration when
 building xjadeo)
 .RE
 .sp
 .RS 4
-\h'-04' 2.\h'+02'$HOME/\&.xjadeorc
+.ie n \{\
+\h'-04' 2.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  2." 4.2
+.\}
+$HOME/\&.xjadeorc
 .RE
 .sp
 .RS 4
-\h'-04' 3.\h'+02'$HOME/xjadeorc
+.ie n \{\
+\h'-04' 3.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  3." 4.2
+.\}
+$HOME/xjadeorc
 .RE
 .PP
 Each line in the config file must be in in the format:
 .sp
+.if n \{\
 .RS 4
+.\}
 .nf
 KEY=VALUE
 .fi
+.if n \{\
 .RE
+.\}
 .sp
 \&. If the first character on a line is either \'#\' or \';\'\&. the line is ignored\&.
 \fBKEYS\fR
@@ -354,7 +486,7 @@ becomes
 \fBquiet=yes\fR)\&.
 .PP
 currently supported rc KEYS: fps, fontfile, lash, letterbox, midiclk, midismpte, mq, nosplash, quiet, seek, verbose and videomode\&. Which are commented on in the example
-\fIxjadeorc\fR\&[1]
+\m[blue]\fBxjadeorc\fR\m[]\&\s-2\u[1]\d\s+2
 .SH "SEE ALSO"
 .PP
 qjadeo(1)
@@ -362,7 +494,14 @@ qjadeo(1)
 xjremote(1)
 .PP
 xjinfo(1)
+.SH "AUTHOR"
+.PP
+\fBRobin Gareus\fR
+.RS 4
+linuxaudio.org
+.RE
 .SH "COPYRIGHT"
+.br
 Copyright \(co 2005, 2006, 2007, 2009 Robin Gareus, Luis Garrido
 .br
 .SH "NOTES"
