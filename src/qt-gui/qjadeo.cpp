@@ -1,3 +1,6 @@
+
+#include <stdlib.h>
+
 #include <qapplication.h>
 #include <qprocess.h>
 #include <qtimer.h>
