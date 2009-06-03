@@ -97,7 +97,7 @@ AC_CHECK_SIZEOF(float)
 AC_CHECK_SIZEOF(double)
 AC_CHECK_SIZEOF(long)
 AC_CHECK_SIZEOF(unsigned long)
-AC_CHECK_HEADERS(time.h string.h jack/jack.h jack/transport.h)
+AC_CHECK_HEADERS(time.h string.h)
 
 dnl Checks for libraries.
 
@@ -149,6 +149,7 @@ LIBS="$LIBS -L/usr/X11R6/lib"
 
 #PKG_CHECK_MODULES(JACK, jack, HAVE_JACK=1, HAVE_JACK=0)
 AC_CHECK_LIB([jack], [jack_client_new], , [AC_MSG_ERROR(*** AUDIO: You need to have the JACK audio development kit. ***)])
+AC_CHECK_HEADERS([jack/jack.h jack/transport.h], , [AC_MSG_ERROR(*** AUDIO: You need to have the JACK audio development kit. ***)])
 
 MQ_LIBS=""
 if test "x$enable_mq" != "xno"; then
