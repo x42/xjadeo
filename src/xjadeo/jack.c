@@ -66,7 +66,7 @@ void open_jack(void )
 	int i = 0;
 	do {
 		snprintf(jackid,16,"xjadeo-%i",i);
-		jack_client = jack_client_new (jackid);
+		jack_client = jack_client_open (jackid, JackUseExactName, NULL);
 	} while (jack_client == 0 && i++<16);
 
 	if (!jack_client) {
