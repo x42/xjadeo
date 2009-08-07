@@ -512,7 +512,7 @@ void reset_video_head(AVPacket *packet) {
 	while (!frameFinished) {
 		av_read_frame(pFormatCtx, packet);
 		if(packet->stream_index==videoStream) 
-#if LIBAVCODEC_VERSION_MAJOR < 52
+#if LIBAVCODEC_VERSION_MAJOR < 52 || ( LIBAVCODEC_VERSION_MAJOR == 52 && LIBAVCODEC_VERSION_MINOR < 21)
 		avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet->data, packet->size);
 #else
 		avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, packet);
@@ -640,7 +640,7 @@ read_frame:
 	//my_avprev= mtsb;
 
 	int frameFinished; 
-#if LIBAVCODEC_VERSION_MAJOR < 52
+#if LIBAVCODEC_VERSION_MAJOR < 52 || ( LIBAVCODEC_VERSION_MAJOR == 52 && LIBAVCODEC_VERSION_MINOR < 21)
 	avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet->data, packet->size);
 #else
 	avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, packet);
@@ -703,7 +703,7 @@ void display_frame(int64_t timestamp, int force_update) {
 		#endif
 			frameFinished=0;	
 			if(packet.stream_index==videoStream) 
-#if LIBAVCODEC_VERSION_MAJOR < 52
+#if LIBAVCODEC_VERSION_MAJOR < 52 || ( LIBAVCODEC_VERSION_MAJOR == 52 && LIBAVCODEC_VERSION_MINOR < 21)
 				avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet.data, packet.size);
 #else
 				avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
@@ -787,7 +787,7 @@ void do_try_this_file_and_exit(char *movie) {
 	}
 	init_moviebuffer();
 	if (my_seek_frame(&packet, 1)) {
-#if LIBAVCODEC_VERSION_MAJOR < 52
+#if LIBAVCODEC_VERSION_MAJOR < 52 || ( LIBAVCODEC_VERSION_MAJOR == 52 && LIBAVCODEC_VERSION_MINOR < 21)
 		avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet.data, packet.size);
 #else
 		avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
