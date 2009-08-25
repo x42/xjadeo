@@ -21,7 +21,7 @@ AC_ARG_ENABLE(xv,    AC_HELP_STRING([--disable-xv],  [Disable Xvideo extension ]
 #AC_ARG_ENABLE(imlib, AC_HELP_STRING([--disable-imlib], [Disable use of imlib for display]))
 AC_ARG_ENABLE(imlib2, AC_HELP_STRING([--disable-imlib2], [Disable use of imlib2 for display]))
 AC_ARG_ENABLE(ft,    AC_HELP_STRING([--disable-ft],  [Disable freetype On-Screen.Display support]))
-AC_ARG_ENABLE(qtgui, AC_HELP_STRING([--disable-qtgui],[Don't build the Qt GUI controller]))
+AC_ARG_ENABLE(qtgui, AC_HELP_STRING([--disable-qtgui],[Don not build the Qt GUI controller]))
 AC_ARG_ENABLE(contrib,  AC_HELP_STRING([--enable-contrib],  [Compile and install code in contrib folder]))
 AC_ARG_ENABLE(lash, AC_HELP_STRING([--disable-lash],[disable LASH support]))
 AC_ARG_ENABLE(timescale, AC_HELP_STRING([--disable-timescale],[disable time-mapping/loop-playback support]))
@@ -59,7 +59,7 @@ target_os=$(uname -s | tr ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz)
 case $target_os in
   darwin)
   	PM_OS=mac
-  	AC_DEFINE([HAVE_MACOSX], [], [use macintosh's native display])
+  	AC_DEFINE([HAVE_MACOSX], [], [use macintosh native display])
 	HAVE_MACOSX=1
 	LDFLAGS="-lz -lbz2 -framework Carbon -framework Quicktime"
 dnl 2006/11/13 : 32 bit RGBA is known not to work on OSX ffmpeg+imlib2
@@ -173,12 +173,14 @@ PKG_CHECK_MODULES(Xpm, xpm, [ AC_DEFINE(HAVE_XPM) HAVE_XPM=1 ], [ NULL=0] )
 #AC_SEARCH_LIBS( XpmCreatePixmapFromData, Xpm, AC_DEFINE(HAVE_XPM) XPM_LIBS="-lXpm" HAVE_XPM=1 )
 
 if test "x$enable_xv" != "xno"; then
-	AC_CHECK_LIB(Xv, XvQueryAdaptors, [AC_DEFINE(HAVE_LIBXV) AC_SUBST(XV_LIBS) AC_SUBST(XV_CFLAGS) XV_LIBS='-lXv' HAVE_LIBXV=1 ], [AC_MSG_ERROR([Could not find XVideo Lib (libXv)])], $X_LIBS)
+	AC_CHECK_HEADERS([X11/extensions/Xvlib.h X11/extensions/XShm.h], , [AC_MSG_ERROR(*** X11: You need to install the X11 development package. ***)])
+	AC_CHECK_LIB(Xv, XvQueryAdaptors, [AC_DEFINE(HAVE_LIBXV) AC_SUBST(XV_LIBS) AC_SUBST(XV_CFLAGS) XV_LIBS="-lXv" HAVE_LIBXV=1 ], [AC_MSG_ERROR([Could not find XVideo Lib (libXv)])], $X_LIBS)
 fi
 
 dnl remove this if IFF you want to build an X11 version for OSX
 if test -z "$HAVE_MACOSX"; then
-	AC_CHECK_LIB([X11], [XOpenDisplay], [XV_LIBS="$XV_LIBS -lXext"] , if [ -z "$HAVE_MACOSX" ]; then AC_MSG_ERROR([*** X11: You need to install the X11 development package: libx11-dev ***]) else AC_MSG_WARN([*** X11: Could not find X11 development libs. - This is only ok if you're compiling for a macintosh. ***]); fi )
+	AC_CHECK_HEADERS([X11/Xlib.h], , [AC_MSG_ERROR(*** X11: You need to install the X11 development package. ***)])
+	AC_CHECK_LIB([X11], [XOpenDisplay], [XV_LIBS="$XV_LIBS -lXext"], AC_MSG_ERROR([*** X11: You need to install the X11 development package: libx11-dev ***]))
 fi
 
 dnl ----------------------------------------------
