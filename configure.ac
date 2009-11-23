@@ -21,7 +21,7 @@ AC_ARG_ENABLE(xv,    AC_HELP_STRING([--disable-xv],  [Disable Xvideo extension ]
 #AC_ARG_ENABLE(imlib, AC_HELP_STRING([--disable-imlib], [Disable use of imlib for display]))
 AC_ARG_ENABLE(imlib2, AC_HELP_STRING([--disable-imlib2], [Disable use of imlib2 for display]))
 AC_ARG_ENABLE(ft,    AC_HELP_STRING([--disable-ft],  [Disable freetype On-Screen.Display support]))
-AC_ARG_ENABLE(qtgui, AC_HELP_STRING([--disable-qtgui],[Don not build the Qt GUI controller]))
+AC_ARG_ENABLE(qtgui, AC_HELP_STRING([--disable-qtgui],[Do not build the Qt GUI controller]))
 AC_ARG_ENABLE(contrib,  AC_HELP_STRING([--enable-contrib],  [Compile and install code in contrib folder]))
 AC_ARG_ENABLE(lash, AC_HELP_STRING([--disable-lash],[disable LASH support]))
 AC_ARG_ENABLE(timescale, AC_HELP_STRING([--disable-timescale],[disable time-mapping/loop-playback support]))
@@ -158,22 +158,14 @@ fi
 AC_SUBST(MQ_LIBS)
 AC_DEFINE(MQLEN, 512, [ max length of a remote control line. ])
 
-if test "x$enable_osc" != "xno"; then
-	if test -n "$liblosrc"; then
-		AC_CHECK_FILES([$liblosrc/src/.libs/liblo.a $liblosrc/lo/lo.h],[AC_DEFINE(HAVE_LIBLO) HAVE_LIBLO=1 LIBLO_CFLAGS="-I$liblosrc/lo" LIBLO_LIBS="$liblosrc/src/.libs/liblo.a" ])
-	else
-		PKG_CHECK_MODULES(LIBLO, liblo, [ AC_DEFINE(HAVE_LIBLO) HAVE_LIBLO=1 ], [ NULL=0] )
-	fi
-fi
-
-AC_SUBST(LIBLO_CFLAGS)
-AC_SUBST(LIBLO_LIBS)
-
 PKG_CHECK_MODULES(Xpm, xpm, [ AC_DEFINE(HAVE_XPM) HAVE_XPM=1 ], [ NULL=0] )
 #AC_SEARCH_LIBS( XpmCreatePixmapFromData, Xpm, AC_DEFINE(HAVE_XPM) XPM_LIBS="-lXpm" HAVE_XPM=1 )
 
 if test "x$enable_xv" != "xno"; then
-	AC_CHECK_HEADERS([X11/extensions/Xvlib.h X11/extensions/XShm.h], , [AC_MSG_ERROR(*** X11: You need to install the X11 development package. ***)])
+dnl for this to work properly X11/Xlib.h needs to be included for the check.
+dnl '-' as INCLUDE path simply checks if the header file is present
+dnl FIXME; add a proper INCLUDE path to AC_CHECK_HEADERS
+	AC_CHECK_HEADERS([X11/extensions/Xvlib.h X11/extensions/XShm.h], , [AC_MSG_ERROR(*** X11: You need to install the X11 development package. ***)], -)
 	AC_CHECK_LIB(Xv, XvQueryAdaptors, [AC_DEFINE(HAVE_LIBXV) AC_SUBST(XV_LIBS) AC_SUBST(XV_CFLAGS) XV_LIBS="-lXv" HAVE_LIBXV=1 ], [AC_MSG_ERROR([Could not find XVideo Lib (libXv)])], $X_LIBS)
 fi
 
@@ -182,6 +174,19 @@ if test -z "$HAVE_MACOSX"; then
 	AC_CHECK_HEADERS([X11/Xlib.h], , [AC_MSG_ERROR(*** X11: You need to install the X11 development package. ***)])
 	AC_CHECK_LIB([X11], [XOpenDisplay], [XV_LIBS="$XV_LIBS -lXext"], AC_MSG_ERROR([*** X11: You need to install the X11 development package: libx11-dev ***]))
 fi
+
+if test "x$enable_osc" != "xno"; then
+	if test -n "$liblosrc"; then
+		AC_CHECK_FILES([$liblosrc/src/.libs/liblo.a $liblosrc/lo/lo.h],[AC_DEFINE(HAVE_LIBLO) HAVE_LIBLO=1 LIBLO_CFLAGS="-I$liblosrc/lo" LIBLO_LIBS="$liblosrc/src/.libs/liblo.a" ])
+	else
+		PKG_CHECK_MODULES(LIBLO, liblo, [ AC_DEFINE(HAVE_LIBLO) HAVE_LIBLO=1 ])
+	fi
+fi
+
+AC_SUBST(LIBLO_CFLAGS)
+AC_SUBST(LIBLO_LIBS)
+
+
 
 dnl ----------------------------------------------
 dnl alsamidi/portmidi 
@@ -242,7 +247,7 @@ if test -z "$ffmpegprefix" -a -z "$ffmpegsrc" ; then
 	PKG_CHECK_MODULES(FFMPEG, libavformat libavcodec libavutil, HAVE_FFMPEG=yes, 
 		AC_MSG_WARN([
 		Could not find ffmpeg package. please set PKG_CONFIG_PATH to 
-		where FFMPEG .
+		where FFMPEG installed its pkg files.
 		])) 
 fi
 
