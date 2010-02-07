@@ -8,7 +8,7 @@ AC_CANONICAL_TARGET
 
 VERSION_MAJOR=0
 VERSION_MINOR=4
-VERSION_SUB=7
+VERSION_SUB=8
 
 dnl Every other copy of the package version number gets its value from here
 AM_INIT_AUTOMAKE(xjadeo, [${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_SUB}])
@@ -165,7 +165,7 @@ if test "x$enable_xv" != "xno"; then
 dnl for this to work properly X11/Xlib.h needs to be included for the check.
 dnl '-' as INCLUDE path simply checks if the header file is present
 dnl FIXME; add a proper INCLUDE path to AC_CHECK_HEADERS
-	AC_CHECK_HEADERS([X11/extensions/Xvlib.h X11/extensions/XShm.h], , [AC_MSG_ERROR(*** X11: You need to install the X11 development package. ***)], -)
+dnl	AC_CHECK_HEADERS([X11/extensions/Xvlib.h X11/extensions/XShm.h], , [AC_MSG_ERROR(*** X11: You need to install the X11 development package. ***)], -)
 	AC_CHECK_LIB(Xv, XvQueryAdaptors, [AC_DEFINE(HAVE_LIBXV) AC_SUBST(XV_LIBS) AC_SUBST(XV_CFLAGS) XV_LIBS="-lXv" HAVE_LIBXV=1 ], [AC_MSG_ERROR([Could not find XVideo Lib (libXv)])], $X_LIBS)
 fi
 

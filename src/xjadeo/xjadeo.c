@@ -77,7 +77,7 @@ extern int	render_fmt;
 extern double	duration;
 extern double	framerate;
 extern long	frames;
-extern double	file_frame_offset;
+extern int64_t	file_frame_offset;
 
 /* Option flags and variables */
 extern char    *current_file;
@@ -278,7 +278,7 @@ int open_movie(char* file_name) {
 	movie_width  = 320;
 	movie_height = 180;
 	framerate = duration = frames = 1;
-	file_frame_offset = 0.0;
+	file_frame_offset = 0;
 	videoStream=-1;
 	// recalc offset with new framerate
 	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset,midi_connected());
@@ -355,8 +355,9 @@ int open_movie(char* file_name) {
 #else
 	tpf = 1.0/(av_q2d(pFormatCtx->streams[videoStream]->time_base)*framerate);
 #endif
-	if (!want_ignstart) 
-		file_frame_offset = (double) framerate*(pFormatCtx->start_time/ (double) AV_TIME_BASE);
+	if (!want_ignstart && pFormatCtx->start_time != AV_NOPTS_VALUE) {
+		file_frame_offset = (int64_t) floor(framerate * (double) pFormatCtx->start_time / (double) AV_TIME_BASE);
+	}
 
 	// recalc offset with new framerate
 	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset,midi_connected());
@@ -368,6 +369,7 @@ int open_movie(char* file_name) {
 			fprintf(stdout, "original frame rate: %g\n", framerate);
 		fprintf(stdout, "length in seconds: %g\n", duration);
 		fprintf(stdout, "total frames: %ld\n", frames);
+		fprintf(stdout, "file start offset: %lld video-frames\n",file_frame_offset);
 	}
   
   // Get a pointer to the codec context for the video stream
@@ -535,8 +537,9 @@ int my_seek_frame (AVPacket *packet, int64_t timestamp) {
 	if (videoStream < 0) return (0); 
 	v_stream = pFormatCtx->streams[videoStream];
 	
-	if (want_ignstart)  // timestamps in the file start counting at ..->start_time 
-		timestamp+= (long int) ( framerate*(pFormatCtx->start_time/ (double) AV_TIME_BASE));
+	if (want_ignstart==1) {
+		timestamp+= file_frame_offset;
+	}
 
 	// TODO: assert  0 < timestamp + ts_offset - (..->start_time)   < length   
 	

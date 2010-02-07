@@ -86,7 +86,7 @@ int               render_fmt = PIX_FMT_YUV420P; ///< needs to be set before call
 double	duration = 1;
 double	framerate = 1;
 long	frames = 1;
-double file_frame_offset = 0;
+int64_t file_frame_offset = 0;
 
 /* Option flags and variables */
 char	*current_file = NULL;
@@ -274,7 +274,7 @@ decode_switches (int argc, char **argv)
 	  want_nosplash = 1;
 	  break;
 	case 'I':		/* --ignorefileoffset */
-	  want_ignstart = 1;
+	  want_ignstart++;
 	  break;
 	case 'P':		/* --avverbose */
 	  want_genpts = 1;
