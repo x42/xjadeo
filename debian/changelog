@@ -1,3 +1,8 @@
+xjadeo (0.4.9) unstable; urgency=low
+  * re-implemented start-time parsing
+  * re-added contrib folder to dist
+ -- Robin Gareus <robin@gareus.org>  Fri, 05 Feb 2010 16:17:24 +0100
+
 xjadeo (0.4.8) unstable; urgency=low
   * fixed parsing video-start offset for m2v files
  -- Robin Gareus <robin@gareus.org>  Fri, 05 Feb 2010 16:17:24 +0100
