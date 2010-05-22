@@ -89,7 +89,7 @@ int oscb_offset (const char *path, const char *types, lo_arg **argv, int argc, l
 
 int oscb_offsetsmpte (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   if (want_verbose) fprintf(stderr, "OSC: %s <- s:%s\n", path, &argv[0]->s);
-  ts_offset = smptestring_to_frame((char*)&argv[0]->s,midi_connected());
+  ts_offset = smptestring_to_frame((char*)&argv[0]->s);
   return(0);
 }
 

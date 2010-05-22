@@ -729,13 +729,13 @@ void xj_handle_X_events (void) {
 						force_redraw=1;
 						if (smpte_offset) free(smpte_offset);
 						smpte_offset= calloc(15,sizeof(char));
-						frame_to_smptestring(smpte_offset,ts_offset,midi_connected());
+						frame_to_smptestring(smpte_offset,ts_offset);
 					} else if (key == 0x2d ) { //'-'  A/V offset
 						ts_offset--;
 						force_redraw=1;
 						if (smpte_offset) free(smpte_offset);
 						smpte_offset= calloc(15,sizeof(char));
-						frame_to_smptestring(smpte_offset,ts_offset,midi_connected());
+						frame_to_smptestring(smpte_offset,ts_offset);
 					} else if (key == 0x6d ) { // 'm' // toggle mouse pointer
 						xj_mousepointer(2);
 #ifdef CROPIMG

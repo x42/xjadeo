@@ -130,8 +130,8 @@ void close_jack(void);
 int jack_connected(void);
 
 /* smpte.c prototypes */
-long int smptestring_to_frame (char *str, int autodrop);
-void frame_to_smptestring(char *smptestring, long int frame, int autodrop);
+long int smptestring_to_frame (char *str);
+void frame_to_smptestring(char *smptestring, long int frame);
 long int smpte_to_frame(int type, int f, int s, int m, int h, int overflow);
 
 /* midi.c function prototype */

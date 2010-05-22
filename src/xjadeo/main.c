@@ -106,8 +106,8 @@ int want_nosplash =0;	/* --nosplash */
 int start_ontop =0;	/* --ontop // -a */
 int start_fullscreen =0;/* --fullscreen // -s */
 int want_letterbox =0;  /* --letterbox -b */
-int want_dropframes =0; /* --dropframes -N  BEWARE! */
-int want_autodrop =1;   /* --nodropframes -n (hidden option) */
+int want_dropframes =0; /* --dropframes -N  -- force using drop-frame timecode */
+int want_autodrop =1;   /* --nodropframes -n (hidden option) -- allow using drop-frame timecode */
 int avoid_lash   =0;	/* --nolash */
 int remote_en =0;	/* --remote, -R */
 int osc_port =0;	/* --osc, -O */
@@ -127,6 +127,7 @@ int midi_clkconvert =0;	/* --midifps [0:MTC|1:VIDEO|2:RESAMPLE] */
 int midi_clkadj =0;	/* --midiclk  */
 #endif
 
+int have_dropframes =0; /* detected from MTC;  TODO: force to zero if jack or user TC */
 int jack_clkconvert =1; /* --jackfps  - NOT YET IMPLEMENTED
                           [0:audio_frames_per_video_frame
                            1:video-file] */

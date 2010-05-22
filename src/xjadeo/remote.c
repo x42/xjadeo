@@ -407,7 +407,7 @@ void xapi_pmheight(void *d) {
 
 void xapi_soffset(void *d) {
   	//long int new = atol((char*)d);
-	ts_offset = smptestring_to_frame((char*)d,midi_connected());
+	ts_offset = smptestring_to_frame((char*)d);
 	remote_printf(101,"offset=%li",(long int) ts_offset);
 }
 
@@ -449,13 +449,13 @@ void xapi_pposition(void *d) {
 
 void xapi_psmpte(void *d) {
 	char smptestr[13];
-	frame_to_smptestring(smptestr,dispFrame,midi_connected());
+	frame_to_smptestring(smptestr,dispFrame);
 	remote_printf(228,"smpte=%s",smptestr);
 }
 
 void xapi_seek(void *d) {
   	//long int new = atol((char*)d);
-	userFrame= smptestring_to_frame((char*)d,midi_connected());
+	userFrame= smptestring_to_frame((char*)d);
 	remote_printf(101,"defaultseek=%li",userFrame);
 }
 

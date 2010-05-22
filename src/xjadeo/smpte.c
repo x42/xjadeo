@@ -42,8 +42,9 @@ typedef struct {
 #ifdef HAVE_CONFIG_H 	/* XJADEO include */
 #include <config.h>
 extern double framerate;
-extern int want_dropframes;
-extern int want_autodrop;
+extern int want_dropframes; // force drop-frame TC (command-line arg) default: 0
+extern int want_autodrop;   // force disable drop-frame TC (command-line arg) default:1
+extern int have_dropframes; 
 #define FPS framerate
 #else			 /* Standalone */
 //#define FPS 25
@@ -51,6 +52,7 @@ void dump(bcd *s, char *info);
 double framerate = 25.0;
 int want_dropframes = 0;
 int want_autodrop = 1;
+int have_dropframes = 0; // detected from MTC ;  TODO: force to zero if jack of user TC
 #define FPS framerate
 #endif
 
@@ -60,7 +62,6 @@ extern int midi_clkconvert;
 int midi_clkconvert =0;
 #endif
 
-int have_dropframes = 0; // TODO: force to zero if jack of user TC
 
 #define FIX_SMPTE_OVERFLOW(THIS,NEXT,INC) \
 	if (s->v[(THIS)] >= (INC)) { int ov= (int) floor((double) s->v[(THIS)] / (INC));  s->v[(THIS)] -= ov*(INC); s->v[(NEXT)]+=ov;} \
@@ -211,11 +212,11 @@ long int smpte_to_frame(int type, int f, int s, int m, int h, int overflow);
  * used for parsing user input '-o' 'set offset', etc
  * basically the same as smpte_to_frame(...)
  */
-long int smptestring_to_frame (char *str, int autodrop) {
+long int smptestring_to_frame (char *str) {
 	bcd s;
 	long int frame;
 	parse_string(&s,str);
-	if ((have_dropframes && autodrop && want_autodrop)||want_dropframes) {
+	if ((have_dropframes && want_autodrop)||want_dropframes) {
 		frame= smpte_to_frame (
 			2 /*29.97fps */,
 			s.v[SMPTE_FRAME],
@@ -235,23 +236,24 @@ long int smptestring_to_frame (char *str, int autodrop) {
 }
 
 /* any smpte output (verbose and OSD) */
-void frame_to_smptestring(char *smptestring, long int frame, int autodrop) {
+void frame_to_smptestring(char *smptestring, long int frame) {
 	bcd s;
 	if (!smptestring) return;
 
-	double fpsf =1.0 ; // video frames per smpte frame (FPS/fps)
-	long frames = (long) floor((double) frame / fpsf);
+	long frames = (long) floor((double) frame);
+  char sep = ':';
 
-	if ((have_dropframes && autodrop && want_autodrop)||want_dropframes) {
+	if ((have_dropframes && want_autodrop)||want_dropframes) {
 		frames = insert_drop_frames(frames);
+    sep = '.';
 	}
 
 	parse_int(&s, (int) frames);
 
-	snprintf(smptestring,13,"%02i:%02i:%02i:%02i",
-			s.v[SMPTE_HOUR],
-			s.v[SMPTE_MIN],
-			s.v[SMPTE_SEC],
+	snprintf(smptestring,13,"%02i%c%02i%c%02i%c%02i",
+			s.v[SMPTE_HOUR], sep,
+			s.v[SMPTE_MIN],  sep,
+			s.v[SMPTE_SEC],  sep,
 			s.v[SMPTE_FRAME]);
 }
 

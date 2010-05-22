@@ -1,3 +1,7 @@
+xjadeo (0.4.10) unstable; urgency=low
+  * implemented file drop-frame timecode detection
+ -- Robin Gareus <robin@gareus.org>  Sun, 23 May 2010 00:48:30 +0200
+
 xjadeo (0.4.9) unstable; urgency=low
   * re-implemented start-time parsing
   * re-added contrib folder to dist

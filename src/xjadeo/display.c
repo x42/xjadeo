@@ -502,7 +502,7 @@ void render_buffer (uint8_t *mybuffer) {
 		} else if (OSD_mode&OSD_OFFS ) { 
 			char tempsmpte[30];
 			snprintf(tempsmpte,5,"off: ");
-			frame_to_smptestring(tempsmpte+4,ts_offset,midi_connected());
+			frame_to_smptestring(tempsmpte+4,ts_offset);
 			OSD_render (VO[VOutput].render_fmt, mybuffer, tempsmpte, OSD_CENTER, 50);
 		}
 	}

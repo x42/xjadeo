@@ -1400,14 +1400,14 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       force_redraw=1;
       if (smpte_offset) free(smpte_offset);
       smpte_offset= calloc(15,sizeof(char));
-      frame_to_smptestring(smpte_offset,ts_offset,midi_connected());
+      frame_to_smptestring(smpte_offset,ts_offset);
     } break;
     case '-': {
       ts_offset--;
       force_redraw=1;
       if (smpte_offset) free(smpte_offset);
       smpte_offset= calloc(15,sizeof(char));
-      frame_to_smptestring(smpte_offset,ts_offset,midi_connected());
+      frame_to_smptestring(smpte_offset,ts_offset);
     } break;
     case 'm': mousepointer_mac(2); break;
     case '.': { //'.' // resize 100%

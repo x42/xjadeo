@@ -78,6 +78,7 @@ extern double	duration;
 extern double	framerate;
 extern long	frames;
 extern int64_t	file_frame_offset;
+extern int have_dropframes; 
 
 /* Option flags and variables */
 extern char    *current_file;
@@ -202,7 +203,7 @@ void event_loop(void) {
 			fprintf(stdout, "frame: smpte:%li    \r", newFrame);
 		#else
 			char tempsmpte[15];
-			frame_to_smptestring(tempsmpte,newFrame,midi_connected());
+			frame_to_smptestring(tempsmpte,newFrame);
 			fprintf(stdout, "smpte: %s f:%li\r", tempsmpte,newFrame);
 		#endif
 			fflush(stdout); 
@@ -281,7 +282,7 @@ int open_movie(char* file_name) {
 	file_frame_offset = 0;
 	videoStream=-1;
 	// recalc offset with new framerate
-	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset,midi_connected());
+	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset);
   
 	/* Open video file */
 	if(av_open_input_file(&pFormatCtx, file_name, NULL, 0, NULL)!=0) {
@@ -333,8 +334,13 @@ int open_movie(char* file_name) {
 	}
 	else framerate = 1.0/av_q2d(av_stream->time_base);
 #endif
-
-	// TODO: detect drop frame timecode !
+  
+	// detect drop frame timecode
+  if (fabs(framerate - 30000.0/1001.0) < 0.01) {
+    have_dropframes=1;
+	  if(!want_quiet)
+		  fprintf(stdout, "enabled drop-frame-timecode (use -n to override).\n");
+  }
 
 #if defined(__BIG_ENDIAN__) && (__ppc__) && LIBAVFORMAT_BUILD <= 4616
 // this cast is weird, but it works.. the bytes seem to be in 'correct' order, but the two
@@ -360,7 +366,7 @@ int open_movie(char* file_name) {
 	}
 
 	// recalc offset with new framerate
-	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset,midi_connected());
+	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset);
 
 	if (!want_quiet) {
 		if (filefps >0 ) 
@@ -447,7 +453,7 @@ void override_fps (double fps) {
 	tpf = 1.0/(av_q2d(pFormatCtx->streams[videoStream]->time_base)*framerate);
 #endif
 	// recalc offset with new framerate
-	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset,midi_connected());
+	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset);
 }
 
 int64_t my_avprev = 0; // last recent seeked timestamp
@@ -677,7 +683,7 @@ void display_frame(int64_t timestamp, int force_update) {
 
 	dispFrame = timestamp;
 	if (OSD_mode&OSD_FRAME) snprintf(OSD_frame,48,"Frame: %li", dispFrame);
-	if (OSD_mode&OSD_SMPTE) frame_to_smptestring(OSD_smpte,dispFrame,midi_connected());
+	if (OSD_mode&OSD_SMPTE) frame_to_smptestring(OSD_smpte,dispFrame);
 
 	if(fFirstTime) {
 		fFirstTime=0;

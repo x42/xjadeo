@@ -46,6 +46,7 @@ extern int want_debug;
 extern double framerate;
 extern int midi_clkconvert;
 extern int midi_clkadj;
+extern int have_dropframes; 
 extern double 	delay;
 
 typedef struct {
@@ -196,7 +197,7 @@ int parse_sysex_urtm (int data, int state, int type) {
 	}
 
 	// type==2 && state6,7,8,9
-	if (state==6 && type ==2 ) { last_tc.hour=(data&0x1f); last_tc.type=(data>>5)&3; } // hour + format
+	if (state==6 && type ==2 ) { last_tc.hour=(data&0x1f); /*last_tc.type=(data>>5)&3*/; } // hour 
 	if (state==7 && type ==2 ) { last_tc.min=(data&0x7f); } // min
 	if (state==8 && type ==2 ) { last_tc.sec=(data&0x7f); } // sec
 	if (state==9 && type ==2 ) { last_tc.frame=(data&0x7f); } // frame
@@ -445,6 +446,7 @@ void midi_close(void) {
 
 	Pm_Close(midi);
 	midi=NULL;
+  //have_dropframes = 0; // reset MTC state
 }
 
 int midi_connected(void) {
@@ -641,6 +643,7 @@ void aseq_close(void) {
 	if (!want_quiet) printf("closing alsa midi...");
 	snd_seq_close(seq);
 	seq=NULL;
+  //have_dropframes = 0; // reset MTC state
 }
 
 void aseq_open(char *port_name) {
