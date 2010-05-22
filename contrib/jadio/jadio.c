@@ -188,8 +188,8 @@ int testcls(jack_nframes_t p, audiocache *cache) {
 
 
 /////// FFMPEG  ///////
-#include <avcodec.h>
-#include <avformat.h>
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
 
 AVFormatContext* m_formatContext;
 AVCodecContext*  m_codecContext;
@@ -316,7 +316,8 @@ jack_nframes_t fillBuffer_ff ( jack_default_audio_sample_t ** bufferptrs, jack_n
 
 			int data_size;
 			while ( ptr != NULL && ret >= 0 && m_packet.stream_index == m_audioStream && len > 0 ) {
-				ret = avcodec_decode_audio( m_codecContext, m_tmpBuffer, &data_size, ptr, len );
+				//ret = avcodec_decode_audio( m_codecContext, m_tmpBuffer, &data_size, ptr, len );
+				ret = avcodec_decode_audio3( m_codecContext, m_tmpBuffer, &data_size, &m_packet );
 				if ( ret < 0 ) {
 					ret = 0;
 					break;

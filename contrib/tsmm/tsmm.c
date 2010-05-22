@@ -35,7 +35,8 @@ char *program_name;
 int want_quiet = 0;
 int want_verbose = 0;
 int want_debug = 0;
-int want_dropframes =0; /* --dropframes -N  BEWARE! */
+int want_dropframes =0; // _force_ drop-frame TC  default: 0 
+int have_dropframes =0;     // use drop-frame-timecode (use with 30000.0/1001.0 fps) 
 #ifdef HAVE_MIDI
 int midi_clkconvert =0;	/* --midifps [0:MTC|1:VIDEO|2:RESAMPLE] */
 #endif
@@ -188,9 +189,9 @@ int main (int argc, char **argv) {
 		}
 	}
 	if (argc>3) {
-	  	last_frame=smptestring_to_frame(argv[3],want_dropframes);
+	  	last_frame=smptestring_to_frame(argv[3]);
 	} else {
-	  	last_frame=smptestring_to_frame("2:10:15",want_dropframes);
+	  	last_frame=smptestring_to_frame("2:10:15");
 	}
 	if (argc>4) usage(1);
 
@@ -218,7 +219,7 @@ int main (int argc, char **argv) {
 		if (te[1].text) free(te[1].text);
 		asprintf(&(te[0].text),"Frame: %i",i);
 		te[1].text=calloc(48,sizeof(char));
-		frame_to_smptestring(te[1].text,i,want_dropframes);
+		frame_to_smptestring(te[1].text,i);
 		err = render_frame(filename,w,h,te);
 	}
 	if (te[0].text) free(te[0].text);

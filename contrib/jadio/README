@@ -1,3 +1,14 @@
+----- DEPRECATED SOFTWARE -----
+
+jadio has been superseeded by jplay2: 
+
+  http://rg42.org/oss/jplay2/
+  git://rg42.org/jplay2
+
+jplay2 basically is jadio evolved a few revisions.
+
+----- DEPRECATED SOFTWARE -----
+
 counter part to xjadeo : jadio - jack audio monitor
 
 A while ago I got annoyed to start up a GUI everytime to play a bounced file

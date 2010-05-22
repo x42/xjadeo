@@ -1,3 +1,12 @@
+---- DEPRECATED SOFTWARE ----
+
+xjadeo can be remote-controlled by OSC or MQ; 
+remote-synchronization is also possible using netjack.
+
+using xjadeo-rcli is highly discouraged.
+
+---- DEPRECATED SOFTWARE ----
+
 this is a quick hack to experiment with xjadeo remote control.
 
 jadeo-rcli is a Command Line Client xjadeo, that generates remote commands

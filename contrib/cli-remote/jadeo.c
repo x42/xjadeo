@@ -51,6 +51,7 @@ char *midiid = NULL;
 #endif
 int want_autodrop =1;   /* --nodropframes -n (hidden option) */
 int want_dropframes =0; /* --dropframes -N  BEWARE! */
+int have_dropframes =0;
 double 	delay = 0.04; // HERE: for MTC timeout only 
 
 #ifdef HAVE_LASH
