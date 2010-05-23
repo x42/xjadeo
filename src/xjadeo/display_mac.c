@@ -519,7 +519,7 @@ CantGetDefaultOptions:
 ////////////////////////////////////////////////////////
 // osx helpers
 void window_resized() {
-  printf("resized\n");
+  //printf("resized\n");
   
   int padding = 0;
   
@@ -1051,7 +1051,7 @@ int open_window_mac (void) {
     SetWindowContentColor(theWindow, &black);
 #endif
   } else {
-    printf("re-set window\n");
+    //printf("re-set window\n");
 #if 1
     HideWindow(theWindow);
     ChangeWindowAttributes(theWindow, ~windowAttrs, windowAttrs);
@@ -1256,7 +1256,6 @@ void close_window_mac (void) {
 }
 
 void newsrc_mac (void) {
-  printf("newsrc\n");
   close_window_mac();
   open_window_mac();
 }

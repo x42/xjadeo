@@ -337,7 +337,7 @@ decode_switches (int argc, char **argv)
 	  break;
 	case 'F':		/* --filefps */
 	  if(atof(optarg)>0)
-	    filefps = atof(optarg);
+	    filefps = atof(optarg); // TODO: use av_parse_video_frame_rate()
 	  break;
 	case 'f':		/* --fps */
 	  if(atof(optarg)>0)

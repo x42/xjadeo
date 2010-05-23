@@ -16,9 +16,9 @@ $DURATION="10:10:10";
 #$VCODEC="theora"; # ffmpeg2theora
 #$VCODEC="libtheora";
 #$VCODEC="mpeg4";
-#$VCODEC="mjpeg";
+$VCODEC="mjpeg";
 #$VCODEC="msmpeg4v2";
-$VCODEC="libx264";
+#$VCODEC="libx264";
 
 #$OUTFILE="/tmp/tsmm-$FPS.ogv";
 $OUTFILE="/tmp/tsmm-$FPS.avi";
