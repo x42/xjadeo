@@ -59,14 +59,17 @@ typedef struct {
 
 static void usage (int status)
 {
-  printf ("%s -   render time stamps on tiff frames\n", program_name);
-  printf ("usage: %s <base-path>\n", program_name);
+  printf ("%s -   render time-code on tiff frames\n", program_name);
+  printf ("usage: %s <folder> [fps] [duration]\n", program_name);
   printf (""
-"\n  This is work in progres. it generates a tiff image sequence"
-"\n  with the frame number and SMPTE rendered on a black tiff."
+"\n  xjtsmm generates a tiff image-sequence"
+"\n  with the frame number and SMPTE rendered on a black background."
+"\n  use with .../xjadeo/trunk/contrib/tsmm/tsmm.pl"
+"\n  to generate a video-file from the image-sequence."
+"\n  default is 25fps and a duration of 2:10:15"
+"\n  example:"
 "\n    mkdir /tmp/sequence/ "
 "\n    %s /tmp/sequence/"
-"\n  use with .../xjadeo/trunk/contrib/tsmm/timestampmoviemaker.sh"
 "\n", program_name);
   exit (status);
 }
@@ -173,10 +176,11 @@ int main (int argc, char **argv) {
 	int i;
 	int err = 0;
 	int last_frame=150;
-	int w=336;
+	int w=352;
 	int h=192;
 	program_name=argv[0];
 
+	if (argc<2) usage(1);
 	if (argc>1) filepath=argv[1];
 	if (argc>2) {
 		framerate=atof(argv[2]);
@@ -208,10 +212,30 @@ int main (int argc, char **argv) {
 	te[1].xpos=OSD_CENTER;
 	te[1].yperc=98;
 
-	for (i=0;i<last_frame && !err;i++) {
+  // first frame
+	snprintf(filename,MAX_PATH,"%s/frame_%07i.tif",filepath,0);
+	asprintf(&(te[0].text),"Frame: %i",0);
+	te[1].text=calloc(48,sizeof(char));
+	frame_to_smptestring(te[1].text,0);
+
+	te[2].text=calloc(48,sizeof(char));
+  sprintf(te[2].text,"Duration: ");
+	frame_to_smptestring(te[2].text+10,last_frame);
+	te[2].xpos=OSD_CENTER;
+	te[2].yperc=30;
+
+	asprintf(&(te[3].text),"FPS: %g",framerate);
+	te[3].xpos=OSD_CENTER;
+	te[3].yperc=70;
+	render_frame(filename,w,h,te);
+
+  free(te[2].text); te[2].text=NULL;
+  free(te[3].text); te[3].text=NULL;
+
+	for (i=1;i<last_frame && !err;i++) {
 		snprintf(filename,MAX_PATH,"%s/frame_%07i.tif",filepath,i);
 		if (!want_quiet && !(i%7)) {
-			printf(" file: %s%c",filename,want_verbose?'\n':'\r');
+			printf(" file: %s%s",filename,want_verbose?"\n":"        \r");
 			fflush(stdout);
 		}
 		if (want_verbose) fflush(stdout);
