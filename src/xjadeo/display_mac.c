@@ -1366,6 +1366,7 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
     case 'l':  
       want_letterbox = !want_letterbox;
       force_redraw=1;
+      window_resized();
       break;
     case 'o': { //'o' // OSD - offset in frames
       if (OSD_mode&OSD_OFFF) {
@@ -1493,6 +1494,7 @@ OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
     case mKeepAspect:
       want_letterbox = !want_letterbox;
       force_redraw=1;
+      window_resized();
       break;
     case mOSDFrame:
       OSD_mode^=OSD_FRAME; 
