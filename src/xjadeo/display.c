@@ -418,10 +418,17 @@ void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int yperc) {
 
 	yalign= (movie_height - ST_HEIGHT) * yperc /100.0;
 
-	for (x=0; x<ST_rightend && (x+xalign) < movie_width ;x++)
-		for (y=0; y<ST_HEIGHT && (y+yalign) < movie_height;y++) {
-			if (ST_image[y][x]>= ST_BG)
+	int donext =0;
+	for (y=0; y<ST_HEIGHT && (y+yalign) < movie_height;y++) {
+		donext=0;
+		for (x=0; x<ST_rightend && (x+xalign) < movie_width ;x++) {
+			if (ST_image[y][x]>= ST_BG || donext) {
 				_render(mybuffer,&rv,(x+xalign),(y+yalign),ST_image[y][x]);
+			}
+			if (ST_image[y][x]>= ST_BG && rfmt == PIX_FMT_UYVY422) donext=1; 
+			else donext=0;
+		}
+
 	}
 }
 

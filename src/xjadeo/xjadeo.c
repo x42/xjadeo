@@ -279,6 +279,9 @@ int open_movie(char* file_name) {
 	movie_width  = 320;
 	movie_height = 180;
 	framerate = duration = frames = 1;
+#ifdef HAVE_MACOSX
+	framerate = 25; // prevent initial Menu sloppyness (event loop).
+#endif
 	file_frame_offset = 0;
 	videoStream=-1;
 	// recalc offset with new framerate
@@ -460,7 +463,14 @@ int64_t my_avprev = 0; // last recent seeked timestamp
 
 void render_empty_frame(int blit) {
 	// clear image (black / or YUV green)
-	if (render_fmt == PIX_FMT_YUV420P) {
+	if (render_fmt == PIX_FMT_UYVY422) {
+		int i;
+		for (i=0;i<movie_width*movie_height*2;i+=2) {
+		 buffer[i]=0x80;
+		 buffer[i+1]=0x00;
+		}
+	}
+	else if (render_fmt == PIX_FMT_YUV420P) {
 		size_t Ylen  = movie_width * movie_height;
 		memset(buffer,0,Ylen);
 		memset(buffer+Ylen,0x80,Ylen/2);
@@ -468,6 +478,14 @@ void render_empty_frame(int blit) {
 		memset(buffer,0,avpicture_get_size(render_fmt, movie_width, movie_height));
 #ifdef DRAW_CROSS
 	int x,y;
+	if (render_fmt == PIX_FMT_UYVY422)
+	for (x=0,y=0;x< movie_width-1; x++,y= movie_height*x/movie_width) {
+		 int off=(2*x+2*movie_width*y);
+		 buffer[off]=127; buffer[off+1]=127; 
+
+		 off=(2*x+2*movie_width*(movie_height-y-1));
+		 buffer[off]=127; buffer[off+1]=127;
+	}
 	if (render_fmt == PIX_FMT_YUV420P) 
 	for (x=0,y=0;x< movie_width-1; x++,y= movie_height*x/movie_width) {
 		 int yoff=(x+movie_width*y);
@@ -586,7 +604,7 @@ int my_seek_frame (AVPacket *packet, int64_t timestamp) {
 		// timestamp-my_avprev > threshold! - Oh well.
 
 		// seek to keyframe *BEFORE* this frame
-		// printf("SEEK!\n");
+		//printf("SEEK: %d\n",timestamp);
 		rv= av_seek_frame(pFormatCtx, videoStream, timestamp, AVSEEK_FLAG_BACKWARD) ;
 		avcodec_flush_buffers(pCodecCtx);
 	} 
@@ -639,6 +657,11 @@ read_frame:
 		av_free_packet(packet);
 		return (0);
 	}
+#if 0
+  if (mtsb != AV_NOPTS_VALUE && mtsb!=0) my_avprev = mtsb;
+	if (mtsb > timestamp) { printf("WRONG want:%lli got:%lli\n", timestamp, mtsb); my_avprev = mtsb;}
+	if (mtsb == timestamp) printf("Right.\n");
+#endif
 
 	if (mtsb >= timestamp) return (1); // ok!
 

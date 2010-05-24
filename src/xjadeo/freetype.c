@@ -101,7 +101,7 @@ int render_font (char *fontfile, char *text)
   matrix.yy = (FT_Fixed)( cos( angle ) * 0x10000L );
 
   /* the pen position incartesian space coordinates; */
-  pen.x = 0  * 64;
+  pen.x = 1  * 64;
   pen.y = 10 * 64;
 
   memset(&(ST_image[0][0]),0,ST_WIDTH*ST_HEIGHT);
@@ -134,6 +134,7 @@ int render_font (char *fontfile, char *text)
 
   FT_Done_Face    ( face );
   FT_Done_FreeType( library );
+  ST_rightend++;
 
   return 0;
 }
