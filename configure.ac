@@ -196,11 +196,11 @@ if test "x$MIDI" != "xno"; then
 	MIDI_CFLAGS=""
 	if test "x$PORTMIDI" != "xno" -a -z "$portmidisrc" ; then
 		AC_CHECK_HEADERS(portmidi.h porttime.h , [FOUND_H_PORTMIDI=yes])
-		BACKUPLIBS="$LIBS"
-		LIBS="$LIBS -lporttime"
+		#BACKUPLIBS="$LIBS"
+		#LIBS="$LIBS -lporttime"
 		AC_CHECK_LIB([portmidi], [Pm_CountDevices], [FOUND_L_PORTMIDI=yes])
-		LIBS="$BACKUPLIBS"
-		MIDI_LIBS="-lportmidi -lporttime"
+		#LIBS="$BACKUPLIBS"
+		MIDI_LIBS="-lportmidi"
 	fi
 
 	if test "x$PORTMIDI" != "xno" -a -n "$portmidisrc" -a -n "$PM_OS"; then
