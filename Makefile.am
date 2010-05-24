@@ -26,9 +26,7 @@ EXTRA_DIST= \
  contrib/xjadeo-example.avi \
  contrib/encode.sh \
  contrib/README \
- autogen.sh \
- debian/changelog debian/rules debian/control debian/watch\
- debian/compat debian/copyright
+ autogen.sh 
 
 MAINTAINERCLEANFILES = \
  Makefile.in \
