@@ -36,7 +36,7 @@ clean:
 	rm -f build-stamp 
 	rm -f xjadeo.png qjadeo.png xjadeo.desktop
 
-	-$(MAKE) distclean
+	[ ! -f Makefile ] || $(MAKE) distclean
 
 	dh_clean 
 

@@ -4,7 +4,7 @@ Priority: optional
 Bugs: mailto:x42@users.sourceforge.net
 Maintainer: Robin Gareus <robin@gareus.org>
 Standards-Version: 3.8.4
-Build-Depends: debhelper (>= 4), imlib11-dev | libimlib2-dev, libxv-dev,
+Build-Depends: debhelper (>= 5), imlib11-dev | libimlib2-dev, libxv-dev,
  libavcodeccvs51-dev | libavcodec-dev, 
  libavutilcvs49-dev | libavformat-dev,
  libavutil-dev, libswscale-dev,
@@ -14,7 +14,7 @@ Build-Depends: debhelper (>= 4), imlib11-dev | libimlib2-dev, libxv-dev,
 
 Package: xjadeo
 Architecture: any
-Depends: ${shlibs:Depends} ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}
 Recommends: mencoder, transcode, libquicktime-progs | libquicktime-utils
 Description: video player with jack sync
  xjadeo is a simple video player that receives sync from jackd or MTC.
