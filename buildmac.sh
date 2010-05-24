@@ -116,7 +116,8 @@ cd ..
 mv Frameworks fwold
 mkdir Frameworks
 for file in $(ls fwold); do
-  lipo fwold/$file -remove x86_64 -output Frameworks/$file
+  lipo fwold/$file -remove x86_64 -output Frameworks/$file || \
+  cp fwold/$file Frameworks/$file
 done
 rm -rf fwold
 
