@@ -1677,7 +1677,7 @@ make install # (requires root privileges) </screen></para>
             <term><option>-I, --ignorefileoffset</option></term>
             <listitem>
               <para>This option is only useful for video files that with a start-offset, such
-	      as splitted avi or vob files. Per default xjadeo will honor offsets specified in the 
+	      as split vob files. Per default xjadeo will honor offsets specified in the 
 	      video-file header and the file's pts/dts. <option>-I</option> allows to override and 
 	      subtract this offset and makes the file start at SMPTE position 00:00:00:00.
 	      (although you can archive the same result, this option is not related to <option>-o</option>
