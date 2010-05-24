@@ -406,7 +406,7 @@ jack video monitor\n", program_name);
 "  -i <int> --info <int>     render OnScreenDisplay info: 0:off, %i:frame,\n"
 "                            %i:smpte, %i:both. (use remote ctrl for more opts.)\n"
 "  -I, --ignorefileoffset    set the beginning of the file to SMPTE zero.\n"
-"                            override timestamps of splitted avi or vob files.\n"
+"                            eg. override timestamps of split vob files.\n"
 "  -k, --keyframes           seek to keyframes only\n"
 "  -K, --continuous          decode video source continuously. (extra latency\n"
 "                            when seeking to non-key frames.)\n"

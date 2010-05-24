@@ -601,7 +601,7 @@ int main(int argc, char **argv)
      QMessageBox::QMessageBox::critical( &w, "qjadeo","can not execute xjadeo/xjremote.","Exit", QString::null, QString::null, 0, -1);
 
     qFatal("Could not start xjadeo executable: " + xjadeoPath);
-    qFatal("Try to set the XJREMOTE environement variable to point to xjadeo.");
+    qFatal("Try to set the XJREMOTE environment variable to point to xjadeo.");
   }
 
   w.connect(&xjadeo, SIGNAL(readyReadStdout()), &w, SLOT(readFromStdout()));

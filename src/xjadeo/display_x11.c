@@ -1152,11 +1152,11 @@ int open_window_xv (void) {
 		if (xv_have_I420) {
 			xv_pic_format = FOURCC_I420;
 			if (!want_quiet) 
-				fprintf(stderr,"XV: using YUV420P + Xvideo extention (I420)\n");
+				fprintf(stderr,"XV: using YUV420P + Xvideo extension (I420)\n");
 		} else if (xv_have_YV12) { 
 			xv_pic_format = FOURCC_YV12;
 			if (!want_quiet) 
-				fprintf(stderr,"XV: using YUV420P + Xvideo extention (YV12)\n");
+				fprintf(stderr,"XV: using YUV420P + Xvideo extension (YV12)\n");
 		} else {
 			fprintf(stderr,
 				"Xv: %s: could not find a suitable colormodel in ( ", ad_info[i].name);
