@@ -55,7 +55,7 @@ binary-indep: build install
 	convert src/qt-gui/images/qjadeo -resize 48x48! qjadeo.png
 	# menu-entry
 	echo "[Desktop Entry]" > xjadeo.desktop 
-	echo "Encoding=UTF-8" >> xjadeo.desktop 
+	#echo "Encoding=UTF-8" >> xjadeo.desktop 
 	echo "Name=xjadeo" >> xjadeo.desktop 
 	echo "GenericName=X jack video monitor" >> xjadeo.desktop 
 	echo "Comment=A simple video player that gets sync from jack transport." >> xjadeo.desktop 
