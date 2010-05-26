@@ -25,8 +25,7 @@ EXTRA_DIST= \
  contrib/xjadeo-example.avi \
  contrib/xjadeo-example.avi \
  contrib/encode.sh \
- contrib/README \
- autogen.sh 
+ contrib/README 
 
 MAINTAINERCLEANFILES = \
  Makefile.in \
