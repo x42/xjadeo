@@ -102,6 +102,8 @@ void Xontop (int a);
 void Xgetsize (unsigned int *x, unsigned int *y);
 void Xposition (int x, int y);
 void Xgetpos (int *x, int *y);
+int Xgetontop (void);
+int Xgetfullscreen (void);
 
 /* remote.c */
 void close_remote_ctrl (void) ;

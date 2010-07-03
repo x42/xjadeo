@@ -149,7 +149,7 @@ void event_loop(void) {
 
 	while(loop_flag) { /* MAIN LOOP */
 
-		if (loop_run==0) {  // CHECK: && !force_redraw 
+		if (loop_run==0) {  // CHECK: && !force_redraw ?!
 			/* video offline - (eg. window minimized)
 			 * do not update frame 
 			 */
@@ -278,10 +278,8 @@ int open_movie(char* file_name) {
 	pFrameFMT = NULL;
 	movie_width  = 320;
 	movie_height = 180;
-	framerate = duration = frames = 1;
-#ifdef HAVE_MACOSX
-	framerate = 25; // prevent initial Menu sloppyness (event loop).
-#endif
+	duration = frames = 1;
+	framerate = 10; // prevent slow reaction to remote-ctl (event loop).
 	file_frame_offset = 0;
 	videoStream=-1;
 	// recalc offset with new framerate
@@ -745,7 +743,7 @@ void display_frame(int64_t timestamp, int force_update) {
 			if(frameFinished) {
 				/* Convert the image from its native format to FMT */
 #ifdef HAVE_SWSCALE
-				sws_scale(pSWSCtx, pFrame->data, pFrame->linesize, 0, pCodecCtx->height, pFrameFMT->data, pFrameFMT->linesize);
+				sws_scale(pSWSCtx, (const uint8_t * const*)pFrame->data, pFrame->linesize, 0, pCodecCtx->height, pFrameFMT->data, pFrameFMT->linesize);
 #else
 				img_convert((AVPicture *)pFrameFMT, render_fmt, 
 					(AVPicture*)pFrame, pCodecCtx->pix_fmt, pCodecCtx->width, 
@@ -804,6 +802,8 @@ int close_movie() {
 
 	//Close the video file
 	av_close_input_file(pFormatCtx);
+	duration = frames = 1;
+	framerate = 10; // prevent slow reaction to remote-ctl (event loop).
 	return (0);
 }
 

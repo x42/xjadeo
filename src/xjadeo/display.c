@@ -51,6 +51,8 @@ void getpos_null (int *x, int *y) { if(x)*x=1; if(y)*y=1; }
 void fullscreen_null (int a) { ; }
 void mousepointer_null (int a) { ; }
 void ontop_null (int a) { ; }
+int  getfullscreen_null () { return (0); }
+int  getontop_null () { return(0); }
 
 /* 
 // experimental SSE2/MMX2 fast_memcopy 
@@ -190,7 +192,7 @@ void rgb2abgr (uint8_t *rgbabuffer, uint8_t *rgbbuffer, int width, int height) {
  */
 
 
-#define NULLOUTPUT &render_null, &open_window_null, &close_window_null, &handle_X_events_null, &newsrc_null, &resize_null, &getsize_null, &position_null, &getpos_null, &fullscreen_null, &ontop_null, &mousepointer_null
+#define NULLOUTPUT &render_null, &open_window_null, &close_window_null, &handle_X_events_null, &newsrc_null, &resize_null, &getsize_null, &position_null, &getpos_null, &fullscreen_null, &ontop_null, &mousepointer_null, &getfullscreen_null, &getontop_null
 
 const vidout VO[] = {
 	{ PIX_FMT_RGB24,   1, 		"NULL", NULLOUTPUT}, // NULL is --vo 0 -> autodetect 
@@ -199,7 +201,8 @@ const vidout VO[] = {
 		&render_xv, &open_window_xv, &close_window_xv,
 		&handle_X_events_xv, &newsrc_xv, &resize_xv,
 		&get_window_size_xv, &position_xv, get_window_pos_xv,
-		&xj_set_fullscreen, &xj_set_ontop, &xj_mousepointer},
+		&xj_set_fullscreen, &xj_set_ontop, &xj_mousepointer,
+		&xj_get_fullscreen, &xj_get_ontop},
 #else
 		NULLOUTPUT},
 #endif
@@ -208,7 +211,8 @@ const vidout VO[] = {
 		&render_sdl, &open_window_sdl, &close_window_sdl,
 		&handle_X_events_sdl, &newsrc_sdl, &resize_sdl,
 		&getsize_sdl, &position_sdl, &getpos_null,
-		&fullscreen_null, &ontop_null, &mousepointer_null},
+		&fullscreen_null, &ontop_null, &mousepointer_null,
+		&getfullscreen_null, &getontop_null},
 #else
 		NULLOUTPUT},
 #endif
@@ -217,7 +221,8 @@ const vidout VO[] = {
 		&render_imlib, &open_window_imlib, &close_window_imlib,
 		&handle_X_events_imlib, &newsrc_imlib, &resize_imlib,
 		&get_window_size_imlib, &position_imlib, &get_window_pos_imlib,
-		&xj_set_fullscreen, &xj_set_ontop, &xj_mousepointer},
+		&xj_set_fullscreen, &xj_set_ontop, &xj_mousepointer,
+		&getfullscreen_null, &getontop_null},
 #else
 		NULLOUTPUT},
 #endif
@@ -230,20 +235,22 @@ const vidout VO[] = {
 		&render_imlib2, &open_window_imlib2, &close_window_imlib2,
 		&handle_X_events_imlib2, &newsrc_imlib2, &resize_imlib2,
 		&get_window_size_imlib2, &position_imlib2, &get_window_pos_imlib2,
-		&xj_set_fullscreen, &xj_set_ontop, &xj_mousepointer},
+		&xj_set_fullscreen, &xj_set_ontop, &xj_mousepointer,
+		&getfullscreen_null, &getontop_null},
 #else
 		NULLOUTPUT},
 #endif
        { PIX_FMT_UYVY422,   SUP_MACOSX,   "Mac OSX - quartz",
 #ifdef HAVE_MACOSX
-               &render_mac, &open_window_mac, &close_window_mac,
-               &handle_X_events_mac, &newsrc_mac, &resize_mac,
-               &getsize_mac, &position_mac, &getpos_mac,
-               &fullscreen_null, &ontop_null, &mousepointer_null},
+		&render_mac, &open_window_mac, &close_window_mac,
+		&handle_X_events_mac, &newsrc_mac, &resize_mac,
+		&getsize_mac, &position_mac, &getpos_mac,
+		&fullscreen_null, &ontop_mac, &mousepointer_null,
+		&fullscreen_mac, &get_ontop_mac},
 #else
                NULLOUTPUT},
 #endif
-	{-1,-1,NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL} // the end.
+	{-1,-1,NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL} // the end.
 };
 
 int VOutput = 0;
@@ -560,6 +567,14 @@ void Xresize (unsigned int x, unsigned int y) {
 
 void Xontop (int a) {
 	VO[VOutput].ontop(a);
+}
+
+int Xgetontop (void) {
+	return (VO[VOutput].getontop());
+}
+
+int Xgetfullscreen (void) {
+	return (VO[VOutput].getfullscreen());
 }
 
 void Xmousepointer (int a) {

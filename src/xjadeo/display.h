@@ -45,6 +45,8 @@ typedef struct {
 	void (*fullscreen)(int action);
 	void (*ontop)(int action);
 	void (*mousepointer)(int action);
+	int  (*getfullscreen)(void);
+	int  (*getontop)(void);
 }vidout;
 
 /*******************************************************************************
@@ -85,6 +87,8 @@ void xj_position (int x, int y);
 void xj_resize (unsigned int x, unsigned int y);
 void xj_get_window_size (unsigned int *my_Width, unsigned int *my_Height);
 void xj_get_window_pos (int *x,  int *y);
+int  xj_get_ontop ();
+int  xj_get_fullscreen ();
 
 #endif
 
@@ -196,4 +200,8 @@ void handle_X_events_mac (void);
 void resize_mac (unsigned int x, unsigned int y);
 void position_mac (int x, int y);
 void getsize_mac (unsigned int *x, unsigned int *y);
+void fullscreen_mac (int a);
+void ontop_mac (int a);
+int  get_fullscreen_mac();
+int  get_ontop_mac();
 

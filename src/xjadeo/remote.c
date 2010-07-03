@@ -221,7 +221,7 @@ void xapi_lvideomodes(void *d) {
 
 void xapi_pletterbox(void *d) {
 	if (want_letterbox)
-		remote_printf(201,"videomode=1 # fixed aspect ratio");
+		remote_printf(201,"letterbox=1 # fixed aspect ratio");
 	else
 		remote_printf(201,"letterbox=0 # free scaling");
 }
@@ -283,7 +283,8 @@ void xapi_swinsize(void *d) {
 void xapi_ontop(void *d) {
 	int action=_NET_WM_STATE_TOGGLE;
 	if (!strcmp(d,"on") || atoi(d)==1) action=_NET_WM_STATE_ADD;
-	else if (!strcmp(d,"off")) action=_NET_WM_STATE_REMOVE;
+	else if (!strcmp(d,"toggle")) action=_NET_WM_STATE_TOGGLE;
+	else if (!strcmp(d,"off") || atoi(d)==0) action=_NET_WM_STATE_REMOVE;
 	remote_printf(100,"ok.");
 	Xontop(action);
 }
@@ -291,9 +292,24 @@ void xapi_ontop(void *d) {
 void xapi_fullscreen(void *d) {
 	int action=_NET_WM_STATE_TOGGLE;
 	if (!strcmp(d,"on") || atoi(d)==1) action=_NET_WM_STATE_ADD;
-	else if (!strcmp(d,"off")) action=_NET_WM_STATE_REMOVE;
+	else if (!strcmp(d,"toggle")) action=_NET_WM_STATE_TOGGLE;
+	else if (!strcmp(d,"off") || atoi(d)==0) action=_NET_WM_STATE_REMOVE;
 	remote_printf(100,"ok.");
 	Xfullscreen(action);
+}
+
+void xapi_pontop(void *d) {
+	if (Xgetontop())
+		remote_printf(201,"windowontop=1 # always on top");
+	else
+		remote_printf(201,"windowontop=0 # normal window stack");
+}
+
+void xapi_pfullscreen(void *d) {
+	if (Xgetfullscreen())
+		remote_printf(201,"fullscreen=1 # full-screen");
+	else
+		remote_printf(201,"fullscreen=0 # windowed");
 }
 
 void xapi_mousepointer(void *d) {
@@ -581,9 +597,19 @@ void xapi_osd_avail(void *d) {
 #endif
 }
 
+void xapi_osd_mode(void *d) {
+	int m = atoi((char*)d);
+	if (m&1) OSD_mode|=OSD_FRAME; else OSD_mode&=~OSD_FRAME;
+	if (m&2) OSD_mode|=OSD_SMPTE; else OSD_mode&=~OSD_SMPTE;
+	if (m&4) OSD_mode|=OSD_TEXT;  else OSD_mode&=~OSD_TEXT;
+	if (m&8) OSD_mode|=OSD_BOX;   else OSD_mode&=~OSD_BOX;
+	remote_printf(100,"set osdmode=%i", (OSD_mode&OSD_FRAME?1:0)|(OSD_mode&OSD_SMPTE?2:0)|(OSD_mode&OSD_TEXT?4:0)|(OSD_mode&OSD_BOX?8:0));
+	force_redraw=1;
+}
+
 void xapi_posd(void *d) {
 #ifdef HAVE_FT
-	remote_printf(201,"osdmode=%i", (OSD_mode&OSD_FRAME?1:0)|(OSD_mode&OSD_SMPTE?2:0)|(OSD_mode&OSD_TEXT?4:0));
+	remote_printf(201,"osdmode=%i", (OSD_mode&OSD_FRAME?1:0)|(OSD_mode&OSD_SMPTE?2:0)|(OSD_mode&OSD_TEXT?4:0)|(OSD_mode&OSD_BOX?8:0));
 	remote_printf(220,"osdfont=%s", OSD_fontfile); 
 	remote_printf(220,"osdtext=%s", OSD_text); 
 #else
@@ -809,6 +835,7 @@ Dcommand cmd_osd[] = {
 	{"font " , "<filename>: use this TTF font file", NULL, xapi_osd_font, 0 },
 	{"box" , ": forces a black box around the OSD", NULL, xapi_osd_box, 0 },
 	{"nobox" , ": make OSD backgroung transparent", NULL, xapi_osd_nobox, 0 },
+	{"mode" , ":<int>: restore OSD as returned by 'get osdcfg'", NULL, xapi_osd_mode, 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 
@@ -836,8 +863,8 @@ Dcommand cmd_get[] = {
 	{"osdcfg", ": display status on screen display", NULL, xapi_posd, 0 },
 	{"syncsource", ": display currently used sync source", NULL, xapi_psync, 0 },
 	{"letterbox" , ": query video scaling mode", NULL, xapi_pletterbox, 0 },
-	{"fullscreen" , ": is xjadeo displayed on full screen", NULL, xapi_null, 0 },
-	{"ontop" , ": query window on top mode", NULL, xapi_null, 0 },
+	{"fullscreen" , ": is xjadeo displayed on full screen", NULL, xapi_pfullscreen, 0 },
+	{"ontop" , ": query window on top mode", NULL, xapi_pontop, 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 

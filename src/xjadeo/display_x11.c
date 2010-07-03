@@ -169,10 +169,18 @@ void xj_set_ontop (int action) {
 //	net_wm_set_property("_NET_WM_STATE_STAYS_ON_TOP", action);
 }
 
+int xj_get_ontop () {
+	return xj_ontop;
+}
+
 void xj_set_fullscreen (int action) {
 	if (action==2) xj_fullscreen^=1;
 	else xj_fullscreen=action;
 	net_wm_set_property("_NET_WM_STATE_FULLSCREEN", action);
+}
+
+int xj_get_fullscreen () {
+	return (xj_fullscreen);
 }
 
 /* also from mplayer's libvo/x11_common.c - thanks GPL !*/

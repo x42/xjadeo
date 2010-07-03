@@ -1296,6 +1296,10 @@ void fullscreen_mac (int a) {
   window_fullscreen();
 }
 
+int get_fullscreen_mac() {
+  return (vo_fs);
+}
+
 void mousepointer_mac (int a) {
   if (a>1) a=!mouseHide;
   printf("mouse cursor: %s\n",a?"hide":"show");
@@ -1314,6 +1318,9 @@ void ontop_mac (int a) {
   window_ontop();
 }
 
+int get_ontop_mac() {
+  return(inLevel==2?1:0)
+}
 
 void render_mac (uint8_t *mybuffer) {
 //printf("render\n");
