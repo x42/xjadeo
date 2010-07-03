@@ -33,6 +33,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+//#define HAVE_JACKMIDI 1 // TODO -> configure.ac
+
 #ifdef HAVE_MIDI
 
 /*
@@ -47,7 +49,7 @@ extern double framerate;
 extern int midi_clkconvert;
 extern int midi_clkadj;
 extern int have_dropframes; 
-extern double 	delay;
+extern double	delay;
 
 typedef struct {
 	int frame;
@@ -471,6 +473,7 @@ long midi_poll_frame (void) {
 	frame = convert_smpte_to_frame(now);
 
 	if(midi_clkadj && (full_tc==0xff)) {
+		double dly = delay>0?delay:(1.0/framerate);
 		//add time that has passed sice last full MTC frame..
 		smpte cmd;
 		cmd.frame=0x4711; // reset-full_tc CMD 
@@ -479,7 +482,7 @@ long midi_poll_frame (void) {
 		if (lastframe != frame) {
 			stopcnt=0;
 			lastframe=frame;
-		} else if (stopcnt++ > (int) ceil(4.0*framerate*delay)) {
+		} else if (stopcnt++ > (int) ceil(4.0*framerate/dly)) {
 			// we expect a full midi MTC every (2.0*framerate/delay) polls
 
 			Pm_Enqueue(main_to_midi, &cmd); // request data
@@ -497,7 +500,135 @@ long midi_poll_frame (void) {
 	//return(convert_smpte_to_frame(now));
 }
 
-#else  /* endif HAVE_PORTMIDI */
+#elif HAVE_JACKMIDI /* endif HAVE_PORTMIDI */
+
+#include <jack/jack.h>
+#include <jack/transport.h>
+#include <jack/midiport.h>
+
+jack_client_t *jack_midi_client = NULL;
+jack_port_t   *jack_midi_port; 
+
+static int jack_midi_process(jack_nframes_t nframes, void *arg) {
+  void *jack_buf = jack_port_get_buffer(jack_midi_port, nframes);
+  int nevents = jack_midi_get_event_count(jack_buf);
+  int n;
+  //if (nevents>0) fprintf(stderr,"%i midi events\n",nevents);
+  for (n=0; n<nevents; n++) {
+    jack_midi_event_t ev;
+    jack_midi_event_get(&ev, jack_buf, n);
+    // TODO: don't process here; queue and honor ev.time (audiosample delay)
+#if 1
+    if (ev.size <1) {
+      continue;
+    } else if (ev.size==2 && ev.buffer[0] == 0xf1) {
+        parse_timecode(ev.buffer[1]);
+    } else if (ev.size >9 && ev.buffer[0] == 0xf0) {
+      int i;
+      int sysex_type = 0;
+      for (i=1; i<ev.size; ++i) {
+        sysex_type = parse_sysex_urtm(ev.buffer[i],i-1,sysex_type);
+      }
+    }
+#endif
+  }
+  return 0;
+}
+
+void jack_midi_shutdown(void *arg)
+{
+	jack_midi_client=NULL;
+	fprintf (stderr, "jack server shutdown\n");
+}
+
+
+void midi_close(void) {
+	if (jack_midi_client) {
+		jack_deactivate (jack_midi_client);
+		jack_client_close (jack_midi_client);
+  }
+  jack_midi_client = NULL;
+}
+
+void midi_open(char *midiid) {
+  if (midi_connected()) {
+		fprintf (stderr, "xjadeo is alredy connected to jack-midi.\n");
+		return;
+  }
+
+	int i = 0;
+  char jackmidiid[16];
+	do {
+		snprintf(jackmidiid,16,"xjadeo-%i",i);
+		jack_midi_client = jack_client_open (jackmidiid, JackUseExactName, NULL);
+	} while (jack_midi_client == NULL && i++<16);
+
+	if (!jack_midi_client) {
+		fprintf(stderr, "could not connect to jack server.\n");
+    return;
+  }
+
+  jack_on_shutdown (jack_midi_client, jack_midi_shutdown, 0);
+  jack_set_process_callback(jack_midi_client, jack_midi_process, NULL);
+  jack_midi_port = jack_port_register(jack_midi_client, "MTC in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput , 0);
+
+  if (jack_midi_port == NULL) {
+    fprintf(stderr, "can't register jack-midi-port\n");
+    midi_close(); 
+    return;
+  }
+
+	// init smpte
+	tc.type=tc.min=tc.frame=tc.sec=tc.hour=0;
+	last_tc.type=last_tc.min=last_tc.frame=last_tc.sec=last_tc.hour=0;
+
+  if (jack_activate(jack_midi_client)) {
+    fprintf(stderr, "can't activate jack-midi-client\n");
+    midi_close(); 
+  }
+}
+
+int midi_connected(void) {
+	if (jack_midi_client) return (1);
+	return (0);
+}
+
+
+long midi_poll_frame (void) {
+	long frame =0 ;
+	static long lastframe = -1 ;
+	static int stopcnt = 0;
+  // TODO LOCK or wait for jack_process..
+	frame = convert_smpte_to_frame(last_tc);
+  // TODO and unlock
+
+	if(midi_clkadj && (full_tc==0xff)) {
+		double dly = delay>0?delay:(1.0/framerate);
+		//add time that has passed sice last full MTC frame.
+		double diff; // unit: smpte-frames.
+		// check if transport is stuck...
+		if (lastframe != frame) {
+			stopcnt=0;
+			lastframe=frame;
+		} else if (stopcnt++ > (int) ceil(4.0*framerate/dly)) {
+			// we expect a full midi MTC every (2.0*framerate/delay) polls
+			//pthread_mutex_lock(&aseq_lock);
+			full_tc=last_tc.tick=0;
+			//pthread_mutex_unlock(&aseq_lock);
+			if (want_verbose) 
+				printf("\r\t\t\t\t\t\t        -?-\r");
+		}
+		diff= last_tc.tick/4.0;
+
+		if (want_verbose) 
+			// subtract 7 quarter frames latency when running..
+			printf("\r\t\t\t\t\t\t  |+%g/8\r",diff<0?rint(4.0*(1.75-diff)):diff<2.0?0:rint(4.0*(diff-1.75)));
+		frame += (long) rint(diff);
+	}
+	return(frame);
+}
+
+#else  /* endif HAVE_JACKMIDI */
 
 /************************************************
  * alsamidi 
@@ -737,13 +868,14 @@ long aseq_poll_frame (void) {
 	pthread_mutex_unlock(&aseq_lock);
 
 	if(midi_clkadj && (full_tc==0xff)) {
+		double dly = delay>0?delay:(1.0/framerate);
 		//add time that has passed sice last full MTC frame.
 		double diff; // unit: smpte-frames.
 		// check if transport is stuck...
 		if (lastframe != frame) {
 			stopcnt=0;
 			lastframe=frame;
-		} else if (stopcnt++ > (int) ceil(4.0*framerate*delay)) {
+		} else if (stopcnt++ > (int) ceil(4.0*framerate/dly)) {
 			// we expect a full midi MTC every (2.0*framerate/delay) polls
 			pthread_mutex_lock(&aseq_lock);
 			full_tc=last_tc.tick=0;
