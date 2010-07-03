@@ -124,7 +124,6 @@ int try_codec =0;	/* --try-codec */
 #ifdef HAVE_MIDI
 char midiid[32] = "-2";	/* --midi # -1: autodetect -2: jack*/
 int midi_clkconvert =0;	/* --midifps [0:MTC|1:VIDEO|2:RESAMPLE] */
-int midi_clkadj =0;	/* --midiclk  */
 #endif
 
 int have_dropframes =0; /* detected from MTC;  TODO: force to zero if jack or user TC */
@@ -138,14 +137,16 @@ lash_client_t *lash_client;
 
 #ifdef HAVE_MACOSX
 // mac GUI defaults
-int 	seekflags    = SEEK_CONTINUOUS; 
-double 	delay = -1; // use file's FPS
+int midi_clkadj =1;	/* --midiclk  */
+int seekflags    = SEEK_CONTINUOUS; 
 #else
-int 	seekflags    = SEEK_ANY; 
-double 	delay = 0.1; // default update rate 10 Hz
+int midi_clkadj =0;	/* --midiclk  */
+int seekflags    = SEEK_ANY; 
 #endif
+
 double 	filefps = -1.0; // if > 0 override autodetected video file frame rate
 int	videomode = 0; // --vo <int>  - default: autodetect
+double 	delay = -1; // use file's FPS
 
 
 // On screen display
@@ -203,7 +204,8 @@ static struct option const long_options[] =
 #ifdef HAVE_MIDI
   {"midi", required_argument, 0, 'm'},
   {"midifps", required_argument, 0, 'M'},
-  {"midiclk", required_argument, 0, 'C'},
+  {"midiclk", no_argument, 0, 'C'},
+  {"no-midiclk", no_argument, 0, 'c'},
 #endif
 #ifdef HAVE_LIBLO
   {"osc", required_argument, 0, 'O'},
@@ -245,6 +247,7 @@ decode_switches (int argc, char **argv)
 			   "m:"	/* midi interface */
 			   "M:"	/* midi clk convert */
 			   "C"	/* --midiclk */
+			   "c"	/* --no-midiclk */
 #endif
 			   "N"	/* --dropframes */
 			   "n"	/* --nodropframes */
@@ -358,6 +361,9 @@ decode_switches (int argc, char **argv)
 	  break;
 	case 'C':		/* --midiclk */
           midi_clkadj = 1;
+	  break;
+	case 'c':		/* --no-midiclk */
+          midi_clkadj = 0;
 	  break;
 #endif
 	case 'V':
