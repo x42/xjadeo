@@ -1319,7 +1319,7 @@ void ontop_mac (int a) {
 }
 
 int get_ontop_mac() {
-  return(inLevel==2?1:0)
+  return(winLevel==2?1:0);
 }
 
 void render_mac (uint8_t *mybuffer) {
