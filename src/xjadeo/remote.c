@@ -1202,7 +1202,7 @@ void remote_printf(int rv, const char *format, ...) {
 	mymq_reply(rv,text);
 #elif HAVE_IPCMSG
 		/* remote_printf_ipc(...) */
-	myipc_reply(rv,text);
+	if (ipc_queue) myipc_reply(rv,text);
 #endif
 
 		/* remote_printf_io(...) */
