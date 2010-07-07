@@ -97,6 +97,7 @@ extern int	want_ignstart;
 extern int	remote_en;
 extern int	remote_mode;
 extern int	mq_en;
+extern char	*ipc_queue;
 extern double	delay;
 extern int	seekflags;
 
@@ -130,8 +131,10 @@ void select_sleep (int usec) {
 	}
 
 	if (select(max_fd, &fd, NULL, NULL, &tv)) remote_read_io();
-#if HAVE_MQ
+#if defined HAVE_MQ
 	if (mq_en) remote_read_mq();
+#elif defined HAVE_IPCMSG
+	if (ipc_queue) remote_read_ipc();
 #endif
 }
 
@@ -180,7 +183,7 @@ void event_loop(void) {
 
 		display_frame((int64_t)(offFrame), force_redraw);
 
-		if ((remote_en||mq_en) && ((remote_mode&1) || ((remote_mode&2)&& offFrame!=dispFrame)) ) {
+		if ((remote_en||mq_en||ipc_queue) && ((remote_mode&1) || ((remote_mode&2)&& offFrame!=dispFrame)) ) {
 		/*call 	xapi_pposition ?? -> rv:200
 		 * dispFrame is the currently displayed frame 
 		 * = SMPTE + offset
@@ -287,7 +290,7 @@ int open_movie(char* file_name) {
   
 	/* Open video file */
 	if(av_open_input_file(&pFormatCtx, file_name, NULL, 0, NULL)!=0) {
-		if (!remote_en || !mq_en) //TODO prevent msg only when starting up with no file...
+		if (!remote_en && !mq_en && !ipc_queue) //TODO prevent msg only when starting up with no file...
 			fprintf( stderr, "Cannot open video file %s\n", file_name);
 		return (-1);
 	}

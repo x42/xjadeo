@@ -50,7 +50,6 @@
 #include <unistd.h>
 #include <signal.h>
 
-
 //------------------------------------------------
 // Globals
 //------------------------------------------------
@@ -112,6 +111,7 @@ int avoid_lash   =0;	/* --nolash */
 int remote_en =0;	/* --remote, -R */
 int osc_port =0;	/* --osc, -O */
 int mq_en =0;		/* --mq, -Q */
+char *ipc_queue = NULL; /* --ipc, -W */
 int remote_mode =0;	/* 0: undirectional ; >0: bidir
 			 * bitwise enable async-messages 
 			 *  so far only: 
@@ -191,6 +191,7 @@ static struct option const long_options[] =
   {"vo", required_argument, 0, 'x'},
   {"remote", no_argument, 0, 'R'},
   {"mq", no_argument, 0, 'Q'},
+  {"ipc", required_argument, 0, 'W'},
   {"help", no_argument, 0, 'h'},
   {"version", no_argument, 0, 'V'},
   {"try-codec", no_argument, 0, 't'},
@@ -231,7 +232,8 @@ decode_switches (int argc, char **argv)
 			   "h"	/* help */
 			   "S"	/* nosplash */
 			   "R"	/* stdio remote control */
-			   "Q"	/* message queues */
+			   "Q"	/* POSIX rt-message queues */
+			   "W:"	/* IPC message queues */
 			   "k"	/* keyframes */
 			   "K"	/* anyframe */
 			   "o:"	/* offset */
@@ -291,6 +293,10 @@ decode_switches (int argc, char **argv)
 	  break;
 	case 'Q':		/* --mq */
 	  mq_en = 1;
+	  break;
+	case 'W':		/* --ipc */
+	  if (ipc_queue) free(ipc_queue);
+	  ipc_queue = strdup(optarg);
 	  break;
 	case 'O':		/* --avverbose */
 	  osc_port=atoi(optarg);
@@ -452,7 +458,9 @@ jack video monitor\n", program_name);
 "  -o <int>, --offset <int>  add/subtract <int> video-frames to/from timecode\n"
 "  -P , --genpts             ffmpeg option - ignore timestamps in the file.\n"
 #ifdef HAVE_MQ
-"  -Q, --mq                  set-up message queues for xjremote\n"
+"  -Q, --mq                  set-up RT message queues for xjremote\n"
+#elif defined HAVE_IPCMSG
+"  -W, --ipc                 set-up IPC message queues for xjremote\n"
 #endif
 #ifdef HAVE_LIBLO
 "  -O <port>, --osc <port>   listen for OSC messages on given port.\n"
@@ -488,6 +496,11 @@ static void printversion (void) {
 #ifdef HAVE_LASH
   printf("LASH ");
 #endif 
+#ifdef HAVE_MQ
+  printf("POSIX-MQueue ");
+#elif defined HAVE_IPCMSG
+  printf("IPC-MSG ");
+#endif
   printf("]\n compiled with LIBAVFORMAT_BUILD 0x%x = %i\n", LIBAVFORMAT_BUILD, LIBAVFORMAT_BUILD);
   printf(" displays: "
 #if HAVE_LIBXV
@@ -538,6 +551,11 @@ void clean_up (int status) {
   if(remote_en) close_remote_ctrl();
 #ifdef HAVE_MQ
   if(mq_en) close_mq_ctrl();
+#elif defined HAVE_IPCMSG
+  if(ipc_queue) {
+    close_ipcmsg_ctrl();
+    free(ipc_queue);
+  }
 #endif
   shutdown_osc();
 
@@ -581,6 +599,21 @@ main (int argc, char **argv)
 
   xjadeorc(); // read config files - default values before parsing cmd line.
 
+#ifdef __APPLE__
+{
+  if ( argc >= 2 && strncmp (argv[1], "-psn", 4) == 0 ) {
+    char **gArgv = (char **) malloc(sizeof (char *) * argc);
+    int i;
+    gArgv[0] = argv[0];
+    for (i=1;i<argc-1;++i) {
+      gArgv[i] = argv[i+1];
+    }
+    --argc;
+    argv=gArgv;
+  }
+}
+#endif
+
 #ifdef HAVE_LASH
   for (i=0;i<argc;i++) if (!strncmp(argv[i],"--lash-id",9)) lashed=1;
   lash_args_t *lash_args = lash_extract_args(&argc, &argv);
@@ -606,7 +639,7 @@ main (int argc, char **argv)
   if (videomode < 0) vidoutmode(videomode); // dump modes and exit.
 
   if ((i+1)== argc) movie = argv[i];
-  else if ((remote_en || mq_en) && i==argc) movie = "";
+  else if ((remote_en || mq_en || ipc_queue) && i==argc) movie = "";
 #ifndef HAVE_MACOSX
   else usage (EXIT_FAILURE);
 #else
@@ -656,7 +689,7 @@ main (int argc, char **argv)
 
   if (getvidmode() ==0) {
 	fprintf(stderr,"Could not open display.\n");
-  	if(!remote_en) {  // && !mq_en) { /* TODO: allow windowless startup with MQ ?! */
+  	if(!remote_en) {  // && !mq_en && !ipc_queue) { /* TODO: allow windowless startup with MQ ?! */
 		// TODO: cleanup close midi and file ??
 		close_jack();
 		exit(1);
@@ -677,6 +710,8 @@ main (int argc, char **argv)
 
 #ifdef HAVE_MQ
   if(mq_en) open_mq_ctrl();
+#elif defined HAVE_IPCMSG
+  if(ipc_queue) open_ipcmsg_ctrl(ipc_queue);
 #endif
   if(remote_en) open_remote_ctrl();
 

@@ -97,6 +97,7 @@ extern int want_verbose;
 extern int want_letterbox;
 extern int remote_en;
 extern int mq_en;
+extern char *ipc_queue;
 extern int remote_mode;
 
 #ifdef HAVE_MIDI
@@ -976,7 +977,7 @@ void exec_remote_cmd_recursive (Dcommand *leave, char *cmd) {
 }
 
 #ifdef HAVE_LASH
-# ifndef HAVE_MQ
+# if !(defined HAVE_MQ || defined HAVE_IPCMSG)
 #warning 
 #warning 
 #warning LASH support - but no POSIX message queues!
@@ -1021,8 +1022,10 @@ int remote_read_io(void) {
 	return(0);
 }
 
-#if HAVE_MQ
+#ifdef HAVE_MQ
 # define LOGLEN MQLEN
+#elif defined(HAVE_IPCMSG)
+# define LOGLEN BUFSIZ
 #else
 # define LOGLEN 1023
 #endif
@@ -1061,7 +1064,7 @@ int remote_fd_set(fd_set *fd) {
 // POSIX message queeue
 //--------------------------------------------
 
-#if HAVE_MQ
+#ifdef HAVE_MQ
 // prototypes in mqueue.c
 int  mymq_read(char *data);
 void mymq_reply(int rv, char *str);
@@ -1103,6 +1106,81 @@ void close_mq_ctrl (void) {
 	remote_printf(100, "quit.");
 	mymq_close();
 }
+#elif defined HAVE_IPCMSG
+
+#include <unistd.h>
+#include <string.h>
+#include <pthread.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
+
+struct msgbuf1 {
+	long    mtype;
+	char    mtext[BUFSIZ];
+};
+
+int msqtx = 0;
+int msqrx = 0;
+
+int myipc_reply(int id, char *msg){
+	struct msgbuf1 txbuf;
+	txbuf.mtype=1;
+  snprintf(txbuf.mtext, BUFSIZ, "@%i %s\n", id, msg); // XXX
+  if (msgsnd(msqtx, (const void*) &txbuf, strlen(txbuf.mtext), 0) == -1) {
+		fprintf(stderr, "msgsnd failed., Error = %d: %s\n", errno, strerror(errno));
+		return -1;
+	}
+	return 0;
+}
+
+int remote_read_ipc () {
+	int rv;
+	struct msgbuf1 rxbuf;
+
+	rv = msgrcv(msqrx, (void*) &rxbuf, BUFSIZ, 1, IPC_NOWAIT);
+
+	if(rv < 0 ) {
+		if (errno != EAGAIN && errno != ENOMSG)  {
+			fprintf(stderr, "Msgrcv failed., Error = %d: %s\n", errno, strerror(errno));
+			close_ipcmsg_ctrl();
+			free(ipc_queue);
+			ipc_queue = NULL;
+		}
+		return (-1);
+	}
+
+	// TODO WHILE  LOOP..
+	char *t;
+	if ((t = strchr(rxbuf.mtext, '\n'))) *t='\0';
+	exec_remote_cmd_recursive(cmd_root,rxbuf.mtext);
+	return(0);
+}
+
+int open_ipcmsg_ctrl (const char *queuename) {
+
+  key_t key_tx = ftok (queuename, 'a');
+  key_t key_rx = ftok (queuename, 'b');
+
+	msqrx = msgget(key_rx, IPC_CREAT| S_IRUSR | S_IWUSR);
+	msqtx = msgget(key_tx, IPC_CREAT| S_IRUSR | S_IWUSR);
+	if(msqrx == -1 || msqtx == -1)  {
+		printf("\ngetKey failed., Error = %d: %s\n", errno, strerror(errno));
+		return -1;
+	}
+	return 0;
+}
+
+void close_ipcmsg_ctrl () {
+	remote_printf(100, "quit.");
+#if 0
+	msgctl(msqtx, IPC_RMID, NULL);
+	msgctl(msqrx, IPC_RMID, NULL);
+#endif
+}
 #endif
 
 //--------------------------------------------
@@ -1119,9 +1197,12 @@ void remote_printf(int rv, const char *format, ...) {
 	va_end(arglist);
 
 	text[LOGLEN -1] =0; 
-#if HAVE_MQ
+#ifdef HAVE_MQ
 		/* remote_printf_mq(...) */
 	mymq_reply(rv,text);
+#elif HAVE_IPCMSG
+		/* remote_printf_ipc(...) */
+	myipc_reply(rv,text);
 #endif
 
 		/* remote_printf_io(...) */

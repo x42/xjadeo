@@ -110,8 +110,11 @@ void close_remote_ctrl (void) ;
 void open_remote_ctrl (void);
 void close_mq_ctrl (void) ;
 void open_mq_ctrl (void);
+void close_ipcmsg_ctrl (void) ;
+int  open_ipcmsg_ctrl (const char *);
 int remote_fd_set(fd_set *fd);
 int remote_read_mq(void);
+int remote_read_ipc(void);
 int remote_read_io(void);
 void remote_printf(int val, const char *format, ...);
 

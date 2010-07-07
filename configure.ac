@@ -28,6 +28,7 @@ AC_ARG_ENABLE(timescale, AC_HELP_STRING([--disable-timescale],[disable time-mapp
 AC_ARG_ENABLE(framecrop, AC_HELP_STRING([--enable-framecrop],[hardcoded frame cropping - DO NOT USE]))
 AC_ARG_ENABLE(tiff, AC_HELP_STRING([--disable-tiff],[disable libtiff support (affects only contrib/tsmm/)]))
 AC_ARG_ENABLE(mq, AC_HELP_STRING([--disable-mq],[disable POSIX message-queue remote control]))
+AC_ARG_ENABLE(ipc, AC_HELP_STRING([--disable-ipc],[disable IPC message-queue remote control]))
 AC_ARG_ENABLE(osc, AC_HELP_STRING([--disable-osc],[disable OSC remote support]))
 
 dnl FPU emulation core.
@@ -109,6 +110,7 @@ AH_TEMPLATE([HAVE_MIDI], [Define as 1 if you have either alsa or portmidi])
 AH_TEMPLATE([HAVE_LASH], [Define as 1 if you have lash])
 AH_TEMPLATE([HAVE_XPM], [Define as 1 if you have libXpm])
 AH_TEMPLATE([HAVE_MQ], [Define as 1 if you have POSIX message queues (libc, librt)])
+AH_TEMPLATE([HAVE_IPCMSG], [Define as 1 if you have IPC  message queues (system-V)])
 AH_TEMPLATE([HAVE_LIBLO], [Define as 1 if you have the loblo OSC library])
 AH_TEMPLATE([HAVE_TIFF], [Define as 1 if you have libtiff (contrib/tsmm)])
 AH_TEMPLATE([TTFFONTFILE], [absolute path to truetype default OSD font file])
@@ -157,6 +159,13 @@ if test "x$enable_mq" != "xno"; then
 fi
 AC_SUBST(MQ_LIBS)
 AC_DEFINE(MQLEN, 512, [ max length of a remote control line. ])
+
+dnl prefer POSIX RT mqueue over IPC..
+if test "x$enable_ipc" != "xno"; then
+	if test -z "$HAVE_MQ"; then
+		AC_CHECK_HEADERS([sys/ipc.h sys/msg.h] , AC_DEFINE(HAVE_IPCMSG) HAVE_IPCMSG=1 )
+	fi
+fi
 
 PKG_CHECK_MODULES(Xpm, xpm, [ AC_DEFINE(HAVE_XPM) HAVE_XPM=1 ], [ NULL=0] )
 #AC_SEARCH_LIBS( XpmCreatePixmapFromData, Xpm, AC_DEFINE(HAVE_XPM) XPM_LIBS="-lXpm" HAVE_XPM=1 )
@@ -565,7 +574,7 @@ else if test -n "$HAVE_MIDI"; then echo "alsa"
 fi
 echo -n " LASH:               ";	if test -n "$HAVE_LASH"; then echo "ok"; else echo "not avail."; fi
 #echo -n " Xpm:                ";	if test -n "$HAVE_XPM"; then echo "ok"; else echo "not avail."; fi
-echo -n " POSIX msg queue:    ";	if test -n "$HAVE_MQ"; then echo "ok"; else echo "not avail."; fi
+echo -n " remote control:     ";	if test -n "$HAVE_MQ"; then echo "POSIX-MQ"; elif test -n "$HAVE_IPCMSG"; then echo "IPC-MSG"; else echo "not avail."; fi
 echo -n " OSC remote control: ";	if test -n "$HAVE_LIBLO"; then echo "ok"; else echo "not avail."; fi
 echo -n " On screen display:  ";
 if test -z "$HAVE_FT"; then 
