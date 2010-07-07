@@ -179,7 +179,7 @@ void execjadeo(int flags, char *queuefile) {
 
 	if (xjadeo) {
 		printf("# executing: %s\n",xjadeo);
-		if (flags&1) { close(0); close(1);}
+		if (flags&1) { close(0); close(1); close(2);}
 		if (flags&4)
 			execl(xjadeo,"xjadeo", "-W", queuefile, NULL);
 		else if (flags&2)
@@ -676,8 +676,6 @@ int main (int argc, char **argv) {
 		printf("CTL: getKey failed. Error = %d: %s\n", errno, strerror(errno));
 		return -1;
 	}
-	printf("I: %i O:%i \n", msqrx, msqtx);
-
 	// TODO: try ping ?!
 	loop_flag=1;
 
