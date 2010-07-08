@@ -245,8 +245,8 @@ const vidout VO[] = {
 		&render_mac, &open_window_mac, &close_window_mac,
 		&handle_X_events_mac, &newsrc_mac, &resize_mac,
 		&getsize_mac, &position_mac, &getpos_mac,
-		&fullscreen_null, &ontop_mac, &mousepointer_null,
-		&fullscreen_mac, &get_ontop_mac},
+		&fullscreen_mac, &ontop_mac, &mousepointer_null,
+		&get_fullscreen_mac, &get_ontop_mac},
 #else
                NULLOUTPUT},
 #endif
@@ -459,7 +459,9 @@ void splash (uint8_t *mybuffer) {
  * display wrapper functions
  */
 
+#if (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2)
 #include "icons/osd_bitmaps.h"
+#endif
 
 #define OBM(NAME,YPOS)	OSD_bitmap(VO[VOutput].render_fmt, mybuffer,YPOS,0, osd_##NAME##_width, osd_##NAME##_height, osd_##NAME##_bits, osd_##NAME##_mask_bits);
 
@@ -581,29 +583,29 @@ void Xmousepointer (int a) {
 	VO[VOutput].mousepointer(a);
 }
 
-#if (HAVE_LIBXV || HAVE_IMLIB || HAVE_IMLIB2)
-// temp shortcut.
-void xj_letterbox();
+#if (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2 || defined HAVE_MACOSX)
 extern int force_redraw; // tell the main event loop that some cfg has changed
 #endif
 
+// TODO : use plugin pointer ...
 void Xletterbox (int action) {
-#if 1
-	if (VOutput !=1 && VOutput !=4) return;
-# if (HAVE_LIBXV || HAVE_IMLIB || HAVE_IMLIB2)
+	if (VOutput !=1 && VOutput !=4 && VOutput !=5) return;
+#if (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2 || defined HAVE_MACOSX)
 	if (action==2) want_letterbox=!want_letterbox;
 	else want_letterbox=action?1:0;
-	xj_letterbox();
-	force_redraw=1;
+# if (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2)
+	if (VOutput ==1 || VOutput ==4) { //X11/XV
+		xj_letterbox();
+		force_redraw=1;
+	}
 # endif
-#else // wont' work with imlib2
-	unsigned int x,y;
-	if (VOutput !=1 && VOutput !=4) return;
-	if (action==2) want_letterbox=!want_letterbox;
-	else want_letterbox=action?1:0;
-	Xgetsize(&x,&y); 
-	Xresize(x,y);
-#endif
+# ifdef HAVE_MACOSX
+if (VOutput==5) { // OSX
+		force_redraw=1;
+		window_resized_mac();
+	}
+# endif // OSX
+#endif // X11/XV/or OSX
 }
 
 void Xfullscreen (int a) {

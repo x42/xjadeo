@@ -77,7 +77,7 @@ void handle_X_events_sdl (void) ;
  * Shared X11 functions
  */
 
-#if (HAVE_LIBXV || HAVE_IMLIB || HAVE_IMLIB2)
+#if (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2)
 
 void xj_set_fullscreen (int action);
 void xj_mousepointer (int action);
@@ -89,6 +89,7 @@ void xj_get_window_size (unsigned int *my_Width, unsigned int *my_Height);
 void xj_get_window_pos (int *x,  int *y);
 int  xj_get_ontop ();
 int  xj_get_fullscreen ();
+void xj_letterbox();
 
 #endif
 
@@ -204,4 +205,5 @@ void fullscreen_mac (int a);
 void ontop_mac (int a);
 int  get_fullscreen_mac();
 int  get_ontop_mac();
+void window_resized_mac();
 

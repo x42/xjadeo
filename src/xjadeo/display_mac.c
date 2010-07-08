@@ -518,7 +518,7 @@ CantGetDefaultOptions:
 
 ////////////////////////////////////////////////////////
 // osx helpers
-void window_resized() {
+void window_resized_mac() {
   //printf("resized\n");
   
   int padding = 0;
@@ -648,7 +648,7 @@ void window_fullscreen() {
     SizeWindow(theWindow, oldWinRect.right, oldWinRect.bottom,1);
     MoveWindow(theWindow, oldWinBounds.left, oldWinBounds.top, 1);
   }
-  window_resized();
+  window_resized_mac();
 }
 
 //default keyboard event handler
@@ -841,9 +841,9 @@ static OSStatus WindowEventHandler(EventHandlerCallRef nextHandler, EventRef eve
       //resize window
       case kEventWindowZoomed:
       case kEventWindowBoundsChanged:
-        window_resized();
+        window_resized_mac();
         flip_page();
-        window_resized();
+        window_resized_mac();
         break;
       default:
         result = eventNotHandledErr;
@@ -1241,7 +1241,7 @@ int open_window_mac (void) {
     window_fullscreen();
   }
 #endif
-  window_resized();
+  window_resized_mac();
   return 0;
 }
 
@@ -1266,7 +1266,7 @@ void resize_mac (unsigned int x, unsigned int y) {
           vo_fs = (!(vo_fs)); window_fullscreen();
   }
   SizeWindow(theWindow, x, y ,1);
-  window_resized();
+  window_resized_mac();
 }
 
 void getsize_mac (unsigned int *x, unsigned int *y) { 
@@ -1285,8 +1285,8 @@ void position_mac (int x, int y) {
 
 void getpos_mac (int *x, int *y) { 
   static Rect rect; 
-  GetWindowPortBounds(theWindow, &rect);
-  //GetWindowBounds(theWindow, kWindowContentRgn, &rect);
+  //GetWindowPortBounds(theWindow, &rect); // OSX < 10.4/5 ?!
+  GetWindowBounds(theWindow, kWindowContentRgn, &rect); // OSX 10.6
   if(x)*x=rect.left; if(y)*y=rect.top; 
   printf("get window pos %i %i\n", *x, *y);
 }
@@ -1373,7 +1373,7 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
     case 'l':  
       want_letterbox = !want_letterbox;
       force_redraw=1;
-      window_resized();
+      window_resized_mac();
       break;
     case 'o': { //'o' // OSD - offset in frames
       if (OSD_mode&OSD_OFFF) {
@@ -1501,7 +1501,7 @@ OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
     case mKeepAspect:
       want_letterbox = !want_letterbox;
       force_redraw=1;
-      window_resized();
+      window_resized_mac();
       break;
     case mOSDFrame:
       OSD_mode^=OSD_FRAME; 
