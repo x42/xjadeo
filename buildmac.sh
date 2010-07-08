@@ -20,9 +20,12 @@ make || exit 1
 
 echo
 file src/xjadeo/xjadeo 
+file src/xjadeo/xjremote
 
 rm contrib/Jadeo.app/Contents/MacOS/Jadeo-bin
+rm contrib/Jadeo.app/Contents/MacOS/xjremote
 cp src/xjadeo/xjadeo contrib/Jadeo.app/Contents/MacOS/Jadeo-bin
+cp src/xjadeo/xjremote contrib/Jadeo.app/Contents/MacOS/xjremote
 
 ##############################################################################
 # add dependancies..
