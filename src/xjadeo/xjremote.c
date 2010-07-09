@@ -168,6 +168,8 @@ void execjadeo(int flags, char *queuefile) {
 	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo?xjadeo:"(?)"); xjadeo=NULL; }
 	if (!xjadeo) xjadeo = BINDIR "xjadeo";
 	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo?xjadeo:"(?)"); xjadeo=NULL; }
+	if (!xjadeo) xjadeo = "/Applications/Jadeo.app/Contents/MacOS/Jadeo"; // OSX
+	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo?xjadeo:"(?)"); xjadeo=NULL; }
 	if (!xjadeo) xjadeo = "./xjadeo"; // XXX DEVEL svn:trunk/src/xjadeo
 	if (!testexec(xjadeo)) { printf("# xjadeo executable not found in : %s\n",xjadeo?xjadeo:"(?)"); xjadeo=NULL; }
 	if (!xjadeo) xjadeo = "src/xjadeo/xjadeo"; // XXX DEVEL svn:trunk/
