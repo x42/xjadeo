@@ -41,6 +41,7 @@ extern char *smpte_offset;
 extern int force_redraw; // tell the main event loop that some cfg has changed
 extern int want_letterbox;
 extern int seekflags;
+extern int interaction_override; // disable some options.
 
 extern int movie_width;
 extern int movie_height;
@@ -478,6 +479,22 @@ static OSStatus OpenDocuments( AEDescList docList ) {
 CantGetCount:
   return(status);
 }
+
+int ask_close() {
+  DialogRef noticeDialog;
+  DialogItemIndex itemIndex;
+  AlertStdCFStringAlertParamRec inAlertParam;
+  GetStandardAlertDefaultParams(&inAlertParam, kStdCFStringAlertVersionOne);
+  inAlertParam.defaultButton = kAlertStdAlertCancelButton;
+  inAlertParam.defaultText = CFSTR("Quit");
+  inAlertParam.cancelText = CFSTR("Don't Quit");
+
+  CreateStandardAlert(kAlertCautionAlert, CFSTR("Really Quit?"), CFSTR("Application terminaton is beeing blocked by remote control.\nUse the controlling application to quit Jadeo.\n Quit anyway?"), &inAlertParam, &noticeDialog);
+  RunStandardAlert(noticeDialog, NULL, &itemIndex);
+  if (itemIndex == 1) return 1;
+  return 0;
+}
+
 
 static OSStatus NavOpenDocument(void) {
   printf("NavOpenDocument\n");
@@ -1472,22 +1489,6 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       break;
   }
   checkMyMenu();
-}
-
-int ask_close() {
-  DialogRef noticeDialog;
-  DialogItemIndex itemIndex;
-  AlertStdCFStringAlertParamRec inAlertParam;
-  GetStandardAlertDefaultParams(&inAlertParam, kStdCFStringAlertVersionOne);
-  inAlertParam.defaultButton = kAlertStdAlertCancelButton;
-  inAlertParam.defaultText = CFSTR("Quit");
-  inAlertParam.cancelText = CFSTR("Don't Quit");
-
-  CreateStandardAlert(kAlertCautionAlert, CFSTR("Really Quit?"), CFSTR("Application terminaton is beeing blocked by remote control.\nUse the controlling application to quit Jadeo.\n Quit anyway?"), &inAlertParam,, &noticeDialog);
-  RunStandardAlert(noticeDialog, NULL, &itemIndex);
-  if (itemIndex == 1) return 1;
-  return 0
-
 }
 
 OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
