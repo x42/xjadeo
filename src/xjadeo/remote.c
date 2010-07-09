@@ -116,6 +116,7 @@ extern double 		delay;
 extern double 		filefps;
 extern int		videomode;
 extern int 		seekflags;
+extern int    interaction_override;
 
 // On screen display
 extern char OSD_fontfile[1024]; 
@@ -319,6 +320,16 @@ void xapi_mousepointer(void *d) {
 	else if (!strcmp(d,"off")) action=0;
 	Xmousepointer (action);
 	remote_printf(100,"ok.");
+}
+
+void xapi_poverride(void *d) {
+		remote_printf(201,"override=%i", interaction_override);
+}
+
+void xapi_soverride(void *d) {
+  interaction_override=atoi(d);
+	//remote_printf(100,"ok.");
+	xapi_poverride(NULL);
 }
 
 
@@ -866,6 +877,7 @@ Dcommand cmd_get[] = {
 	{"letterbox" , ": query video scaling mode", NULL, xapi_pletterbox, 0 },
 	{"fullscreen" , ": is xjadeo displayed on full screen", NULL, xapi_pfullscreen, 0 },
 	{"ontop" , ": query window on top mode", NULL, xapi_pontop, 0 },
+	{"override", ": query disabled window events", NULL, xapi_poverride , 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 
@@ -899,7 +911,8 @@ Dcommand cmd_set[] = {
 	{"timescale ", "<float> <int>: set timescale and offset", NULL, xapi_stimescale , 0 },
 	{"loop ", "<int>: 0: normal, 1:wrap around", NULL, xapi_sloop , 0 },
 	{"seekmode ", "<1-3>: seek continuous, to any or to keyframes only", NULL, xapi_sseekmode, 0 },
-	{"framerate", "<float>: show frame rate of video file", NULL, xapi_sframerate , 0 },
+	{"framerate ", "<float>: show frame rate of video file", NULL, xapi_sframerate , 0 },
+	{"override ", "<int>: disable window events", NULL, xapi_soverride , 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 

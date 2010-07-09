@@ -810,11 +810,10 @@ static OSStatus WindowEventHandler(EventHandlerCallRef nextHandler, EventRef eve
   UInt32 class = GetEventClass (event);
   UInt32 kind = GetEventKind (event); 
 
-  result = CallNextEventHandler(nextHandler, event);
-  
   if(class == kEventClassCommand) {
     //printf("kEventClassCommand\n");
     HICommand theHICommand;
+    result = CallNextEventHandler(nextHandler, event);
     GetEventParameter(event, kEventParamDirectObject, typeHICommand, NULL, sizeof( HICommand ), NULL, &theHICommand);
     result = mac_menu_cmd(result, &theHICommand);
 
@@ -832,7 +831,14 @@ static OSStatus WindowEventHandler(EventHandlerCallRef nextHandler, EventRef eve
             GetPortBounds(GetWindowPort(window), &rectPort);
     }   
     switch (kind) {
+      case kEventWindowClose:
+        if ((interaction_override&0x2) == 0 || ask_close()) {
+          result = CallNextEventHandler(nextHandler, event);
+        } 
+        break;
       case kEventWindowClosed:
+        result = CallNextEventHandler(nextHandler, event);
+        // TODO: catch window close
         theWindow = NULL;
         loop_flag=0;
         //exit(0); // XXX
@@ -841,12 +847,14 @@ static OSStatus WindowEventHandler(EventHandlerCallRef nextHandler, EventRef eve
       //resize window
       case kEventWindowZoomed:
       case kEventWindowBoundsChanged:
+        result = CallNextEventHandler(nextHandler, event);
         window_resized_mac();
         flip_page();
         window_resized_mac();
         break;
       default:
-        result = eventNotHandledErr;
+        result = CallNextEventHandler(nextHandler, event);
+        //result = eventNotHandledErr;
         break;
     }
   } 
@@ -1363,11 +1371,11 @@ void handle_X_events_mac (void) {
 void mac_put_key(UInt32 key, UInt32 charcode) {
   char c;
   switch (key) {
-    case 0x35: loop_flag=0; return;  // ESCAPE
+    case 0x35: if ((interaction_override&0x1) == 0) loop_flag=0; return;  // ESCAPE
     default: c= (char) charcode;
   }
   switch (c) {
-    case 'q': loop_flag=0; return; 
+    case 'q': if ((interaction_override&0x1) == 0) loop_flag=0; return; 
     case 'a': ontop_mac(winLevel==2?0:1); break;
     case 'f': fullscreen_mac(!vo_fs); break;
     case 'l':  
@@ -1466,11 +1474,28 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
   checkMyMenu();
 }
 
+int ask_close() {
+  DialogRef noticeDialog;
+  DialogItemIndex itemIndex;
+  AlertStdCFStringAlertParamRec inAlertParam;
+  GetStandardAlertDefaultParams(&inAlertParam, kStdCFStringAlertVersionOne);
+  inAlertParam.defaultButton = kAlertStdAlertCancelButton;
+  inAlertParam.defaultText = CFSTR("Quit");
+  inAlertParam.cancelText = CFSTR("Don't Quit");
+
+  CreateStandardAlert(kAlertCautionAlert, CFSTR("Really Quit?"), CFSTR("Application terminaton is beeing blocked by remote control.\nUse the controlling application to quit Jadeo.\n Quit anyway?"), &inAlertParam,, &noticeDialog);
+  RunStandardAlert(noticeDialog, NULL, &itemIndex);
+  if (itemIndex == 1) return 1;
+  return 0
+
+}
+
 OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
   switch ( acmd->commandID ) {
     case kHICommandQuit:
     case mQuit:
-      loop_flag=0;
+      if ((interaction_override&0x4) == 0 || ask_close())
+        loop_flag=0;
       break;
     case kHICommandAbout:
       break;

@@ -467,6 +467,7 @@ extern int OSD_mode; // change via keystroke
 extern long ts_offset; 
 extern char    *smpte_offset;
 extern int 	force_redraw; // tell the main event loop that some cfg has changed
+extern int 	interaction_override; // disable some options.
 
 inline void xj_render () { 
 	/* this is the only reference to the global buffer..
@@ -542,7 +543,7 @@ void xj_handle_X_events (void) {
 #endif
 				if (event.xclient.data.l[0] == xj_del_atom) {
 				//	fprintf(stdout, "Window destoyed...\n");
-					loop_flag = 0;
+					if ((interaction_override&0x2) == 0) loop_flag=0;
 #if 0
 				} else if (event.xclient.data.l[0] == xj_a_TakeFocus)  {
 		         		fprintf(stdout, "take X focus!\n");
@@ -592,7 +593,8 @@ void xj_handle_X_events (void) {
 				break;
 			case ButtonRelease:
 				if (event.xbutton.button == 1) {
-					xj_resize(movie_width, movie_height);
+					if ((interaction_override&0x8) == 0)
+					  xj_resize(movie_width, movie_height);
 				} else {
 					unsigned int my_Width,my_Height;
 					xj_get_window_size(&my_Width,&my_Height);
@@ -632,10 +634,12 @@ void xj_handle_X_events (void) {
 					XLookupString(&event.xkey, buf, sizeof(buf), &keySym, &stat);
 					key = ((keySym & 0xff00) != 0 ? ((keySym & 0x00ff) + 256) : (keySym));
 				/* HARDCODED KEY BINDINGS */
-					if        (key == 0x11b) // 'Esc'
-						loop_flag=0;
-					else if   (key == 0x71 ) // 'q'
-						loop_flag=0; 
+					if        (key == 0x11b) { // 'Esc'
+						if ((interaction_override&0x1) == 0) loop_flag=0; 
+					}
+					else if   (key == 0x71 ) {// 'q'
+						if ((interaction_override&0x1) == 0) loop_flag=0; 
+					}
 					else if   (key == 0x61 ) //'a' // always-on-top
 						xj_set_ontop(xj_ontop^=1);
 					else if   (key == 0x66 ) //'f' // fullscreen

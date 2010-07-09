@@ -95,6 +95,13 @@ long	userFrame = 0; // seek to this frame if jack and midi are N/A
 long	dispFrame = 0; // global strorage... = (SMPTE+offset) with boundaries to [0..movie_file_frames]
 int 	force_redraw = 0;
 
+int 	interaction_override = 0; // disable some options.
+/* 1 (bit 0) : ignore 'q' and 'ESC' quit key
+ * 2 (bit 1) : igore window-manager close button
+ * 4 (bit 2) : ignore OSX-Menu QUIT
+ * 8 (bit 3) : ignore left-mouse click
+ */
+
 int want_quiet   =0;	/* --quiet, --silent */
 int want_debug   =0;	/* -D --debug  (hidden option) */
 int want_verbose =0;	/* --verbose */
