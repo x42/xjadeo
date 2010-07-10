@@ -1102,12 +1102,14 @@ int remote_read_mq(void) {
 	int rx;
 	char data[MQLEN];
 	char *t;
+	int rv = -1;
 
 	while ((rx=mymq_read(data)) > 0 ) { 
 		if ((t =  strchr(data, '\n'))) *t='\0';
 		exec_remote_cmd_recursive(cmd_root,data);
+		rv=0;
 	}
-	return(0);
+	return(rv);
 }
 
 void open_mq_ctrl (void) {

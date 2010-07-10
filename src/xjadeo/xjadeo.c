@@ -120,6 +120,7 @@ double 		tpf = 1.0; /* pts/dts increments per video-frame - cached value */
 //--------------------------------------------
 //
 void select_sleep (int usec) {
+	int remote_activity = 0;
 	fd_set fd;
 	int max_fd=0;
 	struct timeval tv = { 0, 0 };
@@ -129,13 +130,19 @@ void select_sleep (int usec) {
 	if (remote_en) {
 		max_fd=remote_fd_set(&fd);
 	}
-
-	if (select(max_fd, &fd, NULL, NULL, &tv)) remote_read_io();
 #if defined HAVE_MQ
-	if (mq_en) remote_read_mq();
+	if (mq_en) {
+		if (!remote_read_mq()) remote_activity=1;
+	}
 #elif defined HAVE_IPCMSG
-	if (ipc_queue) remote_read_ipc();
+	if (ipc_queue) {
+		if (!remote_read_ipc()) remote_activity=1;
+	}
 #endif
+	if (remote_activity) {
+	  tv.tv_sec = 0; tv.tv_usec = 1;
+	}
+	if (select(max_fd, &fd, NULL, NULL, &tv)) remote_read_io();
 }
 
 void event_loop(void) {

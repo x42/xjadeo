@@ -489,7 +489,7 @@ int ask_close() {
   inAlertParam.defaultText = CFSTR("Quit");
   inAlertParam.cancelText = CFSTR("Don't Quit");
 
-  CreateStandardAlert(kAlertCautionAlert, CFSTR("Really Quit?"), CFSTR("Application terminaton is beeing blocked by remote control.\nUse the controlling application to quit Jadeo.\n Quit anyway?"), &inAlertParam, &noticeDialog);
+  CreateStandardAlert(kAlertCautionAlert, CFSTR("Really Quit?"), CFSTR("Application terminaton is beeing blocked by remote control.\nPlease use the controlling application to quit Jadeo.\nQuit anyway?"), &inAlertParam, &noticeDialog);
   RunStandardAlert(noticeDialog, NULL, &itemIndex);
   if (itemIndex == 1) return 1;
   return 0;

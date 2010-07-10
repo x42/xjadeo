@@ -559,7 +559,6 @@ void *rx_thread (void *arg) {
 	msqid = *((int*)arg);
 	struct msgbuf1 rxbuf;
 
-	printf("# RECV START: %i\n", msqid);
   while (loop_flag) {
 		rv = msgrcv(msqid, (void*) &rxbuf, BUFSIZ, 1, 0);
 
@@ -578,7 +577,6 @@ void *rx_thread (void *arg) {
 			loop_flag=0;
 		}
 	}
-	printf("# RECV END\n");
 	pthread_exit(0);
 	return 0;
 }
@@ -601,7 +599,7 @@ void tx_loop(int msqid) {
     } else if (rx < 0) {
       continue;
     } else {
-			unlink_queue_on_exit=0;
+			if (loop_flag) unlink_queue_on_exit=0;
       loop_flag=0;
       break;
     }
