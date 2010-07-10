@@ -897,6 +897,7 @@ Dcommand cmd_window[] = {
 	{"size " , "<int>|<int>x<int>: alias for resize", NULL, xapi_swinsize, 0 },
 	{"position " , "<int>x<int>: move window to absolute position", NULL, xapi_swinpos, 0 },
 	{"pos " , "<int>x<int>: alias for 'window position'", NULL, xapi_swinpos, 0 },
+	{"xy " , "<int>x<int>: alias for 'window position'", NULL, xapi_swinpos, 0 },
 	{"fullscreen " , "[on|off|toggle]: en/disable fullscreen (only XV/x11)", NULL, xapi_fullscreen, 0 },
 	{"letterbox " , "[on|off|toggle]: don't break aspect ratio (only XV/x11-imlib2)", NULL, xapi_sletterbox, 0 },
 	{"mouse " , "[on|off|toggle]: en/disable mouse cursor display (only XV/x11)", NULL, xapi_mousepointer, 0 },
