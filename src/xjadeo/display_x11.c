@@ -468,6 +468,7 @@ extern long ts_offset;
 extern char    *smpte_offset;
 extern int 	force_redraw; // tell the main event loop that some cfg has changed
 extern int 	interaction_override; // disable some options.
+extern double framerate;
 
 inline void xj_render () { 
 	/* this is the only reference to the global buffer..
@@ -744,6 +745,26 @@ void xj_handle_X_events (void) {
 						frame_to_smptestring(smpte_offset,ts_offset);
 					} else if (key == 0x2d ) { //'-'  A/V offset
 						ts_offset--;
+						force_redraw=1;
+						if (smpte_offset) free(smpte_offset);
+						smpte_offset= calloc(15,sizeof(char));
+						frame_to_smptestring(smpte_offset,ts_offset);
+					} else if (key == 0x7d ) { //'}' // A/V offset
+						if (framerate > 0) {
+							ts_offset+= framerate *60;
+						} else {
+							ts_offset+= 25*60;
+						}
+						force_redraw=1;
+						if (smpte_offset) free(smpte_offset);
+						smpte_offset= calloc(15,sizeof(char));
+						frame_to_smptestring(smpte_offset,ts_offset);
+					} else if (key == 0x7b ) { //'{'  A/V offset
+						if (framerate > 0) {
+							ts_offset-= framerate *60;
+						} else {
+							ts_offset-= 25*60;
+						}
 						force_redraw=1;
 						if (smpte_offset) free(smpte_offset);
 						smpte_offset= calloc(15,sizeof(char));

@@ -46,7 +46,7 @@ extern int interaction_override; // disable some options.
 extern int movie_width;
 extern int movie_height;
 extern double delay;
-extern double filefps;
+extern double framerate;
 extern int start_fullscreen;
 extern int start_ontop;
 
@@ -1436,6 +1436,28 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
     } break;
     case '-': {
       ts_offset--;
+      force_redraw=1;
+      if (smpte_offset) free(smpte_offset);
+      smpte_offset= calloc(15,sizeof(char));
+      frame_to_smptestring(smpte_offset,ts_offset);
+    } break;
+    case '{': {
+      if (framerate > 0) {
+        ts_offset-= framerate *60;
+      } else {
+        ts_offset-= 25*60;
+      }
+      force_redraw=1;
+      if (smpte_offset) free(smpte_offset);
+      smpte_offset= calloc(15,sizeof(char));
+      frame_to_smptestring(smpte_offset,ts_offset);
+    } break;
+    case '}': {
+      if (framerate > 0) {
+        ts_offset+= framerate *60;
+      } else {
+        ts_offset+= 25*60;
+      }
       force_redraw=1;
       if (smpte_offset) free(smpte_offset);
       smpte_offset= calloc(15,sizeof(char));
