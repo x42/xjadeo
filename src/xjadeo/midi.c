@@ -509,28 +509,60 @@ long midi_poll_frame (void) {
 jack_client_t *jack_midi_client = NULL;
 jack_port_t   *jack_midi_port; 
 
+#define JACK_MIDI_QUEUE_SIZE (1024)
+typedef struct my_midi_event {
+  jack_nframes_t time;
+  size_t size;
+  jack_midi_data_t buffer[16];
+} my_midi_event_t;
+
+my_midi_event_t event_queue[JACK_MIDI_QUEUE_SIZE];
+int queued_events_start = 0;
+int queued_events_end = 0;
+int queued_cycle_id = 0;
+
+void dequeue_jmidi_events(jack_nframes_t until) {
+	int ci = queued_cycle_id;
+	int new=0; // always process data from prev. jack cycles.
+	while (queued_events_start != queued_events_end) {
+		if (queued_events_start == ci ) new=1;
+		if (new && event_queue[queued_events_start].time > until) { 
+			break;
+    }
+
+    my_midi_event_t *ev = &event_queue[queued_events_start];
+
+    if (ev->size==2 && ev->buffer[0] == 0xf1) {
+      parse_timecode(ev->buffer[1]);
+    } else if (ev->size >9 && ev->buffer[0] == 0xf0) {
+      int i;
+      int sysex_type = 0;
+      for (i=1; i<ev->size; ++i) {
+        sysex_type = parse_sysex_urtm(ev->buffer[i],i-1,sysex_type);
+      }
+    }
+		queued_events_start = (queued_events_start +1 ) % JACK_MIDI_QUEUE_SIZE;
+	}
+}
+
 static int jack_midi_process(jack_nframes_t nframes, void *arg) {
   void *jack_buf = jack_port_get_buffer(jack_midi_port, nframes);
   int nevents = jack_midi_get_event_count(jack_buf);
   int n;
-  //if (nevents>0) fprintf(stderr,"%i midi events\n",nevents);
+	queued_cycle_id = queued_events_end;
+
   for (n=0; n<nevents; n++) {
-    jack_midi_event_t ev;
+		jack_midi_event_t ev;
     jack_midi_event_get(&ev, jack_buf, n);
-    // TODO: don't process here; queue and honor ev.time (audiosample delay)
-#if 1
-    if (ev.size <1) {
+
+    if (ev.size <1 || ev.size > 15) {
       continue;
-    } else if (ev.size==2 && ev.buffer[0] == 0xf1) {
-        parse_timecode(ev.buffer[1]);
-    } else if (ev.size >9 && ev.buffer[0] == 0xf0) {
-      int i;
-      int sysex_type = 0;
-      for (i=1; i<ev.size; ++i) {
-        sysex_type = parse_sysex_urtm(ev.buffer[i],i-1,sysex_type);
-      }
-    }
-#endif
+    } else {
+			event_queue[queued_events_end].time = ev.time;
+			event_queue[queued_events_end].size = ev.size;
+			memcpy (event_queue[queued_events_end].buffer, ev.buffer, ev.size);
+			queued_events_end = (queued_events_end +1 ) % JACK_MIDI_QUEUE_SIZE;
+		}
   }
   return 0;
 }
@@ -598,9 +630,9 @@ long midi_poll_frame (void) {
 	long frame =0 ;
 	static long lastframe = -1 ;
 	static int stopcnt = 0;
-  // TODO LOCK or wait for jack_process..
+
+	dequeue_jmidi_events(jack_frames_since_cycle_start(jack_midi_client));
 	frame = convert_smpte_to_frame(last_tc);
-  // TODO and unlock
 
 	if(midi_clkadj && (full_tc==0xff)) {
 		double dly = delay>0?delay:(1.0/framerate);
@@ -612,9 +644,7 @@ long midi_poll_frame (void) {
 			lastframe=frame;
 		} else if (stopcnt++ > (int) ceil(4.0*framerate/dly)) {
 			// we expect a full midi MTC every (2.0*framerate/delay) polls
-			//pthread_mutex_lock(&aseq_lock);
 			full_tc=last_tc.tick=0;
-			//pthread_mutex_unlock(&aseq_lock);
 			if (want_verbose) 
 				printf("\r\t\t\t\t\t\t        -?-\r");
 		}
