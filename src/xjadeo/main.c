@@ -496,8 +496,12 @@ static void printversion (void) {
 #else /* have Midi */
 # ifdef HAVE_PORTMIDI
   printf("portmidi ");
-# else /* alsa midi */
+# else 
+#  ifdef HAVE_JACKMIDI
+  printf("jack-midi ");
+#  else 
   printf("alsa-midi ");
+#  endif 
 # endif 
 #endif /* HAVE_MIDI */
 #ifdef HAVE_LASH

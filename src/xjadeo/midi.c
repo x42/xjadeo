@@ -33,7 +33,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-//#define HAVE_JACKMIDI 1 // TODO -> configure.ac
+/* TODO: compile all available modes (portmidi, jack-midi, alsa-seq & alsa-raw
+ * select on run-time...
+ */
 
 #ifdef HAVE_MIDI
 
@@ -273,7 +275,6 @@ long convert_smpte_to_frame (smpte now) {
 #include <portmidi.h>
 #include <porttime.h>
 
-
 typedef void PmQueue;
 PmQueue *Pm_QueueCreate(long num_msgs, long bytes_per_msg);
 PmError Pm_QueueDestroy(PmQueue *queue);
@@ -501,6 +502,10 @@ long midi_poll_frame (void) {
 }
 
 #elif HAVE_JACKMIDI /* endif HAVE_PORTMIDI */
+
+/************************************************
+ * jack-midi 
+ */
 
 #include <jack/jack.h>
 #include <jack/transport.h>
@@ -1023,7 +1028,7 @@ int midi_connected(void) {
 
 #endif /*  alsa raw/seq midi  */
 
-#endif /* not HAVE_PORTMIDI = alsamidi */
+#endif /* not HAVE_PORTMIDI and not HAVE_JACKMIDI => alsamidi */
 
 #else /* HAVE_MIDI */
 
