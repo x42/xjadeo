@@ -144,13 +144,12 @@ lash_client_t *lash_client;
 
 #ifdef HAVE_MACOSX
 // mac GUI defaults
-int midi_clkadj =1;	/* --midiclk  */
 int seekflags    = SEEK_CONTINUOUS; 
 #else
-int midi_clkadj =0;	/* --midiclk  */
 int seekflags    = SEEK_ANY; 
 #endif
 
+int     midi_clkadj =1;	/* --midiclk  */
 double 	filefps = -1.0; // if > 0 override autodetected video file frame rate
 int	videomode = 0; // --vo <int>  - default: autodetect
 double 	delay = -1; // use file's FPS
