@@ -1428,6 +1428,7 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       force_redraw=1;
     } break;
     case '+': {
+      if ((interaction_override&0x10) != 0 ) break;
       ts_offset++;
       force_redraw=1;
       if (smpte_offset) free(smpte_offset);
@@ -1435,6 +1436,7 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       frame_to_smptestring(smpte_offset,ts_offset);
     } break;
     case '-': {
+      if ((interaction_override&0x10) != 0 ) break;
       ts_offset--;
       force_redraw=1;
       if (smpte_offset) free(smpte_offset);
@@ -1442,6 +1444,7 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       frame_to_smptestring(smpte_offset,ts_offset);
     } break;
     case '{': {
+      if ((interaction_override&0x10) != 0 ) break;
       if (framerate > 0) {
         ts_offset-= framerate *60;
       } else {
@@ -1453,6 +1456,7 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       frame_to_smptestring(smpte_offset,ts_offset);
     } break;
     case '}': {
+      if ((interaction_override&0x10) != 0 ) break;
       if (framerate > 0) {
         ts_offset+= framerate *60;
       } else {

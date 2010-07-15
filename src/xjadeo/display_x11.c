@@ -738,18 +738,21 @@ void xj_handle_X_events (void) {
 						my_Height+=step;
 						xj_resize(my_Width, my_Height);
 					} else if (key == 0x2b ) { //'+' // A/V offset
+						if ((interaction_override&0x10) != 0 ) break;
 						ts_offset++;
 						force_redraw=1;
 						if (smpte_offset) free(smpte_offset);
 						smpte_offset= calloc(15,sizeof(char));
 						frame_to_smptestring(smpte_offset,ts_offset);
 					} else if (key == 0x2d ) { //'-'  A/V offset
+						if ((interaction_override&0x10) != 0 ) break;
 						ts_offset--;
 						force_redraw=1;
 						if (smpte_offset) free(smpte_offset);
 						smpte_offset= calloc(15,sizeof(char));
 						frame_to_smptestring(smpte_offset,ts_offset);
 					} else if (key == 0x7d ) { //'}' // A/V offset
+						if ((interaction_override&0x10) != 0 ) break;
 						if (framerate > 0) {
 							ts_offset+= framerate *60;
 						} else {
@@ -760,6 +763,7 @@ void xj_handle_X_events (void) {
 						smpte_offset= calloc(15,sizeof(char));
 						frame_to_smptestring(smpte_offset,ts_offset);
 					} else if (key == 0x7b ) { //'{'  A/V offset
+						if ((interaction_override&0x10) != 0 ) break;
 						if (framerate > 0) {
 							ts_offset-= framerate *60;
 						} else {

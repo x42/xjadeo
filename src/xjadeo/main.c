@@ -100,6 +100,7 @@ int 	interaction_override = 0; // disable some options.
  * 2 (bit 1) : igore window-manager close button
  * 4 (bit 2) : ignore OSX-Menu QUIT
  * 8 (bit 3) : ignore left-mouse click
+ * 16(bit 4) : disable '+' '-' '{' '}' offset keys
  */
 
 int want_quiet   =0;	/* --quiet, --silent */
