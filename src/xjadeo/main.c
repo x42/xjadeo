@@ -418,9 +418,9 @@ jack video monitor\n", program_name);
 "                            requires x11 or xv videomode and EWMH.\n"
 "  -b, --letterbox           retain apect ratio when scaling (Xv only).\n"
 #ifdef HAVE_MIDI
-"  -C, --midiclk             use midi quarter frames for more exact sync.\n"
+"  -c, --no-midiclk          ignore MTC quarter frames.\n"
 #endif
-"  -f <val>, --fps <val>     video display update fps - default 10.0 fps\n"
+"  -f <val>, --fps <val>     display update freq. - default -1 use file's fps\n"
 "  -i <int> --info <int>     render OnScreenDisplay info: 0:off, %i:frame,\n"
 "                            %i:smpte, %i:both. (use remote ctrl for more opts.)\n"
 "  -I, --ignorefileoffset    set the beginning of the file to SMPTE zero.\n"
