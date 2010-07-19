@@ -743,11 +743,7 @@ void xapi_detect_midi(void *d) {
 
 void xapi_pmidilibrary (void *d) {
 #ifdef HAVE_MIDI
-    #ifdef HAVE_PORTMIDI
-	remote_printf(220,"midilib=portmidi");
-    #else
-	remote_printf(220,"midilib=alsaseq");
-    #endif
+	remote_printf(220,"mididrv=%s", midi_driver_name());
 #else
 	remote_printf(499,"midi not available.");
 #endif
@@ -839,10 +835,11 @@ Dcommand cmd_midi[] = {
 	{"disconnect", ": unconect from midi device", NULL, xapi_close_midi, 0 },
 	{"reconnect", ": connect to last specified midi port", NULL, xapi_reopen_midi, 0 },
 	{"status", ": display status of midi connection.", NULL, xapi_midi_status, 0 },
-	{"library", ": display the used midi libaray", NULL, xapi_pmidilibrary, 0 },
+	{"driver ", "<name>: select midi driver.", NULL, xapi_smididriver, 0 },
+	{"driver", ": display the used midi driver", NULL, xapi_pmidilibrary, 0 },
+	{"library", ": alias for 'midi driver' (deprecated)", NULL, xapi_pmidilibrary, 0 },
 	{"sync ", "<int>: set MTC smpte conversion. 0:MTC 2:Video 3:resample", NULL, xapi_smidisync, 0 },
 	{"clk ", "[1|0]: use MTC quarter frames.", NULL, xapi_smidiclk, 0 },
-	{"driver ", "<name>: select midi driver.", NULL, xapi_smididriver, 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 
