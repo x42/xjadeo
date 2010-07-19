@@ -241,8 +241,9 @@ static void checkMyMenu(void) {
   CheckMenuItem (zoomMenu, 6, want_letterbox);
 
   CheckMenuItem (syncMenu, 1, jack_connected());
-  CheckMenuItem (syncMenu, 4, midi_connected());
-  CheckMenuItem (syncMenu, 5, (!jack_connected() && !midi_connected()));
+  CheckMenuItem (syncMenu, 4, midi_connected() && !strcmp(midi_driver_name(), "PORTMIDI"));
+  CheckMenuItem (syncMenu, 5, midi_connected() && !strcmp(midi_driver_name(), "JACK-MIDI"));
+  CheckMenuItem (syncMenu, 6, (!jack_connected() && !midi_connected()));
 }
 
 // main window setup and painting..
