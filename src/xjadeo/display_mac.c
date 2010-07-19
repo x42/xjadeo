@@ -122,6 +122,7 @@ static void flip_page(void);
 static OSStatus KeyEventHandler(EventHandlerCallRef nextHandler, EventRef event, void *userData);
 static OSStatus MouseEventHandler(EventHandlerCallRef nextHandler, EventRef event, void *userData);
 static OSStatus WindowEventHandler(EventHandlerCallRef nextHandler, EventRef event, void *userData);
+static OSStatus DialogEventHandler(EventHandlerCallRef nextHandler, EventRef event, void *userData);
 void mac_put_key(UInt32 key, UInt32 charcode);
 OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd);
 
@@ -440,7 +441,21 @@ static void mac_CreateWindow(uint32_t d_width, uint32_t d_height, WindowAttribut
 }
 ////////////////////////////////////////////////////////
 
+DialogRef midiAlertDialog = 0;
+static OSStatus midiAlert(void) {
+  const EventTypeSpec win_events[] = {
+    { kEventClassWindow, kEventWindowClosed },
+    { kEventClassCommand, kEventCommandProcess }
+  };
+  CreateStandardAlert(kAlertNoteAlert, CFSTR("Midi connect failed!"), CFSTR("could not connect to MIDI Port. check the settings."), NULL, &midiAlertDialog);
+  //RunStandardAlert(midiAlertDialog, NULL, NULL);
+  ShowWindow (GetDialogWindow(midiAlertDialog));
+  InstallWindowEventHandler (GetDialogWindow(midiAlertDialog), NewEventHandlerUPP (DialogEventHandler), GetEventTypeCount(win_events), win_events, GetDialogWindow(midiAlertDialog), NULL);
+  RunAppModalLoopForWindow (GetDialogWindow(midiAlertDialog));
+}
+
 // TODO 
+DialogRef settingsDialog = 0;
 static OSStatus NavOpenSettings(void) {
   OSStatus status = 0;
 #if 0
@@ -451,9 +466,14 @@ static OSStatus NavOpenSettings(void) {
   windowAttrs = kWindowNoShadowAttribute | kWindowOpaqueForEventsAttribute;
   CreateNewWindow(kDocumentWindowClass, kWindowStandardDocumentAttributes, &setRect, &theSettings);
 #else
-  DialogRef settingsDialog;
+  const EventTypeSpec win_events[] = {
+    { kEventClassWindow, kEventWindowClosed },
+    { kEventClassCommand, kEventCommandProcess }
+  };
   CreateStandardAlert(kAlertNoteAlert, CFSTR("settings dialog"), CFSTR("not yet implemented. use .xjadeorc file in your $HOME to make settings persist."),NULL, &settingsDialog);
-  RunStandardAlert(settingsDialog, NULL, NULL);
+  InstallWindowEventHandler (GetDialogWindow(settingsDialog), NewEventHandlerUPP (DialogEventHandler), GetEventTypeCount(win_events), win_events, GetDialogWindow(settingsDialog), NULL);
+  ShowWindow (GetDialogWindow(settingsDialog));
+  RunAppModalLoopForWindow (GetDialogWindow(settingsDialog));
 #endif
   return(status);
 }
@@ -818,6 +838,21 @@ static OSStatus MouseEventHandler(EventHandlerCallRef nextHandler, EventRef even
   }
 
   return result;
+}
+
+static OSStatus DialogEventHandler(EventHandlerCallRef nextHandler, EventRef event, void *userData)
+{
+  if (midiAlertDialog) {
+    QuitAppModalLoopForWindow(GetDialogWindow(midiAlertDialog));
+    DisposeDialog(midiAlertDialog);
+    midiAlertDialog=0;
+  }
+  if (settingsDialog) {
+    QuitAppModalLoopForWindow(GetDialogWindow(settingsDialog));
+    DisposeDialog(settingsDialog);
+    settingsDialog=0;
+  }
+  return noErr;
 }
 
 //default window event handler
@@ -1626,10 +1661,7 @@ OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
 	midi_open(mp);
 #endif
 	if (!midi_connected()) {
-          printf("MIDI CONNECT FAILED!\n");
-          DialogRef alertDialog;
-          CreateStandardAlert(kAlertNoteAlert, CFSTR("Midi connect failed!"), CFSTR("could not connect to MIDI Port. check the settings."),NULL, &alertDialog);
-          RunStandardAlert(alertDialog, NULL, NULL);
+          midiAlert();
         } 
       }
       break;
