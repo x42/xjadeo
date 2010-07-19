@@ -1611,7 +1611,7 @@ OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
 	if (midi_connected()) midi_close();
 #endif
       break;
-    case mSyncJackMidi: {
+    case mSyncJackMidi:
     case mSyncPortMidi: {
 	if (jack_connected()) close_jack();
 #ifdef HAVE_MIDI
