@@ -179,7 +179,8 @@ enum // menubar
         mOSDOffS, 
         mOSDOffF, 
         mSyncJack,
-        mSyncMidi,
+        mSyncJackMidi,
+        mSyncPortMidi,
         mSyncNone,
         mJackPlay,
         mJackStop,
@@ -398,7 +399,8 @@ static void mac_CreateWindow(uint32_t d_width, uint32_t d_height, WindowAttribut
   AppendMenuItemTextWithCFString(syncMenu, CFSTR("JACK"), 0, mSyncJack, &index);
   AppendMenuItemTextWithCFString(syncMenu, CFSTR("Jack Transport"), 0, 0, &index);
   AppendMenuItemTextWithCFString(syncMenu, NULL, kMenuItemAttrSeparator, 0, &index);
-  AppendMenuItemTextWithCFString(syncMenu, CFSTR("Midi"), 0, mSyncMidi, &index);
+  AppendMenuItemTextWithCFString(syncMenu, CFSTR("MTC (portmidi)"), 0, mSyncPortMidi, &index);
+  AppendMenuItemTextWithCFString(syncMenu, CFSTR("MTC (jackmidi)"), 0, mSyncJackMidi, &index);
   AppendMenuItemTextWithCFString(syncMenu, CFSTR("none"), 0, mSyncNone, &index);
 
   //Create Jack Menu
@@ -1609,11 +1611,18 @@ OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
 	if (midi_connected()) midi_close();
 #endif
       break;
-    case mSyncMidi: {
+    case mSyncJackMidi: {
+    case mSyncPortMidi: {
 	if (jack_connected()) close_jack();
-        char *mp = "-1";
 #ifdef HAVE_MIDI
-	if (!midi_connected()) midi_open(mp);
+	if (midi_connected()) midi_close();
+        if (acmd->commandID == mSyncPortMidi) {
+          midi_choose_driver("portmidi");
+        } else {
+          midi_choose_driver("jack");
+        }
+        char *mp = "-1";
+	midi_open(mp);
 #endif
 	if (!midi_connected()) {
           printf("MIDI CONNECT FAILED!\n");
