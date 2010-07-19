@@ -213,9 +213,18 @@ void xj_mousepointer (int action) {
 	else xj_showcursor();
 }
 
-void xj_get_window_pos (int *x,  int *y) {
+void xj_get_window_pos (int *rx,  int *ry) {
 	Window	dummy;
-	XTranslateCoordinates( xj_dpy, xj_win, xj_rwin,0,0,x,y,&dummy );
+	XTranslateCoordinates( xj_dpy, xj_win, xj_rwin, 0, 0, rx, ry, &dummy);
+	while (dummy !=None) {
+		int x, y;
+		XTranslateCoordinates( xj_dpy, xj_win, dummy, 0, 0, &x, &y, &dummy);
+		if (dummy!=None) {
+			(*rx)-=x; (*ry)-=y;
+		} else {
+			(*rx)+=x; (*ry)+=y;
+		}
+	}
 }
 
 void xj_get_window_size (unsigned int *my_Width, unsigned int *my_Height) {
