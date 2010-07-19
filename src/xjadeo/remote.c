@@ -141,6 +141,10 @@ void remote_printf(int val, const char *format, ...);
 // API commands
 //--------------------------------------------
 
+void xapi_printversion(void *d) {
+	remote_printf(220, "version=%s", VERSION);
+}
+
 void xapi_open(void *d) {
 	char *fn= (char*)d;
 	//printf("open file: '%s'\n",fn);
@@ -675,6 +679,20 @@ void xapi_midi_status(void *d) {
 #endif
 }
 
+void xapi_smididriver(void *d) {
+#ifdef HAVE_MIDI
+	char *mp = NULL;
+	if (d && strlen(d)>0) mp=d; 
+	if (midi_choose_driver(mp)>0) {
+		remote_printf(100,"ok.");
+	} else {
+		remote_printf(440,"choosen MIDI driver is not supported.");
+	}
+#else
+	remote_printf(499,"midi not available.");
+#endif
+}
+
 void xapi_open_midi(void *d) {
 #ifdef HAVE_MIDI
 	char *mp;
@@ -824,6 +842,7 @@ Dcommand cmd_midi[] = {
 	{"library", ": display the used midi libaray", NULL, xapi_pmidilibrary, 0 },
 	{"sync ", "<int>: set MTC smpte conversion. 0:MTC 2:Video 3:resample", NULL, xapi_smidisync, 0 },
 	{"clk ", "[1|0]: use MTC quarter frames.", NULL, xapi_smidiclk, 0 },
+	{"driver ", "<name>: select midi driver.", NULL, xapi_smididriver, 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 
@@ -878,6 +897,7 @@ Dcommand cmd_get[] = {
 	{"fullscreen" , ": is xjadeo displayed on full screen", NULL, xapi_pfullscreen, 0 },
 	{"ontop" , ": query window on top mode", NULL, xapi_pontop, 0 },
 	{"override", ": query disabled window events", NULL, xapi_poverride , 0 },
+	{"version", ": query xjadeo version", NULL, xapi_printversion , 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 
