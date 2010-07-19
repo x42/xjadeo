@@ -1073,6 +1073,10 @@ int midi_choose_driver(char *id) {
 	return MA[current_midi_driver].supported;
 }
 
+const char *midi_driver_name() {
+	return MA[current_midi_driver].name;
+}
+
 int  midi_connected(void) { return (MA[current_midi_driver].midi_connected());}
 void midi_open(char *midiid) {MA[current_midi_driver].midi_open(midiid);}
 void midi_close(void) {MA[current_midi_driver].midi_close();}
@@ -1083,5 +1087,9 @@ long midi_poll_frame (void) { return (MA[current_midi_driver].midi_poll_frame())
 
 int midi_connected(void) {
 	return (0);
+}
+
+const char *midi_driver_name() {
+	return "none";
 }
 #endif /* HAVE_MIDI */

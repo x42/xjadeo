@@ -141,6 +141,7 @@ long int smpte_to_frame(int type, int f, int s, int m, int h, int overflow);
 
 /* midi.c function prototype */
 int midi_connected(void);
+const char *midi_driver_name();
 #ifdef HAVE_MIDI
 long midi_poll_frame (void);
 void midi_open(char *midiid);
