@@ -30,20 +30,7 @@ AC_ARG_ENABLE(tiff, AC_HELP_STRING([--disable-tiff],[disable libtiff support (af
 AC_ARG_ENABLE(mq, AC_HELP_STRING([--disable-mq],[disable POSIX message-queue remote control]))
 AC_ARG_ENABLE(ipc, AC_HELP_STRING([--disable-ipc],[disable IPC message-queue remote control]))
 AC_ARG_ENABLE(osc, AC_HELP_STRING([--disable-osc],[disable OSC remote support]))
-
-dnl FPU emulation core.
-AC_ARG_ENABLE(midi, AC_HELP_STRING([--enable-midi=auto], [select MTC support: auto,alsa,portmidi,jack,off]),
-[ case "$enableval" in
-	auto)		MIDI=yes PORTMIDI=yes ALSAMIDI=yes JACKMIDI=no ;;
-	pm)		MIDI=yes PORTMIDI=yes ALSAMIDI=no JACKMIDI=no ;;
-	portmidi)	MIDI=yes PORTMIDI=yes ALSAMIDI=no JACKMIDI=no ;;
-	alsamidi)	MIDI=yes PORTMIDI=no  ALSAMIDI=yes JACKMIDI=no ;;
-	alsa)		MIDI=yes PORTMIDI=no  ALSAMIDI=yes JACKMIDI=no ;;
-	jack)		MIDI=yes PORTMIDI=no  ALSAMIDI=no JACKMIDI=yes ;;
-	off)		MIDI=no  PORTMIDI=no  ALSAMIDI=no JACKMIDI=no ;;
-	*)		AC_MSG_ERROR([--enable-midi takes only one of the following values: auto, portmidi, alsa, jack, off]);;
-  esac
-], [ MIDI=yes PORTMIDI=yes ALSAMIDI=yes JACKMIDI=no])
+AC_ARG_ENABLE(midi, AC_HELP_STRING([--disable-midi],[Do not build any of the MIDI drivers]))
 
 AC_ARG_WITH(fontfile, AS_HELP_STRING([--with-fontfile=file.ttf], [specify a path to a truetype font file to be used as default OSD font.]), fontfile="$withval", fontfile="")
 
@@ -106,9 +93,11 @@ dnl Checks for libraries.
 AH_TEMPLATE([HAVE_LIBXV], [Define as 1 if  you have the Xv library (-lXv)])
 #AH_TEMPLATE([HAVE_IMLIB], [Define as 1 if you have imlib])
 AH_TEMPLATE([HAVE_IMLIB2], [Define as 1 if you have imlib2])
-AH_TEMPLATE([HAVE_PORTMIDI], [Define as 1 if you have portmidi and not asound])
-AH_TEMPLATE([HAVE_JACKMIDI], [Define as 1 to use JACK-MIDI])
-AH_TEMPLATE([HAVE_MIDI], [Define as 1 if you have either alsa or portmidi])
+AH_TEMPLATE([HAVE_MIDI], [Define as 1 if to enable MIDI in general])
+AH_TEMPLATE([HAVE_PORTMIDI], [Define as 1 if to enable the portmidi driver])
+AH_TEMPLATE([HAVE_JACKMIDI], [Define as 1 to enable JACK-MIDI])
+AH_TEMPLATE([ALSA_SEQ_MIDI], [Define as 1 to enable ALSA sequencer midi])
+AH_TEMPLATE([ALSA_RAW_MIDI], [Define as 1 to enable ALSA-raw midi driver])
 AH_TEMPLATE([HAVE_LASH], [Define as 1 if you have lash])
 AH_TEMPLATE([HAVE_XPM], [Define as 1 if you have libXpm])
 AH_TEMPLATE([HAVE_MQ], [Define as 1 if you have POSIX message queues (libc, librt)])
@@ -200,23 +189,20 @@ AC_SUBST(LIBLO_LIBS)
 
 
 dnl ----------------------------------------------
-dnl alsamidi/portmidi 
+dnl midi lib detection
 dnl ----------------------------------------------
-if test "x$MIDI" != "xno"; then
+if test "x$enable_midi" != "xno"; then
 	MIDI_CFLAGS=""
 	MIDI_CFLAGS=""
 	if test "x$PORTMIDI" != "xno" -a -z "$portmidisrc" ; then
 		AC_CHECK_HEADERS(portmidi.h porttime.h , [FOUND_H_PORTMIDI=yes])
-		#BACKUPLIBS="$LIBS"
-		#LIBS="$LIBS -lporttime"
 		AC_CHECK_LIB([portmidi], [Pm_CountDevices], [FOUND_L_PORTMIDI=yes])
-		#LIBS="$BACKUPLIBS"
 		MIDI_LIBS="-lportmidi"
 	fi
 
 	if test "x$PORTMIDI" != "xno" -a -n "$portmidisrc" -a -n "$PM_OS"; then
 		AC_CHECK_FILES([$portmidisrc/porttime/porttime.h $portmidisrc/pm_common/portmidi.h],[FOUND_H_PORTMIDI=yes])
-	# magic ppc-portmidi :  cc -dynamiclib pm_mac/*.o porttime/*.o -flat_namespace -undefined suppress -o portmidi.dylib
+dnl ppc-portmidi : cc -dynamiclib pm_mac/*.o porttime/*.o -flat_namespace -undefined suppress -o portmidi.dylib
 
 		AC_CHECK_FILES([$portmidisrc/porttime/${LIBPREF}porttime$LIBSUF $portmidisrc/pm_${PM_OS}/${LIBPREF}portmidi$LIBSUF],[FOUND_L_PORTMIDI=yes MIDI_LIBS="$portmidisrc/porttime/${LIBPREF}porttime$LIBSUF $portmidisrc/pm_${PM_OS}/${LIBPREF}portmidi$LIBSUF"])
 		AC_CHECK_FILES([$portmidisrc/pm_${PM_OS}/build/${LIBPREF}portmidi$LIBSUF],[FOUND_L_PORTMIDI=yes MIDI_LIBS="$portmidisrc/pm_${PM_OS}/build/${LIBPREF}portmidi$LIBSUF"])
@@ -236,23 +222,27 @@ if test "x$MIDI" != "xno"; then
 	fi
 
 	if test "x$FOUND_H_ALSAMIDI$FOUND_L_ALSAMIDI$FOUND_H_PTHREAD" = "xyesyesyes"; then
+		AC_DEFINE(ALSA_SEQ_MIDI) 
+		AC_DEFINE(ALSA_RAW_MIDI) 
 		AC_DEFINE(HAVE_MIDI) 
 		HAVE_MIDI=1
-		MIDI_LIBS="-lasound"
-	elif test "x$FOUND_H_PORTMIDI$FOUND_L_PORTMIDI" = "xyesyes"; then
+		ALSA_SEQ_MIDI=1
+		ALSA_RAW_MIDI=1
+		MIDI_LIBS="$MIDI_LIBS -lasound"
+	fi
+	if test "x$FOUND_H_PORTMIDI$FOUND_L_PORTMIDI" = "xyesyes"; then
 		AC_DEFINE(HAVE_MIDI) 
 		AC_DEFINE(HAVE_PORTMIDI) 
 		HAVE_MIDI=1
 		HAVE_PORTMIDI=1
-	elif test "x$FOUND_H_JACKMIDI" = "xyes"; then
+		dnl LIBS have been set above
+	fi
+	if test "x$FOUND_H_JACKMIDI" = "xyes"; then
 		AC_DEFINE(HAVE_MIDI) 
 		AC_DEFINE(HAVE_JACKMIDI) 
 		HAVE_MIDI=1
 		HAVE_JACKMIDI=1
-	else 
-		MIDI_LIBS=""
-		MIDI_MIDI=""
-		MIDI_CFLAGS=""
+		dnl no extra libs are needed (jack is already required)
 	fi
 fi
 
@@ -579,11 +569,12 @@ echo -n "   - libxv:          ";	if test -n "$HAVE_LIBXV"; then echo "ok"; else 
 echo -n "   - libx11/imlib2:  ";	if test -n "$HAVE_IMLIB2"; then echo "ok"; else echo "not avail."; fi
 echo -n "   - mac/osx:        ";	if test -n "$HAVE_MACOSX"; then echo "ok"; else echo "not avail."; fi
 echo -n " MIDI:               ";
-if test -n "$HAVE_PORTMIDI"; then echo "portmidi";
-elif test -n "$HAVE_JACKMIDI"; then echo "jack-midi"
-elif test -n "$HAVE_MIDI"; then echo "alsa"
-else echo "disabled.";
-fi
+if test -n "$HAVE_PORTMIDI"; then echo -n "portmidi "; fi
+if test -n "$HAVE_JACKMIDI"; then echo -n "jack-midi "; fi
+if test -n "$ALSA_SEQ_MIDI"; then echo -n "alsa-seq "; fi
+if test -n "$ALSA_RAW_MIDI"; then echo -n "alsa-RAW "; fi
+if test -z "$HAVE_MIDI"; then echo -n "disabled."; fi
+echo 
 echo -n " LASH:               ";	if test -n "$HAVE_LASH"; then echo "ok"; else echo "not avail."; fi
 #echo -n " Xpm:                ";	if test -n "$HAVE_XPM"; then echo "ok"; else echo "not avail."; fi
 echo -n " remote control:     ";	if test -n "$HAVE_MQ"; then echo "POSIX-MQ"; elif test -n "$HAVE_IPCMSG"; then echo "IPC-MSG"; else echo "not avail."; fi

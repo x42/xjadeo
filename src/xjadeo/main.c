@@ -130,8 +130,9 @@ int remote_mode =0;	/* 0: undirectional ; >0: bidir
 int try_codec =0;	/* --try-codec */
 
 #ifdef HAVE_MIDI
-char midiid[32] = "-2";	/* --midi # -1: autodetect -2: jack*/
+char midiid[128] = "-2";/* --midi # -1: autodetect -2: jack*/
 int midi_clkconvert =0;	/* --midifps [0:MTC|1:VIDEO|2:RESAMPLE] */
+char *midi_driver = NULL; /* --mididriver */
 #endif
 
 int have_dropframes =0; /* detected from MTC;  TODO: force to zero if jack or user TC */
@@ -194,7 +195,7 @@ static struct option const long_options[] =
   {"offset", no_argument, 0, 'o'},
   {"fps", required_argument, 0, 'f'},
   {"filefps", required_argument, 0, 'F'},
-  {"videomode", required_argument, 0, 'm'},
+  {"videomode", required_argument, 0, 'x'},
   {"vo", required_argument, 0, 'x'},
   {"remote", no_argument, 0, 'R'},
   {"mq", no_argument, 0, 'Q'},
@@ -212,6 +213,7 @@ static struct option const long_options[] =
 #ifdef HAVE_MIDI
   {"midi", required_argument, 0, 'm'},
   {"midifps", required_argument, 0, 'M'},
+  {"midi-driver", required_argument, 0, 'd'},
   {"midiclk", no_argument, 0, 'C'},
   {"no-midiclk", no_argument, 0, 'c'},
 #endif
@@ -255,6 +257,7 @@ decode_switches (int argc, char **argv)
 #ifdef HAVE_MIDI
 			   "m:"	/* midi interface */
 			   "M:"	/* midi clk convert */
+			   "d:"	/* midi driver */
 			   "C"	/* --midiclk */
 			   "c"	/* --no-midiclk */
 #endif
@@ -366,8 +369,12 @@ decode_switches (int argc, char **argv)
 	  break;
 #ifdef HAVE_MIDI
 	case 'm':		/* --midi */
-	  strncpy(midiid,optarg,32);
-	  midiid[31]=0;
+	  strncpy(midiid,optarg,sizeof(midiid));
+	  midiid[(sizeof(midiid)-1)]=0;
+	  break;
+	case 'd':		/* --midi-driver */
+	  if (midi_driver) free(midi_driver);
+          midi_driver = strdup(optarg);
 	  break;
 	case 'M':		/* --midifps */
           midi_clkconvert = atoi(optarg);
@@ -437,15 +444,21 @@ jack video monitor\n", program_name);
 "",	OSD_FRAME,OSD_SMPTE,OSD_FRAME|OSD_SMPTE); // :)
   printf ("" /* take a breath */
 #ifdef HAVE_MIDI
-#ifdef HAVE_PORTMIDI
-"  -m <int>, --midi <int>    use portmidi instead of jack (-1: autodetect)\n"
+"  -d <name>,                specify midi-driver to use. run 'xjadeo -V' to\n"
+"     --midi-driver <name>   list supported driver(s). <name> is not case-\n"
+"                            sensitive and can be shortened to the first unique\n"
+"                            name. eg '-d j' for jack, '-d alsa-r' for alsa-raw\n"
+"  -m <port>,                use MTC instead of jack-transport\n"
+"      --midi <port>         <port> argument is driver-specific:\n"
+"                            * jack-midi: specify midi-port name to connect to\n"
+"                              or \"\" to not auto-connect.\n"
+"                            * alsa-seq: specify id to connect to. (-1: none)\n"
+"                              eg. -m ardour or -m 80 \n"
+"                            * portmidi: numeric-id; -1: autodetect\n"
 "                            value > -1 specifies a (input) midi port to use\n" 	  
-"                            use -v -m -1 to list midi ports.\n" 	  
-#else /* alsa midi */
-"  -m <port>,                use alsamidi instead of jack\n"
-"      --midi <port>         specify alsa seq id to connect to. (-1: none)\n" 	  
-"                            eg. -m ardour or -m 80 \n"
-#endif /* HAVE_PORTMIDI */
+"                            use '-v -m -1' to list midi-ports.\n" 	  
+"                            * alsa-raw: specify device-name \n"
+"                              eg. -m hw:1,0 or -m 1 \n"
 "  -M <int>,                 how to 'convert' MTC SMPTE to framenumber:\n"
 "      --midifps <int>       0: use framerate of MTC clock (default)\n" 
 "                            2: use video file FPS\n" 
@@ -491,19 +504,6 @@ static void printversion (void) {
 #else
   printf ("version %s [ ", VERSION);
 #endif
-#ifndef HAVE_MIDI
-  printf("no MIDI ");
-#else /* have Midi */
-# ifdef HAVE_PORTMIDI
-  printf("portmidi ");
-# else 
-#  ifdef HAVE_JACKMIDI
-  printf("jack-midi ");
-#  else 
-  printf("alsa-midi ");
-#  endif 
-# endif 
-#endif /* HAVE_MIDI */
 #ifdef HAVE_LASH
   printf("LASH ");
 #endif 
@@ -513,7 +513,29 @@ static void printversion (void) {
   printf("IPC-MSG ");
 #endif
   printf("]\n compiled with LIBAVFORMAT_BUILD 0x%x = %i\n", LIBAVFORMAT_BUILD, LIBAVFORMAT_BUILD);
-  printf(" displays: "
+  printf(" MTC-MIDI: ");
+#ifndef HAVE_MIDI
+  printf("disabled.");
+#else /* have Midi */
+# ifdef HAVE_JACKMIDI
+  printf("jack-midi ");
+# endif 
+# ifdef ALSA_SEQ_MIDI
+  printf("alsa-sequencer ");
+# endif 
+# ifdef HAVE_PORTMIDI
+  printf("portmidi ");
+# endif 
+# ifdef ALSA_RAW_MIDI
+  printf("alsa-raw ");
+# endif 
+# if (defined ALSA_RAW_MIDI || defined HAVE_PORTMIDI || defined ALSA_SEQ_MIDI || defined HAVE_JACKMIDI)
+  printf("(first listed is default)");
+# else
+  printf("no midi-driver available.");
+# endif
+#endif /* HAVE_MIDI */
+  printf("\n displays: "
 #if HAVE_LIBXV
 		"Xv "
 #endif 
@@ -575,6 +597,7 @@ void clean_up (int status) {
   close_movie();
 
 #ifdef HAVE_MIDI
+  if (midi_driver) free(midi_driver);
   if (midi_connected()) midi_close(); 
   else
 #endif
@@ -710,14 +733,18 @@ main (int argc, char **argv)
   init_moviebuffer();
 
 #ifdef HAVE_MIDI
-  if (atoi(midiid) < -1 ) {
-    open_jack();
-  } else {
+  midi_choose_driver(midi_driver);
+  if (atoi(midiid) >= -1 ) {
+    if (!want_quiet) 
+      printf("using MTC as sync-source.\n");
     midi_open(midiid);
-  }
-#else
-  open_jack();
+  } else 
 #endif
+  {
+    if (!want_quiet) 
+      printf("using JACK-transport as sync source.\n");
+    open_jack();
+  }
 
 #ifdef HAVE_MQ
   if(mq_en) open_mq_ctrl();

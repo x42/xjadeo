@@ -145,6 +145,7 @@ int midi_connected(void);
 long midi_poll_frame (void);
 void midi_open(char *midiid);
 void midi_close(void);
+int midi_choose_driver(char *);
 #endif
 
 /* xjosc.c */

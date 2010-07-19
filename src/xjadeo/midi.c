@@ -219,40 +219,6 @@ int parse_sysex_urtm (int data, int state, int type) {
 	return (rv);
 }
 
-/************************************************
- * SMPTE converter.
- *
- * this one does not handle drop frames correctly
- * -> smpte.c
- */
-#if 0
-long convert_smpte_to_frame(smpte now) {
-	long frame =0 ;
-	int fps= 25; 
-	switch(now.type) {
-		case 0: fps=24; break;
-		case 1: fps=25; break;
-		case 2: fps=29; break;
-		case 3: fps=30; break;
-	}
-	switch (midi_clkconvert) {
-		case 2: // force video fps
-			frame = now.frame +  (int)
-				floor(framerate * ( now.sec + 60*now.min + 3600*now.hour));
-		break;
-		case 3: // 'convert' FPS.
-			frame = now.frame + 
-				fps * ( now.sec + 60*now.min + 3600*now.hour);
-			frame = (int) rint(frame * framerate / fps);
-		break;
-		default: // use MTC fps info
-			frame = now.frame + 
-				fps * ( now.sec + 60*now.min + 3600*now.hour);
-	}
-	return(frame);
-}
-#else
-
 long convert_smpte_to_frame (smpte now) {
 	return(smpte_to_frame(
 		now.type,
@@ -262,8 +228,6 @@ long convert_smpte_to_frame (smpte now) {
 		now.hour,
 		now.day));
 }
-
-#endif
 
 
 /************************************************
@@ -281,13 +245,13 @@ PmError Pm_QueueDestroy(PmQueue *queue);
 PmError Pm_Enqueue(PmQueue *queue, void *msg);
 PmError Pm_Dequeue(PmQueue *queue, void *msg);
 
-PmStream * midi = NULL;
+PmStream * pm_midi = NULL;
 
 /* if INPUT_BUFFER_SIZE is 0, PortMidi uses a default value */
 #define INPUT_BUFFER_SIZE 0
 
 
-int midi_detectdevices (int print) {
+int pm_midi_detectdevices (int print) {
 	int midiid=-1;
 	int i;
 
@@ -312,7 +276,7 @@ int midi_detectdevices (int print) {
 	return (midiid);
 }
 
-int midi_check (int midiid) {
+int pm_midi_check (int midiid) {
 	if (midiid < 0 || midiid >=Pm_CountDevices()) {
 		fprintf(stderr,"Error: invalid midi device id.\n");
 		return(-1);
@@ -361,12 +325,12 @@ void process_midi(PtTimestamp timestamp, void *userData)
      
 	/* see if there is any midi input to process */
 	do {
-		result = Pm_Poll(midi);
+		result = Pm_Poll(pm_midi);
 		if (result) {
 			int shift,data;
 			shift=data=0;
 
-			if (Pm_Read(midi, &buffer, 1) == pmBufferOverflow) continue;
+			if (Pm_Read(pm_midi, &buffer, 1) == pmBufferOverflow) continue;
 
 			/* parse only MTC relevant messages */
 			if (Pm_MessageStatus(buffer.message) == 0xf1)
@@ -394,15 +358,15 @@ void process_midi(PtTimestamp timestamp, void *userData)
 }
 
 
-void midi_open(char *midiid) {
+void pm_midi_open(char *midiid) {
 	int midi_input;
-	if (midi) return;
+	if (pm_midi) return;
 
 	midi_input = atoi(midiid);
-	if (want_verbose && midi_input < 0) midi_input = midi_detectdevices(1);
-	else if (midi_input <0 ) midi_input = midi_detectdevices(0);
+	if (want_verbose && midi_input < 0) midi_input = pm_midi_detectdevices(1);
+	else if (midi_input <0 ) midi_input = pm_midi_detectdevices(0);
 
-	if (midi_check(midi_input)) return ;
+	if (pm_midi_check(midi_input)) return ;
 
 	// init smpte
 	tc.type=tc.min=tc.frame=tc.sec=tc.hour=0;
@@ -422,22 +386,22 @@ void midi_open(char *midiid) {
 	Pm_Initialize();
 
 	/* open input device */
-	Pm_OpenInput(&midi, midi_input, NULL, INPUT_BUFFER_SIZE, NULL, NULL);
+	Pm_OpenInput(&pm_midi, midi_input, NULL, INPUT_BUFFER_SIZE, NULL, NULL);
 
 	if (!want_quiet) printf("Midi Input opened.\n");
 
-	Pm_SetFilter(midi, PM_FILT_ACTIVE | PM_FILT_CLOCK);
+	Pm_SetFilter(pm_midi, PM_FILT_ACTIVE | PM_FILT_CLOCK);
 	/* flush the buffer after setting filter, just in case anything got through */
-	while (Pm_Poll(midi)) { Pm_Read(midi, buffer, 1); }
+	while (Pm_Poll(pm_midi)) { Pm_Read(pm_midi, buffer, 1); }
 
 	active = TRUE; 
 }
 
-void midi_close(void) {
+void pm_midi_close(void) {
 	smpte cmd;
 
 	if (!want_quiet) printf("closing midi...");
-	if(!midi) return;
+	if(!pm_midi) return;
 
 	cmd.frame=0xaffe; // shutdown CMD 
 	Pm_Enqueue(main_to_midi, &cmd); 
@@ -447,23 +411,23 @@ void midi_close(void) {
 	Pm_QueueDestroy(midi_to_main);
 	Pm_QueueDestroy(main_to_midi);
 
-	Pm_Close(midi);
-	midi=NULL;
+	Pm_Close(pm_midi);
+	pm_midi=NULL;
   //have_dropframes = 0; // reset MTC state
 }
 
-int midi_connected(void) {
-	if (midi) return (1);
+int pm_midi_connected(void) {
+	if (pm_midi) return (1);
 	return (0);
 }
 
-long midi_poll_frame (void) {
+long pm_midi_poll_frame (void) {
 	int spin;
 	long frame;
 	static long lastframe = -1 ;
 	static int stopcnt = 0;
     	smpte now;
-	if (!midi) return (0);
+	if (!pm_midi) return (0);
 
 	now.frame=0; // CMD request
 	Pm_Enqueue(main_to_midi, &now); // request data
@@ -498,10 +462,10 @@ long midi_poll_frame (void) {
 			printf("\r\t\t\t\t\t\t  |+%g/8\r",diff<0?rint(4.0*(1.75-diff)):diff<2.0?0:rint(4.0*(diff-1.75)));
 	}
 	return(frame);
-	//return(convert_smpte_to_frame(now));
 }
+#endif /* HAVE_PORTMIDI */
 
-#elif HAVE_JACKMIDI /* endif HAVE_PORTMIDI */
+#ifdef  HAVE_JACKMIDI /* endif HAVE_PORTMIDI */
 
 /************************************************
  * jack-midi 
@@ -579,7 +543,7 @@ void jack_midi_shutdown(void *arg)
 }
 
 
-void midi_close(void) {
+void jm_midi_close(void) {
 	if (jack_midi_client) {
 		jack_deactivate (jack_midi_client);
 		jack_client_close (jack_midi_client);
@@ -587,7 +551,7 @@ void midi_close(void) {
   jack_midi_client = NULL;
 }
 
-void midi_open(char *midiid) {
+void jm_midi_open(char *midiid) {
   if (midi_connected()) {
 		fprintf (stderr, "xjadeo is alredy connected to jack-midi.\n");
 		return;
@@ -623,15 +587,33 @@ void midi_open(char *midiid) {
     fprintf(stderr, "can't activate jack-midi-client\n");
     midi_close(); 
   }
+
+	if (midiid && strlen(midiid)>0) {
+		const char **found_ports = jack_get_ports(jack_midi_client, NULL, JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput);
+		if (found_ports) {
+			int j;
+			for (j = 0; found_ports[j]; ++j) {
+				if (!strncasecmp(found_ports[j], midiid, strlen(midiid))) {
+					if (want_verbose) {
+						printf("JACK-connect '%s' -> '%s'\n", found_ports[j], jack_port_name(jack_midi_port));
+					}
+					if (jack_connect(jack_midi_client, found_ports[j], jack_port_name(jack_midi_port))) {
+						if (!want_quiet) fprintf(stderr,"can not auto-connect jack-midi port.\n");
+					}
+				}
+			}
+		}
+	}
+
 }
 
-int midi_connected(void) {
+int jm_midi_connected(void) {
 	if (jack_midi_client) return (1);
 	return (0);
 }
 
 
-long midi_poll_frame (void) {
+long jm_midi_poll_frame (void) {
 	long frame =0 ;
 	static long lastframe = -1 ;
 	static int stopcnt = 0;
@@ -663,19 +645,19 @@ long midi_poll_frame (void) {
 	return(frame);
 }
 
-#else  /* endif HAVE_JACKMIDI */
+#endif  /* HAVE_JACKMIDI */
 
 /************************************************
  * alsamidi 
  */
 
-#if 0 /* old alsa raw midi  */
+#ifdef ALSA_RAW_MIDI /* old alsa raw midi  */
 
 #include <alsa/asoundlib.h>
 
 static snd_rawmidi_t *amidi= NULL;
-int sysex_state = -1;
-int sysex_type = 0; 
+int ar_sysex_state = -1;
+int ar_sysex_type = 0; 
 
 void amidi_open(char *port_name) {
 	int err=0;
@@ -689,18 +671,19 @@ void amidi_open(char *port_name) {
 	// init smpte
 	tc.type=tc.min=tc.frame=tc.sec=tc.hour=0;
 	last_tc.type=last_tc.min=last_tc.frame=last_tc.sec=last_tc.hour=0;
-        sysex_state = -1;
+        ar_sysex_state = -1;
 
 	snd_rawmidi_nonblock(amidi, 1);
 //	snd_rawmidi_read(amidi, NULL, 0); 
 }
 
-void amidi_close(void) {
+void ar_midi_close(void) {
 	if (!want_quiet) printf("closing alsa midi...");
 	if(!amidi) return;
 	snd_rawmidi_close(amidi);
 	amidi=NULL;
 }
+
  // TODO increase buffer size ( avg: 15Hz * 8 msgs )
  // better: standalone thread
 void amidi_event(void) {
@@ -729,37 +712,32 @@ void amidi_event(void) {
 
 		/* if this is a status byte that's not MIDI_EOX, the sysex
 		 * message is incomplete and there is no more sysex data */
-		if (data & 0x80 && data != MIDI_EOX && data != MIDI_SOX) {sysex_state=-1;}
+		if (data & 0x80 && data != MIDI_EOX && data != MIDI_SOX) {ar_sysex_state=-1;}
 
 		// sysex- universal  real time message f0 7f ... f7 
-	    	if (data == 0xf7) { sysex_state=-1;}
-		else if (sysex_state < 0 && data == 0xf0) { sysex_state=0; sysex_type=0; }
-		else if (sysex_state>=0) {
-			sysex_type = parse_sysex_urtm (data,sysex_state,sysex_type);
-			sysex_state++;
+	    	if (data == 0xf7) { ar_sysex_state=-1;}
+		else if (ar_sysex_state < 0 && data == 0xf0) { ar_sysex_state=0; ar_sysex_type=0; }
+		else if (ar_sysex_state>=0) {
+			ar_sysex_type = parse_sysex_urtm (data,ar_sysex_state,ar_sysex_type);
+			ar_sysex_state++;
 		}
 #endif
 	}
 
 }
 
-long amidi_poll_frame (void) {
+long ar_midi_poll_frame (void) {
 	if (!amidi) return (0);
-
 	amidi_event(); // process midi buffers - get most recent timecode
-	// TODO: add time that has passed since receiving now
 	return(convert_smpte_to_frame(last_tc));
 }
 
-inline long midi_poll_frame (void) { return (amidi_poll_frame() ); }
-inline void midi_close(void) {amidi_close();}
-
-void midi_open(char *midiid) {
+void ar_midi_open(char *midiid) {
 	char devicestring[32];
 	if (atoi(midiid)<0) {
 		if (!want_quiet)
-			fprintf(stdout,"AlsaMIDI does not support autodetection. using default hw:2,0,0\n");
-		snprintf(devicestring,31,"hw:2,0,0");
+			fprintf(stdout,"AlsaMIDI does not support autodetection. using default hw:0,0,0\n");
+		snprintf(devicestring,31,"hw:0,0,0");
 	} else if (isdigit(midiid[0])) {
 		snprintf(devicestring,31,"hw:%s",midiid);
 	} else {
@@ -771,17 +749,19 @@ void midi_open(char *midiid) {
 	amidi_open(devicestring); 
 }
 
-int midi_detectdevices (int print) { 
+int ar_midi_detectdevices (int print) { 
 	if (print) printf("use 'amidi -l' to list Midi ports\n");
 	return(0);
 }
 
-int midi_connected(void) {
+int ar_midi_connected(void) {
 	if (amidi) return (1);
 	return (0);
 }
 
-#else /* 1: alsa raw/sequcer */
+#endif /* ALSA RAW   */
+
+#ifdef ALSA_SEQ_MIDI /* alsa sequcer */
 
 /************************************************
  * alsa seq midi interface 
@@ -800,8 +780,8 @@ pthread_attr_t aseq_pth_attr;
 pthread_mutex_t aseq_lock;
 
 snd_seq_t *seq= NULL;
-int sysex_state = -1;
-int sysex_type = 0; 
+int as_sysex_state = -1;
+int as_sysex_type = 0; 
 int aseq_stop=0; // only modify in main thread. 
 
 void aseq_close(void) {
@@ -865,9 +845,9 @@ void process_seq_event(const snd_seq_event_t *ev) {
 	if (ev->type == SND_SEQ_EVENT_QFRAME) parse_timecode(ev->data.control.value);
 	else if (ev->type == SND_SEQ_EVENT_SYSEX) {
 		unsigned int i; 
-		sysex_type = 0;
+		as_sysex_type = 0;
 		for (i = 1; i < ev->data.ext.len; ++i) {
-			sysex_type = parse_sysex_urtm(((unsigned char*)ev->data.ext.ptr)[i],i-1,sysex_type);
+			as_sysex_type = parse_sysex_urtm(((unsigned char*)ev->data.ext.ptr)[i],i-1,as_sysex_type);
 		}
 	}
 }
@@ -892,7 +872,7 @@ void aseq_event(void) {
 
 }
 
-long aseq_poll_frame (void) {
+long as_midi_poll_frame (void) {
 	long frame =0 ;
 	static long lastframe = -1 ;
 	static int stopcnt = 0;
@@ -928,8 +908,7 @@ long aseq_poll_frame (void) {
 	return(frame);
 }
 
-inline long midi_poll_frame (void) { return (aseq_poll_frame() ); }
-inline void midi_close(void) {
+inline void as_midi_close(void) {
 	if(!seq) return;
 	aseq_stop =1;
 	pthread_join(aseq_thread,NULL);
@@ -970,7 +949,7 @@ void *aseq_run(void *arg) {
  * Copyright (c) 2005 Clemens Ladisch <clemens@ladisch.de>
  * GPL
  */
-void midi_detectdevices (int print) { 
+void as_midi_detectdevices (int print) { 
 	if (print) {
 		snd_seq_client_info_t *cinfo;
 		snd_seq_port_info_t *pinfo;
@@ -1003,10 +982,10 @@ void midi_detectdevices (int print) {
 	}
 }
 
-void midi_open(char *midiid) {
+void as_midi_open(char *midiid) {
 	if (atoi(midiid)<0) {
 		aseq_open(NULL); 
-    		if (want_verbose) midi_detectdevices(1);
+    		if (want_verbose) as_midi_detectdevices(1);
 	} else {
 		aseq_open(midiid); 
 	}
@@ -1021,14 +1000,84 @@ void midi_open(char *midiid) {
 	}
 }
 
-int midi_connected(void) {
+int as_midi_connected(void) {
 	if (seq) return (1);
 	return (0);
 }
 
-#endif /*  alsa raw/seq midi  */
+#endif /*  alsa seq midi  */
 
-#endif /* not HAVE_PORTMIDI and not HAVE_JACKMIDI => alsamidi */
+int  null_midi_connected(void) { return 0;}
+void null_midi_open(char *midiid) {;}
+void null_midi_close(void) {;}
+long null_midi_poll_frame (void) { return 0L;}
+
+#define NULLMIDI 0, &null_midi_open, &null_midi_close, &null_midi_connected, &null_midi_poll_frame
+
+typedef struct {
+	const char *name;
+	int supported; // 1: format compiled in -- 0: not supported 
+	void (*midi_open)(char *);
+	void (*midi_close)(void);
+	int (*midi_connected)(void);
+  long (*midi_poll_frame) (void);
+}midiapi;
+
+const midiapi MA[] = {
+	{ "JACK-MIDI", 
+#ifdef  HAVE_JACKMIDI 
+		1, &jm_midi_open, &jm_midi_close, &jm_midi_connected, &jm_midi_poll_frame
+#else
+		NULLMIDI
+#endif
+	},
+	{ "ALSA-Sequencer",
+#ifdef ALSA_SEQ_MIDI /* alsa sequcer */
+		1, &as_midi_open, &as_midi_close, &as_midi_connected, &as_midi_poll_frame
+#else
+		NULLMIDI
+#endif
+	},
+	{ "PORTMIDI", 
+#ifdef HAVE_PORTMIDI
+		1, &pm_midi_open, &pm_midi_close, &pm_midi_connected, &pm_midi_poll_frame
+#else
+		NULLMIDI
+#endif
+	},
+	{ "ALSA-RAW-MIDI",
+#ifdef ALSA_RAW_MIDI
+		1, &ar_midi_open, &ar_midi_close, &ar_midi_connected, &ar_midi_poll_frame
+#else
+		NULLMIDI
+#endif
+	},
+	{NULL, NULLMIDI}  // the end.
+};
+
+int current_midi_driver = 0;
+
+int midi_choose_driver(char *id) {
+	if (midi_connected()) return -1;
+	int i=0;
+	while (MA[i].name) {
+		if ((id && !strncasecmp(MA[i].name, id, strlen(id))) || (!id && MA[i].supported) ) {
+			current_midi_driver = i;
+			break;
+		}
+		++i;
+	}
+	if (!want_quiet && MA[current_midi_driver].supported) {
+		printf("selected MIDI driver: %s\n", MA[current_midi_driver].name);
+	}
+	return MA[current_midi_driver].supported;
+}
+
+int  midi_connected(void) { return (MA[current_midi_driver].midi_connected());}
+void midi_open(char *midiid) {MA[current_midi_driver].midi_open(midiid);}
+void midi_close(void) {MA[current_midi_driver].midi_close();}
+long midi_poll_frame (void) { return (MA[current_midi_driver].midi_poll_frame());}
+
 
 #else /* HAVE_MIDI */
 
