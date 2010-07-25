@@ -1,3 +1,15 @@
+xjadeo (0.4.12) unstable; urgency=low
+  * allow to select midi-driver on runtime (JACK-MIDI, ALSA-sequencer,
+   portmidi, ALSA-raw-midi).
+  * fixed rounding error for non-integer framerates in the 
+    remote-ctrl SMPTE-text parser.
+    (xjadeo+JACK or MTC is not affected; it's only relevant
+    when useing 'seek <integer>' instead of 'seek SMPTE'
+  * fixed unresponsive "Preferences" Alert message (OSX)
+  * added JACK-Midi to menu (OSX)
+
+ -- Robin Gareus <robin@gareus.org>  Sun, 25 Jul 2010 15:00:21 +0200
+
 xjadeo (0.4.11) unstable; urgency=low
   * new defaults (update-fps = filefps, MTC-quater-frame: on)
   * added System-V IPC remote ctrl mode (for OSX)
