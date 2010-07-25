@@ -74,7 +74,7 @@ void parse_int (bcd *s, int val) {
 
 	s->v[SMPTE_FRAME]= (int) val;
 
-	FIX_SMPTE_OVERFLOW(SMPTE_FRAME,SMPTE_SEC,(int)rint(FPS));
+	FIX_SMPTE_OVERFLOW(SMPTE_FRAME,SMPTE_SEC,(int)ceil(FPS));
 	FIX_SMPTE_OVERFLOW(SMPTE_SEC,SMPTE_MIN,60);
 	FIX_SMPTE_OVERFLOW(SMPTE_MIN,SMPTE_HOUR,60);
 	FIX_SMPTE_OVERFLOW(SMPTE_HOUR,SMPTE_OVERFLOW,24);
@@ -100,7 +100,7 @@ void parse_string (bcd *s, char *val) {
 	if (i < SMPTE_OVERFLOW) s->v[i]= (int) atoi(buf);
 
 	free(buf);
-	FIX_SMPTE_OVERFLOW(SMPTE_FRAME,SMPTE_SEC,(int)rint(FPS));
+	FIX_SMPTE_OVERFLOW(SMPTE_FRAME,SMPTE_SEC,(int)ceil(FPS));
 	FIX_SMPTE_OVERFLOW(SMPTE_SEC,SMPTE_MIN,60);
 	FIX_SMPTE_OVERFLOW(SMPTE_MIN,SMPTE_HOUR,60);
 	FIX_SMPTE_OVERFLOW(SMPTE_HOUR,SMPTE_OVERFLOW,24);
@@ -127,7 +127,7 @@ int to_frame(bcd *s) {
 	}
 	// TODO: check if this behaves correctly for non integer FPS :->
 	//frame=(int) floor(sec*FPS)+s->v[SMPTE_FRAME];
-	frame=(int) sec * FPS + s->v[SMPTE_FRAME];
+	frame=(int) floor(sec * ceil(FPS)) + s->v[SMPTE_FRAME];
 	return (frame);
 }
 
@@ -136,7 +136,7 @@ void add (bcd*s, bcd *s0, bcd *s1) {
 	for (i=0;i<SMPTE_LAST;i++) s->v[i]=s0->v[i]+s1->v[i];
 	//s->v[SMPTE_OVERFLOW]=0;
 
-	FIX_SMPTE_OVERFLOW(SMPTE_FRAME,SMPTE_SEC,(int)rint(FPS));
+	FIX_SMPTE_OVERFLOW(SMPTE_FRAME,SMPTE_SEC,(int)ceil(FPS));
 	FIX_SMPTE_OVERFLOW(SMPTE_SEC,SMPTE_MIN,60);
 	FIX_SMPTE_OVERFLOW(SMPTE_MIN,SMPTE_HOUR,60);
 	FIX_SMPTE_OVERFLOW(SMPTE_HOUR,SMPTE_OVERFLOW,24);
@@ -147,7 +147,7 @@ void sub (bcd*s, bcd *s0, bcd *s1) {
 	for (i=0;i<SMPTE_LAST;i++) s->v[i]=s0->v[i]-s1->v[i];
 	//s->v[SMPTE_OVERFLOW]=0;
 
-	FIX_SMPTE_OVERFLOW(SMPTE_FRAME,SMPTE_SEC,(int)rint(FPS));
+	FIX_SMPTE_OVERFLOW(SMPTE_FRAME,SMPTE_SEC,(int)ceil(FPS));
 	FIX_SMPTE_OVERFLOW(SMPTE_SEC,SMPTE_MIN,60);
 	FIX_SMPTE_OVERFLOW(SMPTE_MIN,SMPTE_HOUR,60);
 	FIX_SMPTE_OVERFLOW(SMPTE_HOUR,SMPTE_OVERFLOW,24);
@@ -216,7 +216,7 @@ long int smptestring_to_frame (char *str) {
 	bcd s;
 	long int frame;
 	parse_string(&s,str);
-	if ((have_dropframes && want_autodrop)||want_dropframes) {
+	if ((strchr(str,':') && have_dropframes && want_autodrop)||want_dropframes) {
 		frame= smpte_to_frame (
 			2 /*29.97fps */,
 			s.v[SMPTE_FRAME],
