@@ -196,15 +196,17 @@ if test "x$enable_midi" != "xno"; then
 	MIDI_CFLAGS=""
 	if test "x$PORTMIDI" != "xno" -a -z "$portmidisrc" ; then
 		AC_CHECK_HEADERS(portmidi.h porttime.h , [FOUND_H_PORTMIDI=yes])
-		AC_CHECK_LIB([portmidi], [Pm_CountDevices], [FOUND_L_PORTMIDI=yes], [])
+		AC_CHECK_LIB([portmidi], [Pm_CountDevices], [FOUND_L_PORTMIDI=yes])
+	fi
+	if test "x$FOUND_H_PORTMIDI$FOUND_L_PORTMIDI" = "xyesyes"; then
 		MIDI_LIBS="-lportmidi"
 	fi
 
 	if test "x$PORTMIDI" != "xno" -a -n "$portmidisrc" -a -n "$PM_OS"; then
-		AC_CHECK_FILES([$portmidisrc/porttime/porttime.h $portmidisrc/pm_common/portmidi.h],[FOUND_H_PORTMIDI=yes], [])
+		AC_CHECK_FILES([$portmidisrc/porttime/porttime.h $portmidisrc/pm_common/portmidi.h],[FOUND_H_PORTMIDI=yes])
 dnl ppc-portmidi : cc -dynamiclib pm_mac/*.o porttime/*.o -flat_namespace -undefined suppress -o portmidi.dylib
 
-		AC_CHECK_FILES([$portmidisrc/porttime/${LIBPREF}porttime$LIBSUF $portmidisrc/pm_${PM_OS}/${LIBPREF}portmidi$LIBSUF],[FOUND_L_PORTMIDI=yes MIDI_LIBS="$portmidisrc/porttime/${LIBPREF}porttime$LIBSUF $portmidisrc/pm_${PM_OS}/${LIBPREF}portmidi$LIBSUF"], [])
+		AC_CHECK_FILES([$portmidisrc/porttime/${LIBPREF}porttime$LIBSUF $portmidisrc/pm_${PM_OS}/${LIBPREF}portmidi$LIBSUF],[FOUND_L_PORTMIDI=yes MIDI_LIBS="$portmidisrc/porttime/${LIBPREF}porttime$LIBSUF $portmidisrc/pm_${PM_OS}/${LIBPREF}portmidi$LIBSUF"])
 		AC_CHECK_FILES([$portmidisrc/pm_${PM_OS}/build/${LIBPREF}portmidi$LIBSUF],[FOUND_L_PORTMIDI=yes MIDI_LIBS="$portmidisrc/pm_${PM_OS}/build/${LIBPREF}portmidi$LIBSUF"])
 		if test $PM_OS = "mac" ; then MIDI_LIBS="$MIDI_LIBS -framework CoreMIDI -framework CoreFoundation -framework CoreAudio"; fi
 
@@ -212,13 +214,13 @@ dnl ppc-portmidi : cc -dynamiclib pm_mac/*.o porttime/*.o -flat_namespace -undef
 	fi
 
 	if test "x$JACKMIDI" != "xno"; then
-		AC_CHECK_HEADERS(jack/midiport.h, [FOUND_H_JACKMIDI=yes], [])
+		AC_CHECK_HEADERS(jack/midiport.h, [FOUND_H_JACKMIDI=yes])
 	fi
 
 	if test "x$ALSAMIDI" != "xno"; then
-		AC_CHECK_HEADERS(alsa/asoundlib.h, [FOUND_H_ALSAMIDI=yes], [])
-		AC_CHECK_HEADERS(pthread.h, [FOUND_H_PTHREAD=yes], [])
-		AC_CHECK_LIB([asound], [snd_rawmidi_open], [FOUND_L_ALSAMIDI=yes], [])
+		AC_CHECK_HEADERS(alsa/asoundlib.h, [FOUND_H_ALSAMIDI=yes])
+		AC_CHECK_HEADERS(pthread.h, [FOUND_H_PTHREAD=yes])
+		AC_CHECK_LIB([asound], [snd_rawmidi_open], [FOUND_L_ALSAMIDI=yes])
 	fi
 
 	if test "x$FOUND_H_ALSAMIDI$FOUND_L_ALSAMIDI$FOUND_H_PTHREAD" = "xyesyesyes"; then
