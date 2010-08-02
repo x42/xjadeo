@@ -42,6 +42,7 @@ extern int want_letterbox;
 extern int want_nosplash;
 extern int mq_en;
 extern int avoid_lash;
+extern char *midi_driver;
 
 #ifdef HAVE_MIDI
 extern char midiid[32];
@@ -94,6 +95,12 @@ int parseoption (char *item, char *value) {
 	#ifdef HAVE_MIDI
 		midi_clkconvert=atoi(value);
 	#endif
+	} else if (!strncasecmp(item,"MIDIDRIVER",10)) {
+	#ifdef HAVE_MIDI
+	  if (midi_driver) free(midi_driver);
+		midi_driver = strdup(value);
+	#endif
+		rv=1;
 	} else if (!strncasecmp(item,"QUIET",7)) {
 		YES_OK (want_quiet);
 	} else if (!strncasecmp(item,"VERBOSE",7)) {
