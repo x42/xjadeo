@@ -686,7 +686,7 @@ void xapi_smididriver(void *d) {
 	if (midi_choose_driver(mp)>0) {
 		remote_printf(100,"ok.");
 	} else {
-		remote_printf(440,"choosen MIDI driver is not supported.");
+		remote_printf(440,"chosen MIDI driver is not supported.");
 	}
 #else
 	remote_printf(499,"midi not available.");
