@@ -580,13 +580,13 @@ int my_seek_frame (AVPacket *packet, int64_t timestamp) {
 	printf("\nDEBUG: want frame=%li  ", (long int) timestamp);
 # endif
 
-# if 1  // TODO -> -F <ratio>
-	timestamp*=tpf;
-# else	// THIS is eqivalent - or even better at rounding but
-	// does not work with -F <double> 
-	timestamp=av_rescale_q(timestamp,c1_Q,v_stream->time_base); 
-	timestamp=av_rescale_q(timestamp,c1_Q,v_stream->r_frame_rate); //< timestamp/=framerate; 
-# endif
+  if (filefps > 0) {
+		timestamp*=tpf;
+  } else {
+	// does not work with -F <double>, but it's more accurate when rounding ratios
+		timestamp=av_rescale_q(timestamp,c1_Q,v_stream->time_base); 
+		timestamp=av_rescale_q(timestamp,c1_Q,v_stream->r_frame_rate); //< timestamp/=framerate; 
+	}
 
 # ifdef FFDEBUG
 	printf("ts=%li   ##\n", (long int) timestamp);
