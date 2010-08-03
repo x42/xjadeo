@@ -208,7 +208,7 @@
         <translation>Numéro de Trame</translation>
     </message>
     <message>
-        <source>SMTPE</source>
+        <source>SMPTE</source>
         <translation>SMPTE</translation>
     </message>
     <message>

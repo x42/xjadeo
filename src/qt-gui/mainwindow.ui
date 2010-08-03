@@ -266,7 +266,7 @@
     <item text="&amp;OSD" name="OSD">
         <action name="osdFontAction"/>
         <action name="osdFrameAction"/>
-        <action name="osdSMTPEAction"/>
+        <action name="osdSMPTEAction"/>
     </item>
     <item text="&amp;Seek" name="Seek">
         <action name="seekany_frameAction"/>
@@ -469,16 +469,16 @@
     </action>
     <action>
         <property name="name">
-            <cstring>osdSMTPEAction</cstring>
+            <cstring>osdSMPTEAction</cstring>
         </property>
         <property name="toggleAction">
             <bool>true</bool>
         </property>
         <property name="text">
-            <string>SMTPE</string>
+            <string>SMPTE</string>
         </property>
         <property name="menuText">
-            <string>SMTPE</string>
+            <string>SMPTE</string>
         </property>
     </action>
     <action>
@@ -651,7 +651,7 @@
         <slot>setFPS(const QString&amp;)</slot>
     </connection>
     <connection>
-        <sender>osdSMTPEAction</sender>
+        <sender>osdSMPTEAction</sender>
         <signal>toggled(bool)</signal>
         <receiver>MainWindow</receiver>
         <slot>osdSMPTEToggled(bool)</slot>
