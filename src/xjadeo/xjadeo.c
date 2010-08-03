@@ -187,10 +187,10 @@ void event_loop(void) {
 #endif
 
 		offFrame = newFrame + ts_offset;
-
+		long curFrame = dispFrame;
 		display_frame((int64_t)(offFrame), force_redraw);
 
-		if ((remote_en||mq_en||ipc_queue) && ((remote_mode&1) || ((remote_mode&2)&& offFrame!=dispFrame)) ) {
+		if ((remote_en||mq_en||ipc_queue) && ((remote_mode&1) || ((remote_mode&2)&& curFrame!=dispFrame)) ) {
 		/*call 	xapi_pposition ?? -> rv:200
 		 * dispFrame is the currently displayed frame 
 		 * = SMPTE + offset
