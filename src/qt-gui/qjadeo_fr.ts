@@ -208,6 +208,10 @@
         <translation>Numéro de Trame</translation>
     </message>
     <message>
+        <source>Box</source>
+        <translation>Cadre</translation>
+    </message>
+    <message>
         <source>SMPTE</source>
         <translation>SMPTE</translation>
     </message>
