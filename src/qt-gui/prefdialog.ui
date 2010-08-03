@@ -46,7 +46,7 @@
                                 <cstring>textLabel1</cstring>
                             </property>
                             <property name="text">
-                                <string>Midi port (MTC):</string>
+                                <string>Autoconnect ALSA Midi port (MTC):</string>
                             </property>
                         </widget>
                         <spacer>
@@ -68,7 +68,7 @@
                         </spacer>
                         <widget class="QLineEdit">
                             <property name="name">
-                                <cstring>prefLineMidi</cstring>
+                                <cstring>prefLineAlsaMidi</cstring>
                             </property>
                             <property name="sizePolicy">
                                 <sizepolicy>
@@ -86,6 +86,63 @@
                             </property>
                             <property name="maxLength">
                                 <number>16</number>
+                            </property>
+                        </widget>
+                    </hbox>
+                </widget>
+                <widget class="QLayoutWidget">
+                    <property name="name">
+                        <cstring>layout11</cstring>
+                    </property>
+                    <hbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>textLabel3</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Autoconnect JACK Midi port (MTC):</string>
+                            </property>
+                        </widget>
+                        <spacer>
+                            <property name="name">
+                                <cstring>spacer9</cstring>
+                            </property>
+                            <property name="orientation">
+                                <enum>Horizontal</enum>
+                            </property>
+                            <property name="sizeType">
+                                <enum>Expanding</enum>
+                            </property>
+                            <property name="sizeHint">
+                                <size>
+                                    <width>0</width>
+                                    <height>20</height>
+                                </size>
+                            </property>
+                        </spacer>
+                        <widget class="QLineEdit">
+                            <property name="name">
+                                <cstring>prefLineJackMidi</cstring>
+                            </property>
+                            <property name="sizePolicy">
+                                <sizepolicy>
+                                    <hsizetype>7</hsizetype>
+                                    <vsizetype>0</vsizetype>
+                                    <horstretch>1</horstretch>
+                                    <verstretch>0</verstretch>
+                                </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                                <size>
+                                    <width>160</width>
+                                    <height>0</height>
+                                </size>
+                            </property>
+                            <property name="maxLength">
+                                <number>64</number>
                             </property>
                         </widget>
                     </hbox>
@@ -172,7 +229,7 @@
                             </property>
                             <property name="sizeHint">
                                 <size>
-                                    <width>81</width>
+                                    <width>57</width>
                                     <height>21</height>
                                 </size>
                             </property>

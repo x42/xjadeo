@@ -58,7 +58,8 @@ QJadeo::QJadeo()
   if(m_recentFiles.count())
     updateRecentFilesMenu();
 
-  m_midiport = m_settings.readEntry("MIDI port");
+  m_alsamidiport = m_settings.readEntry("ALSA MIDI port");
+  m_jackmidiport = m_settings.readEntry("JACK MIDI port");
   m_importdir = m_settings.readEntry("Import Directory");
   m_importdestination = m_settings.readBoolEntry("Import Destination");
   m_importcodec = m_settings.readEntry("Import Codec");
@@ -68,7 +69,8 @@ QJadeo::QJadeo()
   m_xjinfopath = m_settings.readEntry("XJINFO Path");
 
   // TODO: detect portmidi / alsamidi default. 'midi library' 
-  if (m_midiport.isEmpty()) m_midiport = QString("24");
+  if (m_alsamidiport.isEmpty()) m_alsamidiport = QString("24");
+  if (m_jackmidiport.isEmpty()) m_jackmidiport = QString("");
   if (m_importcodec.isEmpty()) m_importcodec = QString("mpeg4");
   if (m_mencoderpath.isEmpty()) m_mencoderpath = QString("mencoder");
   if (m_xjadeopath.isEmpty()) m_xjadeopath = QString(BINDIR "xjremote");
@@ -89,6 +91,7 @@ void QJadeo::initialize ()
   xjadeo.writeToStdin(QString("get framerate\n"));
   xjadeo.writeToStdin(QString("get offset\n"));
   xjadeo.writeToStdin(QString("get osdcfg\n"));
+  xjadeo.writeToStdin(QString("midi driver\n"));
   xjadeo.writeToStdin(QString("get syncsource\n"));
   xjadeo.writeToStdin(QString("get position\n"));
   xjadeo.writeToStdin(QString("get seekmode\n"));
@@ -159,7 +162,8 @@ void QJadeo::saveOptions()
   for(int i = 0; i < int (m_recentFiles.count()); ++i)
     m_settings.writeEntry("File" + QString::number(i + 1), m_recentFiles[i]);
   m_settings.writeEntry("OSD font", m_osdfont);
-  m_settings.writeEntry("MIDI port", m_midiport);
+  m_settings.writeEntry("JACK MIDI port", m_jackmidiport);
+  m_settings.writeEntry("ALSA MIDI port", m_alsamidiport);
   m_settings.writeEntry("Import Codec", m_importcodec);
   m_settings.writeEntry("Import Directory", m_importdir);
   m_settings.writeEntry("Import Destination", m_importdestination);
@@ -207,7 +211,8 @@ void QJadeo::filePreferences()
   PrefDialog *pdialog = new PrefDialog::PrefDialog(this);
   if (pdialog) {
     /* set values */
-    pdialog->prefLineMidi->setText(m_midiport);
+    pdialog->prefLineJackMidi->setText(m_jackmidiport);
+    pdialog->prefLineAlsaMidi->setText(m_alsamidiport);
     pdialog->prefLineXjadeo->setText(m_xjadeopath);
     pdialog->prefLineXjinfo->setText(m_xjinfopath);
     pdialog->prefLineMencoder->setText(m_mencoderpath);
@@ -229,8 +234,10 @@ void QJadeo::filePreferences()
 	m_xjadeopath = pdialog->prefLineXjadeo->text();
       if (!pdialog->prefLineXjinfo->text().isEmpty())
 	m_xjinfopath = pdialog->prefLineXjinfo->text();
-      if (!pdialog->prefLineMidi->text().isEmpty())
-	m_midiport = pdialog->prefLineMidi->text();
+      if (!pdialog->prefLineAlsaMidi->text().isEmpty())
+	m_alsamidiport = pdialog->prefLineAlsaMidi->text();
+      if (!pdialog->prefLineJackMidi->text().isEmpty())
+	m_jackmidiport = pdialog->prefLineJackMidi->text();
       if (pdialog->prefDirCheckBox->isOn() && !pdialog->destDirLineEdit->text().isEmpty())
 	m_importdir = pdialog->destDirLineEdit->text();
     /* and save */
@@ -340,14 +347,27 @@ void QJadeo::syncJack()
 {
   xjadeo.writeToStdin(QString("midi disconnect\n"));
   xjadeo.writeToStdin(QString("jack connect\n"));
+  xjadeo.writeToStdin(QString("midi driver\n"));
   xjadeo.writeToStdin(QString("get syncsource\n"));
 }
 
-void QJadeo::syncMTC()
+void QJadeo::syncMTCalsa()
 {
   xjadeo.writeToStdin(QString("jack disconnect\n"));
-  //xjadeo.writeToStdin(QString("midi reconnect\n"));
-  xjadeo.writeToStdin(QString("midi connect "+ m_midiport +"\n"));
+  xjadeo.writeToStdin(QString("midi disconnect\n"));
+  xjadeo.writeToStdin(QString("midi driver alsa-seq\n"));
+  xjadeo.writeToStdin(QString("midi connect "+ m_alsamidiport +"\n"));
+  xjadeo.writeToStdin(QString("midi driver\n"));
+  xjadeo.writeToStdin(QString("get syncsource\n"));
+}
+
+void QJadeo::syncMTCjack()
+{
+  xjadeo.writeToStdin(QString("jack disconnect\n"));
+  xjadeo.writeToStdin(QString("midi disconnect\n"));
+  xjadeo.writeToStdin(QString("midi driver jack\n"));
+  xjadeo.writeToStdin(QString("midi connect "+ m_jackmidiport +"\n"));
+  xjadeo.writeToStdin(QString("midi driver\n"));
   xjadeo.writeToStdin(QString("get syncsource\n"));
 }
 
@@ -355,6 +375,7 @@ void QJadeo::syncOff()
 {
   xjadeo.writeToStdin(QString("jack disconnect\n"));
   xjadeo.writeToStdin(QString("midi disconnect\n"));
+  xjadeo.writeToStdin(QString("midi driver\n"));
   xjadeo.writeToStdin(QString("get syncsource\n"));
 }
 
@@ -474,18 +495,27 @@ void QJadeo::readFromStdout()
 	    Seek->setItemChecked(Seek->idAt(0),TRUE);
 	  }
 	}
+        else if(name == "mididrv")
+	{
+          m_mididrv = 0;
+          if (value == "JACK-MIDI") m_mididrv = 1;
+	}
         else if(name == "syncsource")
 	{
 	  Sync->setItemChecked(Sync->idAt(0),FALSE);
 	  Sync->setItemChecked(Sync->idAt(1),FALSE);
 	  Sync->setItemChecked(Sync->idAt(2),FALSE);
+	  Sync->setItemChecked(Sync->idAt(3),FALSE);
 
 	  if (value.toInt()==0) { // off
             seekBar->setEnabled(TRUE);
-	    Sync->setItemChecked(Sync->idAt(2),TRUE);
+	    Sync->setItemChecked(Sync->idAt(3),TRUE);
 	  } else if (value.toInt()==2) { // MIDI
             seekBar->setEnabled(FALSE);
-	    Sync->setItemChecked(Sync->idAt(1),TRUE);
+	    if (m_mididrv == 1) 
+	      Sync->setItemChecked(Sync->idAt(1),TRUE); // JACK midi
+	    else
+	      Sync->setItemChecked(Sync->idAt(2),TRUE); // ALSA midi
 	  } else {
             seekBar->setEnabled(FALSE); //JACK
 	    Sync->setItemChecked(Sync->idAt(0),TRUE);
@@ -531,6 +561,7 @@ void QJadeo::readFromStdout()
 	  xjadeo.writeToStdin(QString("notify frame\n"));
 	  xjadeo.writeToStdin(QString("get offset\n"));
 	  xjadeo.writeToStdin(QString("get osdcfg\n"));
+	  xjadeo.writeToStdin(QString("midi driver\n"));
 	  xjadeo.writeToStdin(QString("get syncsource\n"));
 	  xjadeo.writeToStdin(QString("get position\n"));
 	}
@@ -547,6 +578,7 @@ void QJadeo::fileLoad(const QString & filename)
   m_frames = 0;
   m_offset = 0;
   m_framerate = 0;
+  m_mididrv = 0;
   xjadeo.writeToStdin("load " + filename + "\n");
   xjadeo.writeToStdin(QString("get filename\n"));
   xjadeo.writeToStdin(QString("get width\n"));
@@ -598,10 +630,10 @@ int main(int argc, char **argv)
 
   if(!xjadeo.start())
   {
-     QMessageBox::QMessageBox::critical( &w, "qjadeo","can not execute xjadeo/xjremote.","Exit", QString::null, QString::null, 0, -1);
-
-    qFatal("Could not start xjadeo executable: " + xjadeoPath);
-    qFatal("Try to set the XJREMOTE environment variable to point to xjadeo.");
+    QMessageBox::QMessageBox::critical( &w, "qjadeo","can not execute xjadeo/xjremote.","Exit", QString::null, QString::null, 0, -1);
+    //qFatal("Could not start xjadeo executable: " + xjadeoPath);
+    //qFatal("Try to set the XJREMOTE environment variable to point to xjadeo.");
+    exit(1);
   }
 
   w.connect(&xjadeo, SIGNAL(readyReadStdout()), &w, SLOT(readFromStdout()));

@@ -168,8 +168,12 @@
         <translation>Transport JACK</translation>
     </message>
     <message>
-        <source>MTC</source>
-        <translation>MTC</translation>
+        <source>MTC (ALSA SEQ)</source>
+        <translation>MTC (ALSA SEQ)</translation>
+    </message>
+    <message>
+        <source>MTC (JACK MIDI)</source>
+        <translation>MTC (JACK MIDI)</translation>
     </message>
     <message>
         <source>off</source>
@@ -263,8 +267,12 @@
         <translation>Paramètres généraux</translation>
     </message>
     <message>
-        <source>Midi port (MTC):</source>
-        <translation>Port Midi (MTC):</translation>
+        <source>Autoconnect ALSA Midi port (MTC):</source>
+        <translation>Se connecter automatiquement ce port ALSA Midi (MTC):</translation>
+    </message>
+    <message>
+        <source>Autoconnect JACK Midi port (MTC):</source>
+        <translation>Se connecter automatiquement ce port JACK Midi (MTC):</translation>
     </message>
     <message>
         <source>xjadeo/xjremote executable:</source>

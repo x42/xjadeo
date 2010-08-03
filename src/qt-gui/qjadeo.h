@@ -30,13 +30,15 @@ private:
   int m_offset;
   int m_framerate;
   QString m_osdfont;
-  QString m_midiport;
+  QString m_alsamidiport;
+  QString m_jackmidiport;
   QString m_importdir;
   bool m_importdestination;
   QString m_importcodec;
   QString m_mencoderpath;
   QString m_mencoderopts;
   QString m_xjinfopath;
+  int m_mididrv;
 
   void updateRecentFilesMenu();
   void updateRecentFiles(const QString & filename);
@@ -57,7 +59,8 @@ public slots:
   void zoomFullScreen();
 
   void syncJack();
-  void syncMTC();
+  void syncMTCalsa();
+  void syncMTCjack();
   void syncOff();
 
   void seekContinuously();

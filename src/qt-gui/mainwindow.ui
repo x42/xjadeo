@@ -236,7 +236,8 @@
     </item>
     <item text="&amp;Sync" name="Sync">
         <action name="syncJackAction"/>
-        <action name="syncMTCAction"/>
+        <action name="syncMTCJackAction"/>
+        <action name="syncMTCAlsaAction"/>
         <action name="syncOffAction"/>
     </item>
     <item text="&amp;Zoom" name="Zoom">
@@ -336,16 +337,30 @@
         </action>
         <action>
             <property name="name">
-                <cstring>syncMTCAction</cstring>
+                <cstring>syncMTCJackAction</cstring>
             </property>
             <property name="toggleAction">
                 <bool>true</bool>
             </property>
             <property name="text">
-                <string>MTC</string>
+                <string>MTC (JACK MIDI)</string>
             </property>
             <property name="menuText">
-                <string>MTC</string>
+                <string>MTC (JACK MIDI)</string>
+            </property>
+        </action>
+        <action>
+            <property name="name">
+                <cstring>syncMTCAlsaAction</cstring>
+            </property>
+            <property name="toggleAction">
+                <bool>true</bool>
+            </property>
+            <property name="text">
+                <string>MTC (ALSA SEQ)</string>
+            </property>
+            <property name="menuText">
+                <string>MTC (ALSA SEQ)</string>
             </property>
         </action>
         <action>
@@ -589,10 +604,16 @@
         <slot>syncOff()</slot>
     </connection>
     <connection>
-        <sender>syncMTCAction</sender>
+        <sender>syncMTCAlsaAction</sender>
         <signal>activated()</signal>
         <receiver>MainWindow</receiver>
-        <slot>syncMTC()</slot>
+        <slot>syncMTCalsa()</slot>
+    </connection>
+    <connection>
+        <sender>syncMTCJackAction</sender>
+        <signal>activated()</signal>
+        <receiver>MainWindow</receiver>
+        <slot>syncMTCjack()</slot>
     </connection>
     <connection>
         <sender>syncJackAction</sender>
@@ -685,7 +706,8 @@
     <slot>zoom200()</slot>
     <slot>zoomFullScreen()</slot>
     <slot>syncJack()</slot>
-    <slot>syncMTC()</slot>
+    <slot>syncMTCjack()</slot>
+    <slot>syncMTCalsa()</slot>
     <slot>syncOff()</slot>
     <slot>setOffset( const QString &amp; )</slot>
     <slot>fileExit()</slot>
