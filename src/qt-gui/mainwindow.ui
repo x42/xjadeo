@@ -110,13 +110,30 @@
                 <property name="spacing">
                     <number>0</number>
                 </property>
+                <spacer>
+                    <property name="name">
+                        <cstring>spacer4</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Expanding</enum>
+                    </property>
+                    <property name="sizeHint">
+                        <size>
+                            <width>2</width>
+                            <height>6</height>
+                        </size>
+                    </property>
+                </spacer>
                 <widget class="QProgressBar">
                     <property name="name">
                         <cstring>progressBar</cstring>
                     </property>
                     <property name="sizePolicy">
                         <sizepolicy>
-                            <hsizetype>3</hsizetype>
+                            <hsizetype>7</hsizetype>
                             <vsizetype>0</vsizetype>
                             <horstretch>5</horstretch>
                             <verstretch>0</verstretch>
@@ -153,7 +170,7 @@
                     </property>
                     <property name="sizeHint">
                         <size>
-                            <width>1</width>
+                            <width>3</width>
                             <height>6</height>
                         </size>
                     </property>
