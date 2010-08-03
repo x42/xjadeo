@@ -1,3 +1,14 @@
+xjadeo (0.4.13) unstable; urgency=low
+  * made portmidi optional - Thanks to Alex Stone.
+  * added 'mididriver' config-file option
+  * qjadeo - MTC menu: ALSA/JACK
+  * qjadeo - added OSD box toggle
+  * fixed remote-ctrl frame notification
+  * use ffmpeg fps ratio calculation functions
+  * fixed some spelling errors & text clarifications
+
+ -- Robin Gareus <robin@gareus.org>  Tue, 03 Aug 2010 20:58:37 +0200
+
 xjadeo (0.4.12) unstable; urgency=low
   * allow to select midi-driver on runtime (JACK-MIDI, ALSA-sequencer,
    portmidi, ALSA-raw-midi).
