@@ -267,6 +267,7 @@
         <action name="osdFontAction"/>
         <action name="osdFrameAction"/>
         <action name="osdSMPTEAction"/>
+        <action name="osdBoxAction"/>
     </item>
     <item text="&amp;Seek" name="Seek">
         <action name="seekany_frameAction"/>
@@ -483,6 +484,20 @@
     </action>
     <action>
         <property name="name">
+            <cstring>osdBoxAction</cstring>
+        </property>
+        <property name="toggleAction">
+            <bool>true</bool>
+        </property>
+        <property name="text">
+            <string>Box</string>
+        </property>
+        <property name="menuText">
+            <string>Box</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
             <cstring>osdFontAction</cstring>
         </property>
         <property name="text">
@@ -651,6 +666,12 @@
         <slot>setFPS(const QString&amp;)</slot>
     </connection>
     <connection>
+        <sender>osdBoxAction</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>MainWindow</receiver>
+        <slot>osdBoxToggled(bool)</slot>
+    </connection>
+    <connection>
         <sender>osdSMPTEAction</sender>
         <signal>toggled(bool)</signal>
         <receiver>MainWindow</receiver>
@@ -730,6 +751,7 @@
     <slot>fileExit()</slot>
     <slot>osdFrameToggled( bool )</slot>
     <slot>osdSMPTEToggled( bool )</slot>
+    <slot>osdBoxToggled( bool )</slot>
     <slot>osdFont()</slot>
     <slot>seekBarChanged( int )</slot>
     <slot>filePreferences()</slot>

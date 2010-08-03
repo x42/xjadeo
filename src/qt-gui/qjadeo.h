@@ -76,6 +76,7 @@ public slots:
 
   void osdFrameToggled(bool);
   void osdSMPTEToggled(bool);
+  void osdBoxToggled(bool);
   void osdFont();
   void seekBarChanged( int );
 

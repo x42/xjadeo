@@ -405,6 +405,14 @@ void QJadeo::osdSMPTEToggled(bool value)
     xjadeo.writeToStdin(QString("osd smpte -1\n"));
 }
 
+void QJadeo::osdBoxToggled(bool value)
+{
+  if(value)
+    xjadeo.writeToStdin(QString("osd box\n"));
+  else
+    xjadeo.writeToStdin(QString("osd nobox\n"));
+}
+
 void QJadeo::seekBarChanged( int value )
 {
   int frame=0;
