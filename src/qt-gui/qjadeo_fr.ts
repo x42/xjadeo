@@ -96,12 +96,12 @@
         <translation>qjadeo</translation>
     </message>
     <message>
-        <source>FPS</source>
-        <translation>FPS</translation>
+        <source>screen updates per sec.</source>
+        <translation>Fréquence de rafraîchissement d'écran:</translation>
     </message>
     <message>
-        <source>Frame offset</source>
-        <translation>Décalage de trame</translation>
+        <source>time offset in video-frames:</source>
+        <translation>Décalage dans les trames vidéo:</translation>
     </message>
     <message>
         <source>&amp;File</source>

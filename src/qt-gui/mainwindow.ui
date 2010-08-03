@@ -8,7 +8,7 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>347</width>
+            <width>300</width>
             <height>120</height>
         </rect>
     </property>
@@ -44,7 +44,7 @@
                         <cstring>textLabel2</cstring>
                     </property>
                     <property name="text">
-                        <string>FPS</string>
+                        <string>screen updates per sec.</string>
                     </property>
                 </widget>
                 <widget class="QSpinBox">
@@ -83,7 +83,7 @@
                         <cstring>textLabel1</cstring>
                     </property>
                     <property name="text">
-                        <string>Frame offset</string>
+                        <string>time offset in video-frames:</string>
                     </property>
                 </widget>
                 <widget class="QSpinBox">
