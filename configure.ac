@@ -44,8 +44,18 @@ AC_ARG_WITH(ffmpegldadd, AS_HELP_STRING([--with-ffmpegldadd], [ld options for st
 LIBPREF=lib
 LIBSUF=.a
 
-target_os=$(uname -s | tr ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz)
+target_os="win"; #$(uname -s | tr ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz)
 case $target_os in
+  win)
+  	PM_OS=win
+    AH_TEMPLATE([HAVE_SDL], [Define as 1 if  you have the SDL library (-lSDL)])
+  	AC_DEFINE([HAVE_WINDOWS], [], [windows SDL version])
+  	AC_DEFINE([HAVE_SDL], [], [windows SDL version])
+		HAVE_WINDOWS=1
+		HAVE_SDL=1
+		#LDFLAGS="-lSDL"
+		LIBSUF=.dll
+  	;;
   darwin)
   	PM_OS=mac
   	AC_DEFINE([HAVE_MACOSX], [], [use macintosh native display])
@@ -140,9 +150,9 @@ fi
 LIBS="$LIBS -L/usr/X11R6/lib"
 #X_LIBS="-L/usr/X11R6/lib/"
 
-#PKG_CHECK_MODULES(JACK, jack, HAVE_JACK=1, HAVE_JACK=0)
-AC_CHECK_LIB([jack], [jack_client_new], , [AC_MSG_ERROR(*** AUDIO: You need to have the JACK audio development kit. ***)])
-AC_CHECK_HEADERS([jack/jack.h jack/transport.h], , [AC_MSG_ERROR(*** AUDIO: You need to have the JACK audio development kit. ***)])
+PKG_CHECK_MODULES(JACK, jack, HAVE_JACK=1, HAVE_JACK=0)
+#AC_CHECK_LIB([jack], [jack_client_new], , [AC_MSG_ERROR(*** AUDIO: You need to have the JACK audio development kit. ***)])
+#AC_CHECK_HEADERS([jack/jack.h jack/transport.h], , [AC_MSG_ERROR(*** AUDIO: You need to have the JACK audio development kit. ***)])
 
 MQ_LIBS=""
 if test "x$enable_mq" != "xno"; then
@@ -158,9 +168,6 @@ if test "x$enable_ipc" != "xno"; then
 	fi
 fi
 
-PKG_CHECK_MODULES(Xpm, xpm, [ AC_DEFINE(HAVE_XPM) HAVE_XPM=1 ], [ NULL=0] )
-#AC_SEARCH_LIBS( XpmCreatePixmapFromData, Xpm, AC_DEFINE(HAVE_XPM) XPM_LIBS="-lXpm" HAVE_XPM=1 )
-
 if test "x$enable_xv" != "xno"; then
 dnl for this to work properly X11/Xlib.h needs to be included for the check.
 dnl '-' as INCLUDE path simply checks if the header file is present
@@ -170,9 +177,12 @@ dnl	AC_CHECK_HEADERS([X11/extensions/Xvlib.h X11/extensions/XShm.h], , [AC_MSG_E
 fi
 
 dnl remove this if IFF you want to build an X11 version for OSX
-if test -z "$HAVE_MACOSX"; then
+if test -z "$HAVE_MACOSX$HAVE_WINDOWS"; then
 	AC_CHECK_HEADERS([X11/Xlib.h], , [AC_MSG_ERROR(*** X11: You need to install the X11 development package. ***)])
 	AC_CHECK_LIB([X11], [XOpenDisplay], [XV_LIBS="$XV_LIBS -lXext"], AC_MSG_ERROR([*** X11: You need to install the X11 development package: libx11-dev ***]))
+	PKG_CHECK_MODULES(Xpm, xpm, [ AC_DEFINE(HAVE_XPM) HAVE_XPM=1 ], [ NULL=0] )
+	#AC_SEARCH_LIBS( XpmCreatePixmapFromData, Xpm, AC_DEFINE(HAVE_XPM) XPM_LIBS="-lXpm" HAVE_XPM=1 )
+
 fi
 
 if test "x$enable_osc" != "xno"; then
