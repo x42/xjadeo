@@ -90,9 +90,9 @@ int64_t file_frame_offset = 0;
 /* Option flags and variables */
 char	*current_file = NULL;
 char    *smpte_offset = NULL;
-long	ts_offset = 0;
-long	userFrame = 0; // seek to this frame if jack and midi are N/A
-long	dispFrame = 0; // global strorage... = (SMPTE+offset) with boundaries to [0..movie_file_frames]
+long 	ts_offset = 0;
+long 	userFrame = 0; // seek to this frame if jack and midi are N/A
+long 	dispFrame = 0; // global strorage... = (SMPTE+offset) with boundaries to [0..movie_file_frames]
 int 	force_redraw = 0;
 
 int 	interaction_override = 0; // disable some options.
@@ -539,7 +539,7 @@ static void printversion (void) {
 #if HAVE_LIBXV
 		"Xv "
 #endif 
-#if HAVE_SDL
+#ifdef HAVE_SDL
 		"SDL "
 #endif 
 #if HAVE_IMLIB
@@ -611,10 +611,12 @@ void clean_up (int status) {
 }
 
 void catchsig (int sig) {
+#ifndef WIN32
   signal(SIGHUP, catchsig); /* reset signal */
   signal(SIGINT, catchsig);
 //signal(SIGHUP, SIG_IGN); /* reset signal */
 //signal(SIGINT, SIG_IGN);
+#endif
   if (!want_quiet)
     fprintf(stdout,"\n CAUGHT SIGINT - shutting down.\n");
   loop_flag=0;
@@ -631,7 +633,9 @@ main (int argc, char **argv)
 
   program_name = argv[0];
 
+#ifndef WIN32
   xjadeorc(); // read config files - default values before parsing cmd line.
+#endif
 
 #ifdef __APPLE__
 {
@@ -697,9 +701,10 @@ main (int argc, char **argv)
 
   // only try to seek to frame 1 and decode it.
   if (try_codec) do_try_this_file_and_exit (movie);
-
+#ifndef WIN32
   signal (SIGHUP, catchsig);
   signal (SIGINT, catchsig);
+#endif
 
   if (osc_port > 0) initialize_osc(osc_port);
 

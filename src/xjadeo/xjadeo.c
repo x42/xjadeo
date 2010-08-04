@@ -120,6 +120,9 @@ double 		tpf = 1.0; /* pts/dts increments per video-frame - cached value */
 //--------------------------------------------
 //
 void select_sleep (int usec) {
+#ifdef WIN32
+	Sleep((usec+ 999) /1000);
+#else
 	int remote_activity = 0;
 	fd_set fd;
 	int max_fd=0;
@@ -143,6 +146,7 @@ void select_sleep (int usec) {
 	  tv.tv_sec = 0; tv.tv_usec = 1;
 	}
 	if (select(max_fd, &fd, NULL, NULL, &tv)) remote_read_io();
+#endif
 }
 
 void event_loop(void) {
@@ -150,7 +154,7 @@ void event_loop(void) {
 	struct timeval	clock1, clock2;
 	long		newFrame, offFrame;
 	long		nanos;
-	struct timespec	ts;
+	//struct timespec	ts;
 	double 		dly;
 	static int	splashed = -1;
 
@@ -226,8 +230,8 @@ void event_loop(void) {
 		elapsed_time = ((double) (clock2.tv_sec-clock1.tv_sec)) + ((double) (clock2.tv_usec-clock1.tv_usec)) / 1000000.0;
 		if(elapsed_time < dly) {
 			nanos = (long) floor(1e9L * (dly - elapsed_time));
-			ts.tv_sec = (nanos / 1000000000L);
-			ts.tv_nsec = (nanos % 1000000000L);
+			//ts.tv_sec = (nanos / 1000000000L);
+			//ts.tv_nsec = (nanos % 1000000000L);
 			select_sleep(nanos/1000L);
 		}
 		clock1.tv_sec=clock2.tv_sec;
@@ -713,7 +717,12 @@ void display_frame(int64_t timestamp, int force_update) {
 		fprintf(stdout, "\t\t\t\tdisplay:%07li  \r", (long int) timestamp);
 
 	dispFrame = timestamp;
-	if (OSD_mode&OSD_FRAME) snprintf(OSD_frame,48,"Frame: %li", dispFrame);
+	if (OSD_mode&OSD_FRAME) 
+#ifdef WIN32
+		sprintf(OSD_frame,"Frame: %li", dispFrame);
+#else
+		snprintf(OSD_frame,48,"Frame: %li", dispFrame);
+#endif
 	if (OSD_mode&OSD_SMPTE) frame_to_smptestring(OSD_smpte,dispFrame);
 
 	if(fFirstTime) {

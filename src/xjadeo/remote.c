@@ -1086,11 +1086,13 @@ void open_remote_ctrl (void) {
 void close_remote_ctrl (void) {
 	free(inbuf);
 }
-
+/*
 int remote_fd_set(fd_set *fd) {
 	FD_SET(REMOTE_RX,fd);
 	return( REMOTE_RX+1);
 }
+*/
+
 
 //--------------------------------------------
 // POSIX message queeue

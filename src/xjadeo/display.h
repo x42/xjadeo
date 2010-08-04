@@ -53,7 +53,7 @@ typedef struct {
  * SDL
  */
 
-#if HAVE_SDL
+#ifdef HAVE_SDL
 #include <SDL/SDL.h>
 #include <SDL/SDL_syswm.h>
 #define SUP_SDL 1

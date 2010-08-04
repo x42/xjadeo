@@ -207,7 +207,7 @@ const vidout VO[] = {
 		NULLOUTPUT},
 #endif
 	{ PIX_FMT_YUV420P, SUP_SDL,	"SDL (obsolete)", 
-#if HAVE_SDL
+#ifdef HAVE_SDL
 		&render_sdl, &open_window_sdl, &close_window_sdl,
 		&handle_X_events_sdl, &newsrc_sdl, &resize_sdl,
 		&getsize_sdl, &position_sdl, &getpos_null,
@@ -513,11 +513,16 @@ void render_buffer (uint8_t *mybuffer) {
 
 		if (OSD_mode&OSD_OFFF ) {
 			char tempoff[30];
+#ifdef WIN32
+			sprintf(tempoff,"off: %li",ts_offset);
+#else
 			snprintf(tempoff,30,"off: %li",ts_offset);
+#endif
+					printf("OFFSET %s  \n", tempoff);
 			OSD_render (VO[VOutput].render_fmt, mybuffer, tempoff, OSD_CENTER, 50);
 		} else if (OSD_mode&OSD_OFFS ) { 
 			char tempsmpte[30];
-			snprintf(tempsmpte,5,"off: ");
+			sprintf(tempsmpte,"off: ");
 			frame_to_smptestring(tempsmpte+4,ts_offset);
 			OSD_render (VO[VOutput].render_fmt, mybuffer, tempsmpte, OSD_CENTER, 50);
 		}

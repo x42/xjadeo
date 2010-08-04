@@ -569,7 +569,9 @@ void jm_midi_open(char *midiid) {
     return;
   }
 
+#ifndef WIN32
   jack_on_shutdown (jack_midi_client, jack_midi_shutdown, 0);
+#endif
   jack_set_process_callback(jack_midi_client, jack_midi_process, NULL);
   jack_midi_port = jack_port_register(jack_midi_client, "MTC in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput , 0);
 

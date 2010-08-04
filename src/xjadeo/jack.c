@@ -72,8 +72,10 @@ void open_jack(void )
 	if (!jack_client) {
 		fprintf(stderr, "could not connect to jack server.\n");
 	} else { 
+#ifndef WIN32
 		jack_on_shutdown (jack_client, jack_shutdown, 0);
 		jack_activate(jack_client);
+#endif
 		if (!want_quiet) 
 			fprintf(stdout, "connected as jack client '%s'\n",jackid);
 #ifdef HAVE_LASH

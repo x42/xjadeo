@@ -3,7 +3,8 @@
 #include <math.h>
 #include <stdint.h> 	/* uint8_t */
 #include <string.h> 	/* memcpy */
-#include <sys/select.h> 
+//#include <sys/select.h> 
+#include <unistd.h>
 
 
 #ifdef HAVE_CONFIG_H
@@ -112,7 +113,7 @@ void close_mq_ctrl (void) ;
 void open_mq_ctrl (void);
 void close_ipcmsg_ctrl (void) ;
 int  open_ipcmsg_ctrl (const char *);
-int remote_fd_set(fd_set *fd);
+//int remote_fd_set(fd_set *fd);
 int remote_read_mq(void);
 int remote_read_ipc(void);
 int remote_read_io(void);
