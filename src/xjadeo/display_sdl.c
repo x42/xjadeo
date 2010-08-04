@@ -27,12 +27,20 @@
 #include "xjadeo.h"
 #include "display.h"
 
+extern long ts_offset; 
+extern char    *smpte_offset;
+extern int 	force_redraw; // tell the main event loop that some cfg has changed
+extern int 	interaction_override; // disable some options.
+extern double framerate;
+
+void jackt_toggle();
+void jackt_rewind();
 
 /*******************************************************************************
  * SDL
  */
 
-#if HAVE_SDL
+#ifdef HAVE_SDL
 
   SDL_Surface* sdl_screen;
   SDL_Overlay *sdl_overlay;
@@ -45,79 +53,11 @@ void close_window_sdl(void) {
 }
 
 
-#if 0
-#ifdef USE_SDLTTF
-// OSD - experimental 
-//
-#include <SDL_ttf.h>
-
-TTF_Font *font;
-
-#define FONT_PTSIZE     18
-#define SDL_FONTFILE	"arial.ttf"
-
-
-SDL_Color white = { 0xFF, 0xFF, 0xFF, 0 };
-
-int displaybox (SDL_Color *col, int yperc) {
-	SDL_Rect dstrect;
-	dstrect.x = (sdl_screen->w)*.2;
-	dstrect.w = (sdl_screen->w)*.6;
-	dstrect.y = (sdl_screen->h)*yperc/100; 
-	dstrect.h = TTF_FontHeight(font);
-	SDL_FillRect(sdl_screen, &dstrect, SDL_MapRGB(sdl_screen->format, col->r, col->g, col->b));
-	SDL_UpdateRect(sdl_screen, dstrect.x, dstrect.y, dstrect.w, dstrect.h);
-	return(0);
-}
-
-int InitTTF (void) {
-	if(TTF_Init()==-1) {
-		fprintf(stderr, "Error: unable to initialize TTF_SDL, %s\n", TTF_GetError());
-		return (-1);
-	}
-//	atexit(TTF_Quit);
-	font = TTF_OpenFont(SDL_FONTFILE, FONT_PTSIZE);
-	if ( font == NULL ) {
-		fprintf(stderr, "Error: Couldn't load %d pt font from %s: %s\n", FONT_PTSIZE, SDL_FONTFILE, SDL_GetError());
-		return(-2);
-	}
-	TTF_SetFontStyle(font, TTF_STYLE_NORMAL);
-
-	return (0);
-}
-
-int displaytext (char *string, SDL_Color *col, int yperc) {
-        SDL_Surface *text;
-        SDL_Rect dstrect;
-
-        text = TTF_RenderText_Solid(font, string, *col);
-        if ( text == NULL ) {
-                fprintf(stderr, "Error: Couldn't render text: %s\n", SDL_GetError());
-                return(-2);
-        }
-
-        dstrect.x = (sdl_screen->w - text->w)/2;
-        dstrect.y = (sdl_screen->h)*yperc/100; 
-	dstrect.w = text->w;
-	dstrect.h = text->h;
-
-        SDL_BlitSurface(text, NULL, sdl_screen, &dstrect);
-	SDL_UpdateRect(sdl_screen, dstrect.x, dstrect.y, dstrect.w, dstrect.h);
-        SDL_FreeSurface(text);
-        return(0);
-
-}
-#endif /* USE_SDLTTF */
-#endif /* 0 */
-
 int open_window_sdl (void) {
 	const SDL_VideoInfo *video_info;
 	int video_bpp;
 
 	if(SDL_Init(SDL_INIT_VIDEO) < 0) goto no_sdl;
-#if 0
-	InitTTF(); // FIXME: exit if retval !=0..
-#endif
 
 	/* Get the "native" video mode */
 	video_info = SDL_GetVideoInfo();
@@ -135,16 +75,21 @@ int open_window_sdl (void) {
 // - vidoutmodes "SDL RGB" and "SDL XV"!?
 	sdl_screen = SDL_SetVideoMode(movie_width,movie_height, video_bpp,SDL_HWSURFACE | SDL_RESIZABLE);
 	SDL_WM_SetCaption("xjadeo", "xjadeo");
+	printf("SURFACE\n"); Sleep (200);
 
 // FIXME: on linux the SDL_*_OVERLAY are defined as FOURCC numbers rather than beeing abstract 
 // so we could try other ffmpeg/lqt compatible 420P formats as I420 (0x30323449)
 	sdl_overlay = SDL_CreateYUVOverlay(movie_width, movie_height, 0x30323449, sdl_screen);
 	sdl_pic_format=0x30323449;
 	if(!sdl_overlay || (!sdl_overlay->hw_overlay)) {
+		printf("YV12 overlay?\n");
 		sdl_overlay = SDL_CreateYUVOverlay(movie_width, movie_height, SDL_YV12_OVERLAY, sdl_screen);
 		sdl_pic_format=SDL_YV12_OVERLAY;
 	}
-	if((!sdl_overlay || (!sdl_overlay->hw_overlay) || SDL_LockYUVOverlay(sdl_overlay)<0)) {
+	if((!sdl_overlay)) 
+		printf("NO OVERLAY\n");
+	if((!sdl_overlay || SDL_LockYUVOverlay(sdl_overlay)<0)) {
+		printf("OVERLAY error.\n");
 		goto no_overlay;
 	}
 	sdl_rect.x = 0;
@@ -189,6 +134,7 @@ void position_sdl(int x, int y) {
 
 	SDL_VERSION(&info.version);
 	if ( SDL_GetWMInfo(&info) > 0 ) {
+#ifndef WIN32
 	if ( info.subsystem == SDL_SYSWM_X11 ) {
 			info.info.x11.lock_func();
 	/* get root window size  - center window 
@@ -205,9 +151,20 @@ void position_sdl(int x, int y) {
 			XMoveWindow(info.info.x11.display, info.info.x11.wmwindow, x, y);
 			info.info.x11.unlock_func();
 		} 
+#endif
 	} 
 } 
 
+int displaybox (SDL_Color *col, int yperc) {
+	SDL_Rect dstrect;
+	dstrect.x = (sdl_screen->w)*.2;
+	dstrect.w = (sdl_screen->w)*.6;
+	dstrect.y = (sdl_screen->h)*yperc/100; 
+	dstrect.h = 20; // XXX
+	SDL_FillRect(sdl_screen, &dstrect, SDL_MapRGB(sdl_screen->format, col->r, col->g, col->b));
+	SDL_UpdateRect(sdl_screen, dstrect.x, dstrect.y, dstrect.w, dstrect.h);
+	return(0);
+}
 
 
 void render_sdl (uint8_t *mybuffer) {
@@ -239,7 +196,6 @@ void render_sdl (uint8_t *mybuffer) {
 
 #if 0  // SDL - OSD test
 	//	displaybox(&white, 10);
-		displaytext("xjadeo!",&white,40);
 #endif
 
 
@@ -261,12 +217,115 @@ void handle_X_events_sdl (void) {
 				break;
 			case SDL_QUIT:
 			//	printf("SDL quit event.\n");
-				loop_flag=0;
 				break;
 			case SDL_KEYDOWN:
-			//	printf("SDL key down event.");
+				//printf("SDL key down event.");
 				if(ev.key.keysym.sym==SDLK_ESCAPE) {
-					loop_flag=0;
+					if ((interaction_override&0x1) == 0) loop_flag=0; 
+				} else if(ev.key.keysym.sym==SDLK_q) {
+					if ((interaction_override&0x1) == 0) loop_flag=0; 
+				} else if(ev.key.keysym.sym==SDLK_s) {
+					OSD_mode^=OSD_SMPTE;
+					force_redraw=1;
+				} else if(ev.key.keysym.sym==SDLK_a) {
+					// TODO always on top
+				} else if(ev.key.keysym.sym==SDLK_f) {
+					// TODO toggle fullscreen
+				} else if(ev.key.keysym.sym==SDLK_l) {
+					// TODO letterbox
+				} else if(ev.key.keysym.sym==SDLK_m) { 
+					// TODO show/hide mouse
+				} else if(ev.key.keysym.sym==SDLK_s) {
+					OSD_mode^=OSD_SMPTE;
+					force_redraw=1;
+				} else if(ev.key.keysym.sym==SDLK_v) {
+					OSD_mode^=OSD_FRAME; 
+					force_redraw=1;
+				} else if(ev.key.keysym.sym==SDLK_b) {
+						OSD_mode^=OSD_BOX;
+						force_redraw=1;
+				} else if(ev.key.keysym.sym== SDLK_c && ev.key.keysym.mod&KMOD_SHIFT) {
+					OSD_mode=0; 
+					force_redraw=1;
+				} else if(ev.key.keysym.sym== SDLK_LESS || (ev.key.keysym.sym== SDLK_COMMA && ev.key.keysym.mod&KMOD_SHIFT) ) { // '<'
+					unsigned int my_Width,my_Height;
+					getsize_sdl(&my_Width,&my_Height);
+					float step=0.2*my_Height;
+					my_Width-=floor(step*((float)movie_width/(float)movie_height));
+					my_Height-=step;
+					resize_sdl(my_Width, my_Height);
+				} else if(ev.key.keysym.sym== SDLK_GREATER || (ev.key.keysym.sym== SDLK_PERIOD && ev.key.keysym.mod&KMOD_SHIFT) ) { // '>'
+					unsigned int my_Width,my_Height;
+					getsize_sdl(&my_Width,&my_Height);
+					float step=0.2*my_Height;
+					my_Width+=floor(step*((float)movie_width/(float)movie_height));
+					my_Height+=step;
+					resize_sdl(my_Width, my_Height);
+				} else if(ev.key.keysym.sym==SDLK_PERIOD) {
+					resize_sdl(movie_width, movie_height);
+				} else if(ev.key.keysym.sym== SDLK_COMMA) { // ','
+						unsigned int my_Width,my_Height;
+						getsize_sdl(&my_Width,&my_Height);
+						if( ((float)movie_width/(float)movie_height) < ((float)my_Width/(float)my_Height) )
+							my_Width=floor((float)my_Height * (float)movie_width / (float)movie_height);
+						else 	my_Height=floor((float)my_Width * (float)movie_height / (float)movie_width);
+						resize_sdl(my_Width, my_Height);
+				} else if(ev.key.keysym.sym==SDLK_o) {
+					if (OSD_mode&OSD_OFFF) {
+						OSD_mode&=~OSD_OFFF;
+						OSD_mode|=OSD_OFFS;
+					} else if (OSD_mode&OSD_OFFS) {
+						OSD_mode^=OSD_OFFS;
+					} else {
+						OSD_mode^=OSD_OFFF;
+					}
+					force_redraw=1;
+				} else if(ev.key.keysym.sym== SDLK_EQUALS && ev.key.keysym.mod&KMOD_SHIFT) { // '+' SDLK_PLUS does not work :/
+						if ((interaction_override&0x10) != 0 ) break;
+						ts_offset++;
+						force_redraw=1;
+						if (smpte_offset) free(smpte_offset);
+						smpte_offset= calloc(15,sizeof(char));
+						frame_to_smptestring(smpte_offset,ts_offset);
+				} else if(ev.key.keysym.sym==SDLK_MINUS) {
+						if ((interaction_override&0x10) != 0 ) break;
+						ts_offset--;
+						force_redraw=1;
+						if (smpte_offset) free(smpte_offset);
+						smpte_offset= calloc(15,sizeof(char));
+						frame_to_smptestring(smpte_offset,ts_offset);
+				} else if(ev.key.keysym.sym== SDLK_LEFTBRACKET && ev.key.keysym.mod&KMOD_SHIFT) { // '{'
+					if ((interaction_override&0x10) != 0 ) break;
+					if (framerate > 0) {
+						ts_offset-= framerate *60;
+					} else {
+						ts_offset-= 25*60;
+					}
+					force_redraw=1;
+					if (smpte_offset) free(smpte_offset);
+					smpte_offset= calloc(15,sizeof(char));
+					frame_to_smptestring(smpte_offset,ts_offset);
+				} else if(ev.key.keysym.sym== SDLK_RIGHTBRACKET&& ev.key.keysym.mod&KMOD_SHIFT) { // '}'
+					if ((interaction_override&0x10) != 0 ) break;
+					if (framerate > 0) {
+						ts_offset+= framerate *60;
+					} else {
+						ts_offset+= 25*60;
+					}
+					force_redraw=1;
+					if (smpte_offset) free(smpte_offset);
+					smpte_offset= calloc(15,sizeof(char));
+					frame_to_smptestring(smpte_offset,ts_offset);
+#ifdef CROPIMG
+				} else if(ev.key.keysym.sym== SDLK_LEFTBRACKET) { // '['
+				} else if(ev.key.keysym.sym== SDLK_RIGHTBRACKET) { // ']'
+#endif
+				} else if(ev.key.keysym.sym== SDLK_BACKSPACE) {
+					jackt_rewind();
+				} else if(ev.key.keysym.sym== SDLK_SPACE) {
+					jackt_toggle();
+				} else {
+					printf("SDL key event: %x\n", ev.key.keysym.sym);
 				}
 				break;
 			case SDL_VIDEORESIZE:
