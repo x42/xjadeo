@@ -58,6 +58,8 @@ typedef struct {
 #include <SDL/SDL_syswm.h>
 #define SUP_SDL 1
 void position_sdl(int x, int y);
+void sdl_toggle_fullscreen(int action);
+void mousecursor_sdl(int action);
 
 #else
 #define SUP_SDL 0

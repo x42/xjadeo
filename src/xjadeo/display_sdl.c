@@ -36,19 +36,28 @@ extern double framerate;
 void jackt_toggle();
 void jackt_rewind();
 
+void calc_letterbox(int src_w, int src_h, int out_w, int out_h, int *sca_w, int *sca_h);
+void resized_sdl ();
+
 /*******************************************************************************
  * SDL
  */
 
 #ifdef HAVE_SDL
 
+#define MYSDLFLAGS (SDL_HWSURFACE | SDL_RESIZABLE | SDL_DOUBLEBUF)
+
   SDL_Surface* sdl_screen;
   SDL_Overlay *sdl_overlay;
   SDL_Rect sdl_rect;
+  SDL_Rect sdl_dest_rect;
   int sdl_pic_format= SDL_YV12_OVERLAY; // fourcc
 
+	int full_screen_width = 1024;
+	int full_screen_height = 768;
+
 void close_window_sdl(void) {
-	// TODO: free sdl stuff (sdl_overlay)
+	if(sdl_overlay) SDL_FreeYUVOverlay(sdl_overlay); 
 	SDL_Quit();
 }
 
@@ -70,12 +79,12 @@ int open_window_sdl (void) {
 			video_bpp = 16;
 			break;
 	} 
-// TODO : if no HWSURFACE overlay -> use RGB software rendering 
-// - SDL_CreateRGBSurfaceFrom..
-// - vidoutmodes "SDL RGB" and "SDL XV"!?
-	sdl_screen = SDL_SetVideoMode(movie_width,movie_height, video_bpp,SDL_HWSURFACE | SDL_RESIZABLE);
+
+	full_screen_width = video_info->current_w;
+	full_screen_height = video_info->current_h;
+
+	sdl_screen = SDL_SetVideoMode(movie_width,movie_height, video_bpp,MYSDLFLAGS);
 	SDL_WM_SetCaption("xjadeo", "xjadeo");
-	printf("SURFACE\n"); Sleep (200);
 
 // FIXME: on linux the SDL_*_OVERLAY are defined as FOURCC numbers rather than beeing abstract 
 // so we could try other ffmpeg/lqt compatible 420P formats as I420 (0x30323449)
@@ -96,8 +105,9 @@ int open_window_sdl (void) {
 	sdl_rect.y = 0;
 	sdl_rect.w = sdl_overlay->w;
 	sdl_rect.h = sdl_overlay->h;
+	resized_sdl();
 
-	if ( sdl_overlay->pitches[0] != movie_width ||
+	if (sdl_overlay->pitches[0] != movie_width ||
 			sdl_overlay->pitches[1] != sdl_overlay->pitches[2] ) {
 		fprintf(stderr,"unsupported SDL YV12.\n"); 
 		goto no_overlay;
@@ -118,10 +128,59 @@ no_sdl:
 	return 1;
 }
 
+void black_border_sdl(SDL_Rect b) {
+	//printf(" bb: +%i+%i %i %i\n", b.x, b.y, b.w, b.h);
+	SDL_FillRect(sdl_screen, &b, SDL_MapRGB(sdl_screen->format, 0,0,0));
+	SDL_UpdateRect(sdl_screen, b.x, b.y, b.w, b.h);
+}
+
+void resized_sdl () {
+	if (!want_letterbox) {
+		memcpy(&sdl_dest_rect, &sdl_rect, sizeof (SDL_Rect));
+		return;
+	}
+	/* want letterbox: */
+	int dw,dh;
+	calc_letterbox(movie_width, movie_height, sdl_rect.w, sdl_rect.h, &dw, &dh);
+	sdl_dest_rect.w = dw;
+	sdl_dest_rect.h = dh;
+	sdl_dest_rect.x = (sdl_rect.w - sdl_dest_rect.w)/2;
+	sdl_dest_rect.y = (sdl_rect.h - sdl_dest_rect.h)/2;
+#if 0
+	SDL_FillRect(sdl_screen, &sdl_rect, SDL_MapRGB(sdl_screen->format, 0,0,0));
+	SDL_UpdateRect(sdl_screen, sdl_rect.x, sdl_rect.y, sdl_rect.w, sdl_rect.h);
+#else
+	SDL_Rect b;
+	if (sdl_dest_rect.y >0 ){
+		b.x=0;b.y=0; b.w=sdl_rect.w; b.h=sdl_dest_rect.y;
+		black_border_sdl(b);
+
+		b.x=0;b.y=sdl_rect.h - sdl_dest_rect.y; b.w=sdl_rect.w; b.h=sdl_dest_rect.y;
+		black_border_sdl(b);
+	}
+	if (sdl_dest_rect.x >0 ){
+
+		b.x=0;b.y=0; b.w=sdl_dest_rect.x; b.h=sdl_rect.h;
+		black_border_sdl(b);
+
+		b.x=sdl_rect.w - sdl_dest_rect.x;b.y=0; b.w=sdl_dest_rect.x; b.h=sdl_rect.h;
+		black_border_sdl(b);
+	}
+#endif
+}
+
+void mousecursor_sdl(int action) {
+  static int sdl_mouse = 1;
+	if (action==2) sdl_mouse^=1;
+	else sdl_mouse=action?1:0;
+	SDL_ShowCursor(sdl_mouse);
+}
+
 void resize_sdl (unsigned int x, unsigned int y) { 
-	sdl_screen = SDL_SetVideoMode(x, y, 0, SDL_RESIZABLE | SDL_HWSURFACE);
+	sdl_screen = SDL_SetVideoMode(x, y, 0, MYSDLFLAGS);
 	sdl_rect.w=x;
 	sdl_rect.h=y;
+	resized_sdl();
 }
 
 void getsize_sdl (unsigned int *x, unsigned int *y) {
@@ -155,18 +214,6 @@ void position_sdl(int x, int y) {
 	} 
 } 
 
-int displaybox (SDL_Color *col, int yperc) {
-	SDL_Rect dstrect;
-	dstrect.x = (sdl_screen->w)*.2;
-	dstrect.w = (sdl_screen->w)*.6;
-	dstrect.y = (sdl_screen->h)*yperc/100; 
-	dstrect.h = 20; // XXX
-	SDL_FillRect(sdl_screen, &dstrect, SDL_MapRGB(sdl_screen->format, col->r, col->g, col->b));
-	SDL_UpdateRect(sdl_screen, dstrect.x, dstrect.y, dstrect.w, dstrect.h);
-	return(0);
-}
-
-
 void render_sdl (uint8_t *mybuffer) {
 	/* http://www.fourcc.org/indexyuv.htm */
 
@@ -191,16 +238,41 @@ void render_sdl (uint8_t *mybuffer) {
 	}
 
 	SDL_UnlockYUVOverlay(sdl_overlay);
-	SDL_DisplayYUVOverlay(sdl_overlay, &sdl_rect);
+	SDL_DisplayYUVOverlay(sdl_overlay, &sdl_dest_rect);
 	SDL_LockYUVOverlay(sdl_overlay);
-
-#if 0  // SDL - OSD test
-	//	displaybox(&white, 10);
-#endif
-
-
 }
 
+int sdl_full_screen =0;
+SDL_Rect sdl_oldsize;
+
+void sdl_toggle_fullscreen(int action) {
+  if (sdl_full_screen && action !=1) {
+    sdl_rect.w=sdl_oldsize.w; sdl_rect.h=sdl_oldsize.h;
+    sdl_screen = SDL_SetVideoMode(sdl_rect.w, sdl_rect.h, 0, MYSDLFLAGS);
+    sdl_full_screen=0;
+   // dv_center_window(sdl_screen);
+	}
+	else if (!sdl_full_screen && action !=0) {
+    sdl_oldsize.w=sdl_rect.w; sdl_oldsize.h=sdl_rect.h;
+    sdl_rect.w= full_screen_width;
+    sdl_rect.h= full_screen_height;
+    sdl_screen = SDL_SetVideoMode(sdl_rect.w, sdl_rect.h, 0, (MYSDLFLAGS & ~SDL_RESIZABLE) | SDL_FULLSCREEN );
+    sdl_full_screen=1;
+  }
+	resized_sdl();
+}
+
+void calc_letterbox(int src_w, int src_h, int out_w, int out_h, int *sca_w, int *sca_h) {
+  if (src_w*out_h > src_h*out_w) {
+    (*sca_w)=out_w;
+    (*sca_h)=(int)round((float)out_w*(float)src_h/(float)src_w);
+  } else {
+    (*sca_h)=out_h;
+    (*sca_w)=(int)round((float)out_h*(float)src_w/(float)src_h);
+  }
+  //(*sca_w)=(((*sca_w) + 1) >>1)<<1;
+  //(*sca_h)=(((*sca_h) + 1) >>1)<<1;
+}
 
 void newsrc_sdl (void) {
 	if(sdl_overlay) SDL_FreeYUVOverlay(sdl_overlay); 
@@ -216,10 +288,9 @@ void handle_X_events_sdl (void) {
 			//	printf("SDL render event.\n");
 				break;
 			case SDL_QUIT:
-			//	printf("SDL quit event.\n");
+				if ((interaction_override&0x1) == 0) loop_flag=0; 
 				break;
 			case SDL_KEYDOWN:
-				//printf("SDL key down event.");
 				if(ev.key.keysym.sym==SDLK_ESCAPE) {
 					if ((interaction_override&0x1) == 0) loop_flag=0; 
 				} else if(ev.key.keysym.sym==SDLK_q) {
@@ -230,11 +301,13 @@ void handle_X_events_sdl (void) {
 				} else if(ev.key.keysym.sym==SDLK_a) {
 					// TODO always on top
 				} else if(ev.key.keysym.sym==SDLK_f) {
-					// TODO toggle fullscreen
+					sdl_toggle_fullscreen(2);
 				} else if(ev.key.keysym.sym==SDLK_l) {
-					// TODO letterbox
+						want_letterbox=!want_letterbox; 
+						resized_sdl();
+						force_redraw=1;
 				} else if(ev.key.keysym.sym==SDLK_m) { 
-					// TODO show/hide mouse
+					mousecursor_sdl(2);
 				} else if(ev.key.keysym.sym==SDLK_s) {
 					OSD_mode^=OSD_SMPTE;
 					force_redraw=1;
@@ -325,13 +398,15 @@ void handle_X_events_sdl (void) {
 				} else if(ev.key.keysym.sym== SDLK_SPACE) {
 					jackt_toggle();
 				} else {
-					printf("SDL key event: %x\n", ev.key.keysym.sym);
+					//printf("SDL key event: %x\n", ev.key.keysym.sym);
 				}
 				break;
 			case SDL_VIDEORESIZE:
-			        sdl_screen = SDL_SetVideoMode(ev.resize.w, ev.resize.h, 0, SDL_RESIZABLE | SDL_HWSURFACE);
+				sdl_screen = SDL_SetVideoMode(ev.resize.w, ev.resize.h, 0, MYSDLFLAGS);
 				sdl_rect.w=ev.resize.w;
 				sdl_rect.h=ev.resize.h;
+				force_redraw=1;
+				resized_sdl();
 				break;
 			case SDL_MOUSEBUTTONUP:
 				if(ev.button.button == SDL_BUTTON_LEFT) {
@@ -365,11 +440,16 @@ void handle_X_events_sdl (void) {
 					resize_sdl(my_Width,my_Height);
 				}
 				break;
+      case SDL_ACTIVEEVENT:			/** Application loses/gains visibility */
+				/* TODO disable rendering when inactive */
+				break;
+			case SDL_MOUSEMOTION:
+				break;
 			default: /* unhandled event */
-				;
+				//printf("SDL EVENT: %x\n", ev.type );
+				break;
 		}
 	}
-	// TODO: SDL_Event SDL_Quit_Event -> loop_flag = 0;
 }
 
 #endif /* HAVE_SDL */

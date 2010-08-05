@@ -206,12 +206,12 @@ const vidout VO[] = {
 #else
 		NULLOUTPUT},
 #endif
-	{ PIX_FMT_YUV420P, SUP_SDL,	"SDL (obsolete)", 
+	{ PIX_FMT_YUV420P, SUP_SDL,	"SDL", 
 #ifdef HAVE_SDL
 		&render_sdl, &open_window_sdl, &close_window_sdl,
 		&handle_X_events_sdl, &newsrc_sdl, &resize_sdl,
 		&getsize_sdl, &position_sdl, &getpos_null,
-		&fullscreen_null, &ontop_null, &mousepointer_null,
+		&sdl_toggle_fullscreen, &ontop_null, &mousecursor_sdl,
 		&getfullscreen_null, &getontop_null},
 #else
 		NULLOUTPUT},
@@ -588,14 +588,14 @@ void Xmousepointer (int a) {
 	VO[VOutput].mousepointer(a);
 }
 
-#if (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2 || defined HAVE_MACOSX)
+#if (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2 || defined HAVE_MACOSX || defined HAVE_SDL)
 extern int force_redraw; // tell the main event loop that some cfg has changed
 #endif
 
 // TODO : use plugin pointer ...
 void Xletterbox (int action) {
-	if (VOutput !=1 && VOutput !=4 && VOutput !=5) return;
-#if (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2 || defined HAVE_MACOSX)
+	if (VOutput !=1 && VOutput !=4 && VOutput !=5 && VOutput!=2) return;
+#if (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2 || defined HAVE_MACOSX || defined HAVE_SDL)
 	if (action==2) want_letterbox=!want_letterbox;
 	else want_letterbox=action?1:0;
 # if (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2)
@@ -604,8 +604,13 @@ void Xletterbox (int action) {
 		force_redraw=1;
 	}
 # endif
+# ifdef HAVE_SDL
+	if (VOutput==2) { // SDL
+		force_redraw=1;
+	}
+# endif
 # ifdef HAVE_MACOSX
-if (VOutput==5) { // OSX
+	if (VOutput==5) { // OSX
 		force_redraw=1;
 		window_resized_mac();
 	}
