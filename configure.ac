@@ -51,7 +51,7 @@ case $target_os in
   	PM_OS=mac
   	AC_DEFINE([HAVE_MACOSX], [], [use macintosh native display])
 		HAVE_MACOSX=1
-		LDFLAGS="-lz -lbz2 -framework Carbon -framework Quicktime"
+		LDFLAGS="$LDFLAGS -lz -lbz2 -framework Carbon -framework Quicktime"
 dnl 2006/11/13 : 32 bit RGBA is known not to work on OSX ffmpeg+imlib2
 dnl IMLIB2RGBA 
   	;;
@@ -65,6 +65,7 @@ dnl IMLIB2RGBA
   	PM_OS=win
   	AC_DEFINE([HAVE_WINDOWS], [], [windows SDL version])
 		HAVE_WINDOWS=1
+		IMLIB_LIBS="-lws2_32" # LDFLAGS are before object files. -pragmatically re-used IMLIB_LIBS
 		LIBSUF=.dll
   	;;
   *)	
