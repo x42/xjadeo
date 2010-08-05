@@ -120,7 +120,7 @@ double 		tpf = 1.0; /* pts/dts increments per video-frame - cached value */
 //--------------------------------------------
 //
 void select_sleep (int usec) {
-#ifdef WIN32
+#if 0
 	Sleep((usec+ 999) /1000);
 #else
 	int remote_activity = 0;
@@ -145,7 +145,29 @@ void select_sleep (int usec) {
 	if (remote_activity) {
 	  tv.tv_sec = 0; tv.tv_usec = 1;
 	}
+#if 0
+	struct timespec	ts;
+	ts.tv_sec = (usec / 1000000L);
+	ts.tv_nsec = (usec % 1000000L)*1000;
+	if (pselect(max_fd, &fd, NULL, NULL, &ts,NULL)) remote_read_io();
+#elif 0
+	DWORD cnt = 0;
+	GetNumberOfConsoleInputEvents(GetStdHandle(STD_INPUT_HANDLE), &cnt);
+	if (cnt >0) {
+		remote_read_h();
+	} else {
+		Sleep((usec+ 999) /1000);
+	}
+#elif 0
+	HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
+	if (WaitForSingleObject(h, (usec+ 999)/1000) == WAIT_OBJECT_0) {
+		//remote_read_io();
+		remote_read_h();
+		//FlushConsoleInputBuffer(h);
+	}
+#else
 	if (select(max_fd, &fd, NULL, NULL, &tv)) remote_read_io();
+#endif
 #endif
 }
 
@@ -154,7 +176,6 @@ void event_loop(void) {
 	struct timeval	clock1, clock2;
 	long		newFrame, offFrame;
 	long		nanos;
-	//struct timespec	ts;
 	double 		dly;
 	static int	splashed = -1;
 
@@ -230,8 +251,6 @@ void event_loop(void) {
 		elapsed_time = ((double) (clock2.tv_sec-clock1.tv_sec)) + ((double) (clock2.tv_usec-clock1.tv_usec)) / 1000000.0;
 		if(elapsed_time < dly) {
 			nanos = (long) floor(1e9L * (dly - elapsed_time));
-			//ts.tv_sec = (nanos / 1000000000L);
-			//ts.tv_nsec = (nanos % 1000000000L);
 			select_sleep(nanos/1000L);
 		}
 		clock1.tv_sec=clock2.tv_sec;
@@ -718,7 +737,7 @@ void display_frame(int64_t timestamp, int force_update) {
 
 	dispFrame = timestamp;
 	if (OSD_mode&OSD_FRAME) 
-#ifdef WIN32
+#ifdef HAVE_WINDOWS
 		sprintf(OSD_frame,"Frame: %li", dispFrame);
 #else
 		snprintf(OSD_frame,48,"Frame: %li", dispFrame);

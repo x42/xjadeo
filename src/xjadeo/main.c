@@ -611,7 +611,7 @@ void clean_up (int status) {
 }
 
 void catchsig (int sig) {
-#ifndef WIN32
+#ifndef HAVE_WINDOWS
   signal(SIGHUP, catchsig); /* reset signal */
   signal(SIGINT, catchsig);
 //signal(SIGHUP, SIG_IGN); /* reset signal */
@@ -633,9 +633,7 @@ main (int argc, char **argv)
 
   program_name = argv[0];
 
-#ifndef WIN32
   xjadeorc(); // read config files - default values before parsing cmd line.
-#endif
 
 #ifdef __APPLE__
 {
@@ -701,7 +699,7 @@ main (int argc, char **argv)
 
   // only try to seek to frame 1 and decode it.
   if (try_codec) do_try_this_file_and_exit (movie);
-#ifndef WIN32
+#ifndef HAVE_WINDOWS
   signal (SIGHUP, catchsig);
   signal (SIGINT, catchsig);
 #endif

@@ -569,7 +569,7 @@ void jm_midi_open(char *midiid) {
     return;
   }
 
-#ifndef WIN32
+#ifndef HAVE_WINDOWS
   jack_on_shutdown (jack_midi_client, jack_midi_shutdown, 0);
 #endif
   jack_set_process_callback(jack_midi_client, jack_midi_process, NULL);

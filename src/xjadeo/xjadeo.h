@@ -3,12 +3,18 @@
 #include <math.h>
 #include <stdint.h> 	/* uint8_t */
 #include <string.h> 	/* memcpy */
-//#include <sys/select.h> 
 #include <unistd.h>
 
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
+#endif
+
+#ifdef HAVE_WINDOWS
+# include <windows.h>
+# include <winsock.h>
+#else
+# include <sys/select.h> 
 #endif
 
 #ifdef HAVE_LASH
@@ -113,11 +119,11 @@ void close_mq_ctrl (void) ;
 void open_mq_ctrl (void);
 void close_ipcmsg_ctrl (void) ;
 int  open_ipcmsg_ctrl (const char *);
-//int remote_fd_set(fd_set *fd);
 int remote_read_mq(void);
 int remote_read_ipc(void);
 int remote_read_io(void);
 void remote_printf(int val, const char *format, ...);
+int remote_fd_set(fd_set *fd);
 
 /* xjadeo.c */
 void display_frame(int64_t timestamp, int force_update);

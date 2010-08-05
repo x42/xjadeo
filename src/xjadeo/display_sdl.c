@@ -188,15 +188,41 @@ void getsize_sdl (unsigned int *x, unsigned int *y) {
 	if(y) *y = sdl_rect.h;
 }
 
+void get_window_pos_sdl (unsigned int *x, unsigned int *y) {
+	SDL_SysWMinfo info;
+	SDL_VERSION(&info.version);
+	if (!( SDL_GetWMInfo(&info) > 0 )) { return; }
+#ifdef HAVE_WINDOWS
+	WINDOWINFO w;
+	GetWindowInfo(info.window, &w);
+	*x= w.rcWindow.left;
+	*y= w.rcWindow.top;
+	//*w= w.rcWindow.right - w.rcWindow.left;
+	//*h= w.rcWindow.bottom - w.rcWindow.top;
+	printf("%ld - %ld\n", w.rcWindow.left, w.rcWindow.top);
+#endif
+#if (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2)
+	if ( info.subsystem == SDL_SYSWM_X11 ) {
+		Window	dummy;
+		info.info.x11.lock_func();
+		XTranslateCoordinates(info.info.x11.display, info.info.x11.wmwindow, info.info.x11.fswindow, 0, 0, *x, *y, &dummy);
+		// TODO recurse until dummy!=None
+		info.info.x11.unlock_func();
+	}
+#endif
+}
+
 void position_sdl(int x, int y) {
 	SDL_SysWMinfo info;
-
 	SDL_VERSION(&info.version);
 	if ( SDL_GetWMInfo(&info) > 0 ) {
-#ifndef WIN32
+#ifdef HAVE_WINDOWS
+	SetWindowPos(info.window, NULL, x, y, sdl_rect.w, sdl_rect.h, 0);
+#endif
+#if (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2)
 	if ( info.subsystem == SDL_SYSWM_X11 ) {
 			info.info.x11.lock_func();
-	/* get root window size  - center window 
+#if 0 /* get root window size  -> center window  */
 			int x, y;
 			int w, h;
 			w = DisplayWidth(info.info.x11.display,
@@ -206,7 +232,7 @@ void position_sdl(int x, int y) {
 			DefaultScreen(info.info.x11.display));
 			x = (w - screen->w)/2;
 			y = (h - screen->h)/2;
-	*/
+#endif
 			XMoveWindow(info.info.x11.display, info.info.x11.wmwindow, x, y);
 			info.info.x11.unlock_func();
 		} 

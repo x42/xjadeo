@@ -130,8 +130,8 @@ extern char jackid[16];
 
 
 // TODO: someday we can implement 'mkfifo' or open / pipe
-#define REMOTE_RX fileno(stdin) 
-#define REMOTE_TX fileno(stdout)
+#define REMOTE_RX (fileno(stdin))
+#define REMOTE_TX (fileno(stdout))
 
 #define REMOTEBUFSIZ 4096
 int remote_read(void);
@@ -1032,7 +1032,6 @@ typedef struct {
 }remotebuffer;
 
 remotebuffer *inbuf;
-
 int remote_read_io(void) {
 	int rx;
 	char *start, *end;
@@ -1051,8 +1050,25 @@ int remote_read_io(void) {
 		if (inbuf->offset) memmove(inbuf->buf,end,inbuf->offset);
 	}
 
-	return(0);
+	return(rx>0?0:-1);
 }
+
+#if 0 // win32 experiments
+int remote_read_h(void) {
+	char buf[BUFSIZ];
+	DWORD sr=0;
+	HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
+	printf("READ:..\n");
+	//if (ReadConsoleInput(h, buf, BUFSIZ, NULL)) {
+	if (ReadFile(h, buf, BUFSIZ, &sr, NULL) && sr>0) {
+	printf("OK: %s\n",buf);
+	  exec_remote_cmd_recursive(cmd_root,buf);
+		return 0;
+	}
+	return (-1);
+}
+#endif
+
 
 #ifdef HAVE_MQ
 # define LOGLEN MQLEN
@@ -1086,12 +1102,11 @@ void open_remote_ctrl (void) {
 void close_remote_ctrl (void) {
 	free(inbuf);
 }
-/*
+
 int remote_fd_set(fd_set *fd) {
 	FD_SET(REMOTE_RX,fd);
 	return( REMOTE_RX+1);
 }
-*/
 
 
 //--------------------------------------------
