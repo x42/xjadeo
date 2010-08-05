@@ -20,6 +20,7 @@ AM_CONFIG_HEADER(config.h)
 AC_ARG_ENABLE(xv,    AC_HELP_STRING([--disable-xv],  [Disable Xvideo extension ]))
 #AC_ARG_ENABLE(imlib, AC_HELP_STRING([--disable-imlib], [Disable use of imlib for display]))
 AC_ARG_ENABLE(imlib2, AC_HELP_STRING([--disable-imlib2], [Disable use of imlib2 for display]))
+AC_ARG_ENABLE(sdl, AC_HELP_STRING([--disable-sdl], [Disable use of SDL display]))
 AC_ARG_ENABLE(ft,    AC_HELP_STRING([--disable-ft],  [Disable freetype On-Screen.Display support]))
 AC_ARG_ENABLE(qtgui, AC_HELP_STRING([--disable-qtgui],[Do not build the Qt GUI controller]))
 AC_ARG_ENABLE(contrib,  AC_HELP_STRING([--enable-contrib],  [Compile and install code in contrib folder]))
@@ -44,33 +45,31 @@ AC_ARG_WITH(ffmpegldadd, AS_HELP_STRING([--with-ffmpegldadd], [ld options for st
 LIBPREF=lib
 LIBSUF=.a
 
-target_os="win"; #$(uname -s | tr ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz)
 case $target_os in
-  win)
-  	PM_OS=win
-    AH_TEMPLATE([HAVE_SDL], [Define as 1 if  you have the SDL library (-lSDL)])
-  	AC_DEFINE([HAVE_WINDOWS], [], [windows SDL version])
-  	AC_DEFINE([HAVE_SDL], [], [windows SDL version])
-		HAVE_WINDOWS=1
-		HAVE_SDL=1
-		#LDFLAGS="-lSDL"
-		LIBSUF=.dll
-  	;;
-  darwin)
+  *darwin*)
+		echo "TARGET: OSX"
   	PM_OS=mac
   	AC_DEFINE([HAVE_MACOSX], [], [use macintosh native display])
-	HAVE_MACOSX=1
-	LDFLAGS="-lz -lbz2 -framework Carbon -framework Quicktime"
+		HAVE_MACOSX=1
+		LDFLAGS="-lz -lbz2 -framework Carbon -framework Quicktime"
 dnl 2006/11/13 : 32 bit RGBA is known not to work on OSX ffmpeg+imlib2
 dnl IMLIB2RGBA 
   	;;
-  linux)
+  *linux*)
+		echo "TARGET: LINUX"
   	PM_OS="linux";
   	AC_DEFINE([IMLIB2RGBA], [], [use native RGB32 ffmpeg -> imlib.])
 	;;
+  *mingw32*|*win*)
+		echo "TARGET: WINDOWS"
+  	PM_OS=win
+  	AC_DEFINE([HAVE_WINDOWS], [], [windows SDL version])
+		HAVE_WINDOWS=1
+		LIBSUF=.dll
+  	;;
   *)	
 	AC_MSG_WARN([*** unknown target OS ***])
-  	;;
+  ;;
 esac
 
 AC_SUBST(VERSION)
@@ -110,6 +109,7 @@ AH_TEMPLATE([ALSA_SEQ_MIDI], [Define as 1 to enable ALSA sequencer midi])
 AH_TEMPLATE([ALSA_RAW_MIDI], [Define as 1 to enable ALSA-raw midi driver])
 AH_TEMPLATE([HAVE_LASH], [Define as 1 if you have lash])
 AH_TEMPLATE([HAVE_XPM], [Define as 1 if you have libXpm])
+AH_TEMPLATE([HAVE_SDL], [Define as 1 if  you have the SDL toolkit])
 AH_TEMPLATE([HAVE_MQ], [Define as 1 if you have POSIX message queues (libc, librt)])
 AH_TEMPLATE([HAVE_IPCMSG], [Define as 1 if you have IPC  message queues (system-V)])
 AH_TEMPLATE([HAVE_LIBLO], [Define as 1 if you have the loblo OSC library])
@@ -150,9 +150,9 @@ fi
 LIBS="$LIBS -L/usr/X11R6/lib"
 #X_LIBS="-L/usr/X11R6/lib/"
 
-PKG_CHECK_MODULES(JACK, jack, HAVE_JACK=1, HAVE_JACK=0)
-#AC_CHECK_LIB([jack], [jack_client_new], , [AC_MSG_ERROR(*** AUDIO: You need to have the JACK audio development kit. ***)])
-#AC_CHECK_HEADERS([jack/jack.h jack/transport.h], , [AC_MSG_ERROR(*** AUDIO: You need to have the JACK audio development kit. ***)])
+PKG_CHECK_MODULES(JACK, jack, , [AC_MSG_ERROR(*** You need the JACK audio development kit (jackaudio.org). ***)])
+AC_SUBST(JACK_CFLAGS)
+AC_SUBST(JACK_LIBS)
 
 MQ_LIBS=""
 if test "x$enable_mq" != "xno"; then
@@ -196,6 +196,11 @@ fi
 AC_SUBST(LIBLO_CFLAGS)
 AC_SUBST(LIBLO_LIBS)
 
+if test "x$enable_sdl" != "xno"; then
+	PKG_CHECK_MODULES(SDL, sdl, [ AC_DEFINE(HAVE_SDL) HAVE_SDL=1 ], [ NULL=1])
+fi
+AC_SUBST(SDL_LIBS)
+AC_SUBST(SDL_CFLAGS) 
 
 
 dnl ----------------------------------------------
@@ -580,6 +585,7 @@ echo -n "   - libxv:          ";	if test -n "$HAVE_LIBXV"; then echo "ok"; else 
 #echo -n "   - libx11/imlib:   ";	if test -n "$HAVE_IMLIB"; then echo "ok"; else echo "not avail."; fi
 echo -n "   - libx11/imlib2:  ";	if test -n "$HAVE_IMLIB2"; then echo "ok"; else echo "not avail."; fi
 echo -n "   - mac/osx:        ";	if test -n "$HAVE_MACOSX"; then echo "ok"; else echo "not avail."; fi
+echo -n "   - SDL:            ";	if test -n "$HAVE_SDL"; then echo "ok"; else echo "not avail."; fi
 echo -n " MIDI:               ";
 if test -n "$HAVE_PORTMIDI"; then echo -n "portmidi "; fi
 if test -n "$HAVE_JACKMIDI"; then echo -n "jack-midi "; fi
@@ -612,4 +618,6 @@ fi
 echo " "
 echo "now type 'make'; followed by 'make install' as root."
 echo " "
+echo "JACK: c: $JACK_CFLAGS l: $JACK_LIBS"
+echo "SDL: c: $SDL_CFLAGS l: $SDL_LIBS"
 
