@@ -245,6 +245,10 @@ void render_sdl (uint8_t *mybuffer) {
 int sdl_full_screen =0;
 SDL_Rect sdl_oldsize;
 
+int sdl_get_fullscreen () {
+	return (sdl_full_screen);
+}
+
 void sdl_toggle_fullscreen(int action) {
   if (sdl_full_screen && action !=1) {
     sdl_rect.w=sdl_oldsize.w; sdl_rect.h=sdl_oldsize.h;

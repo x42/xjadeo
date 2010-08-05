@@ -212,7 +212,7 @@ const vidout VO[] = {
 		&handle_X_events_sdl, &newsrc_sdl, &resize_sdl,
 		&getsize_sdl, &position_sdl, &getpos_null,
 		&sdl_toggle_fullscreen, &ontop_null, &mousecursor_sdl,
-		&getfullscreen_null, &getontop_null},
+		&sdl_get_fullscreen, &getontop_null},
 #else
 		NULLOUTPUT},
 #endif
