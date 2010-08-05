@@ -185,11 +185,11 @@ void xjadeorc (void) {
 		if (testfile(filename)) readconfig(filename);
 	}
 	home = getenv("HOME");
-	if ((strlen(home) + strlen(XJADEORC) + 2) < PATH_MAX) {
+	if (home && (strlen(home) + strlen(XJADEORC) + 2) < PATH_MAX) {
 		sprintf(filename, "%s/.%s", home, XJADEORC);
 		if (testfile(filename)) readconfig(filename);
 	}
-	if ((strlen(home) + strlen(XJADEORC) + 2) < PATH_MAX) {
+	if (home && (strlen(home) + strlen(XJADEORC) + 2) < PATH_MAX) {
 		sprintf(filename, "./%s", XJADEORC);
 		if (testfile(filename)) readconfig(filename);
 	}
