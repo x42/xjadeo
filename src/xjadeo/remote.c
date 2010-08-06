@@ -1053,19 +1053,21 @@ int remote_read_io(void) {
 	return(rx>0?0:-1);
 }
 
-#if 0 // win32 experiments
+#ifdef HAVE_WINDOWS
 int remote_read_h(void) {
+	int rv=-1;
 	char buf[BUFSIZ];
-	DWORD sr=0;
+	DWORD bytesAvail = 0;
 	HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
-	printf("READ:..\n");
-	//if (ReadConsoleInput(h, buf, BUFSIZ, NULL)) {
-	if (ReadFile(h, buf, BUFSIZ, &sr, NULL) && sr>0) {
-	printf("OK: %s\n",buf);
-	  exec_remote_cmd_recursive(cmd_root,buf);
-		return 0;
-	}
-	return (-1);
+	do {
+		PeekNamedPipe(h, 0, 0, 0, &bytesAvail, 0);
+		DWORD sr=0;
+		if (bytesAvail > 0 && ReadFile(h, buf, BUFSIZ, &sr, NULL) && sr>0) {
+			exec_remote_cmd_recursive(cmd_root,buf);
+		  rv=0;
+		}
+	} while (bytesAvail>0);
+	return rv;
 }
 #endif
 

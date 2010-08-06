@@ -120,9 +120,6 @@ double 		tpf = 1.0; /* pts/dts increments per video-frame - cached value */
 //--------------------------------------------
 //
 void select_sleep (int usec) {
-#if 0
-	Sleep((usec+ 999) /1000);
-#else
 	int remote_activity = 0;
 	fd_set fd;
 	int max_fd=0;
@@ -151,23 +148,12 @@ void select_sleep (int usec) {
 	ts.tv_nsec = (usec % 1000000L)*1000;
 	if (pselect(max_fd, &fd, NULL, NULL, &ts,NULL)) remote_read_io();
 #elif 0
-	DWORD cnt = 0;
-	GetNumberOfConsoleInputEvents(GetStdHandle(STD_INPUT_HANDLE), &cnt);
-	if (cnt >0) {
-		remote_read_h();
-	} else {
+#elif defined HAVE_WINDOWS
+	if (remote_read_h()) {
 		Sleep((usec+ 999) /1000);
-	}
-#elif 0
-	HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
-	if (WaitForSingleObject(h, (usec+ 999)/1000) == WAIT_OBJECT_0) {
-		//remote_read_io();
-		remote_read_h();
-		//FlushConsoleInputBuffer(h);
 	}
 #else
 	if (select(max_fd, &fd, NULL, NULL, &tv)) remote_read_io();
-#endif
 #endif
 }
 

@@ -122,6 +122,9 @@ int  open_ipcmsg_ctrl (const char *);
 int remote_read_mq(void);
 int remote_read_ipc(void);
 int remote_read_io(void);
+#ifdef HAVE_WINDOWS
+int remote_read_h(void);
+#endif
 void remote_printf(int val, const char *format, ...);
 int remote_fd_set(fd_set *fd);
 
