@@ -14,14 +14,6 @@
    <string>qjadeo</string>
   </property>
   <widget class="QWidget" name="widget">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>21</y>
-     <width>381</width>
-     <height>99</height>
-    </rect>
-   </property>
    <layout class="QVBoxLayout">
     <property name="spacing">
      <number>2</number>
@@ -133,10 +125,10 @@
           <height>10</height>
          </size>
         </property>
-        <property name="totalSteps">
+        <property name="maximum">
          <number>1000</number>
         </property>
-        <property name="percentageVisible">
+        <property name="textVisible">
          <bool>false</bool>
         </property>
        </widget>
