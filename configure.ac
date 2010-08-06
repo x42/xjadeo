@@ -458,42 +458,14 @@ if test "x$enable_qtgui" != "xno"; then
  # Check for Qt qmake utility.
  AC_PATH_PROG(ac_qmake, qmake, [no], $QTDIR/bin:${PATH})
  if test "x$ac_qmake" = "xno"; then
-    AC_MSG_ERROR([qmake not found: please install the Qt development
-    package of your distribution (either QT3 or QT4+qt3compat). try setting the QTDIR env. variable; or use --disable-qtgui to compile xjadeo.])
+    AC_MSG_ERROR([qmake not found: please install the Qt4 development
+    package of your distribution. try setting the QTDIR env. variable; or use --disable-qtgui to compile xjadeo.])
+ fi
+ if test -n "$HAVE_WINDOWS"; then
+   ac_qmake_args="-spec win32-x-g++ -config release"
  fi
  AC_SUBST(ac_qmake)
-
- # Check for Qt3
-
- AC_MSG_NOTICE([Checking for Qt >= 3...])
-
- cat > conftest.c << EOF
-#include <qglobal.h>
-#if QT_VERSION < 0x030000
-#error Qt library is older than 3.0.0
-#endif
-EOF
-
- $ac_qmake -project -nopwd -t lib -o conftest.pro "CONFIG+=qt warn_on release" conftest.c &> /dev/null
- if test $? -ne 0; then
-  AC_MSG_WARN([TEST_QT3: could not create a project file. Try to set the QTDIR env. variable.])
- fi
-
- $ac_qmake -makefile -o conftest.mak conftest.pro &> /dev/null
- if test $? -ne 0; then
-  AC_MSG_WARN([TEST_QT3: could not create a Makefile.])
- fi
-
- make -s -f conftest.mak &>/dev/null
- if test $? -ne 0; then
-  AC_MSG_WARN([TEST_QT3: QT3 is not installed or version of Qt is too old.])
- else
-  make -s -f conftest.mak distclean &>/dev/null
-  AC_MSG_NOTICE([Found Qt >= 3])
-  HAVE_QT3=1
- fi
-
- # AC removes conftest*
+ AC_SUBST(ac_qmake_args)
 
  # Check for Qt4
 
@@ -523,11 +495,11 @@ EOF
   make -f conftest.mak distclean &>/dev/null
   AC_MSG_NOTICE([Found Qt4])
   # Check for Qt qmake utility.
-  AC_PATH_PROG(ac_qt3to4, qt3to4, [no], $QTDIR/bin:${PATH})
-  if test "x$ac_qt3to4" = "xno"; then
-     AC_MSG_ERROR([qt3to4 not found: install Qt3Support, the Qt 3 compatibility module for Qt 4])
-  fi
-  AC_SUBST(ac_qt3to4)
+  #AC_PATH_PROG(ac_qt3to4, qt3to4, [no], $QTDIR/bin:${PATH})
+  #if test "x$ac_qt3to4" = "xno"; then
+  #   AC_MSG_ERROR([qt3to4 not found: install Qt3Support, the Qt 3 compatibility module for Qt 4])
+  #fi
+  #AC_SUBST(ac_qt3to4)
   HAVE_QT4=1
  fi
 

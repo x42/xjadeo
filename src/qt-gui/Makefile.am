@@ -6,7 +6,8 @@ EXTRA_DIST= qjadeo.cpp qjadeo.pro.in mainwindow.ui qjadeo.h\
 	qjadeo_fr.ts
 
 qmake   = @ac_qmake@
-qt3to4   = @ac_qt3to4@
+qt3to4   =
+qmakeargs   = @ac_qmake_args@
 
 COPY = /bin/cp
 DEL_FILE = /bin/rm
@@ -31,7 +32,7 @@ $(name).mak:	$(name).pro
 	 $(COPY) -f qjadeo.cpp qjadeo.h mainwindow.ui importdialog.ui prefdialog.ui importprogress.ui importdialog.ui.h  importprogress.ui.h prefdialog.ui.h qt3; \
 	 $(qt3to4) -alwaysOverwrite $(name).pro; \
 	fi
-	$(qmake) -o $(name).mak $(name).pro
+	$(qmake) -o $(name).mak $(name).pro $(qmakeargs)
 	lrelease $(TRANSLATIONS)
 
 $(name):	$(name).mak $(sources) $(headers) mydirs.h
