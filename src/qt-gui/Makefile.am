@@ -2,7 +2,8 @@
 EXTRA_DIST= qjadeo.cpp qjadeo.pro.in mainwindow.ui qjadeo.h\
 	images/fileopen images/info images/qjadeo\
 	importdialog.ui prefdialog.ui importprogress.ui \
-	importdialog.ui.h  importprogress.ui.h prefdialog.ui.h \
+	importdialog.h  importprogress.h prefdialog.h \
+	importdialog.cpp  importprogress.cpp prefdialog.cpp \
 	qjadeo_fr.ts
 
 qmake   = @ac_qmake@
@@ -15,12 +16,13 @@ MKDIR = /bin/mkdir
 
 name    = qjadeo
 
-headers = qjadeo.h 
+headers = qjadeo.h \
+	importdialog.h  importprogress.h prefdialog.h
 
 sources = qjadeo.cpp \
 	mainwindow.ui \
-	importdialog.ui prefdialog.ui importprogress.ui \
-	importdialog.ui.h  importprogress.ui.h prefdialog.ui.h
+	importdialog.cpp  importprogress.cpp prefdialog.cpp \
+	importdialog.ui prefdialog.ui importprogress.ui 
 
 TRANSLATIONS = qjadeo_fr.ts 
 

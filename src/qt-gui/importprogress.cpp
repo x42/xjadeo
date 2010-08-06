@@ -1,22 +1,20 @@
-/****************************************************************************
-** ui.h extension file, included from the uic-generated form implementation.
-**
-** If you want to add, delete, or rename functions or slots, use
-** Qt Designer to update this file, preserving your code.
-**
-** You should not define a constructor or destructor in this file.
-** Instead, write your code in functions called init() and destroy().
-** These will automatically be called by the form's constructor and
-** destructor.
-*****************************************************************************/
 #include <qprocess.h>  
 #include <qtimer.h>  
 #include <qdir.h>  
 #include <qmessagebox.h>  
+#include "qjadeo.h"
+#include "importprogress.h"
+
+ImportProgress::ImportProgress(QWidget* parent):
+  QDialog(parent)
+{
+  setupUi(this);
+  retranslateUi(this);
+}
 
 void ImportProgress::ImportCancel()
 {
-  encoder.tryTerminate();
+  encoder.terminate();
   QTimer::singleShot(5000, &encoder, SLOT(kill()));
   //TODO: unlink file ??
   close();
@@ -24,53 +22,54 @@ void ImportProgress::ImportCancel()
 
 int ImportProgress::mencode(QString commandpath)
 {
-  encoder.addArgument(commandpath);
-  encoder.addArgument("-idx");
-  encoder.addArgument("-ovc");
-  encoder.addArgument("lavc");
-  encoder.addArgument("-lavcopts");
-  encoder.addArgument("vcodec="+enc_codec);
+  QStringList argv;
+  argv.append(commandpath);
+  argv.append("-idx");
+  argv.append("-ovc");
+  argv.append("lavc");
+  argv.append("-lavcopts");
+  argv.append("vcodec="+enc_codec);
   if (!enc_fps.isEmpty()) {
-    encoder.addArgument("-ofps");
-    encoder.addArgument(enc_fps); 
+    argv.append("-ofps");
+    argv.append(enc_fps); 
 //  qDebug("MENCODER OPTION: -ofps "+enc_fps);
   } 
-  encoder.addArgument("-nosound");
+  argv.append("-nosound");
   if (enc_w > 0 && enc_h == 0) {
     QString Temp;
-    encoder.addArgument("-vf");
-    encoder.addArgument("scale");
-    encoder.addArgument("-zoom");
-    encoder.addArgument("-xy");
+    argv.append("-vf");
+    argv.append("scale");
+    argv.append("-zoom");
+    argv.append("-xy");
     Temp.sprintf("%i",enc_w);
-    encoder.addArgument(Temp);
+    argv.append(Temp);
   } else if (enc_w > 0 && enc_h > 0) {
     QString Temp;
-    encoder.addArgument("-vf");
+    argv.append("-vf");
     Temp.sprintf("scale=%i:%i",enc_w,enc_h);
-    encoder.addArgument(Temp);
+    argv.append(Temp);
 //  qDebug("MENCODER OPTION: -vf "+Temp);
   }
 
   { // split enc_xargs by space and add as arguments
-  QStringList xargs = QStringList::split(" ",enc_xargs.simplifyWhiteSpace());
+  QStringList xargs = enc_xargs.simplified().split(" ",QString::SkipEmptyParts);
    for ( QStringList::Iterator it = xargs.begin(); it != xargs.end(); ++it ) {
-    encoder.addArgument(*it);
-    qDebug("XOPTION: "+ *it);
+    argv.append(*it);
+  //qDebug("XOPTION: "+ *it);
    }
   }
-  encoder.addArgument("-o");
-  encoder.addArgument(enc_dst);
-  encoder.addArgument(enc_src);
-  encoder.setCommunication ( QProcess::Stdout|QProcess::Stderr );
+  argv.append("-o");
+  argv.append(enc_dst);
+  argv.append(enc_src);
+  //encoder.setCommunication ( QProcess::Stdout|QProcess::Stderr );
 
-  if(!encoder.start()) {
+  if(!encoder.startDetached(commandpath, argv)) {
     QMessageBox::QMessageBox::warning( this, "Import Error","Could not launch encoder.","OK", QString::null, QString::null, 0, -1);
     return(1);
   } else {
-    connect(&encoder, SIGNAL(readyReadStdout()), this, SLOT(readFromStdout()));
-    connect(&encoder, SIGNAL(readyReadStderr()), this, SLOT(readFromStderr()));
-    connect(&encoder, SIGNAL(processExited()), this, SLOT(encodeFinished()));
+    connect(&encoder, SIGNAL(readyReadStandardOutput ()), this, SLOT(readFromStdout()));
+    connect(&encoder, SIGNAL(readyReadStandardError()), this, SLOT(readFromStderr()));
+    connect(&encoder, SIGNAL(finished()), this, SLOT(encodeFinished()));
     return(0);
   }
 }
@@ -78,24 +77,26 @@ int ImportProgress::mencode(QString commandpath)
 void ImportProgress::readFromStderr()
 {
   //qDebug("mencoder:"+ encoder.readStderr());
-  while(encoder.canReadLineStderr()) {
-    QString msg = encoder.readLineStderr();
-    qDebug("mencoder: " + msg);
+  encoder.setReadChannel(QProcess::StandardError);
+  while(encoder.canReadLine()) {
+    QString msg = encoder.readLine();
+    qDebug(msg.toAscii().data());
   }
 }
 
 void ImportProgress::readFromStdout()
 {
-    QString response = encoder.readStdout();
-    QString output_text = response.simplifyWhiteSpace();
-    ushort indx = output_text.find( '%', 0, TRUE);
+    encoder.setReadChannel(QProcess::StandardOutput);
+    QString response = encoder.readLine();
+    QString output_text = response.simplified();
+    ushort indx = output_text.indexOf( '%');
     indx = output_text.mid( indx - 2, 2 ).toInt();
     if( indx > 99) indx = 100;
-    if( indx <= 100 && indx > importProgressBar->progress())
-      importProgressBar->setProgress( indx );
+    importProgressBar->setRange(0,100 ); // XXX
+    importProgressBar->setValue( indx );
 }
 
-void ImportProgress::encodeFinished()
+void ImportProgress::encodeFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
   if (encoder.exitStatus() != 0) {
     QMessageBox::QMessageBox::warning(this, 
@@ -119,8 +120,8 @@ int ImportProgress::setEncoderFiles( QString src, QString dst )
   }
   QFileInfo qfi = QFileInfo(dst);
   if ( qfi.exists() && QMessageBox::question(this, "Overwrite File?", "File exists. Do you want to overwrite it?", "&Yes", "&No", QString::null, 1, 1 ) ) return (1);
-  QDir d( qfi.dirPath() );       
-  if (!d.exists()) d.mkdir(qfi.dirPath(),TRUE);
+  QDir d( qfi.path() );       
+  if (!d.exists()) d.mkpath(qfi.path());
   enc_src=src;
   enc_dst=dst;
   return(0);

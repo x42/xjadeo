@@ -3,14 +3,13 @@ LANGUAGE	= C++
 
 CONFIG	+= qt warn_on release
 
-HEADERS	+= qjadeo.h
+HEADERS	+= qjadeo.h prefdialog.h importdialog.h importprogress.h
 
-SOURCES	+= qjadeo.cpp
+SOURCES	+= qjadeo.cpp prefdialog.cpp importdialog.cpp importprogress.cpp
 
 FORMS	= mainwindow.ui prefdialog.ui importdialog.ui importprogress.ui
 
-IMAGES	= images/fileopen images/info images/qjadeo
-
-QMAKE_CXXFLAGS_WARN_ON += -Wno-non-virtual-dtor
+#IMAGES	= images/fileopen images/info images/qjadeo
+#QMAKE_CXXFLAGS_WARN_ON += -Wno-non-virtual-dtor
 
 TRANSLATIONS = qjadeo_fr.ts 

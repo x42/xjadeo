@@ -2,12 +2,13 @@
 #define QJADEO_H
 #include "ui_mainwindow.h"
 #include <qsettings.h>
-#include "ui_importdialog.h"
-#include "ui_importprogress.h"
 #include "prefdialog.h"
+#include "importprogress.h"
+#include "importdialog.h"
 
-class QJadeo: public QMainWindow , Ui_MainWindow
+class QJadeo: public QMainWindow , public Ui::MainWindow
 {
+	Q_OBJECT
 
 public:
 

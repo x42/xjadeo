@@ -1,6 +1,4 @@
-
 #include <stdlib.h>
-
 #include <qapplication.h>
 #include <qprocess.h>
 #include <qtimer.h>
@@ -16,6 +14,7 @@
 #include <qcheckbox.h> 
 #include <qdesktopwidget.h>
 #include <qtextcodec.h>
+#include <QTranslator>
 
 #include "qjadeo.h"
 #include "mydirs.h"
@@ -35,6 +34,9 @@ QProcess xjadeo;
 
 QJadeo::QJadeo()
 {
+
+  setupUi(this);
+  retranslateUi(this);
 
   // Shamelessly stolen from qjackctl. Qt doc misleading.
   m_settings.beginGroup("/qjadeo");
@@ -110,11 +112,10 @@ bool QJadeo::testexec(QString exe)
   QProcess testbin; 
   /* FIXME: there MUST be a better way 
    * than to simply try exeute it .. */
-  testbin.addArgument(exe);
-  testbin.addArgument("-V");
 //testbin.setCommunication(0);
-  if(!testbin.start()) return (0);
-  while (testbin.isRunning() && timeout--) usleep (10000);
+  testbin.start(exe,QStringList("-V"));
+  if(!testbin.waitForStarted()) return (0);
+  while (testbin.state() && timeout--) usleep (10000);
   if (timeout<1) testbin.kill();
 //if (testbin.exitStatus() != 0) return(0);
   return(1);
@@ -138,6 +139,7 @@ void QJadeo::updateRecentFilesMenu()
 
 void QJadeo::updateRecentFiles(const QString & filename)
 {
+#if 0 // QT4 
   if(m_recentFiles.find(filename) != m_recentFiles.end())
     return;
 
@@ -146,6 +148,7 @@ void QJadeo::updateRecentFiles(const QString & filename)
     m_recentFiles.pop_front();
 
   updateRecentFilesMenu();
+#endif
 }
 
 void QJadeo::fileOpenRecent(int index)
@@ -177,11 +180,7 @@ void QJadeo::saveOptions()
 
 void QJadeo::fileOpen()
 {
-  QString s = QFileDialog::getOpenFileName("",
-					   0,
-					   this,
-					   "Browse file dialog",
-					   "Choose a file");
+  QString s = QFileDialog::getOpenFileName(this, "Choose video file", "", 0);
 
   if(!s.isNull())
   {
@@ -219,7 +218,7 @@ void QJadeo::filePreferences()
     pdialog->prefLineXjinfo->setText(m_xjinfopath);
     pdialog->prefLineMencoder->setText(m_mencoderpath);
     pdialog->prefLineMcOptions->setText(m_mencoderopts);
-    pdialog->codecComboBox->setCurrentText(m_importcodec);
+    pdialog->codecComboBox->setEditText(m_importcodec);
     pdialog->destDirLineEdit->setText(m_importdir);
     if (m_importdestination)
       pdialog->prefDirCheckBox->toggle();
@@ -228,9 +227,11 @@ void QJadeo::filePreferences()
     if( pdialog->exec()) {
     /* apply settings */
       m_importcodec = pdialog->codecComboBox->currentText();
-      m_importdestination = pdialog->prefDirCheckBox->isOn();
+      m_importdestination = pdialog->prefDirCheckBox->isChecked();
       m_mencoderpath = pdialog->prefLineMencoder->text();
+#if 0 // QT4
       fileMenu->setItemEnabled(fileMenu->idAt(1),testexec(m_mencoderpath));
+#endif
       m_mencoderopts = pdialog->prefLineMcOptions->text();
       if (!pdialog->prefLineXjadeo->text().isEmpty())
 	m_xjadeopath = pdialog->prefLineXjadeo->text();
@@ -240,7 +241,7 @@ void QJadeo::filePreferences()
 	m_alsamidiport = pdialog->prefLineAlsaMidi->text();
       if (!pdialog->prefLineJackMidi->text().isEmpty())
 	m_jackmidiport = pdialog->prefLineJackMidi->text();
-      if (pdialog->prefDirCheckBox->isOn() && !pdialog->destDirLineEdit->text().isEmpty())
+      if (pdialog->prefDirCheckBox->isChecked() && !pdialog->destDirLineEdit->text().isEmpty())
 	m_importdir = pdialog->destDirLineEdit->text();
     /* and save */
       saveOptions();
@@ -269,12 +270,12 @@ void QJadeo::fileImport()
       src = idialog->SourceLineEdit->text();
       dst = idialog->DestLineEdit->text();
       xargs = idialog->mcOptionsLineEdit->text();
-      if (idialog->widthCheckBox->isOn()) {
+      if (idialog->widthCheckBox->isChecked()) {
 	w = idialog->widthSpinBox->value();
-        if (idialog->aspectCheckBox->isOn()) 
+        if (idialog->aspectCheckBox->isChecked()) 
 	  h = idialog->heightSpinBox->value();
       }
-      if (idialog->fpsCheckBox->isOn()) 
+      if (idialog->fpsCheckBox->isChecked()) 
 	fps = idialog->fpsComboBox->currentText();
     }
     /* start encoding */
@@ -428,11 +429,7 @@ void QJadeo::seekBarChanged( int value )
 
 void QJadeo::osdFont()
 {
-  QString s = QFileDialog::getOpenFileName("",
-					   "TrueType fonts (*.ttf)",
-					   this,
-					   "Browse font dialog",
-					   "Choose a font");
+  QString s = QFileDialog::getOpenFileName(this, "Choose a font", "", "TrueType fonts (*.ttf)");
 
   if(!s.isNull())
   {
@@ -446,10 +443,10 @@ void QJadeo::osdFont()
 void QJadeo::readFromStdout()
 {
 
-  while(xjadeo.canReadLineStdout())
+  while(xjadeo.canReadLine())
   {
-    QString response = xjadeo.readLineStdout();
-    //qDebug("Response: " + response);
+    QString response = xjadeo.readLine();
+    qDebug(QString("Response: " + response).toAscii().data());
 
     int status = response.mid(1, 3).toInt();
 
@@ -476,15 +473,17 @@ void QJadeo::readFromStdout()
       case 2:
       case 3:
       {
-        int equalsign = response.find('=');
-        int comment = response.find('#');
+        int equalsign = response.indexOf('=');
+        int comment = response.indexOf('#');
 	if (comment > 0) response.truncate(comment);
         QString name = response.mid(5, equalsign - 5);
         QString value = response.right(response.length() - equalsign - 1);
         if(name == "position")
         {
-          if(m_frames > 0)
-            progressBar->setProgress(value.toInt() + 1, m_frames);
+          if(m_frames > 0) {
+            progressBar->setRange(0, m_frames); 
+            progressBar->setValue(value.toInt() + 1);
+	  }
         }
         else if(name == "filename")
           updateRecentFiles(value);
@@ -494,6 +493,7 @@ void QJadeo::readFromStdout()
           m_movie_height = value.toInt();
         else if(name == "seekmode")
 	{
+#if 0 // QT 4
 	  Seek->setItemChecked(Seek->idAt(0),FALSE);
 	  Seek->setItemChecked(Seek->idAt(1),FALSE);
 	  Seek->setItemChecked(Seek->idAt(2),FALSE);
@@ -504,6 +504,7 @@ void QJadeo::readFromStdout()
 	  } else {
 	    Seek->setItemChecked(Seek->idAt(0),TRUE);
 	  }
+#endif
 	}
         else if(name == "mididrv")
 	{
@@ -517,7 +518,6 @@ void QJadeo::readFromStdout()
 	  Sync->setItemChecked(Sync->idAt(1),FALSE);
 	  Sync->setItemChecked(Sync->idAt(2),FALSE);
 	  Sync->setItemChecked(Sync->idAt(3),FALSE);
-#endif
 
 	  if (value.toInt()==0) { // off
             seekBar->setEnabled(TRUE);
@@ -532,6 +532,7 @@ void QJadeo::readFromStdout()
             seekBar->setEnabled(FALSE); //JACK
 	    Sync->setItemChecked(Sync->idAt(0),TRUE);
 	  }
+#endif
 	}
         else if(name == "osdfont")
 	{
@@ -540,9 +541,11 @@ void QJadeo::readFromStdout()
 	}
         else if(name == "osdmode")
 	{
+#if 0 // QT4
 	  int v= value.toInt();
 	  OSD->setItemChecked(OSD->idAt(1),v&1);
 	  OSD->setItemChecked(OSD->idAt(2),v&2);
+#endif
 	}
         else if(name == "frames")
 	{
@@ -609,22 +612,20 @@ int main(int argc, char **argv)
 {
 
   QApplication a(argc, argv);
-
-    // Load translation support.
-    QTranslator translator(0);
-    QString sLocale = QTextCodec::locale();
+  QTranslator translator;
+  QJadeo w;
+  QString sLocale = w.locale().name();
     if (sLocale != "C") {
         QString sLocName = "qjadeo_" + sLocale;
         if (!translator.load(sLocName, ".")) {
             QString sLocPath = CONFIG_PREFIX;
             if (!translator.load(sLocName, sLocPath))
-                fprintf(stderr, "Warning: no locale found: %s/%s.qm\n", sLocPath.toAscii(), sLocName.toAscii());
+                fprintf(stderr, "Warning: no locale found: %s/%s.qm\n", sLocPath.toAscii().data(), sLocName.toAscii().data());
         }
         a.installTranslator(&translator);
     }
 
 
-  QJadeo w;
 
 // Launch xjadeo
 
@@ -637,19 +638,18 @@ int main(int argc, char **argv)
   if(xjadeoPath.isEmpty())
     xjadeoPath = BINDIR "/xjremote";
 
-  xjadeo.addArgument(xjadeoPath);
-  xjadeo.addArgument("-R");
-
-  if(!xjadeo.start())
+  xjadeo.start(xjadeoPath, QStringList("-R"));
+  if(!xjadeo.waitForStarted())
   {
     QMessageBox::QMessageBox::critical( &w, "qjadeo","can not execute xjadeo/xjremote.","Exit", QString::null, QString::null, 0, -1);
     //qFatal("Could not start xjadeo executable: " + xjadeoPath);
     //qFatal("Try to set the XJREMOTE environment variable to point to xjadeo.");
     exit(1);
   }
+  xjadeo.setReadChannel(QProcess::StandardOutput);
 
-  w.connect(&xjadeo, SIGNAL(readyReadStdout()), &w, SLOT(readFromStdout()));
-  w.connect(&xjadeo, SIGNAL(processExited()), &w, SLOT(close()));
+  w.connect(&xjadeo, SIGNAL(readyReadStandardOutput()), &w, SLOT(readFromStdout()));
+  w.connect(&xjadeo, SIGNAL(finished(int, QProcess::ExitStatus)), &w, SLOT(close()));
 
   w.show();
   a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
@@ -662,7 +662,7 @@ int main(int argc, char **argv)
   xjadeo.write(QByteArray("exit\n"));
   //sleep(1); // TODO: flush pipe to xjadeo/xjremote !
 
-  xjadeo.tryTerminate();
+  xjadeo.terminate();
   QTimer::singleShot(5000, &xjadeo, SLOT(kill()));
   //FIXME : does the kill-timeout remain when we exit here??
 }
