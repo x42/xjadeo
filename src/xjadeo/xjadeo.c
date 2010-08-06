@@ -142,14 +142,13 @@ void select_sleep (int usec) {
 	if (remote_activity) {
 	  tv.tv_sec = 0; tv.tv_usec = 1;
 	}
-#if 0
+#if 0 /* pselect sleep */
 	struct timespec	ts;
 	ts.tv_sec = (usec / 1000000L);
 	ts.tv_nsec = (usec % 1000000L)*1000;
 	if (pselect(max_fd, &fd, NULL, NULL, &ts,NULL)) remote_read_io();
-#elif 0
 #elif defined HAVE_WINDOWS
-	if (remote_read_h()) {
+	if (!remote_en || remote_read_h()) {
 		Sleep((usec+ 999) /1000);
 	}
 #else
@@ -723,11 +722,7 @@ void display_frame(int64_t timestamp, int force_update) {
 
 	dispFrame = timestamp;
 	if (OSD_mode&OSD_FRAME) 
-#ifdef HAVE_WINDOWS
-		sprintf(OSD_frame,"Frame: %li", dispFrame);
-#else
 		snprintf(OSD_frame,48,"Frame: %li", dispFrame);
-#endif
 	if (OSD_mode&OSD_SMPTE) frame_to_smptestring(OSD_smpte,dispFrame);
 
 	if(fFirstTime) {

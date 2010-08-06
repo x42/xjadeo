@@ -204,10 +204,13 @@ void get_window_pos_sdl (unsigned int *x, unsigned int *y) {
 #if (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2)
 	if ( info.subsystem == SDL_SYSWM_X11 ) {
 		Window	dummy;
+		int xx,xy;
 		info.info.x11.lock_func();
-		XTranslateCoordinates(info.info.x11.display, info.info.x11.wmwindow, info.info.x11.fswindow, 0, 0, *x, *y, &dummy);
+		XTranslateCoordinates(info.info.x11.display, info.info.x11.wmwindow, info.info.x11.fswindow, 0, 0, &xx, &xy, &dummy);
 		// TODO recurse until dummy!=None
 		info.info.x11.unlock_func();
+		*x= xx;
+		*y= xy;
 	}
 #endif
 }

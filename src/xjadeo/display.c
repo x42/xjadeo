@@ -513,12 +513,8 @@ void render_buffer (uint8_t *mybuffer) {
 
 		if (OSD_mode&OSD_OFFF ) {
 			char tempoff[30];
-#ifdef HAVE_WINDOWS
-			sprintf(tempoff,"off: %li",ts_offset);
-#else
 			snprintf(tempoff,30,"off: %li",ts_offset);
-#endif
-					printf("OFFSET %s  \n", tempoff);
+			printf("OFFSET %s  \n", tempoff);
 			OSD_render (VO[VOutput].render_fmt, mybuffer, tempoff, OSD_CENTER, 50);
 		} else if (OSD_mode&OSD_OFFS ) { 
 			char tempsmpte[30];

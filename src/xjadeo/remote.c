@@ -43,7 +43,6 @@
  *       which is currenlty 199.
  *
  */
-
 #include "xjadeo.h"
 
 #ifdef OLD_FFMPEG

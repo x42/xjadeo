@@ -13,6 +13,9 @@
 #ifdef HAVE_WINDOWS
 # include <windows.h>
 # include <winsock.h>
+
+# define vsnprintf _vsnprintf
+# define snprintf _snprintf
 #else
 # include <sys/select.h> 
 #endif
