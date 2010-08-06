@@ -6,7 +6,7 @@
 #include <qtimer.h>
 #include <qfiledialog.h>
 #include <qmessagebox.h>
-#include <qpopupmenu.h>
+//#include <qpopupmenu.h>
 #include <qstatusbar.h>
 #include <qprogressbar.h>
 #include <qspinbox.h>

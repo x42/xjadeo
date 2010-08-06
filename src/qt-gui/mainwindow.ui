@@ -1,766 +1,960 @@
-<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
-<class>MainWindow</class>
-<widget class="QMainWindow">
-    <property name="name">
-        <cstring>MainWindow</cstring>
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>381</width>
+    <height>120</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>qjadeo</string>
+  </property>
+  <widget class="QWidget" name="widget">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>21</y>
+     <width>381</width>
+     <height>99</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout">
+    <property name="spacing">
+     <number>2</number>
     </property>
-    <property name="geometry">
-        <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>300</width>
-            <height>120</height>
-        </rect>
+    <property name="margin">
+     <number>2</number>
     </property>
-    <property name="caption">
-        <string>qjadeo</string>
+    <item>
+     <layout class="QHBoxLayout">
+      <item>
+       <widget class="QLabel" name="textLabel2">
+        <property name="text">
+         <string>screen updates per sec.</string>
+        </property>
+        <property name="wordWrap">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="fpsSpinBox">
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>99</number>
+        </property>
+        <property name="value">
+         <number>10</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="spacer2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Expanding</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>125</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="textLabel1">
+        <property name="text">
+         <string>time offset in video-frames:</string>
+        </property>
+        <property name="wordWrap">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="offsetSpinBox">
+        <property name="minimum">
+         <number>-999999999</number>
+        </property>
+        <property name="maximum">
+         <number>999999999</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <item>
+       <spacer name="spacer4">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Expanding</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>2</width>
+          <height>6</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QProgressBar" name="progressBar">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>5</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>4</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>32767</width>
+          <height>10</height>
+         </size>
+        </property>
+        <property name="totalSteps">
+         <number>1000</number>
+        </property>
+        <property name="percentageVisible">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="spacer4">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Expanding</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>3</width>
+          <height>6</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QSlider" name="seekBar">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>5</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>32767</width>
+          <height>14</height>
+         </size>
+        </property>
+        <property name="maximum">
+         <number>1000</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="spacer5">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Expanding</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>1</width>
+          <height>6</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="MenuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>381</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="fileMenu">
+    <property name="title">
+     <string>&amp;File</string>
     </property>
-    <property name="icon">
-        <pixmap>qjadeo</pixmap>
+    <addaction name="fileOpenAction"/>
+    <addaction name="fileImportAction"/>
+    <addaction name="separator"/>
+    <addaction name="filePreferencesAction"/>
+    <addaction name="separator"/>
+    <addaction name="fileDisconnectAction"/>
+    <addaction name="fileExitAction"/>
+    <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="Sync">
+    <property name="title">
+     <string>&amp;Sync</string>
     </property>
-    <vbox>
-        <property name="name">
-            <cstring>unnamed</cstring>
-        </property>
-        <property name="margin">
-            <number>2</number>
-        </property>
-        <property name="spacing">
-            <number>2</number>
-        </property>
-        <property name="resizeMode">
-            <enum>Minimum</enum>
-        </property>
-        <widget class="QLayoutWidget">
-            <property name="name">
-                <cstring>layout6</cstring>
-            </property>
-            <hbox>
-                <property name="name">
-                    <cstring>unnamed</cstring>
-                </property>
-                <widget class="QLabel">
-                    <property name="name">
-                        <cstring>textLabel2</cstring>
-                    </property>
-                    <property name="text">
-                        <string>screen updates per sec.</string>
-                    </property>
-                </widget>
-                <widget class="QSpinBox">
-                    <property name="name">
-                        <cstring>fpsSpinBox</cstring>
-                    </property>
-                    <property name="maxValue">
-                        <number>99</number>
-                    </property>
-                    <property name="minValue">
-                        <number>1</number>
-                    </property>
-                    <property name="value">
-                        <number>10</number>
-                    </property>
-                </widget>
-                <spacer>
-                    <property name="name">
-                        <cstring>spacer2</cstring>
-                    </property>
-                    <property name="orientation">
-                        <enum>Horizontal</enum>
-                    </property>
-                    <property name="sizeType">
-                        <enum>Expanding</enum>
-                    </property>
-                    <property name="sizeHint">
-                        <size>
-                            <width>125</width>
-                            <height>20</height>
-                        </size>
-                    </property>
-                </spacer>
-                <widget class="QLabel">
-                    <property name="name">
-                        <cstring>textLabel1</cstring>
-                    </property>
-                    <property name="text">
-                        <string>time offset in video-frames:</string>
-                    </property>
-                </widget>
-                <widget class="QSpinBox">
-                    <property name="name">
-                        <cstring>offsetSpinBox</cstring>
-                    </property>
-                    <property name="maxValue">
-                        <number>999999999</number>
-                    </property>
-                    <property name="minValue">
-                        <number>-999999999</number>
-                    </property>
-                </widget>
-            </hbox>
-        </widget>
-        <widget class="QLayoutWidget">
-            <property name="name">
-                <cstring>layout15</cstring>
-            </property>
-            <hbox>
-                <property name="name">
-                    <cstring>unnamed</cstring>
-                </property>
-                <property name="spacing">
-                    <number>0</number>
-                </property>
-                <spacer>
-                    <property name="name">
-                        <cstring>spacer4</cstring>
-                    </property>
-                    <property name="orientation">
-                        <enum>Horizontal</enum>
-                    </property>
-                    <property name="sizeType">
-                        <enum>Expanding</enum>
-                    </property>
-                    <property name="sizeHint">
-                        <size>
-                            <width>2</width>
-                            <height>6</height>
-                        </size>
-                    </property>
-                </spacer>
-                <widget class="QProgressBar">
-                    <property name="name">
-                        <cstring>progressBar</cstring>
-                    </property>
-                    <property name="sizePolicy">
-                        <sizepolicy>
-                            <hsizetype>7</hsizetype>
-                            <vsizetype>0</vsizetype>
-                            <horstretch>5</horstretch>
-                            <verstretch>0</verstretch>
-                        </sizepolicy>
-                    </property>
-                    <property name="minimumSize">
-                        <size>
-                            <width>0</width>
-                            <height>4</height>
-                        </size>
-                    </property>
-                    <property name="maximumSize">
-                        <size>
-                            <width>32767</width>
-                            <height>10</height>
-                        </size>
-                    </property>
-                    <property name="totalSteps">
-                        <number>1000</number>
-                    </property>
-                    <property name="percentageVisible">
-                        <bool>false</bool>
-                    </property>
-                </widget>
-                <spacer>
-                    <property name="name">
-                        <cstring>spacer4</cstring>
-                    </property>
-                    <property name="orientation">
-                        <enum>Horizontal</enum>
-                    </property>
-                    <property name="sizeType">
-                        <enum>Expanding</enum>
-                    </property>
-                    <property name="sizeHint">
-                        <size>
-                            <width>3</width>
-                            <height>6</height>
-                        </size>
-                    </property>
-                </spacer>
-            </hbox>
-        </widget>
-        <widget class="QLayoutWidget">
-            <property name="name">
-                <cstring>layout16</cstring>
-            </property>
-            <hbox>
-                <property name="name">
-                    <cstring>unnamed</cstring>
-                </property>
-                <property name="spacing">
-                    <number>0</number>
-                </property>
-                <widget class="QSlider">
-                    <property name="name">
-                        <cstring>seekBar</cstring>
-                    </property>
-                    <property name="enabled">
-                        <bool>false</bool>
-                    </property>
-                    <property name="sizePolicy">
-                        <sizepolicy>
-                            <hsizetype>7</hsizetype>
-                            <vsizetype>0</vsizetype>
-                            <horstretch>5</horstretch>
-                            <verstretch>0</verstretch>
-                        </sizepolicy>
-                    </property>
-                    <property name="maximumSize">
-                        <size>
-                            <width>32767</width>
-                            <height>14</height>
-                        </size>
-                    </property>
-                    <property name="maxValue">
-                        <number>1000</number>
-                    </property>
-                    <property name="orientation">
-                        <enum>Horizontal</enum>
-                    </property>
-                </widget>
-                <spacer>
-                    <property name="name">
-                        <cstring>spacer5</cstring>
-                    </property>
-                    <property name="orientation">
-                        <enum>Horizontal</enum>
-                    </property>
-                    <property name="sizeType">
-                        <enum>Expanding</enum>
-                    </property>
-                    <property name="sizeHint">
-                        <size>
-                            <width>1</width>
-                            <height>6</height>
-                        </size>
-                    </property>
-                </spacer>
-            </hbox>
-        </widget>
-    </vbox>
-</widget>
-<menubar>
-    <property name="name">
-        <cstring>MenuBar</cstring>
+    <addaction name="syncJackAction"/>
+    <addaction name="syncMTCJackAction"/>
+    <addaction name="syncMTCAlsaAction"/>
+    <addaction name="syncOffAction"/>
+   </widget>
+   <widget class="QMenu" name="Zoom">
+    <property name="title">
+     <string>&amp;Zoom</string>
     </property>
-    <item text="&amp;File" name="fileMenu">
-        <action name="fileOpenAction"/>
-        <action name="fileImportAction"/>
-        <separator/>
-        <action name="filePreferencesAction"/>
-        <separator/>
-        <action name="fileDisconnectAction"/>
-        <action name="fileExitAction"/>
-        <separator/>
-    </item>
-    <item text="&amp;Sync" name="Sync">
-        <action name="syncJackAction"/>
-        <action name="syncMTCJackAction"/>
-        <action name="syncMTCAlsaAction"/>
-        <action name="syncOffAction"/>
-    </item>
-    <item text="&amp;Zoom" name="Zoom">
-        <action name="zoom50Action"/>
-        <action name="zoom100Action"/>
-        <action name="zoom200Action"/>
-        <action name="zoomFullScreenAction"/>
-    </item>
-    <item text="&amp;OSD" name="OSD">
-        <action name="osdFontAction"/>
-        <action name="osdFrameAction"/>
-        <action name="osdSMPTEAction"/>
-        <action name="osdBoxAction"/>
-    </item>
-    <item text="&amp;Seek" name="Seek">
-        <action name="seekany_frameAction"/>
-        <action name="seekKeyFramesAction"/>
-        <action name="seekcontinuouslyAction"/>
-    </item>
-    <item text="&amp;Help" name="helpMenu">
-        <action name="helpAboutAction"/>
-    </item>
-</menubar>
-<toolbars>
-</toolbars>
-<actions>
-    <action>
-        <property name="name">
-            <cstring>fileOpenAction</cstring>
-        </property>
-        <property name="iconSet">
-            <iconset></iconset>
-        </property>
-        <property name="text">
-            <string>Open</string>
-        </property>
-        <property name="menuText">
-            <string>&amp;Open...</string>
-        </property>
-        <property name="accel">
-            <string>Ctrl+O</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>fileExitAction</cstring>
-        </property>
-        <property name="text">
-            <string>Exit</string>
-        </property>
-        <property name="menuText">
-            <string>&amp;Close xjadeo and Exit</string>
-        </property>
-        <property name="accel">
-            <string></string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>helpAboutAction</cstring>
-        </property>
-        <property name="text">
-            <string>About</string>
-        </property>
-        <property name="menuText">
-            <string>&amp;About</string>
-        </property>
-        <property name="accel">
-            <string></string>
-        </property>
-    </action>
-    <actiongroup>
-        <property name="name">
-            <cstring>syncAction</cstring>
-        </property>
-        <property name="text">
-            <string>ActionGroup</string>
-        </property>
-        <property name="toolTip">
-            <string>Sync</string>
-        </property>
-        <property name="usesDropDown">
-            <bool>false</bool>
-        </property>
-        <action>
-            <property name="name">
-                <cstring>syncJackAction</cstring>
-            </property>
-            <property name="toggleAction">
-                <bool>true</bool>
-            </property>
-            <property name="text">
-                <string>JACK Transport</string>
-            </property>
-            <property name="menuText">
-                <string>JACK Transport</string>
-            </property>
-        </action>
-        <action>
-            <property name="name">
-                <cstring>syncMTCJackAction</cstring>
-            </property>
-            <property name="toggleAction">
-                <bool>true</bool>
-            </property>
-            <property name="text">
-                <string>MTC (JACK MIDI)</string>
-            </property>
-            <property name="menuText">
-                <string>MTC (JACK MIDI)</string>
-            </property>
-        </action>
-        <action>
-            <property name="name">
-                <cstring>syncMTCAlsaAction</cstring>
-            </property>
-            <property name="toggleAction">
-                <bool>true</bool>
-            </property>
-            <property name="text">
-                <string>MTC (ALSA SEQ)</string>
-            </property>
-            <property name="menuText">
-                <string>MTC (ALSA SEQ)</string>
-            </property>
-        </action>
-        <action>
-            <property name="name">
-                <cstring>syncOffAction</cstring>
-            </property>
-            <property name="toggleAction">
-                <bool>true</bool>
-            </property>
-            <property name="text">
-                <string>off</string>
-            </property>
-            <property name="menuText">
-                <string>off (slider)</string>
-            </property>
-        </action>
-    </actiongroup>
-    <actiongroup>
-        <property name="name">
-            <cstring>zoomAction</cstring>
-        </property>
-        <property name="text">
-            <string>ActionGroup</string>
-        </property>
-        <property name="toolTip">
-            <string>Zoom</string>
-        </property>
-        <property name="usesDropDown">
-            <bool>false</bool>
-        </property>
-        <action>
-            <property name="name">
-                <cstring>zoom50Action</cstring>
-            </property>
-            <property name="text">
-                <string>50%</string>
-            </property>
-            <property name="toolTip">
-                <string>50%</string>
-            </property>
-        </action>
-        <action>
-            <property name="name">
-                <cstring>zoom100Action</cstring>
-            </property>
-            <property name="text">
-                <string>100%</string>
-            </property>
-            <property name="toolTip">
-                <string>100%</string>
-            </property>
-        </action>
-        <action>
-            <property name="name">
-                <cstring>zoom200Action</cstring>
-            </property>
-            <property name="text">
-                <string>200%</string>
-            </property>
-            <property name="toolTip">
-                <string>200%</string>
-            </property>
-        </action>
-        <action>
-            <property name="name">
-                <cstring>zoomFullScreenAction</cstring>
-            </property>
-            <property name="text">
-                <string>Maximize</string>
-            </property>
-            <property name="toolTip">
-                <string>Maximize</string>
-            </property>
-        </action>
-    </actiongroup>
-    <action>
-        <property name="name">
-            <cstring>osdFrameAction</cstring>
-        </property>
-        <property name="toggleAction">
-            <bool>true</bool>
-        </property>
-        <property name="text">
-            <string>Frame number</string>
-        </property>
-        <property name="menuText">
-            <string>Frame number</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>osdSMPTEAction</cstring>
-        </property>
-        <property name="toggleAction">
-            <bool>true</bool>
-        </property>
-        <property name="text">
-            <string>SMPTE</string>
-        </property>
-        <property name="menuText">
-            <string>SMPTE</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>osdBoxAction</cstring>
-        </property>
-        <property name="toggleAction">
-            <bool>true</bool>
-        </property>
-        <property name="text">
-            <string>Box</string>
-        </property>
-        <property name="menuText">
-            <string>Box</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>osdFontAction</cstring>
-        </property>
-        <property name="text">
-            <string>Font...</string>
-        </property>
-        <property name="menuText">
-            <string>Font...</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>fileImportAction</cstring>
-        </property>
-        <property name="text">
-            <string>Import</string>
-        </property>
-        <property name="menuText">
-            <string>&amp;Import</string>
-        </property>
-        <property name="toolTip">
-            <string>Convert video files.</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>filePreferencesAction</cstring>
-        </property>
-        <property name="text">
-            <string>Configure qjadeo</string>
-        </property>
-        <property name="menuText">
-            <string>&amp;Configure qjadeo</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>fileDisconnectAction</cstring>
-        </property>
-        <property name="text">
-            <string>Disconnect</string>
-        </property>
-        <property name="menuText">
-            <string>Disconnect and &amp;Exit</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>seekany_frameAction</cstring>
-        </property>
-        <property name="toggleAction">
-            <bool>true</bool>
-        </property>
-        <property name="text">
-            <string>to any frame</string>
-        </property>
-        <property name="menuText">
-            <string>to any frame</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>seekKeyFramesAction</cstring>
-        </property>
-        <property name="toggleAction">
-            <bool>true</bool>
-        </property>
-        <property name="text">
-            <string>keyframes only</string>
-        </property>
-        <property name="menuText">
-            <string>keyframes only</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>seekcontinuouslyAction</cstring>
-        </property>
-        <property name="toggleAction">
-            <bool>true</bool>
-        </property>
-        <property name="text">
-            <string>continuously</string>
-        </property>
-        <property name="menuText">
-            <string>continuously</string>
-        </property>
-    </action>
-</actions>
-<connections>
-    <connection>
-        <sender>fileOpenAction</sender>
-        <signal>activated()</signal>
-        <receiver>MainWindow</receiver>
-        <slot>fileOpen()</slot>
-    </connection>
-    <connection>
-        <sender>fileExitAction</sender>
-        <signal>activated()</signal>
-        <receiver>MainWindow</receiver>
-        <slot>fileExit()</slot>
-    </connection>
-    <connection>
-        <sender>helpAboutAction</sender>
-        <signal>activated()</signal>
-        <receiver>MainWindow</receiver>
-        <slot>helpAbout()</slot>
-    </connection>
-    <connection>
-        <sender>zoom50Action</sender>
-        <signal>activated()</signal>
-        <receiver>MainWindow</receiver>
-        <slot>zoom50()</slot>
-    </connection>
-    <connection>
-        <sender>zoom100Action</sender>
-        <signal>activated()</signal>
-        <receiver>MainWindow</receiver>
-        <slot>zoom100()</slot>
-    </connection>
-    <connection>
-        <sender>zoom200Action</sender>
-        <signal>activated()</signal>
-        <receiver>MainWindow</receiver>
-        <slot>zoom200()</slot>
-    </connection>
-    <connection>
-        <sender>zoomFullScreenAction</sender>
-        <signal>activated()</signal>
-        <receiver>MainWindow</receiver>
-        <slot>zoomFullScreen()</slot>
-    </connection>
-    <connection>
-        <sender>syncOffAction</sender>
-        <signal>activated()</signal>
-        <receiver>MainWindow</receiver>
-        <slot>syncOff()</slot>
-    </connection>
-    <connection>
-        <sender>syncMTCAlsaAction</sender>
-        <signal>activated()</signal>
-        <receiver>MainWindow</receiver>
-        <slot>syncMTCalsa()</slot>
-    </connection>
-    <connection>
-        <sender>syncMTCJackAction</sender>
-        <signal>activated()</signal>
-        <receiver>MainWindow</receiver>
-        <slot>syncMTCjack()</slot>
-    </connection>
-    <connection>
-        <sender>syncJackAction</sender>
-        <signal>activated()</signal>
-        <receiver>MainWindow</receiver>
-        <slot>syncJack()</slot>
-    </connection>
-    <connection>
-        <sender>offsetSpinBox</sender>
-        <signal>valueChanged(const QString&amp;)</signal>
-        <receiver>MainWindow</receiver>
-        <slot>setOffset(const QString&amp;)</slot>
-    </connection>
-    <connection>
-        <sender>fpsSpinBox</sender>
-        <signal>valueChanged(const QString&amp;)</signal>
-        <receiver>MainWindow</receiver>
-        <slot>setFPS(const QString&amp;)</slot>
-    </connection>
-    <connection>
-        <sender>osdBoxAction</sender>
-        <signal>toggled(bool)</signal>
-        <receiver>MainWindow</receiver>
-        <slot>osdBoxToggled(bool)</slot>
-    </connection>
-    <connection>
-        <sender>osdSMPTEAction</sender>
-        <signal>toggled(bool)</signal>
-        <receiver>MainWindow</receiver>
-        <slot>osdSMPTEToggled(bool)</slot>
-    </connection>
-    <connection>
-        <sender>osdFrameAction</sender>
-        <signal>toggled(bool)</signal>
-        <receiver>MainWindow</receiver>
-        <slot>osdFrameToggled(bool)</slot>
-    </connection>
-    <connection>
-        <sender>osdFontAction</sender>
-        <signal>activated()</signal>
-        <receiver>MainWindow</receiver>
-        <slot>osdFont()</slot>
-    </connection>
-    <connection>
-        <sender>seekBar</sender>
-        <signal>valueChanged(int)</signal>
-        <receiver>MainWindow</receiver>
-        <slot>seekBarChanged(int)</slot>
-    </connection>
-    <connection>
-        <sender>filePreferencesAction</sender>
-        <signal>activated()</signal>
-        <receiver>MainWindow</receiver>
-        <slot>filePreferences()</slot>
-    </connection>
-    <connection>
-        <sender>fileDisconnectAction</sender>
-        <signal>activated()</signal>
-        <receiver>MainWindow</receiver>
-        <slot>fileDisconnect()</slot>
-    </connection>
-    <connection>
-        <sender>fileImportAction</sender>
-        <signal>activated()</signal>
-        <receiver>MainWindow</receiver>
-        <slot>fileImport()</slot>
-    </connection>
-    <connection>
-        <sender>seekany_frameAction</sender>
-        <signal>activated()</signal>
-        <receiver>MainWindow</receiver>
-        <slot>seekAnyFrame()</slot>
-    </connection>
-    <connection>
-        <sender>seekcontinuouslyAction</sender>
-        <signal>activated()</signal>
-        <receiver>MainWindow</receiver>
-        <slot>seekContinuously()</slot>
-    </connection>
-    <connection>
-        <sender>seekKeyFramesAction</sender>
-        <signal>activated()</signal>
-        <receiver>MainWindow</receiver>
-        <slot>seekKeyFrames()</slot>
-    </connection>
-</connections>
-<includes>
-    <include location="local" impldecl="in implementation">mainwindow.ui.h</include>
-</includes>
-<slots>
-    <slot>fileOpen()</slot>
-    <slot>setFPS( const QString &amp; )</slot>
-    <slot>helpAbout()</slot>
-    <slot>zoom50()</slot>
-    <slot>zoom100()</slot>
-    <slot>zoom200()</slot>
-    <slot>zoomFullScreen()</slot>
-    <slot>syncJack()</slot>
-    <slot>syncMTCjack()</slot>
-    <slot>syncMTCalsa()</slot>
-    <slot>syncOff()</slot>
-    <slot>setOffset( const QString &amp; )</slot>
-    <slot>fileExit()</slot>
-    <slot>osdFrameToggled( bool )</slot>
-    <slot>osdSMPTEToggled( bool )</slot>
-    <slot>osdBoxToggled( bool )</slot>
-    <slot>osdFont()</slot>
-    <slot>seekBarChanged( int )</slot>
-    <slot>filePreferences()</slot>
-    <slot>fileDisconnect()</slot>
-    <slot>fileImport()</slot>
-    <slot>seekAnyFrame()</slot>
-    <slot>seekContinuously()</slot>
-    <slot>seekKeyFrames()</slot>
-</slots>
-<pixmapinproject/>
-<layoutdefaults spacing="6" margin="11"/>
-</UI>
+    <addaction name="zoom50Action"/>
+    <addaction name="zoom100Action"/>
+    <addaction name="zoom200Action"/>
+    <addaction name="zoomFullScreenAction"/>
+   </widget>
+   <widget class="QMenu" name="OSD">
+    <property name="title">
+     <string>&amp;OSD</string>
+    </property>
+    <addaction name="osdFontAction"/>
+    <addaction name="osdFrameAction"/>
+    <addaction name="osdSMPTEAction"/>
+    <addaction name="osdBoxAction"/>
+   </widget>
+   <widget class="QMenu" name="Seek">
+    <property name="title">
+     <string>&amp;Seek</string>
+    </property>
+    <addaction name="seekany_frameAction"/>
+    <addaction name="seekKeyFramesAction"/>
+    <addaction name="seekcontinuouslyAction"/>
+   </widget>
+   <widget class="QMenu" name="helpMenu">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="helpAboutAction"/>
+   </widget>
+   <addaction name="fileMenu"/>
+   <addaction name="Sync"/>
+   <addaction name="Zoom"/>
+   <addaction name="OSD"/>
+   <addaction name="Seek"/>
+   <addaction name="helpMenu"/>
+  </widget>
+  <action name="fileOpenAction">
+   <property name="icon">
+    <iconset>
+     <normaloff/>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Open...</string>
+   </property>
+   <property name="iconText">
+    <string>Open</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>fileOpenAction</cstring>
+   </property>
+  </action>
+  <action name="fileExitAction">
+   <property name="text">
+    <string>&amp;Close xjadeo and Exit</string>
+   </property>
+   <property name="iconText">
+    <string>Exit</string>
+   </property>
+   <property name="shortcut">
+    <string/>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>fileExitAction</cstring>
+   </property>
+  </action>
+  <action name="helpAboutAction">
+   <property name="text">
+    <string>&amp;About</string>
+   </property>
+   <property name="iconText">
+    <string>About</string>
+   </property>
+   <property name="shortcut">
+    <string/>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>helpAboutAction</cstring>
+   </property>
+  </action>
+  <action name="osdFrameAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Frame number</string>
+   </property>
+   <property name="iconText">
+    <string>Frame number</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>osdFrameAction</cstring>
+   </property>
+  </action>
+  <action name="osdSMPTEAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>SMPTE</string>
+   </property>
+   <property name="iconText">
+    <string>SMPTE</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>osdSMPTEAction</cstring>
+   </property>
+  </action>
+  <action name="osdBoxAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Box</string>
+   </property>
+   <property name="iconText">
+    <string>Box</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>osdBoxAction</cstring>
+   </property>
+  </action>
+  <action name="osdFontAction">
+   <property name="text">
+    <string>Font...</string>
+   </property>
+   <property name="iconText">
+    <string>Font...</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>osdFontAction</cstring>
+   </property>
+  </action>
+  <action name="fileImportAction">
+   <property name="text">
+    <string>&amp;Import</string>
+   </property>
+   <property name="iconText">
+    <string>Import</string>
+   </property>
+   <property name="toolTip">
+    <string>Convert video files.</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>fileImportAction</cstring>
+   </property>
+  </action>
+  <action name="filePreferencesAction">
+   <property name="text">
+    <string>&amp;Configure qjadeo</string>
+   </property>
+   <property name="iconText">
+    <string>Configure qjadeo</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>filePreferencesAction</cstring>
+   </property>
+  </action>
+  <action name="fileDisconnectAction">
+   <property name="text">
+    <string>Disconnect and &amp;Exit</string>
+   </property>
+   <property name="iconText">
+    <string>Disconnect</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>fileDisconnectAction</cstring>
+   </property>
+  </action>
+  <action name="seekany_frameAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>to any frame</string>
+   </property>
+   <property name="iconText">
+    <string>to any frame</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>seekany_frameAction</cstring>
+   </property>
+  </action>
+  <action name="seekKeyFramesAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>keyframes only</string>
+   </property>
+   <property name="iconText">
+    <string>keyframes only</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>seekKeyFramesAction</cstring>
+   </property>
+  </action>
+  <action name="seekcontinuouslyAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>continuously</string>
+   </property>
+   <property name="iconText">
+    <string>continuously</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>seekcontinuouslyAction</cstring>
+   </property>
+  </action>
+  <actiongroup name="syncAction">
+   <action name="syncJackAction">
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="text">
+     <string>JACK Transport</string>
+    </property>
+    <property name="iconText">
+     <string>JACK Transport</string>
+    </property>
+    <property name="name" stdset="0">
+     <cstring>syncJackAction</cstring>
+    </property>
+   </action>
+   <action name="syncMTCJackAction">
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="text">
+     <string>MTC (JACK MIDI)</string>
+    </property>
+    <property name="iconText">
+     <string>MTC (JACK MIDI)</string>
+    </property>
+    <property name="name" stdset="0">
+     <cstring>syncMTCJackAction</cstring>
+    </property>
+   </action>
+   <action name="syncMTCAlsaAction">
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="text">
+     <string>MTC (ALSA SEQ)</string>
+    </property>
+    <property name="iconText">
+     <string>MTC (ALSA SEQ)</string>
+    </property>
+    <property name="name" stdset="0">
+     <cstring>syncMTCAlsaAction</cstring>
+    </property>
+   </action>
+   <action name="syncOffAction">
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="text">
+     <string>off (slider)</string>
+    </property>
+    <property name="iconText">
+     <string>off</string>
+    </property>
+    <property name="name" stdset="0">
+     <cstring>syncOffAction</cstring>
+    </property>
+   </action>
+   <property name="name" stdset="0">
+    <cstring>syncAction</cstring>
+   </property>
+  </actiongroup>
+  <actiongroup name="zoomAction">
+   <action name="zoom50Action">
+    <property name="iconText">
+     <string>50%</string>
+    </property>
+    <property name="toolTip">
+     <string>50%</string>
+    </property>
+    <property name="name" stdset="0">
+     <cstring>zoom50Action</cstring>
+    </property>
+   </action>
+   <action name="zoom100Action">
+    <property name="iconText">
+     <string>100%</string>
+    </property>
+    <property name="toolTip">
+     <string>100%</string>
+    </property>
+    <property name="name" stdset="0">
+     <cstring>zoom100Action</cstring>
+    </property>
+   </action>
+   <action name="zoom200Action">
+    <property name="iconText">
+     <string>200%</string>
+    </property>
+    <property name="toolTip">
+     <string>200%</string>
+    </property>
+    <property name="name" stdset="0">
+     <cstring>zoom200Action</cstring>
+    </property>
+   </action>
+   <action name="zoomFullScreenAction">
+    <property name="iconText">
+     <string>Maximize</string>
+    </property>
+    <property name="toolTip">
+     <string>Maximize</string>
+    </property>
+    <property name="name" stdset="0">
+     <cstring>zoomFullScreenAction</cstring>
+    </property>
+   </action>
+   <property name="name" stdset="0">
+    <cstring>zoomAction</cstring>
+   </property>
+  </actiongroup>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>fileOpenAction</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>fileOpen()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fileExitAction</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>fileExit()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>helpAboutAction</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>helpAbout()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>zoom50Action</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>zoom50()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>zoom100Action</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>zoom100()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>zoom200Action</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>zoom200()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>zoomFullScreenAction</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>zoomFullScreen()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>syncOffAction</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>syncOff()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>syncMTCAlsaAction</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>syncMTCalsa()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>syncMTCJackAction</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>syncMTCjack()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>syncJackAction</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>syncJack()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>offsetSpinBox</sender>
+   <signal>valueChanged(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setOffset(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fpsSpinBox</sender>
+   <signal>valueChanged(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setFPS(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>osdBoxAction</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>osdBoxToggled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>osdSMPTEAction</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>osdSMPTEToggled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>osdFrameAction</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>osdFrameToggled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>osdFontAction</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>osdFont()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>seekBar</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>seekBarChanged(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>filePreferencesAction</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>filePreferences()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fileDisconnectAction</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>fileDisconnect()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fileImportAction</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>fileImport()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>seekany_frameAction</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>seekAnyFrame()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>seekcontinuouslyAction</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>seekContinuously()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>seekKeyFramesAction</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>seekKeyFrames()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

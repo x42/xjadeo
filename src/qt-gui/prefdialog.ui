@@ -1,622 +1,577 @@
-<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
-<class>PrefDialog</class>
-<widget class="QDialog">
-    <property name="name">
-        <cstring>PrefDialog</cstring>
-    </property>
-    <property name="geometry">
-        <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>370</width>
-            <height>391</height>
-        </rect>
-    </property>
-    <property name="caption">
-        <string>Preferences</string>
-    </property>
-    <property name="sizeGripEnabled">
-        <bool>true</bool>
-    </property>
-    <vbox>
-        <property name="name">
-            <cstring>unnamed</cstring>
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PrefDialog</class>
+ <widget class="QDialog" name="PrefDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>393</width>
+    <height>396</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Preferences</string>
+  </property>
+  <property name="sizeGripEnabled">
+   <bool>true</bool>
+  </property>
+  <layout class="QVBoxLayout">
+   <item>
+    <widget class="QGroupBox" name="groupBox3">
+     <property name="title">
+      <string>General Settings</string>
+     </property>
+     <layout class="QVBoxLayout">
+      <item>
+       <layout class="QHBoxLayout">
+        <item>
+         <widget class="QLabel" name="textLabel1">
+          <property name="text">
+           <string>Autoconnect ALSA Midi port (MTC):</string>
+          </property>
+          <property name="wordWrap">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="spacer8">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Expanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>90</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="prefLineAlsaMidi">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>60</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maxLength">
+           <number>16</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout">
+        <item>
+         <widget class="QLabel" name="textLabel3">
+          <property name="text">
+           <string>Autoconnect JACK Midi port (MTC):</string>
+          </property>
+          <property name="wordWrap">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="spacer9">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Expanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>0</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="prefLineJackMidi">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>160</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maxLength">
+           <number>64</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout">
+        <item>
+         <widget class="QLabel" name="textLabel1_2">
+          <property name="text">
+           <string>xjadeo/xjremote executable:</string>
+          </property>
+          <property name="wordWrap">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="spacer16_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Expanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>10</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="prefLineXjadeo">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>160</width>
+            <height>0</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout">
+        <item>
+         <widget class="QLabel" name="textLabel1_3">
+          <property name="text">
+           <string>xjinfo executable:</string>
+          </property>
+          <property name="wordWrap">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="spacer37">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Expanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>57</width>
+            <height>21</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="prefLineXjinfo">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>160</width>
+            <height>0</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout">
+        <item>
+         <widget class="QLabel" name="textLabel2_2">
+          <property name="text">
+           <string>mencoder executable:</string>
+          </property>
+          <property name="wordWrap">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="spacer17">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Expanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>38</width>
+            <height>21</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="prefLineMencoder">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>160</width>
+            <height>0</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox1">
+     <property name="title">
+      <string>Import Settings</string>
+     </property>
+     <layout class="QGridLayout">
+      <item row="0" column="0" colspan="2">
+       <widget class="QLabel" name="textLabel2">
+        <property name="text">
+         <string>Import to Codec:</string>
         </property>
-        <widget class="QGroupBox">
-            <property name="name">
-                <cstring>groupBox3</cstring>
-            </property>
-            <property name="title">
-                <string>General Settings</string>
-            </property>
-            <vbox>
-                <property name="name">
-                    <cstring>unnamed</cstring>
-                </property>
-                <widget class="QLayoutWidget">
-                    <property name="name">
-                        <cstring>layout11</cstring>
-                    </property>
-                    <hbox>
-                        <property name="name">
-                            <cstring>unnamed</cstring>
-                        </property>
-                        <widget class="QLabel">
-                            <property name="name">
-                                <cstring>textLabel1</cstring>
-                            </property>
-                            <property name="text">
-                                <string>Autoconnect ALSA Midi port (MTC):</string>
-                            </property>
-                        </widget>
-                        <spacer>
-                            <property name="name">
-                                <cstring>spacer8</cstring>
-                            </property>
-                            <property name="orientation">
-                                <enum>Horizontal</enum>
-                            </property>
-                            <property name="sizeType">
-                                <enum>Expanding</enum>
-                            </property>
-                            <property name="sizeHint">
-                                <size>
-                                    <width>90</width>
-                                    <height>20</height>
-                                </size>
-                            </property>
-                        </spacer>
-                        <widget class="QLineEdit">
-                            <property name="name">
-                                <cstring>prefLineAlsaMidi</cstring>
-                            </property>
-                            <property name="sizePolicy">
-                                <sizepolicy>
-                                    <hsizetype>0</hsizetype>
-                                    <vsizetype>0</vsizetype>
-                                    <horstretch>0</horstretch>
-                                    <verstretch>0</verstretch>
-                                </sizepolicy>
-                            </property>
-                            <property name="minimumSize">
-                                <size>
-                                    <width>60</width>
-                                    <height>0</height>
-                                </size>
-                            </property>
-                            <property name="maxLength">
-                                <number>16</number>
-                            </property>
-                        </widget>
-                    </hbox>
-                </widget>
-                <widget class="QLayoutWidget">
-                    <property name="name">
-                        <cstring>layout11</cstring>
-                    </property>
-                    <hbox>
-                        <property name="name">
-                            <cstring>unnamed</cstring>
-                        </property>
-                        <widget class="QLabel">
-                            <property name="name">
-                                <cstring>textLabel3</cstring>
-                            </property>
-                            <property name="text">
-                                <string>Autoconnect JACK Midi port (MTC):</string>
-                            </property>
-                        </widget>
-                        <spacer>
-                            <property name="name">
-                                <cstring>spacer9</cstring>
-                            </property>
-                            <property name="orientation">
-                                <enum>Horizontal</enum>
-                            </property>
-                            <property name="sizeType">
-                                <enum>Expanding</enum>
-                            </property>
-                            <property name="sizeHint">
-                                <size>
-                                    <width>0</width>
-                                    <height>20</height>
-                                </size>
-                            </property>
-                        </spacer>
-                        <widget class="QLineEdit">
-                            <property name="name">
-                                <cstring>prefLineJackMidi</cstring>
-                            </property>
-                            <property name="sizePolicy">
-                                <sizepolicy>
-                                    <hsizetype>7</hsizetype>
-                                    <vsizetype>0</vsizetype>
-                                    <horstretch>1</horstretch>
-                                    <verstretch>0</verstretch>
-                                </sizepolicy>
-                            </property>
-                            <property name="minimumSize">
-                                <size>
-                                    <width>160</width>
-                                    <height>0</height>
-                                </size>
-                            </property>
-                            <property name="maxLength">
-                                <number>64</number>
-                            </property>
-                        </widget>
-                    </hbox>
-                </widget>
-                <widget class="QLayoutWidget">
-                    <property name="name">
-                        <cstring>layout10</cstring>
-                    </property>
-                    <hbox>
-                        <property name="name">
-                            <cstring>unnamed</cstring>
-                        </property>
-                        <widget class="QLabel">
-                            <property name="name">
-                                <cstring>textLabel1_2</cstring>
-                            </property>
-                            <property name="text">
-                                <string>xjadeo/xjremote executable:</string>
-                            </property>
-                        </widget>
-                        <spacer>
-                            <property name="name">
-                                <cstring>spacer16_2</cstring>
-                            </property>
-                            <property name="orientation">
-                                <enum>Horizontal</enum>
-                            </property>
-                            <property name="sizeType">
-                                <enum>Expanding</enum>
-                            </property>
-                            <property name="sizeHint">
-                                <size>
-                                    <width>10</width>
-                                    <height>20</height>
-                                </size>
-                            </property>
-                        </spacer>
-                        <widget class="QLineEdit">
-                            <property name="name">
-                                <cstring>prefLineXjadeo</cstring>
-                            </property>
-                            <property name="sizePolicy">
-                                <sizepolicy>
-                                    <hsizetype>7</hsizetype>
-                                    <vsizetype>0</vsizetype>
-                                    <horstretch>1</horstretch>
-                                    <verstretch>0</verstretch>
-                                </sizepolicy>
-                            </property>
-                            <property name="minimumSize">
-                                <size>
-                                    <width>160</width>
-                                    <height>0</height>
-                                </size>
-                            </property>
-                        </widget>
-                    </hbox>
-                </widget>
-                <widget class="QLayoutWidget">
-                    <property name="name">
-                        <cstring>layout13</cstring>
-                    </property>
-                    <hbox>
-                        <property name="name">
-                            <cstring>unnamed</cstring>
-                        </property>
-                        <widget class="QLabel">
-                            <property name="name">
-                                <cstring>textLabel1_3</cstring>
-                            </property>
-                            <property name="text">
-                                <string>xjinfo executable:</string>
-                            </property>
-                        </widget>
-                        <spacer>
-                            <property name="name">
-                                <cstring>spacer37</cstring>
-                            </property>
-                            <property name="orientation">
-                                <enum>Horizontal</enum>
-                            </property>
-                            <property name="sizeType">
-                                <enum>Expanding</enum>
-                            </property>
-                            <property name="sizeHint">
-                                <size>
-                                    <width>57</width>
-                                    <height>21</height>
-                                </size>
-                            </property>
-                        </spacer>
-                        <widget class="QLineEdit">
-                            <property name="name">
-                                <cstring>prefLineXjinfo</cstring>
-                            </property>
-                            <property name="sizePolicy">
-                                <sizepolicy>
-                                    <hsizetype>7</hsizetype>
-                                    <vsizetype>0</vsizetype>
-                                    <horstretch>1</horstretch>
-                                    <verstretch>0</verstretch>
-                                </sizepolicy>
-                            </property>
-                            <property name="minimumSize">
-                                <size>
-                                    <width>160</width>
-                                    <height>0</height>
-                                </size>
-                            </property>
-                        </widget>
-                    </hbox>
-                </widget>
-                <widget class="QLayoutWidget">
-                    <property name="name">
-                        <cstring>layout12</cstring>
-                    </property>
-                    <hbox>
-                        <property name="name">
-                            <cstring>unnamed</cstring>
-                        </property>
-                        <widget class="QLabel">
-                            <property name="name">
-                                <cstring>textLabel2_2</cstring>
-                            </property>
-                            <property name="text">
-                                <string>mencoder executable:</string>
-                            </property>
-                        </widget>
-                        <spacer>
-                            <property name="name">
-                                <cstring>spacer17</cstring>
-                            </property>
-                            <property name="orientation">
-                                <enum>Horizontal</enum>
-                            </property>
-                            <property name="sizeType">
-                                <enum>Expanding</enum>
-                            </property>
-                            <property name="sizeHint">
-                                <size>
-                                    <width>38</width>
-                                    <height>21</height>
-                                </size>
-                            </property>
-                        </spacer>
-                        <widget class="QLineEdit">
-                            <property name="name">
-                                <cstring>prefLineMencoder</cstring>
-                            </property>
-                            <property name="sizePolicy">
-                                <sizepolicy>
-                                    <hsizetype>7</hsizetype>
-                                    <vsizetype>0</vsizetype>
-                                    <horstretch>1</horstretch>
-                                    <verstretch>0</verstretch>
-                                </sizepolicy>
-                            </property>
-                            <property name="minimumSize">
-                                <size>
-                                    <width>160</width>
-                                    <height>0</height>
-                                </size>
-                            </property>
-                        </widget>
-                    </hbox>
-                </widget>
-            </vbox>
-        </widget>
-        <widget class="QGroupBox">
-            <property name="name">
-                <cstring>groupBox1</cstring>
-            </property>
-            <property name="title">
-                <string>Import Settings</string>
-            </property>
-            <grid>
-                <property name="name">
-                    <cstring>unnamed</cstring>
-                </property>
-                <widget class="QLabel" row="0" column="0" rowspan="1" colspan="2">
-                    <property name="name">
-                        <cstring>textLabel2</cstring>
-                    </property>
-                    <property name="text">
-                        <string>Import to Codec:</string>
-                    </property>
-                </widget>
-                <spacer row="0" column="4" rowspan="2" colspan="1">
-                    <property name="name">
-                        <cstring>spacer16</cstring>
-                    </property>
-                    <property name="orientation">
-                        <enum>Horizontal</enum>
-                    </property>
-                    <property name="sizeType">
-                        <enum>Fixed</enum>
-                    </property>
-                    <property name="sizeHint">
-                        <size>
-                            <width>32</width>
-                            <height>8</height>
-                        </size>
-                    </property>
-                </spacer>
-                <spacer row="0" column="2">
-                    <property name="name">
-                        <cstring>spacer5</cstring>
-                    </property>
-                    <property name="orientation">
-                        <enum>Horizontal</enum>
-                    </property>
-                    <property name="sizeType">
-                        <enum>Expanding</enum>
-                    </property>
-                    <property name="sizeHint">
-                        <size>
-                            <width>21</width>
-                            <height>8</height>
-                        </size>
-                    </property>
-                </spacer>
-                <widget class="QComboBox" row="0" column="3">
-                    <item>
-                        <property name="text">
-                            <string>mpeg4</string>
-                        </property>
-                    </item>
-                    <item>
-                        <property name="text">
-                            <string>mjpeg</string>
-                        </property>
-                    </item>
-                    <item>
-                        <property name="text">
-                            <string>msmpeg4</string>
-                        </property>
-                    </item>
-                    <item>
-                        <property name="text">
-                            <string>mpeg1video</string>
-                        </property>
-                    </item>
-                    <item>
-                        <property name="text">
-                            <string>mpeg2video</string>
-                        </property>
-                    </item>
-                    <property name="name">
-                        <cstring>codecComboBox</cstring>
-                    </property>
-                    <property name="editable">
-                        <bool>true</bool>
-                    </property>
-                    <property name="sizeLimit">
-                        <number>16</number>
-                    </property>
-                </widget>
-                <widget class="QLabel" row="1" column="0" rowspan="2" colspan="1">
-                    <property name="name">
-                        <cstring>textLabel1_4</cstring>
-                    </property>
-                    <property name="text">
-                        <string>mencoder options:</string>
-                    </property>
-                    <property name="alignment">
-                        <set>AlignVCenter</set>
-                    </property>
-                </widget>
-                <widget class="QLineEdit" row="2" column="1" rowspan="1" colspan="3">
-                    <property name="name">
-                        <cstring>prefLineMcOptions</cstring>
-                    </property>
-                </widget>
-                <spacer row="2" column="4">
-                    <property name="name">
-                        <cstring>spacer16_3</cstring>
-                    </property>
-                    <property name="orientation">
-                        <enum>Horizontal</enum>
-                    </property>
-                    <property name="sizeType">
-                        <enum>Fixed</enum>
-                    </property>
-                    <property name="sizeHint">
-                        <size>
-                            <width>32</width>
-                            <height>8</height>
-                        </size>
-                    </property>
-                </spacer>
-                <spacer row="3" column="3" rowspan="1" colspan="2">
-                    <property name="name">
-                        <cstring>spacer6</cstring>
-                    </property>
-                    <property name="orientation">
-                        <enum>Horizontal</enum>
-                    </property>
-                    <property name="sizeType">
-                        <enum>Expanding</enum>
-                    </property>
-                    <property name="sizeHint">
-                        <size>
-                            <width>270</width>
-                            <height>9</height>
-                        </size>
-                    </property>
-                </spacer>
-                <widget class="QCheckBox" row="3" column="0" rowspan="1" colspan="3">
-                    <property name="name">
-                        <cstring>prefDirCheckBox</cstring>
-                    </property>
-                    <property name="text">
-                        <string>Default Import Destination Path:</string>
-                    </property>
-                </widget>
-                <widget class="QPushButton" row="4" column="4">
-                    <property name="name">
-                        <cstring>selDestPushButton</cstring>
-                    </property>
-                    <property name="sizePolicy">
-                        <sizepolicy>
-                            <hsizetype>0</hsizetype>
-                            <vsizetype>0</vsizetype>
-                            <horstretch>0</horstretch>
-                            <verstretch>0</verstretch>
-                        </sizepolicy>
-                    </property>
-                    <property name="maximumSize">
-                        <size>
-                            <width>32</width>
-                            <height>32</height>
-                        </size>
-                    </property>
-                    <property name="text">
-                        <string></string>
-                    </property>
-                    <property name="pixmap">
-                        <pixmap>fileopen</pixmap>
-                    </property>
-                </widget>
-                <widget class="QLineEdit" row="4" column="2" rowspan="1" colspan="2">
-                    <property name="name">
-                        <cstring>destDirLineEdit</cstring>
-                    </property>
-                </widget>
-                <spacer row="4" column="0" rowspan="1" colspan="2">
-                    <property name="name">
-                        <cstring>spacer7</cstring>
-                    </property>
-                    <property name="orientation">
-                        <enum>Horizontal</enum>
-                    </property>
-                    <property name="sizeType">
-                        <enum>Expanding</enum>
-                    </property>
-                    <property name="sizeHint">
-                        <size>
-                            <width>41</width>
-                            <height>14</height>
-                        </size>
-                    </property>
-                </spacer>
-            </grid>
-        </widget>
-        <spacer>
-            <property name="name">
-                <cstring>spacer12</cstring>
-            </property>
-            <property name="orientation">
-                <enum>Vertical</enum>
-            </property>
-            <property name="sizeType">
-                <enum>Expanding</enum>
-            </property>
-            <property name="sizeHint">
-                <size>
-                    <width>20</width>
-                    <height>40</height>
-                </size>
-            </property>
-        </spacer>
-        <widget class="QLayoutWidget">
-            <property name="name">
-                <cstring>layout19</cstring>
-            </property>
-            <hbox>
-                <property name="name">
-                    <cstring>unnamed</cstring>
-                </property>
-                <widget class="QPushButton">
-                    <property name="name">
-                        <cstring>buttonCancel</cstring>
-                    </property>
-                    <property name="text">
-                        <string>&amp;Cancel</string>
-                    </property>
-                    <property name="accel">
-                        <string></string>
-                    </property>
-                    <property name="autoDefault">
-                        <bool>true</bool>
-                    </property>
-                </widget>
-                <spacer>
-                    <property name="name">
-                        <cstring>Horizontal Spacing2</cstring>
-                    </property>
-                    <property name="orientation">
-                        <enum>Horizontal</enum>
-                    </property>
-                    <property name="sizeType">
-                        <enum>Expanding</enum>
-                    </property>
-                    <property name="sizeHint">
-                        <size>
-                            <width>164</width>
-                            <height>20</height>
-                        </size>
-                    </property>
-                </spacer>
-                <widget class="QPushButton">
-                    <property name="name">
-                        <cstring>buttonOk</cstring>
-                    </property>
-                    <property name="text">
-                        <string>&amp;OK</string>
-                    </property>
-                    <property name="accel">
-                        <string></string>
-                    </property>
-                    <property name="autoDefault">
-                        <bool>true</bool>
-                    </property>
-                    <property name="default">
-                        <bool>true</bool>
-                    </property>
-                </widget>
-            </hbox>
-        </widget>
-    </vbox>
-</widget>
-<connections>
-    <connection>
-        <sender>buttonCancel</sender>
-        <signal>clicked()</signal>
-        <receiver>PrefDialog</receiver>
-        <slot>reject()</slot>
-    </connection>
-    <connection>
-        <sender>buttonOk</sender>
-        <signal>clicked()</signal>
-        <receiver>PrefDialog</receiver>
-        <slot>accept()</slot>
-    </connection>
-    <connection>
-        <sender>selDestPushButton</sender>
-        <signal>clicked()</signal>
-        <receiver>PrefDialog</receiver>
-        <slot>selPrefsDest()</slot>
-    </connection>
-    <connection>
-        <sender>prefDirCheckBox</sender>
-        <signal>toggled(bool)</signal>
-        <receiver>PrefDialog</receiver>
-        <slot>prefDirEnable(bool)</slot>
-    </connection>
-</connections>
-<includes>
-    <include location="local" impldecl="in implementation">prefdialog.ui.h</include>
-</includes>
-<slots>
-    <slot>selPrefsDest()</slot>
-    <slot>prefDirEnable( bool t )</slot>
-</slots>
-<pixmapinproject/>
-<layoutdefaults spacing="6" margin="11"/>
-</UI>
+        <property name="wordWrap">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4" rowspan="2">
+       <spacer name="spacer16">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>32</width>
+          <height>8</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="0" column="2">
+       <spacer name="spacer5">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Expanding</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>21</width>
+          <height>8</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="0" column="3">
+       <widget class="QComboBox" name="codecComboBox">
+        <property name="editable">
+         <bool>true</bool>
+        </property>
+        <item>
+         <property name="text">
+          <string>mpeg4</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>mjpeg</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>msmpeg4</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>mpeg1video</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>mpeg2video</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="0" rowspan="2">
+       <widget class="QLabel" name="textLabel1_4">
+        <property name="text">
+         <string>mencoder options:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignVCenter</set>
+        </property>
+        <property name="wordWrap">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" colspan="3">
+       <widget class="QLineEdit" name="prefLineMcOptions"/>
+      </item>
+      <item row="2" column="4">
+       <spacer name="spacer16_3">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>32</width>
+          <height>8</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="3" column="3" colspan="2">
+       <spacer name="spacer6">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Expanding</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>270</width>
+          <height>9</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="3" column="0" colspan="3">
+       <widget class="QCheckBox" name="prefDirCheckBox">
+        <property name="text">
+         <string>Default Import Destination Path:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="4">
+       <widget class="QPushButton" name="selDestPushButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="2" colspan="2">
+       <widget class="QLineEdit" name="destDirLineEdit"/>
+      </item>
+      <item row="4" column="0" colspan="2">
+       <spacer name="spacer7">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Expanding</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>41</width>
+          <height>14</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="spacer12">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Expanding</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <layout class="QHBoxLayout">
+     <item>
+      <widget class="QPushButton" name="buttonCancel">
+       <property name="text">
+        <string>&amp;Cancel</string>
+       </property>
+       <property name="shortcut">
+        <string/>
+       </property>
+       <property name="autoDefault">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="Horizontal Spacing2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Expanding</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>164</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="buttonOk">
+       <property name="text">
+        <string>&amp;OK</string>
+       </property>
+       <property name="shortcut">
+        <string/>
+       </property>
+       <property name="autoDefault">
+        <bool>true</bool>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonCancel</sender>
+   <signal>clicked()</signal>
+   <receiver>PrefDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonOk</sender>
+   <signal>clicked()</signal>
+   <receiver>PrefDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>selDestPushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>PrefDialog</receiver>
+   <slot>selPrefsDest()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>prefDirCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>PrefDialog</receiver>
+   <slot>prefDirEnable(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
