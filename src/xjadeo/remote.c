@@ -1001,9 +1001,11 @@ void exec_remote_cmd_recursive (Dcommand *leave, char *cmd) {
 	}
 	if (leave[i].children) 
 		exec_remote_cmd_recursive(leave[i].children,cmd+strlen(leave[i].name));
-	else if (leave[i].func) 
-		leave[i].func(cmd+strlen(leave[i].name));
-	else 
+	else if (leave[i].func) {
+		char *arg= cmd+strlen(leave[i].name);
+		strtok(arg, "\r\n");
+		leave[i].func(arg);
+	} else 
 		remote_printf(401,"command not implemented.");
 }
 
@@ -1043,8 +1045,8 @@ int remote_read_io(void) {
 
 	while ((end = strchr(start, '\n'))) {
 		*(end) = '\0';
-		//exec_remote_cmd(start);
-		exec_remote_cmd_recursive(cmd_root,start);
+		if (strlen(start) > 0) 
+			exec_remote_cmd_recursive(cmd_root,start);
 		inbuf->offset-=((++end)-start);
 		if (inbuf->offset) memmove(inbuf->buf,end,inbuf->offset);
 	}
@@ -1062,7 +1064,17 @@ int remote_read_h(void) {
 		PeekNamedPipe(h, 0, 0, 0, &bytesAvail, 0);
 		DWORD sr=0;
 		if (bytesAvail > 0 && ReadFile(h, buf, BUFSIZ, &sr, NULL) && sr>0) {
-			exec_remote_cmd_recursive(cmd_root,buf);
+			buf[sr]=0;
+			char *start, *end;
+			start = buf;
+			while (*start && (end = strchr(start, '\n'))) {
+				*(end) = '\0';
+				strtok(start, "\r");
+				if (strlen(start) < 1) continue;
+				//fprintf(stdout,"DEBUG: '%s'\n",start);
+				exec_remote_cmd_recursive(cmd_root,start);
+				start=end+1;
+			}
 		  rv=0;
 		}
 	} while (bytesAvail>0);
@@ -1143,6 +1155,7 @@ int remote_read_mq(void) {
 
 	while ((rx=mymq_read(data)) > 0 ) { 
 		if ((t =  strchr(data, '\n'))) *t='\0';
+		if (strlen(data) < 1) continue;
 		exec_remote_cmd_recursive(cmd_root,data);
 		rv=0;
 	}
@@ -1208,6 +1221,7 @@ int remote_read_ipc () {
 	// TODO WHILE  LOOP..
 	char *t;
 	if ((t = strchr(rxbuf.mtext, '\n'))) *t='\0';
+	if (strlen(rxbuf.mtext) < 1) continue;
 	exec_remote_cmd_recursive(cmd_root,rxbuf.mtext);
 	return(0);
 }
