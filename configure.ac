@@ -591,6 +591,4 @@ fi
 echo " "
 echo "now type 'make'; followed by 'make install' as root."
 echo " "
-echo "JACK: c: $JACK_CFLAGS l: $JACK_LIBS"
-echo "SDL: c: $SDL_CFLAGS l: $SDL_LIBS"
 
