@@ -514,7 +514,6 @@ void render_buffer (uint8_t *mybuffer) {
 		if (OSD_mode&OSD_OFFF ) {
 			char tempoff[30];
 			snprintf(tempoff,30,"off: %li",ts_offset);
-			printf("OFFSET %s  \n", tempoff);
 			OSD_render (VO[VOutput].render_fmt, mybuffer, tempoff, OSD_CENTER, 50);
 		} else if (OSD_mode&OSD_OFFS ) { 
 			char tempsmpte[30];
