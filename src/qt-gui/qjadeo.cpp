@@ -4,8 +4,6 @@
 #include <qtimer.h>
 #include <qfiledialog.h>
 #include <qmessagebox.h>
-//#include <qpopupmenu.h>
-#include <qstatusbar.h>
 #include <qprogressbar.h>
 #include <qspinbox.h>
 #include <qslider.h>
@@ -22,7 +20,7 @@
 #include <math.h>
 
 // Global variables
-QProcess xjadeo;
+//QProcess xjadeo;
 
 ///////////////////////////////////////////////////////
 // QJadeo window
@@ -30,27 +28,23 @@ QProcess xjadeo;
 
 // Constructor
 
-#define MAX_RECENTFILES 5
-
 QJadeo::QJadeo()
 {
 
   setupUi(this);
   retranslateUi(this);
 
-  // Shamelessly stolen from qjackctl. Qt doc misleading.
   m_settings.beginGroup("/qjadeo");
 
-  int windowWidth = m_settings.value("/WindowWidth", 460).toInt();
-  int windowHeight = m_settings.value("WindowHeight", 530).toInt();
+  int windowWidth = m_settings.value("WindowWidth", 460).toInt();
+  int windowHeight = m_settings.value("WindowHeight", 100).toInt();
   int windowX = m_settings.value("WindowX", -1).toInt();
   int windowY = m_settings.value("WindowY", -1).toInt();
 
-# if 0
   resize(windowWidth, windowHeight);
   if(windowX != -1 || windowY != -1)
     move(windowX, windowY);
-#endif
+
   for(int i = 0; i < MAX_RECENTFILES; ++i)
   {
     QString filename = m_settings.value("File" + QString::number(i + 1)).toString();
@@ -58,9 +52,6 @@ QJadeo::QJadeo()
     if(!filename.isEmpty())
       m_recentFiles.push_back(filename);
   }
-  if(m_recentFiles.count())
-    updateRecentFilesMenu();
-
   m_alsamidiport = m_settings.value("ALSA MIDI port").toString();
   m_jackmidiport = m_settings.value("JACK MIDI port").toString();
   m_importdir = m_settings.value("Import Directory").toString();
@@ -79,27 +70,36 @@ QJadeo::QJadeo()
   if (m_xjadeopath.isEmpty()) m_xjadeopath = QString(BINDIR "xjremote");
   if (m_xjinfopath.isEmpty()) m_xjinfopath = QString(BINDIR "xjinfo");
   m_osdfont = m_settings.value("OSD font").toString();
-#if 0 // QT4
-  fileMenu->setItemEnabled(fileMenu->idAt(1),testexec(m_mencoderpath));
-  statusBar()->hide();
-#endif
+  fileImportAction->setEnabled(testexec(m_mencoderpath));
 
+  for (int i = 0; i < MAX_RECENTFILES; ++i) {
+    recentFileActs[i] = new QAction(this);
+    recentFileActs[i]->setVisible(false);
+    connect(recentFileActs[i], SIGNAL(triggered()), this, SLOT(fileOpenRecent())); 
+    fileMenu->addAction(recentFileActs[i]);
+  }
+
+  if(m_recentFiles.size())
+    updateRecentFilesMenu();
 }
 
 void QJadeo::initialize () 
 {
-  xjadeo.write(QString("osd font " + m_osdfont + "\nosd text \n").toAscii());
-  xjadeo.write(QByteArray("get width\n"));
-  xjadeo.write(QByteArray("get height\n"));
-  xjadeo.write(QByteArray("get frames\n"));
-  xjadeo.write(QByteArray("get framerate\n"));
-  xjadeo.write(QByteArray("get offset\n"));
-  xjadeo.write(QByteArray("get osdcfg\n"));
-  xjadeo.write(QByteArray("midi driver\n"));
-  xjadeo.write(QByteArray("get syncsource\n"));
-  xjadeo.write(QByteArray("get position\n"));
-  xjadeo.write(QByteArray("get seekmode\n"));
-  xjadeo.write(QByteArray("notify frame\n"));
+  if (!m_osdfont.isEmpty()) {
+    xjadeo->write(QString("osd font " + m_osdfont + "\n").toAscii());
+  }
+  xjadeo->write(QByteArray("osd text \n"));
+  xjadeo->write(QByteArray("get width\n"));
+  xjadeo->write(QByteArray("get height\n"));
+  xjadeo->write(QByteArray("get frames\n"));
+  xjadeo->write(QByteArray("get framerate\n"));
+  xjadeo->write(QByteArray("get offset\n"));
+  xjadeo->write(QByteArray("get osdcfg\n"));
+  xjadeo->write(QByteArray("midi driver\n"));
+  xjadeo->write(QByteArray("get syncsource\n"));
+  xjadeo->write(QByteArray("get position\n"));
+  xjadeo->write(QByteArray("get seekmode\n"));
+  xjadeo->write(QByteArray("notify frame\n"));
 }
 
 /* search for external executable 
@@ -108,15 +108,19 @@ void QJadeo::initialize ()
  */
 bool QJadeo::testexec(QString exe)
 {
+  return 1;
   int timeout=10;
   QProcess testbin; 
   /* FIXME: there MUST be a better way 
    * than to simply try exeute it .. */
 //testbin.setCommunication(0);
   testbin.start(exe,QStringList("-V"));
-  if(!testbin.waitForStarted()) return (0);
-  while (testbin.state() && timeout--) usleep (10000);
-  if (timeout<1) testbin.kill();
+  if(!testbin.waitForStarted()) {
+    testbin.kill();
+    return (0);
+  }
+  //while (testbin.state() && timeout--) usleep (10000);
+  //if (timeout<1) testbin.kill();
 //if (testbin.exitStatus() != 0) return(0);
   return(1);
 }
@@ -125,38 +129,34 @@ bool QJadeo::testexec(QString exe)
 
 void QJadeo::updateRecentFilesMenu()
 {
-#if 0 // QT4
-  for(int i = 0; i < MAX_RECENTFILES; ++i)
-  {
-    if(fileMenu->findItem(i))
-      fileMenu->removeItem(i);
-    if(i < int (m_recentFiles.count()))
-      fileMenu->insertItem(QString("&%1 %2").arg(i + 1).arg(m_recentFiles[i]),
-			   this, SLOT(fileOpenRecent(int)), 0, i);
+  int numRecentFiles = qMin(m_recentFiles.size(), MAX_RECENTFILES);
+
+  for (int i = 0; i < numRecentFiles; ++i) {
+    QString text = tr("&%1 %2").arg(i + 1).arg(QFileInfo(m_recentFiles[i]).fileName());
+    recentFileActs[i]->setText(text);
+    recentFileActs[i]->setData(m_recentFiles[i]);
+    recentFileActs[i]->setVisible(true);
   }
-#endif
+  for (int j = numRecentFiles; j < MAX_RECENTFILES; ++j)
+    recentFileActs[j]->setVisible(false);
+
+  //separatorAct->setVisible(numRecentFiles > 0);
 }
 
 void QJadeo::updateRecentFiles(const QString & filename)
 {
-#if 0 // QT4 
-  if(m_recentFiles.find(filename) != m_recentFiles.end())
-    return;
-
-  m_recentFiles.push_back(filename);
-  if(m_recentFiles.count() > MAX_RECENTFILES)
-    m_recentFiles.pop_front();
-
+  m_recentFiles.removeAll(filename);
+  m_recentFiles.prepend(filename);
+  while (m_recentFiles.size() > MAX_RECENTFILES)
+    m_recentFiles.removeLast();
   updateRecentFilesMenu();
-#endif
 }
 
-void QJadeo::fileOpenRecent(int index)
+void QJadeo::fileOpenRecent()
 {
-  fileLoad(m_recentFiles[index]);
+  QAction *action = qobject_cast<QAction *>(sender());
+  if (action) fileLoad(action->data().toString());
 }
-
-// Slots
 
 void QJadeo::saveOptions()
 {
@@ -164,7 +164,7 @@ void QJadeo::saveOptions()
   m_settings.setValue("WindowHeight", height());
   m_settings.setValue("WindowX", x());
   m_settings.setValue("WindowY", y());
-  for(int i = 0; i < int (m_recentFiles.count()); ++i)
+  for(int i = 0; i < int (m_recentFiles.size()); ++i)
     m_settings.setValue("File" + QString::number(i + 1), m_recentFiles[i]);
   m_settings.setValue("OSD font", m_osdfont);
   m_settings.setValue("JACK MIDI port", m_jackmidiport);
@@ -191,8 +191,8 @@ void QJadeo::fileOpen()
 
 void QJadeo::fileDisconnect()
 {
-  xjadeo.write(QByteArray("notify disable\n"));
-  xjadeo.write(QByteArray("exit\n"));
+  xjadeo->write(QByteArray("notify disable\n"));
+  xjadeo->write(QByteArray("exit\n"));
   saveOptions();
   // xjremote will exit and we'll go down with it
   // xjadeo will return a @489 error message 
@@ -201,8 +201,8 @@ void QJadeo::fileDisconnect()
 
 void QJadeo::fileExit()
 {
-  xjadeo.write(QByteArray("quit\n"));
-  xjadeo.write(QByteArray("exit\n"));
+  xjadeo->write(QByteArray("quit\n"));
+  xjadeo->write(QByteArray("exit\n"));
   saveOptions();
   //close(); // we will terminate when xjadeo/xjremote does.
 }
@@ -229,9 +229,7 @@ void QJadeo::filePreferences()
       m_importcodec = pdialog->codecComboBox->currentText();
       m_importdestination = pdialog->prefDirCheckBox->isChecked();
       m_mencoderpath = pdialog->prefLineMencoder->text();
-#if 0 // QT4
-      fileMenu->setItemEnabled(fileMenu->idAt(1),testexec(m_mencoderpath));
-#endif
+      fileImportAction->setEnabled(testexec(m_mencoderpath));
       m_mencoderopts = pdialog->prefLineMcOptions->text();
       if (!pdialog->prefLineXjadeo->text().isEmpty())
 	m_xjadeopath = pdialog->prefLineXjadeo->text();
@@ -300,47 +298,47 @@ void QJadeo::helpAbout()
     this,
     "About qjadeo",
     "(c) 2006 Robin Gareus & Luis Garrido\n"
-    "http://xjadeo.sf.net"
+    "http://xjadeo->sf.net"
   );
 }
 
 void QJadeo::seekAnyFrame()
 {
-  xjadeo.write(QByteArray("set seekmode 2\n"));
+  xjadeo->write(QByteArray("set seekmode 2\n"));
 }
 
 
 void QJadeo::seekContinuously()
 {
-  xjadeo.write(QByteArray("set seekmode 1\n"));
+  xjadeo->write(QByteArray("set seekmode 1\n"));
 }
 
 
 void QJadeo::seekKeyFrames()
 {
-  xjadeo.write(QByteArray("set seekmode 3\n"));
+  xjadeo->write(QByteArray("set seekmode 3\n"));
 }
 
 void QJadeo::zoom50()
 {
-  xjadeo.write(QByteArray("window resize 50\n"));
+  xjadeo->write(QByteArray("window resize 50\n"));
 }
 
 void QJadeo::zoom100()
 {
-  xjadeo.write(QByteArray("window resize 100\n"));
+  xjadeo->write(QByteArray("window resize 100\n"));
 }
 
 void QJadeo::zoom200()
 {
-  xjadeo.write(QByteArray("window resize 200\n"));
+  xjadeo->write(QByteArray("window resize 200\n"));
 }
 
 void QJadeo::zoomFullScreen()
 {
   QDesktopWidget *d = QApplication::desktop();
-  xjadeo.write(QByteArray("window position 0x0\n"));
-  xjadeo.write(QString(
+  xjadeo->write(QByteArray("window position 0x0\n"));
+  xjadeo->write(QString(
     "window resize " + QString::number(d->width()) +
     "x" + QString::number(d->height()) + "\n"
   ).toAscii());
@@ -348,72 +346,72 @@ void QJadeo::zoomFullScreen()
 
 void QJadeo::syncJack()
 {
-  xjadeo.write(QByteArray("midi disconnect\n"));
-  xjadeo.write(QByteArray("jack connect\n"));
-  xjadeo.write(QByteArray("midi driver\n"));
-  xjadeo.write(QByteArray("get syncsource\n"));
+  xjadeo->write(QByteArray("midi disconnect\n"));
+  xjadeo->write(QByteArray("jack connect\n"));
+  xjadeo->write(QByteArray("midi driver\n"));
+  xjadeo->write(QByteArray("get syncsource\n"));
 }
 
 void QJadeo::syncMTCalsa()
 {
-  xjadeo.write(QByteArray("jack disconnect\n"));
-  xjadeo.write(QByteArray("midi disconnect\n"));
-  xjadeo.write(QByteArray("midi driver alsa-seq\n"));
-  xjadeo.write(QString("midi connect "+ m_alsamidiport +"\n").toAscii());
-  xjadeo.write(QByteArray("midi driver\n"));
-  xjadeo.write(QByteArray("get syncsource\n"));
+  xjadeo->write(QByteArray("jack disconnect\n"));
+  xjadeo->write(QByteArray("midi disconnect\n"));
+  xjadeo->write(QByteArray("midi driver alsa-seq\n"));
+  xjadeo->write(QString("midi connect "+ m_alsamidiport +"\n").toAscii());
+  xjadeo->write(QByteArray("midi driver\n"));
+  xjadeo->write(QByteArray("get syncsource\n"));
 }
 
 void QJadeo::syncMTCjack()
 {
-  xjadeo.write(QByteArray("jack disconnect\n"));
-  xjadeo.write(QByteArray("midi disconnect\n"));
-  xjadeo.write(QByteArray("midi driver jack\n"));
-  xjadeo.write(QString("midi connect "+ m_jackmidiport +"\n").toAscii());
-  xjadeo.write(QByteArray("midi driver\n"));
-  xjadeo.write(QByteArray("get syncsource\n"));
+  xjadeo->write(QByteArray("jack disconnect\n"));
+  xjadeo->write(QByteArray("midi disconnect\n"));
+  xjadeo->write(QByteArray("midi driver jack\n"));
+  xjadeo->write(QString("midi connect "+ m_jackmidiport +"\n").toAscii());
+  xjadeo->write(QByteArray("midi driver\n"));
+  xjadeo->write(QByteArray("get syncsource\n"));
 }
 
 void QJadeo::syncOff()
 {
-  xjadeo.write(QByteArray("jack disconnect\n"));
-  xjadeo.write(QByteArray("midi disconnect\n"));
-  xjadeo.write(QByteArray("midi driver\n"));
-  xjadeo.write(QByteArray("get syncsource\n"));
+  xjadeo->write(QByteArray("jack disconnect\n"));
+  xjadeo->write(QByteArray("midi disconnect\n"));
+  xjadeo->write(QByteArray("midi driver\n"));
+  xjadeo->write(QByteArray("get syncsource\n"));
 }
 
 void QJadeo::setFPS(const QString &fps)
 {
-  xjadeo.write(QString("set fps " + fps + "\n").toAscii());
+  xjadeo->write(QString("set fps " + fps + "\n").toAscii());
 }
 
 void QJadeo::setOffset(const QString &offset)
 {
-  xjadeo.write(QString("set offset " + offset + "\n").toAscii());
+  xjadeo->write(QString("set offset " + offset + "\n").toAscii());
 }
 
 void QJadeo::osdFrameToggled(bool value)
 {
   if(value)
-    xjadeo.write(QByteArray("osd frame 0\n"));
+    xjadeo->write(QByteArray("osd frame 0\n"));
   else
-    xjadeo.write(QByteArray("osd frame -1\n"));
+    xjadeo->write(QByteArray("osd frame -1\n"));
 }
 
 void QJadeo::osdSMPTEToggled(bool value)
 {
   if(value)
-    xjadeo.write(QByteArray("osd smpte 100\n"));
+    xjadeo->write(QByteArray("osd smpte 100\n"));
   else
-    xjadeo.write(QByteArray("osd smpte -1\n"));
+    xjadeo->write(QByteArray("osd smpte -1\n"));
 }
 
 void QJadeo::osdBoxToggled(bool value)
 {
   if(value)
-    xjadeo.write(QByteArray("osd box\n"));
+    xjadeo->write(QByteArray("osd box\n"));
   else
-    xjadeo.write(QByteArray("osd nobox\n"));
+    xjadeo->write(QByteArray("osd nobox\n"));
 }
 
 void QJadeo::seekBarChanged( int value )
@@ -424,7 +422,7 @@ void QJadeo::seekBarChanged( int value )
   	frame = value*m_frames/1000;	
   }
   Temp.sprintf("seek %i\n",frame);
-  xjadeo.write(Temp.toAscii());
+  xjadeo->write(Temp.toAscii());
 }
 
 void QJadeo::osdFont()
@@ -434,7 +432,8 @@ void QJadeo::osdFont()
   if(!s.isNull())
   {
     m_osdfont = s;
-    xjadeo.write(QString("osd font " + s + "\n").toAscii());
+    xjadeo->write(QString("osd font " + s + "\n").toAscii());
+    xjadeo->write(QByteArray("osd text \n"));
   }
 }
 
@@ -443,10 +442,10 @@ void QJadeo::osdFont()
 void QJadeo::readFromStdout()
 {
 
-  while(xjadeo.canReadLine())
+  while(xjadeo->canReadLine())
   {
-    QString response = xjadeo.readLine();
-    qDebug(QString("Response: " + response).toAscii().data());
+    QString response = xjadeo->readLine();
+    qDebug(QString("ResponseLine: " + response).toAscii().data());
 
     int status = response.mid(1, 3).toInt();
 
@@ -459,7 +458,7 @@ void QJadeo::readFromStdout()
           case 410:   // get filename -> no open video file
             break;
           case 489:   // -> tried "exit" on xjadeo (not xjremote)
-	    xjadeo.write(QByteArray("quit\n"));
+	    xjadeo->write(QByteArray("quit\n"));
 	    break;
           default:
             QMessageBox::critical(
@@ -478,6 +477,7 @@ void QJadeo::readFromStdout()
 	if (comment > 0) response.truncate(comment);
         QString name = response.mid(5, equalsign - 5);
         QString value = response.right(response.length() - equalsign - 1);
+        //qDebug(QString("Response: name=" + name + " value=" +value).toAscii().data());
         if(name == "position")
         {
           if(m_frames > 0) {
@@ -493,18 +493,16 @@ void QJadeo::readFromStdout()
           m_movie_height = value.toInt();
         else if(name == "seekmode")
 	{
-#if 0 // QT 4
-	  Seek->setItemChecked(Seek->idAt(0),FALSE);
-	  Seek->setItemChecked(Seek->idAt(1),FALSE);
-	  Seek->setItemChecked(Seek->idAt(2),FALSE);
+	  seekany_frameAction->setChecked(FALSE);
+	  seekKeyFramesAction->setChecked(FALSE);
+	  seekcontinuouslyAction->setChecked(FALSE);
 	  if (value.toInt()==3) {  // key
-	    Seek->setItemChecked(Seek->idAt(1),TRUE);
+	    seekKeyFramesAction->setChecked(TRUE);
 	  } else if (value.toInt()==1) {  // cont
-	    Seek->setItemChecked(Seek->idAt(2),TRUE);
+	    seekcontinuouslyAction->setChecked(TRUE);
 	  } else {
-	    Seek->setItemChecked(Seek->idAt(0),TRUE);
+	    seekany_frameAction->setChecked(TRUE);
 	  }
-#endif
 	}
         else if(name == "mididrv")
 	{
@@ -513,26 +511,24 @@ void QJadeo::readFromStdout()
 	}
         else if(name == "syncsource")
 	{
-#if 0 // QT4
-	  Sync->setItemChecked(Sync->idAt(0),FALSE);
-	  Sync->setItemChecked(Sync->idAt(1),FALSE);
-	  Sync->setItemChecked(Sync->idAt(2),FALSE);
-	  Sync->setItemChecked(Sync->idAt(3),FALSE);
+	  syncJackAction->setChecked(FALSE);
+	  syncMTCJackAction->setChecked(FALSE);
+	  syncMTCAlsaAction->setChecked(FALSE);
+	  syncOffAction->setChecked(FALSE);
 
 	  if (value.toInt()==0) { // off
             seekBar->setEnabled(TRUE);
-	    Sync->setItemChecked(Sync->idAt(3),TRUE);
+	    syncOffAction->setChecked(TRUE);
 	  } else if (value.toInt()==2) { // MIDI
             seekBar->setEnabled(FALSE);
 	    if (m_mididrv == 1) 
-	      Sync->setItemChecked(Sync->idAt(1),TRUE); // JACK midi
+	      syncMTCJackAction->setChecked(TRUE);
 	    else
-	      Sync->setItemChecked(Sync->idAt(2),TRUE); // ALSA midi
+	      syncMTCAlsaAction->setChecked(TRUE);
 	  } else {
             seekBar->setEnabled(FALSE); //JACK
-	    Sync->setItemChecked(Sync->idAt(0),TRUE);
+	    syncJackAction->setChecked(TRUE);
 	  }
-#endif
 	}
         else if(name == "osdfont")
 	{
@@ -541,11 +537,10 @@ void QJadeo::readFromStdout()
 	}
         else if(name == "osdmode")
 	{
-#if 0 // QT4
 	  int v= value.toInt();
-	  OSD->setItemChecked(OSD->idAt(1),v&1);
-	  OSD->setItemChecked(OSD->idAt(2),v&2);
-#endif
+	  osdBoxAction->setChecked(v&8);
+	  osdSMPTEAction->setChecked(v&2);
+	  osdFrameAction->setChecked(v&1);
 	}
         else if(name == "frames")
 	{
@@ -560,7 +555,7 @@ void QJadeo::readFromStdout()
         {
           m_framerate = (int)rint(value.toDouble()); // TODO: round value / allow
           fpsSpinBox->setValue(m_framerate);
-          xjadeo.write(QString("set fps " + value + "\n").toAscii());
+          xjadeo->write(QString("set fps " + value + "\n").toAscii());
         }
         else if(name == "updatefps")
           m_updatefps = value.toInt();
@@ -568,17 +563,17 @@ void QJadeo::readFromStdout()
       }
       case 1:
         if(status==129) {
-	  xjadeo.write(QByteArray("get filename\n"));
-	  xjadeo.write(QByteArray("get width\n"));
-	  xjadeo.write(QByteArray("get height\n"));
-	  xjadeo.write(QByteArray("get frames\n"));
-	  xjadeo.write(QByteArray("get framerate\n"));
-	  xjadeo.write(QByteArray("notify frame\n"));
-	  xjadeo.write(QByteArray("get offset\n"));
-	  xjadeo.write(QByteArray("get osdcfg\n"));
-	  xjadeo.write(QByteArray("midi driver\n"));
-	  xjadeo.write(QByteArray("get syncsource\n"));
-	  xjadeo.write(QByteArray("get position\n"));
+	  xjadeo->write(QByteArray("get filename\n"));
+	  xjadeo->write(QByteArray("get width\n"));
+	  xjadeo->write(QByteArray("get height\n"));
+	  xjadeo->write(QByteArray("get frames\n"));
+	  xjadeo->write(QByteArray("get framerate\n"));
+	  xjadeo->write(QByteArray("notify frame\n"));
+	  xjadeo->write(QByteArray("get offset\n"));
+	  xjadeo->write(QByteArray("get osdcfg\n"));
+	  xjadeo->write(QByteArray("midi driver\n"));
+	  xjadeo->write(QByteArray("get syncsource\n"));
+	  xjadeo->write(QByteArray("get position\n"));
 	}
     }
   }
@@ -594,15 +589,21 @@ void QJadeo::fileLoad(const QString & filename)
   m_offset = 0;
   m_framerate = 0;
   m_mididrv = 0;
-  xjadeo.write(QString("load " + filename + "\n").toAscii());
-  xjadeo.write(QByteArray("get filename\n"));
-  xjadeo.write(QByteArray("get width\n"));
-  xjadeo.write(QByteArray("get height\n"));
-  xjadeo.write(QByteArray("get frames\n"));
-  xjadeo.write(QByteArray("get framerate\n"));
-  xjadeo.write(QByteArray("notify frame\n"));
-  xjadeo.write(QByteArray("get offset\n"));
-  xjadeo.write(QByteArray("get position\n"));
+  xjadeo->write(QString("load " + filename + "\n").toAscii());
+  xjadeo->write(QByteArray("get filename\n"));
+  /*
+  xjadeo->write(QByteArray("get width\n"));
+  xjadeo->write(QByteArray("get height\n"));
+  xjadeo->write(QByteArray("get frames\n"));
+  xjadeo->write(QByteArray("get framerate\n"));
+  xjadeo->write(QByteArray("notify frame\n"));
+  xjadeo->write(QByteArray("get offset\n"));
+  xjadeo->write(QByteArray("get position\n"));
+  xjadeo->write(QByteArray("get seekmode\n"));
+  xjadeo->write(QByteArray("midi driver\n"));
+  xjadeo->write(QByteArray("get syncsource\n"));
+  xjadeo->write(QByteArray("get osdcfg\n"));
+  */
 
 }
 
@@ -638,33 +639,41 @@ int main(int argc, char **argv)
   if(xjadeoPath.isEmpty())
     xjadeoPath = BINDIR "/xjremote";
 
-  xjadeo.start(xjadeoPath, QStringList("-R"));
-  if(!xjadeo.waitForStarted())
+  w.xjadeo = new QProcess(&w);
+  w.xjadeo->start(xjadeoPath, QStringList("-R"));
+  if(!w.xjadeo->waitForStarted())
   {
     QMessageBox::QMessageBox::critical( &w, "qjadeo","can not execute xjadeo/xjremote.","Exit", QString::null, QString::null, 0, -1);
     //qFatal("Could not start xjadeo executable: " + xjadeoPath);
     //qFatal("Try to set the XJREMOTE environment variable to point to xjadeo.");
     exit(1);
   }
-  xjadeo.setReadChannel(QProcess::StandardOutput);
+  w.xjadeo->closeReadChannel(QProcess::StandardError);
+  w.xjadeo->setReadChannel(QProcess::StandardOutput);
 
-  w.connect(&xjadeo, SIGNAL(readyReadStandardOutput()), &w, SLOT(readFromStdout()));
-  w.connect(&xjadeo, SIGNAL(finished(int, QProcess::ExitStatus)), &w, SLOT(close()));
+  w.connect(w.xjadeo, SIGNAL(readyReadStandardOutput()), &w, SLOT(readFromStdout()));
+  w.connect(w.xjadeo, SIGNAL(finished(int, QProcess::ExitStatus)), &w, SLOT(close()));
 
   w.show();
   a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
   w.initialize();
   a.exec();
 
-  // clean up - 
-
-  xjadeo.write(QByteArray("notify disable\n"));
-  xjadeo.write(QByteArray("exit\n"));
-  //sleep(1); // TODO: flush pipe to xjadeo/xjremote !
-
-  xjadeo.terminate();
-  QTimer::singleShot(5000, &xjadeo, SLOT(kill()));
-  //FIXME : does the kill-timeout remain when we exit here??
+  if (w.xjadeo->state()){
+    qDebug("xjadeo is still running.\n");
+    //w.xjadeo->closeReadChannel(QProcess::StandardOutput);
+    w.xjadeo->write(QByteArray("notify disable\n"));
+    w.xjadeo->write(QByteArray("exit\n"));
+    //w.xjadeo->write(QByteArray("quit\n"));
+    sleep (1);
+  }
+  while (w.xjadeo->state()){
+    qDebug("terminate xjadeo/xjremote process.\n");
+    w.xjadeo->close();
+    sleep(1); // TODO: flush pipe to xjadeo/xjremote !
+    w.xjadeo->kill();
+  }
+  printf("BYE...\n");
 }
 
 /* vi:set ts=8 sts=2 sw=2: */

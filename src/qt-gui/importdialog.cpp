@@ -72,7 +72,7 @@ void ImportDialog::importAvInfo()
   argv.append( "-v" ); 
   argv.append( SourceLineEdit->text() );
   connect( infoproc, SIGNAL(readyReadStandardOutput ()), this, SLOT(readFromStdout()) );
-  connect( infoproc, SIGNAL(finished()), this, SLOT(infoFinished()));
+  connect( infoproc, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(infoFinished()));
   if ( !infoproc->startDetached(xjinfo, argv) ) {
      QMessageBox::warning( 0, "Warning", "Could not start the xjinfo command.", "OK" ); 
   }

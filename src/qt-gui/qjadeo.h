@@ -6,6 +6,8 @@
 #include "importprogress.h"
 #include "importdialog.h"
 
+#define MAX_RECENTFILES 5
+
 class QJadeo: public QMainWindow , public Ui::MainWindow
 {
 	Q_OBJECT
@@ -16,6 +18,7 @@ public:
   void fileLoad(const QString & filename);
   void initialize();
   QString m_xjadeopath;
+  QProcess *xjadeo;
 
 private:
 
@@ -44,6 +47,8 @@ private:
   void saveOptions();
   bool testexec(QString exe);
 
+	QAction *recentFileActs[MAX_RECENTFILES];
+
 public slots:
 
   void fileOpen();
@@ -69,7 +74,7 @@ public slots:
   void setFPS(const QString &);
   void setOffset(const QString &);
 
-  void fileOpenRecent(int index);
+  void fileOpenRecent();
 
   void readFromStdout ();
 

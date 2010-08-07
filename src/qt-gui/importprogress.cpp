@@ -69,7 +69,7 @@ int ImportProgress::mencode(QString commandpath)
   } else {
     connect(&encoder, SIGNAL(readyReadStandardOutput ()), this, SLOT(readFromStdout()));
     connect(&encoder, SIGNAL(readyReadStandardError()), this, SLOT(readFromStderr()));
-    connect(&encoder, SIGNAL(finished()), this, SLOT(encodeFinished()));
+    connect(&encoder, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(encodeFinished()));
     return(0);
   }
 }

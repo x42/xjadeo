@@ -1,5 +1,6 @@
 TEMPLATE	= app
 LANGUAGE	= C++
+TARGET   = qjadeo
 
 CONFIG	+= qt warn_on release
 
@@ -13,3 +14,8 @@ FORMS	= mainwindow.ui prefdialog.ui importdialog.ui importprogress.ui
 #QMAKE_CXXFLAGS_WARN_ON += -Wno-non-virtual-dtor
 
 TRANSLATIONS = qjadeo_fr.ts 
+
+DEFINES += QT_NO_DEBUG_OUTPUT
+
+#win32-x-g++:DEFINES += QT_NO_DEBUG_OUTPUT
+#win32-x-g++:RC_FILE = qjadeo.rc

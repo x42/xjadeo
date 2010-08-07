@@ -43,6 +43,12 @@ Section "jadeo (required)"
 	File "zlib1.dll"
 	File "FreeMonoBold.ttf"
   File "xjadeo.nsi"
+
+  File "qjadeo.exe"
+  File "QtCore4.dll"
+  File "QtGui4.dll"
+  File "libgcc_s_dw2-1.dll"
+  File "mingwm10.dll"
   
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\RSSxjadeo "Install_Dir" "$INSTDIR"
@@ -84,6 +90,11 @@ Section "Uninstall"
   Delete $INSTDIR\zlib1.dll
   Delete $INSTDIR\FreeMonoBold.ttf
   Delete $INSTDIR\xjadeo.nsi
+  Delete $INSTDIR\qjadeo.exe
+  Delete $INSTDIR\QtCore4.dll
+  Delete $INSTDIR\QtGui4.dll
+  Delete $INSTDIR\libgcc_s_dw2-1.dll
+  Delete $INSTDIR\mingwm10.dll
   Delete $INSTDIR\uninstall.exe
 
   ; Remove shortcuts, if any
