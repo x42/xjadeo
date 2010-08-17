@@ -1,5 +1,5 @@
 #!/bin/sh
-NORECONF=1
+#NORECONF=1
 
 unset CC
 if test -z "$NORECONF"; then
@@ -13,29 +13,31 @@ PKG_CONFIG_PATH=/home/rgareus/.wine/drive_c/x-prefix/lib/pkgconfig/ CFLAGS="-I/h
 #--sysconfdir=./ \
 fi
 
+NSIDIR=contrib/nsi/
+
 make -C src/xjadeo xjadeo.exe || exit
-cp src/xjadeo/xjadeo.exe $NSIDIR
+cp -v src/xjadeo/xjadeo.exe $NSIDIR
 
 WINEBIN=/home/rgareus/.wine/drive_c/x-prefix/bin/
-NSIDIR=contrib/nsi/
-cp src/xjadeo/xjadeo.exe $NSIDIR
-cp $WINEBIN/avcodec-52.dll $NSIDIR
-cp $WINEBIN/avformat-52.dll $NSIDIR
-cp $WINEBIN/avutil-49.dll $NSIDIR
-cp $WINEBIN/swscale-0.dll $NSIDIR
-cp $WINEBIN/freetype6.dll $NSIDIR
-cp $WINEBIN/SDL.dll $NSIDIR
-cp $WINEBIN/zlib1.dll $NSIDIR
-cp contrib/Jadeo.app/Contents/Resources/FreeMonoBold.ttf $NSIDIR
+cp -v src/xjadeo/xjadeo.exe $NSIDIR
+cp -v $WINEBIN/avcodec-52.dll $NSIDIR
+cp -v $WINEBIN/avformat-52.dll $NSIDIR
+cp -v $WINEBIN/avutil-49.dll $NSIDIR
+cp -v $WINEBIN/swscale-0.dll $NSIDIR
+cp -v $WINEBIN/freetype6.dll $NSIDIR
+cp -v $WINEBIN/SDL.dll $NSIDIR
+cp -v $WINEBIN/zlib1.dll $NSIDIR
+cp -v contrib/Jadeo.app/Contents/Resources/FreeMonoBold.ttf $NSIDIR
 
 
 make -C src/qt-gui || exit
-cp src/qt-gui/release/qjadeo.exe $NSIDIR
+cp -v src/qt-gui/release/qjadeo.exe $NSIDIR
 QTBIN=/home/rgareus/.wine/drive_c/Qt/2010.04/qt/bin
-cp $QTBIN/QtGui4.dll $NSIDIR
-cp $QTBIN/QtCore4.dll $NSIDIR
-cp $QTBIN/libgcc_s_dw2-1.dll $NSIDIR
-cp $QTBIN/mingwm10.dll $NSIDIR
+cp -v $QTBIN/QtGui4.dll $NSIDIR
+cp -v $QTBIN/QtCore4.dll $NSIDIR
+cp -v $QTBIN/QtTest4.dll $NSIDIR
+cp -v $QTBIN/libgcc_s_dw2-1.dll $NSIDIR
+cp -v $QTBIN/mingwm10.dll $NSIDIR
 
 VERSION=$(grep " VERSION " config.h | cut -d ' ' -f3 | sed 's/"//g'| sed 's/\./_/g')
 echo $VERSION

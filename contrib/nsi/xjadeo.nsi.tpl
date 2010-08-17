@@ -47,8 +47,24 @@ Section "jadeo (required)"
   File "qjadeo.exe"
   File "QtCore4.dll"
   File "QtGui4.dll"
+  File "QtTest4.dll"
   File "libgcc_s_dw2-1.dll"
   File "mingwm10.dll"
+
+	ClearErrors
+	FileOpen $0 $INSTDIR\xjremote.bat w
+	IfErrors done
+	FileWrite $0 "@echo off"
+	FileWriteByte $0 "13"
+	FileWriteByte $0 "10"
+	FileWrite $0 "cd $INSTDIR"
+	FileWriteByte $0 "13"
+	FileWriteByte $0 "10"
+	FileWrite $0 "xjadeo.exe -R"
+	FileWriteByte $0 "13"
+	FileWriteByte $0 "10"
+	FileClose $0
+	done:
   
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\RSSxjadeo "Install_Dir" "$INSTDIR"
@@ -93,8 +109,10 @@ Section "Uninstall"
   Delete $INSTDIR\qjadeo.exe
   Delete $INSTDIR\QtCore4.dll
   Delete $INSTDIR\QtGui4.dll
+  Delete $INSTDIR\QtTest4.dll
   Delete $INSTDIR\libgcc_s_dw2-1.dll
   Delete $INSTDIR\mingwm10.dll
+  Delete $INSTDIR\xjremote.bat
   Delete $INSTDIR\uninstall.exe
 
   ; Remove shortcuts, if any

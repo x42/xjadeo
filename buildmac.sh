@@ -14,7 +14,7 @@ automake --gnu --add-missing --copy
 PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH \
 CFLAGS="-arch i386 -arch ppc -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5" \
 LDFLAGS="$CFLAGS" \
-./configure --disable-xv --disable-qtgui --with-fontfile=../Resources/VeraMono.ttf --disable-dependency-tracking $@ || exit 1
+./configure --disable-xv --disable-qtgui --disable-sdl --with-fontfile=../Resources/VeraMono.ttf --disable-dependency-tracking $@ || exit 1
 make clean
 make || exit 1
 
