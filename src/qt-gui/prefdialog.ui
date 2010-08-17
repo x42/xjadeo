@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>393</width>
-    <height>396</height>
+    <height>401</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -411,8 +411,9 @@
           <height>32</height>
          </size>
         </property>
-        <property name="text">
-         <string/>
+        <property name="icon">
+         <iconset resource="qjadeo.qrc">
+          <normaloff>:/images/fileopen.png</normaloff>:/images/fileopen.png</iconset>
         </property>
        </widget>
       </item>
@@ -507,7 +508,9 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
- <resources/>
+ <resources>
+  <include location="qjadeo.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonCancel</sender>

@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>qjadeo</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="qjadeo.qrc">
+    <normaloff>:/images/qjadeo.png</normaloff>:/images/qjadeo.png</iconset>
+  </property>
   <widget class="QWidget" name="widget">
    <layout class="QVBoxLayout">
     <property name="spacing">
@@ -562,7 +566,9 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
- <resources/>
+ <resources>
+  <include location="qjadeo.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>fileOpenAction</sender>

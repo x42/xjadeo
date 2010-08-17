@@ -13,6 +13,7 @@
 #include <qdesktopwidget.h>
 #include <qtextcodec.h>
 #include <QTranslator>
+#include <QTest>
 
 #include "qjadeo.h"
 #include "mydirs.h"
@@ -445,7 +446,7 @@ void QJadeo::readFromStdout()
   while(xjadeo->canReadLine())
   {
     QString response = xjadeo->readLine();
-    qDebug(QString("ResponseLine: " + response).toAscii().data());
+    qDebug(QString("ResponseLine: '" + response+ "'").toAscii().data());
 
     int status = response.mid(1, 3).toInt();
 
@@ -476,8 +477,8 @@ void QJadeo::readFromStdout()
         int comment = response.indexOf('#');
 	if (comment > 0) response.truncate(comment);
         QString name = response.mid(5, equalsign - 5);
-        QString value = response.right(response.length() - equalsign - 1);
-        //qDebug(QString("Response: name=" + name + " value=" +value).toAscii().data());
+        QString value = response.right(response.length() - equalsign - 1).trimmed();
+        //qDebug(QString("Response: name='" + name + "' value='" +value +"'").toAscii().data());
         if(name == "position")
         {
           if(m_frames > 0) {
@@ -665,15 +666,14 @@ int main(int argc, char **argv)
     w.xjadeo->write(QByteArray("notify disable\n"));
     w.xjadeo->write(QByteArray("exit\n"));
     //w.xjadeo->write(QByteArray("quit\n"));
-    sleep (1);
+    QTest::qWait(1000);
   }
   while (w.xjadeo->state()){
     qDebug("terminate xjadeo/xjremote process.\n");
     w.xjadeo->close();
-    sleep(1); // TODO: flush pipe to xjadeo/xjremote !
+    QTest::qWait(1000); 
     w.xjadeo->kill();
   }
-  printf("BYE...\n");
 }
 
 /* vi:set ts=8 sts=2 sw=2: */
