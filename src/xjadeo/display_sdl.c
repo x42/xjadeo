@@ -91,12 +91,11 @@ int open_window_sdl (void) {
 	sdl_overlay = SDL_CreateYUVOverlay(movie_width, movie_height, 0x30323449, sdl_screen);
 	sdl_pic_format=0x30323449;
 	if(!sdl_overlay || (!sdl_overlay->hw_overlay)) {
-		printf("YV12 overlay?\n");
 		sdl_overlay = SDL_CreateYUVOverlay(movie_width, movie_height, SDL_YV12_OVERLAY, sdl_screen);
 		sdl_pic_format=SDL_YV12_OVERLAY;
 	}
 	if((!sdl_overlay)) 
-		printf("NO OVERLAY\n");
+		fprintf(stderr, "NO OVERLAY\n");
 	if((!sdl_overlay || SDL_LockYUVOverlay(sdl_overlay)<0)) {
 		printf("OVERLAY error.\n");
 		goto no_overlay;
@@ -119,6 +118,11 @@ int open_window_sdl (void) {
 		goto no_overlay;
 	}  
 #endif
+	/*
+	SDL_Surface* icon = SDL_LoadBMP(iconName));
+	SDL_WM_SetIcon(icon, NULL);
+	*/
+
 	return(0);
  
 no_overlay: 

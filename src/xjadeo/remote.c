@@ -1045,7 +1045,7 @@ int remote_read_io(void) {
 
 	while ((end = strchr(start, '\n'))) {
 		*(end) = '\0';
-		if (strlen(start) > 0) 
+		//if (strlen(start) > 0) 
 			exec_remote_cmd_recursive(cmd_root,start);
 		inbuf->offset-=((++end)-start);
 		if (inbuf->offset) memmove(inbuf->buf,end,inbuf->offset);
@@ -1070,9 +1070,8 @@ int remote_read_h(void) {
 			while (*start && (end = strchr(start, '\n'))) {
 				*(end) = '\0';
 				strtok(start, "\r");
-				if (strlen(start) < 1) continue;
-				//fprintf(stdout,"DEBUG: '%s'\n",start);
-				exec_remote_cmd_recursive(cmd_root,start);
+				//if (strlen(start) > 0) 
+					exec_remote_cmd_recursive(cmd_root,start);
 				start=end+1;
 			}
 		  rv=0;
@@ -1155,7 +1154,7 @@ int remote_read_mq(void) {
 
 	while ((rx=mymq_read(data)) > 0 ) { 
 		if ((t =  strchr(data, '\n'))) *t='\0';
-		if (strlen(data) < 1) continue;
+		//if (strlen(data) < 1) continue;
 		exec_remote_cmd_recursive(cmd_root,data);
 		rv=0;
 	}
@@ -1221,7 +1220,7 @@ int remote_read_ipc () {
 	// TODO WHILE  LOOP..
 	char *t;
 	if ((t = strchr(rxbuf.mtext, '\n'))) *t='\0';
-	if (strlen(rxbuf.mtext) < 1) continue;
+	//if (strlen(rxbuf.mtext) < 1) return 0; // continue;
 	exec_remote_cmd_recursive(cmd_root,rxbuf.mtext);
 	return(0);
 }

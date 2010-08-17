@@ -155,9 +155,13 @@ int testexec (char *filename) {
 	if (!filename) return (0);
 	int result= stat(filename, &s);
 	if (result != 0) return 0; /* stat() failed */
+#ifdef HAVE_WINDOWS
+	return(1); 
+#else
 	if (!S_ISREG(s.st_mode) && !S_ISLNK(s.st_mode)) return 0; /* is not a regular file */
 	if (s.st_mode & (S_IXUSR|S_IXGRP|S_IXOTH))  return 1; /* is executable */
-        return(0); 
+	return(0); 
+#endif
 }
 
 // flags: bit0 (1): close stdio
@@ -184,7 +188,7 @@ void execjadeo(int flags, char *queuefile) {
 		if (flags&1) { close(0); close(1); close(2);}
 		if (flags&4)
 			execl(xjadeo,"xjadeo", "-W", queuefile, NULL);
-		else if (flags&2)
+		else if (flags&2) 
 			execl(xjadeo,"xjadeo", "-R", NULL);
 		else 
 			execl(xjadeo,"xjadeo", "-Q", "-q", NULL);
@@ -192,7 +196,8 @@ void execjadeo(int flags, char *queuefile) {
 		printf("# no xjadeo executable found. try to set the XJADEO env. variable\n");
 	}
 }
-
+#ifdef HAVE_WINDOWS
+#else
 void forkjadeo (void) {
 	// TODO create remote-mqID and set pass it to xjadeo.
 	// check: is there a way to list mq's  apart from mounting /dev/mqueue ??
@@ -210,17 +215,29 @@ void forkjadeo (void) {
 			fprintf(stdout,"# connecting to xjadeo...\n");
 	}
 }
+#endif
 
 //-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
 
+#ifdef HAVE_WINDOWS
+#include <windows.h>
+#else
 #include <sys/resource.h>
+#endif
 #include <time.h>
 #define REMOTE_RX fileno(stdin) 
 
 int xjselect (int sec) {
+#ifdef HAVE_WINDOWS
+	DWORD bytesAvail = 0;
+	HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
+	PeekNamedPipe(h, 0, 0, 0, &bytesAvail, 0);
+	if (bytesAvail > 0) return (1);
+	return(0);
+#else
 	fd_set fd;
 	int max_fd=0;
 	struct timeval tv = { 0, 0 };
@@ -231,6 +248,7 @@ int xjselect (int sec) {
 	max_fd=(REMOTE_RX+1);
 	if (select(max_fd, &fd, NULL, NULL, &tv)) return(1);
 	return(0);
+#endif
 }
 
 //-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#

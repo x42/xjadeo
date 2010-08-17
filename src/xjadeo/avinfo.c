@@ -33,22 +33,23 @@
  *    -lz -lm -L/usr/local/lib/
  *
  */
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#else
+# define VERSION 0.2
+#endif
 
 #define EXIT_FAILURE 1
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef HAVE_WINDOWS
 #include <sys/errno.h>
+#endif
 
 #include <getopt.h>
 
-
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#else
-# define VERSION 0.2
-#endif
 
 #ifdef OLD_FFMPEG
 #include <avformat.h>
@@ -136,6 +137,7 @@ static int decode_switches (int argc, char **argv) {
 void print_error(const char *filename, int err)
 {
   switch (err) {
+#ifndef HAVE_WINDOWS
   case AVERROR_NUMEXPECTED:
     fprintf(stderr, "%s: Incorrect image filename syntax.\n"
 		"Use '%%d' to specify the image number:\n"
@@ -149,6 +151,7 @@ void print_error(const char *filename, int err)
   case AVERROR_NOFMT:
     fprintf(stderr, "%s: Unknown format\n", filename);
     break;
+#endif
   default:
     fprintf(stderr, "%s: Error while opening file\n", filename);
     break;
