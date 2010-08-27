@@ -48,8 +48,8 @@ LIBSUF=.a
 case $target_os in
   *darwin*)
 		echo "TARGET: OSX"
-  	PM_OS=mac
-  	AC_DEFINE([HAVE_MACOSX], [], [use macintosh native display])
+		PM_OS=mac
+		AC_DEFINE([HAVE_MACOSX], [], [use macintosh native display])
 		HAVE_MACOSX=1
 		LDFLAGS="$LDFLAGS -lz -lbz2 -framework Carbon -framework Quicktime"
 dnl 2006/11/13 : 32 bit RGBA is known not to work on OSX ffmpeg+imlib2
@@ -57,19 +57,19 @@ dnl IMLIB2RGBA
   	;;
   *linux*)
 		echo "TARGET: LINUX"
-  	PM_OS="linux";
-  	AC_DEFINE([IMLIB2RGBA], [], [use native RGB32 ffmpeg -> imlib.])
+		PM_OS="linux";
+		AC_DEFINE([IMLIB2RGBA], [], [use native RGB32 ffmpeg -> imlib.])
 	;;
   *mingw32*|*win*)
 		echo "TARGET: WINDOWS"
-  	PM_OS=win
-  	AC_DEFINE([HAVE_WINDOWS], [], [windows SDL version])
+		PM_OS=win
+		AC_DEFINE([HAVE_WINDOWS], [], [windows SDL version])
 		HAVE_WINDOWS=1
 		IMLIB_LIBS="-lws2_32" # LDFLAGS are before object files. -pragmatically re-used IMLIB_LIBS
 		LIBSUF=.dll
   	;;
   *)	
-	AC_MSG_WARN([*** unknown target OS ***])
+		AC_MSG_WARN([*** unknown target OS ***])
   ;;
 esac
 
