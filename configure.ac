@@ -32,6 +32,7 @@ AC_ARG_ENABLE(mq, AC_HELP_STRING([--disable-mq],[disable POSIX message-queue rem
 AC_ARG_ENABLE(ipc, AC_HELP_STRING([--disable-ipc],[disable IPC message-queue remote control]))
 AC_ARG_ENABLE(osc, AC_HELP_STRING([--disable-osc],[disable OSC remote support]))
 AC_ARG_ENABLE(midi, AC_HELP_STRING([--disable-midi],[Do not build any of the MIDI drivers]))
+AC_ARG_ENABLE(ltc, AC_HELP_STRING([--disable-ltc],[disable LTC sync support]))
 
 AC_ARG_WITH(fontfile, AS_HELP_STRING([--with-fontfile=file.ttf], [specify a path to a truetype font file to be used as default OSD font.]), fontfile="$withval", fontfile="")
 
@@ -108,6 +109,7 @@ AH_TEMPLATE([HAVE_PORTMIDI], [Define as 1 if to enable the portmidi driver])
 AH_TEMPLATE([HAVE_JACKMIDI], [Define as 1 to enable JACK-MIDI])
 AH_TEMPLATE([ALSA_SEQ_MIDI], [Define as 1 to enable ALSA sequencer midi])
 AH_TEMPLATE([ALSA_RAW_MIDI], [Define as 1 to enable ALSA-raw midi driver])
+AH_TEMPLATE([HAVE_LTCSMPTE], [Define as 1 if you have ltcsmpte.sf.net ]) 
 AH_TEMPLATE([HAVE_LASH], [Define as 1 if you have lash])
 AH_TEMPLATE([HAVE_XPM], [Define as 1 if you have libXpm])
 AH_TEMPLATE([HAVE_SDL], [Define as 1 if  you have the SDL toolkit])
@@ -178,28 +180,28 @@ dnl	AC_CHECK_HEADERS([X11/extensions/Xvlib.h X11/extensions/XShm.h], , [AC_MSG_E
 fi
 
 dnl remove this if IFF you want to build an X11 version for OSX
-if test -z "$HAVE_MACOSX$HAVE_WINDOWS"; then
+AS_IF([test -z "$HAVE_MACOSX$HAVE_WINDOWS"], [
 	AC_CHECK_HEADERS([X11/Xlib.h], , [AC_MSG_ERROR(*** X11: You need to install the X11 development package. ***)])
 	AC_CHECK_LIB([X11], [XOpenDisplay], [XV_LIBS="$XV_LIBS -lXext"], AC_MSG_ERROR([*** X11: You need to install the X11 development package: libx11-dev ***]))
 	PKG_CHECK_MODULES(Xpm, xpm, [ AC_DEFINE(HAVE_XPM) HAVE_XPM=1 ], [ NULL=0] )
 	#AC_SEARCH_LIBS( XpmCreatePixmapFromData, Xpm, AC_DEFINE(HAVE_XPM) XPM_LIBS="-lXpm" HAVE_XPM=1 )
 
-fi
+])
 
-if test "x$enable_osc" != "xno"; then
+AS_IF([test "x$enable_osc" != "xno"], [
 	if test -n "$liblosrc"; then
 		AC_CHECK_FILES([$liblosrc/src/.libs/liblo.a $liblosrc/lo/lo.h],[AC_DEFINE(HAVE_LIBLO) HAVE_LIBLO=1 LIBLO_CFLAGS="-I$liblosrc/lo" LIBLO_LIBS="$liblosrc/src/.libs/liblo.a" ])
 	else
 		PKG_CHECK_MODULES(LIBLO, liblo, [ AC_DEFINE(HAVE_LIBLO) HAVE_LIBLO=1 ])
 	fi
-fi
+])
 
 AC_SUBST(LIBLO_CFLAGS)
 AC_SUBST(LIBLO_LIBS)
 
-if test "x$enable_sdl" != "xno"; then
+AS_IF([test "x$enable_sdl" != "xno"], [
 	PKG_CHECK_MODULES(SDL, sdl, [ AC_DEFINE(HAVE_SDL) HAVE_SDL=1 ], [ NULL=1])
-fi
+])
 AC_SUBST(SDL_LIBS)
 AC_SUBST(SDL_CFLAGS) 
 
@@ -271,13 +273,13 @@ dnl ----------------------------------------------
 dnl Check for ffmpeg: avformat/avcodec 
 dnl ----------------------------------------------
 
-if test -z "$ffmpegprefix" -a -z "$ffmpegsrc" ; then
+AS_IF([test -z "$ffmpegprefix" -a -z "$ffmpegsrc"], [
 	PKG_CHECK_MODULES(FFMPEG, libavformat libavcodec libavutil, HAVE_FFMPEG=yes, 
 		AC_MSG_WARN([
 		Could not find ffmpeg package. please set PKG_CONFIG_PATH to 
 		where FFMPEG installed its pkg files.
 		])) 
-fi
+])
 
 
 if test -n "$ffmpegsrc" ; then
@@ -408,16 +410,16 @@ dnl ----------------------------------------------
 AC_SUBST(IMLIB_CFLAGS)
 AC_SUBST(IMLIB_LIBS)
 
-if test "x${enable_imlib2}" != "xno"; then
+AS_IF([test "x${enable_imlib2}" != "xno"], [
 	PKG_CHECK_MODULES(IMLIB2, imlib2 >= 1.3.0,  [ AC_DEFINE(HAVE_IMLIB2) HAVE_IMLIB2=1 ], [ NULL=0 ])
-fi
+])
 AC_SUBST(IMLIB2_CFLAGS)
 AC_SUBST(IMLIB2_LIBS)
 
 dnl ----------------------------------------------
 dnl http://lash.nongnu.org
 dnl ----------------------------------------------
-if test "x$enable_lash" != "xno"; then
+AS_IF([test "x$enable_lash" != "xno"], [
   PKG_CHECK_MODULES(LASH, lash-1.0 >= 0.4.0, LASH_FOUND="yes", [ NULL=0 ])
   
   if test "x$LASH_FOUND" = "xyes"; then
@@ -426,15 +428,25 @@ if test "x$enable_lash" != "xno"; then
     #LASH_VERSION=$( pkg-config --modversion lash-1.0 )
     #AC_DEFINE_UNQUOTED(LASH_VERSION, "$LASH_VERSION", [The version of lash we're compiling against])
   fi
-fi
+])
 AC_SUBST(LASH_CFLAGS)
 AC_SUBST(LASH_LIBS)
+
+dnl ----------------------------------------------
+dnl http://ltcsmpte.sf.net
+dnl ----------------------------------------------
+AS_IF([ test "x$enable_ltc" != "xno"], [
+	PKG_CHECK_MODULES(LTCSMPTE, ltcsmpte, [ AC_DEFINE(HAVE_LTCSMPTE) HAVE_LTCSMPTE=1 ], [ NULL=0] )
+])
+AC_SUBST(LTCSMPTE_CFLAGS)
+AC_SUBST(LTCSMPTE_LIBS)
+
 
 dnl ----------------------------------------------
 dnl contrib/tsmm
 dnl ----------------------------------------------
 
-if test "x${enable_contrib}" != "xno"; then
+AS_IF([test "x${enable_contrib}" != "xno"], [
   AC_CHECK_HEADERS(tiffio.h, [FOUND_H_TIFF=yes])
   AC_CHECK_LIB([tiff], [TIFFOpen], [FOUND_L_TIFF=yes])
 
@@ -445,7 +457,7 @@ if test "x${enable_contrib}" != "xno"; then
   else
     PKG_CHECK_MODULES(TIFF,tiff,  [ AC_DEFINE(HAVE_TIFF) HAVE_TIFF=1 ], [ NULL=0 ])
   fi
-fi
+])
 AC_SUBST(TIFF_CFLAGS)
 AC_SUBST(TIFF_LIBS)
 
@@ -567,6 +579,7 @@ if test -n "$ALSA_RAW_MIDI"; then echo -n "alsa-RAW "; fi
 if test -z "$HAVE_MIDI"; then echo -n "disabled."; fi
 echo 
 echo -n " LASH:               ";	if test -n "$HAVE_LASH"; then echo "ok"; else echo "not avail."; fi
+echo -n " LTCSMPTE:           ";  if test -n "$HAVE_LTCSMPTE"; then echo "ok"; else echo "not avail."; fi 
 #echo -n " Xpm:                ";	if test -n "$HAVE_XPM"; then echo "ok"; else echo "not avail."; fi
 echo -n " remote control:     ";	if test -n "$HAVE_MQ"; then echo "POSIX-MQ"; elif test -n "$HAVE_IPCMSG"; then echo "IPC-MSG"; else echo "not avail."; fi
 echo -n " OSC remote control: ";	if test -n "$HAVE_LIBLO"; then echo "ok"; else echo "not avail."; fi
