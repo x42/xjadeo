@@ -469,6 +469,8 @@ long pm_midi_poll_frame (void) {
 
 /************************************************
  * jack-midi 
+ *
+ * TODO: also use LASH here!
  */
 
 #include <jack/jack.h>

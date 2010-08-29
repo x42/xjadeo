@@ -147,6 +147,14 @@ void open_jack(void );
 void close_jack(void);
 int jack_connected(void);
 
+/* ltc-jack.c function prototypes */
+#ifdef HAVE_LTCSMPTE
+long ltc_poll_frame (void);
+void open_ltcjack(char *autoconnect);
+void close_ltcjack(void);
+int ltcjack_connected(void);
+#endif 
+
 /* smpte.c prototypes */
 long int smptestring_to_frame (char *str);
 void frame_to_smptestring(char *smptestring, long int frame);

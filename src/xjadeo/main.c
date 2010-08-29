@@ -139,6 +139,9 @@ int have_dropframes =0; /* detected from MTC;  TODO: force to zero if jack or us
 int jack_clkconvert =1; /* --jackfps  - NOT YET IMPLEMENTED
                           [0:audio_frames_per_video_frame
                            1:video-file] */
+#ifdef HAVE_LTCSMPTE
+int use_ltc = 0;        /* -l , --ltc */
+#endif 
 
 #ifdef HAVE_LASH
 lash_client_t *lash_client;
@@ -217,6 +220,9 @@ static struct option const long_options[] =
   {"midiclk", no_argument, 0, 'C'},
   {"no-midiclk", no_argument, 0, 'c'},
 #endif
+#ifdef HAVE_LTCSMPTE
+  {"ltc", no_argument, 0, 'l'},
+#endif
 #ifdef HAVE_LIBLO
   {"osc", required_argument, 0, 'O'},
 #endif
@@ -260,6 +266,9 @@ decode_switches (int argc, char **argv)
 			   "d:"	/* midi driver */
 			   "C"	/* --midiclk */
 			   "c"	/* --no-midiclk */
+#endif
+#ifdef HAVE_LTCSMPTE
+			   "l"	/* --ltc */
 #endif
 			   "N"	/* --dropframes */
 			   "n"	/* --nodropframes */
@@ -386,6 +395,11 @@ decode_switches (int argc, char **argv)
           midi_clkadj = 0;
 	  break;
 #endif
+#ifdef HAVE_LTCSMPTE
+	case 'l':		/* --ltc */
+          use_ltc = 1;
+	  break;
+#endif
 	case 'V':
 	  printversion();
 	  exit(0);
@@ -427,6 +441,9 @@ jack video monitor\n", program_name);
 "  -b, --letterbox           retain apect ratio when scaling (Xv only).\n"
 #ifdef HAVE_MIDI
 "  -c, --no-midiclk          ignore MTC quarter frames.\n"
+#endif
+#ifdef HAVE_LTCSMPTE
+"  -l, --ltc                 sync to LinearTimeCode (audio-jack).\n"
 #endif
 "  -f <val>, --fps <val>     display update freq. - default -1 use file's fps\n"
 "  -i <int> --info <int>     render OnScreenDisplay info: 0:off, %i:frame,\n"
@@ -601,6 +618,10 @@ void clean_up (int status) {
   if (midi_connected()) midi_close(); 
   else
 #endif
+#ifdef HAVE_LTCSMPTE
+  if (ltcjack_connected()) close_ltcjack(); 
+  else
+#endif
   close_jack();
 
   if (smpte_offset) free(smpte_offset);
@@ -727,7 +748,15 @@ main (int argc, char **argv)
   if (getvidmode() ==0) {
 	fprintf(stderr,"Could not open display.\n");
   	if(!remote_en) {  // && !mq_en && !ipc_queue) { /* TODO: allow windowless startup with MQ ?! */
-		// TODO: cleanup close midi and file ??
+#ifdef HAVE_MIDI
+                if (midi_driver) free(midi_driver);
+                if (midi_connected()) midi_close(); 
+                else
+#endif
+#ifdef HAVE_LTCSMPTE
+                if (ltcjack_connected()) close_ltcjack(); 
+                else
+#endif
 		close_jack();
 		exit(1);
 	}
@@ -742,6 +771,11 @@ main (int argc, char **argv)
       printf("using MTC as sync-source.\n");
     midi_open(midiid);
   } else 
+#endif
+#ifdef HAVE_LTCSMPTE
+  if (use_ltc) {
+    open_ltcjack(NULL);
+  } else
 #endif
   {
     if (!want_quiet) 

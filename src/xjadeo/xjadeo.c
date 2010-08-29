@@ -100,6 +100,9 @@ extern int	mq_en;
 extern char	*ipc_queue;
 extern double	delay;
 extern int	seekflags;
+#ifdef HAVE_LTCSMPTE
+extern int  use_ltc;
+#endif
 
 #ifdef TIMEMAP
 long		timeoffset = 0;
@@ -183,6 +186,11 @@ void event_loop(void) {
 		if (midi_connected()) newFrame = midi_poll_frame();
 		else
 #endif
+#ifdef HAVE_LTCSMPTE
+		if (use_ltc) newFrame = ltc_poll_frame();
+		else
+#endif
+
 		newFrame = jack_poll_frame();
 
 		if (newFrame <0 ) newFrame=userFrame;
