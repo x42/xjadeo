@@ -130,9 +130,6 @@ long jack_poll_frame (void) {
 	jack_position_t	jack_position;
 	long 		frame = 0;
 
-
-
-
 	if (!jack_client) return (-1);
 	jack_transport_query(jack_client, &jack_position);
 
