@@ -1,14 +1,15 @@
 # quick hack - else make dist won't include these files.
 EXTRA_DIST= qjadeo.cpp qjadeo.pro.in mainwindow.ui qjadeo.h\
-	images/fileopen images/info images/qjadeo\
+	images/fileopen.png images/info.png images/qjadeo.png images/qjadeo.ico\
 	importdialog.ui prefdialog.ui importprogress.ui \
-	importdialog.h  importprogress.h prefdialog.h \
-	importdialog.cpp  importprogress.cpp prefdialog.cpp \
-	qjadeo_fr.ts
+	importdialog.h importprogress.h prefdialog.h \
+	importdialog.cpp importprogress.cpp prefdialog.cpp \
+	qjadeo_fr.ts \
+	Makefile.am qjadeo.qrc qjadeo.rc
 
-qmake   = @ac_qmake@
-qt3to4   =
-qmakeargs   = @ac_qmake_args@
+qmake = @ac_qmake@
+lrelease  = lrelease
+qmakeargs = @ac_qmake_args@
 
 COPY = /bin/cp
 DEL_FILE = /bin/rm
@@ -29,13 +30,8 @@ TRANSLATIONS = qjadeo_fr.ts
 all:	$(name)
 
 $(name).mak:	$(name).pro
-	if test "x$(qt3to4)" != "x"; then \
-	 $(MKDIR) -p qt3; \
-	 $(COPY) -f qjadeo.cpp qjadeo.h mainwindow.ui importdialog.ui prefdialog.ui importprogress.ui importdialog.ui.h  importprogress.ui.h prefdialog.ui.h qt3; \
-	 $(qt3to4) -alwaysOverwrite $(name).pro; \
-	fi
 	$(qmake) -o $(name).mak $(name).pro $(qmakeargs)
-	lrelease $(TRANSLATIONS)
+	$(lrelease) $(TRANSLATIONS)
 
 $(name):	$(name).mak $(sources) $(headers) mydirs.h
 	$(MAKE) -f $(name).mak
@@ -47,7 +43,7 @@ install:	$(name)
 # TODO add target to translate .ts to .qm and install other langs... 
 #	$(INSTALL) -t $(prefix)/share/qjadeo/locale/ $(subst .ts,.qm,$(TRANSLATIONS))
 
-uninstall:	$(DESTDIR)/$(bindir)/$(name)
+uninstall: $(DESTDIR)/$(bindir)/$(name)
 	$(DEL_FILE) -vf $(DESTDIR)/$(bindir)/$(name)
 	cd $(DESTDIR)/$(datadir)/qjadeo/locale/ && $(DEL_FILE) -vf *.qm
 	rmdir $(DESTDIR)/$(datadir)/qjadeo/locale/
@@ -75,11 +71,6 @@ maintainer-clean:	clean
 	$(DEL_FILE) -f Makefile
 	$(DEL_FILE) -f Makefile.in
 	$(DEL_FILE) -f $(name).pro
-
-.PHONY:	revert
-revert:
-	svn revert qjadeo.cpp
-	rm -f qjadeo.pro
 
 mydirs.h: Makefile
 	echo '#define BINDIR "$(DESTDIR)/$(bindir)/"' >$@

@@ -469,7 +469,8 @@ if test "x$enable_qtgui" != "xno"; then
 
  # Check for Qt qmake utility.
  AC_PATH_PROG(ac_qmake, qmake, [no], $QTDIR/bin:${PATH})
- if test "x$ac_qmake" = "xno"; then
+ AC_PATH_PROG(ac_lrelease, lrelease, [no], $QTDIR/bin:${PATH})
+ if test "x$ac_qmake" = "xno" -o "x$ac_lrelease" = "xno" ; then
     AC_MSG_ERROR([qmake not found: please install the Qt4 development
     package of your distribution. try setting the QTDIR env. variable; or use --disable-qtgui to compile xjadeo.])
  fi

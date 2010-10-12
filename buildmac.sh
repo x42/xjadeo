@@ -18,6 +18,8 @@ LDFLAGS="$CFLAGS" \
 make clean
 make || exit 1
 
+VERSION=$(awk '/define VERSION /{print $3;}' config.h | sed 's/"//g')
+
 echo
 file src/xjadeo/xjadeo 
 file src/xjadeo/xjremote
@@ -129,7 +131,7 @@ rm -rf fwold
 #roll a DMG
 
 TMPFILE=/tmp/xjtmp.dmg
-DMGFILE=/tmp/jadeo.dmg
+DMGFILE=/tmp/jadeo-${VERSION}.dmg
 MNTPATH=/tmp/mnt/
 VOLNAME=Jadeo
 APPNAME="Jadeo.app"
@@ -192,4 +194,5 @@ rm $TMPFILE
 rmdir $MNTPATH
 
 echo
-echo "packaging suceeded. $DMGFILE"
+echo "packaging suceeded."
+ls -l $DMGFILE
