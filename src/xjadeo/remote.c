@@ -518,10 +518,47 @@ void xapi_jack_status(void *d) {
 		remote_printf(220,"jackclient=%s",jackid);
 	else 
 		remote_printf(100,"not connected to jack server");
+}
 
+void xapi_ltc_status(void *d) {
+	if (ltcjack_connected())
+		remote_printf(220,"jackclient=%s",ltc_jack_client_name());
+	else 
+		remote_printf(100,"no open LTC JACK source");
+}
+
+void xapi_open_ltc(void *d) {
+#ifdef HAVE_LTCSMPTE
+#ifdef HAVE_MIDI
+	midi_close();
+#endif
+	close_jack();
+	open_ltcjack((char *) d); // TODO: autoconnect 
+	if (ltcjack_connected())
+		remote_printf(100,"opened LTC jack port.");
+	else 
+		remote_printf(405,"failed to connect to jack server");
+#else
+	remote_printf(499,"LTC-jack is not available.");
+#endif
+}
+
+void xapi_close_ltc(void *d) {
+#ifdef HAVE_LTCSMPTE
+	close_ltcjack();
+	remote_printf(100,"closed ltc-jack connection");
+#else
+	remote_printf(499,"LTC-jack is not available.");
+#endif
 }
 
 void xapi_open_jack(void *d) {
+#ifdef HAVE_MIDI
+	midi_close();
+#endif
+#ifdef HAVE_LTCSMPTE
+	close_ltcjack();
+#endif
 	open_jack();
 	if (jack_client) 
 		remote_printf(100,"connected to jack server.");
@@ -634,6 +671,10 @@ void xapi_posd(void *d) {
 
 void xapi_psync(void *d) {
 	int ss =0;
+#ifdef HAVE_LTCSMPTE
+	if (ltcjack_connected()) ss=3;
+	else
+#endif
 #ifdef HAVE_MIDI
 	if (midi_connected()) ss=2;
 	else
@@ -849,6 +890,13 @@ Dcommand cmd_jack[] = {
 	{NULL, NULL, NULL , NULL, 0}
 };
 
+Dcommand cmd_ltc[] = {
+	{"connect", ": connect and sync to jack server", NULL, xapi_open_ltc , 0 },
+	{"disconnect", ": disconnect from jack server", NULL, xapi_close_ltc , 0 },
+	{"status", ": get status of jack connection", NULL, xapi_ltc_status , 0 },
+	{NULL, NULL, NULL , NULL, 0}
+};
+
 Dcommand cmd_osd[] = {
 	{"frame " , "<ypos>: render current framenumber. y=0..100 (<0 disable)", NULL, xapi_osd_frame, 0 },
 	{"smpte " , "<ypos>: render smpte. y=0..100 (<0 disable)", NULL, xapi_osd_smpte, 0 },
@@ -946,8 +994,9 @@ Dcommand cmd_root[] = {
 	{"get", " .. : query xjadeo variables or state", cmd_get, NULL, 0 },
 	{"set", " .. : set xjadeo variables", cmd_set, NULL, 0 },
 	{"osd", " .. : on screen display commands", cmd_osd, NULL, 0 },
-	{"jack", " .. : jack commands", cmd_jack, NULL, 0 },
-	{"midi", " .. : midi commands", cmd_midi, NULL, 0 },
+	{"jack", " .. : jack sync commands", cmd_jack, NULL, 0 },
+	{"midi", " .. : midi sync commands", cmd_midi, NULL, 0 },
+	{"ltc", " ..  : LTC sync commands", cmd_ltc, NULL, 0 },
 	{"reverse", ": set timescale to reverse playback from now", NULL , xapi_sreverse, 0 },
 
 	{"list videomodes" , ": displays a list of possible video modes", NULL, xapi_lvideomodes, 0 },

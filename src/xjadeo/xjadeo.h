@@ -153,6 +153,7 @@ long ltc_poll_frame (void);
 void open_ltcjack(char *autoconnect);
 void close_ltcjack(void);
 int ltcjack_connected(void);
+const char *ltc_jack_client_name();
 #endif 
 
 /* smpte.c prototypes */

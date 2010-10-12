@@ -220,11 +220,16 @@ void close_ltcjack(void) {
 	return;
 }
 
+const char *ltc_jack_client_name() {
+  return jack_get_client_name(j_client);
+}
+
 #else
 
 long ltc_poll_frame (void) { return 0;}
 void open_ltcjack(char *autoconnect) { ; }
 void close_ltcjack(void) { ; }
 int ltcjack_connected(void) { return 0;}
+const char *ltc_jack_client_name() { return "N/A";} 
 
 #endif
