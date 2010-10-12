@@ -44,4 +44,4 @@ cp -v $QTBIN/mingwm10.dll $NSIDIR
 VERSION=$(grep " VERSION " config.h | cut -d ' ' -f3 | sed 's/"//g'| sed 's/\./_/g')
 echo $VERSION
 cat $NSIDIR/xjadeo.nsi.tpl | sed 's/VERSION/'$VERSION'/' > $NSIDIR/xjadeo.nsi
-wine $NSISEXE $NSIDIR/xjadeo.nsi
+wine "$NSISEXE" $NSIDIR/xjadeo.nsi
