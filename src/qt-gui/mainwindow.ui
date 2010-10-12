@@ -138,7 +138,7 @@
        </widget>
       </item>
       <item>
-       <spacer name="spacer4">
+       <spacer name="spacer6">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -232,6 +232,7 @@
      <string>&amp;Sync</string>
     </property>
     <addaction name="syncJackAction"/>
+    <addaction name="syncLTCJackAction"/>
     <addaction name="syncMTCJackAction"/>
     <addaction name="syncMTCAlsaAction"/>
     <addaction name="syncOffAction"/>
@@ -468,6 +469,20 @@
      <cstring>syncJackAction</cstring>
     </property>
    </action>
+   <action name="syncLTCJackAction">
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="text">
+     <string>LTC (JACK)</string>
+    </property>
+    <property name="iconText">
+     <string>LTC (JACK)</string>
+    </property>
+    <property name="name" stdset="0">
+     <cstring>syncLTCJackAction</cstring>
+    </property>
+   </action>
    <action name="syncMTCJackAction">
     <property name="checkable">
      <bool>true</bool>
@@ -687,6 +702,22 @@
    <signal>activated()</signal>
    <receiver>MainWindow</receiver>
    <slot>syncOff()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>syncLTCJACKAction</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>syncLTCJack()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>

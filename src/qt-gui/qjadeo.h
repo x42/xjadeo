@@ -63,6 +63,7 @@ public slots:
   void zoomFullScreen();
 
   void syncJack();
+  void syncLTCJack();
   void syncMTCalsa();
   void syncMTCjack();
   void syncOff();

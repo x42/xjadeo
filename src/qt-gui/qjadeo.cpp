@@ -347,14 +347,25 @@ void QJadeo::zoomFullScreen()
 
 void QJadeo::syncJack()
 {
+  xjadeo->write(QByteArray("ltc disconnect\n"));
   xjadeo->write(QByteArray("midi disconnect\n"));
   xjadeo->write(QByteArray("jack connect\n"));
   xjadeo->write(QByteArray("midi driver\n"));
   xjadeo->write(QByteArray("get syncsource\n"));
 }
 
+void QJadeo::syncLTCJack()
+{
+  xjadeo->write(QByteArray("midi disconnect\n"));
+  xjadeo->write(QByteArray("jack disconnect\n"));
+  xjadeo->write(QByteArray("ltc connect\n"));
+  xjadeo->write(QByteArray("midi driver\n"));
+  xjadeo->write(QByteArray("get syncsource\n"));
+}
+
 void QJadeo::syncMTCalsa()
 {
+  xjadeo->write(QByteArray("ltc disconnect\n"));
   xjadeo->write(QByteArray("jack disconnect\n"));
   xjadeo->write(QByteArray("midi disconnect\n"));
   xjadeo->write(QByteArray("midi driver alsa-seq\n"));
@@ -365,6 +376,7 @@ void QJadeo::syncMTCalsa()
 
 void QJadeo::syncMTCjack()
 {
+  xjadeo->write(QByteArray("ltc disconnect\n"));
   xjadeo->write(QByteArray("jack disconnect\n"));
   xjadeo->write(QByteArray("midi disconnect\n"));
   xjadeo->write(QByteArray("midi driver jack\n"));
@@ -375,6 +387,7 @@ void QJadeo::syncMTCjack()
 
 void QJadeo::syncOff()
 {
+  xjadeo->write(QByteArray("ltc disconnect\n"));
   xjadeo->write(QByteArray("jack disconnect\n"));
   xjadeo->write(QByteArray("midi disconnect\n"));
   xjadeo->write(QByteArray("midi driver\n"));
@@ -513,6 +526,7 @@ void QJadeo::readFromStdout()
         else if(name == "syncsource")
 	{
 	  syncJackAction->setChecked(FALSE);
+	  syncLTCJackAction->setChecked(FALSE);
 	  syncMTCJackAction->setChecked(FALSE);
 	  syncMTCAlsaAction->setChecked(FALSE);
 	  syncOffAction->setChecked(FALSE);
@@ -520,6 +534,8 @@ void QJadeo::readFromStdout()
 	  if (value.toInt()==0) { // off
             seekBar->setEnabled(TRUE);
 	    syncOffAction->setChecked(TRUE);
+	  } else if (value.toInt()==3) { // LTC
+	      syncLTCJackAction->setChecked(TRUE);
 	  } else if (value.toInt()==2) { // MIDI
             seekBar->setEnabled(FALSE);
 	    if (m_mididrv == 1) 
