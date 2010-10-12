@@ -714,7 +714,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>syncLTCJACKAction</sender>
+   <sender>syncLTCJackAction</sender>
    <signal>activated()</signal>
    <receiver>MainWindow</receiver>
    <slot>syncLTCJack()</slot>
