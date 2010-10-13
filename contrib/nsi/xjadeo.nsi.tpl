@@ -34,12 +34,14 @@ Section "jadeo (required)"
   
   ; Put file there
   File "xjadeo.exe"
+  File "xjinfo.exe"
 	File "SDL.dll"
 	File "avcodec-52.dll"
 	File "avformat-52.dll"
 	File "avutil-49.dll"
 	File "freetype6.dll"
 	File "swscale-0.dll"
+	File "libltcsmpte-0.dll"
 	File "zlib1.dll"
 	File "FreeMonoBold.ttf"
   File "xjadeo.nsi"
@@ -47,6 +49,7 @@ Section "jadeo (required)"
   File "qjadeo.exe"
   File "QtCore4.dll"
   File "QtGui4.dll"
+  File "QtSvg4.dll"
   File "QtTest4.dll"
   File "libgcc_s_dw2-1.dll"
   File "mingwm10.dll"
@@ -81,6 +84,7 @@ SectionEnd
 ; Optional section (can be disabled by the user)
 Section "Start Menu Shortcuts"
   CreateDirectory "$SMPROGRAMS\xjadeo"
+  CreateShortCut "$SMPROGRAMS\xjadeo\qjadeo.lnk" "$INSTDIR\qjadeo.exe" "" "$INSTDIR\qjadeo.exe" 0
   CreateShortCut "$SMPROGRAMS\xjadeo\xjadeo.lnk" "$INSTDIR\xjadeo.exe" "" "$INSTDIR\xjadeo.exe" 0
   CreateShortCut "$SMPROGRAMS\xjadeo\uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
 SectionEnd
@@ -97,18 +101,21 @@ Section "Uninstall"
 
   ; Remove files and uninstaller
   Delete $INSTDIR\xjadeo.exe
+  Delete $INSTDIR\xjinfo.exe
   Delete $INSTDIR\SDL.dll
   Delete $INSTDIR\avcodec-52.dll
   Delete $INSTDIR\avformat-52.dll
   Delete $INSTDIR\avutil-49.dll
   Delete $INSTDIR\swscale-0.dll
   Delete $INSTDIR\freetype6.dll
+  Delete $INSTDIR\libltcsmpte-0.dll
   Delete $INSTDIR\zlib1.dll
   Delete $INSTDIR\FreeMonoBold.ttf
   Delete $INSTDIR\xjadeo.nsi
   Delete $INSTDIR\qjadeo.exe
   Delete $INSTDIR\QtCore4.dll
   Delete $INSTDIR\QtGui4.dll
+  Delete $INSTDIR\QtSvg4.dll
   Delete $INSTDIR\QtTest4.dll
   Delete $INSTDIR\libgcc_s_dw2-1.dll
   Delete $INSTDIR\mingwm10.dll

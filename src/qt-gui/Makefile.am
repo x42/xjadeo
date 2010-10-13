@@ -73,6 +73,16 @@ maintainer-clean:	clean
 	$(DEL_FILE) -f $(name).pro
 
 mydirs.h: Makefile
-	echo '#define BINDIR "$(DESTDIR)/$(bindir)/"' >$@
-	echo '#define CONFIG_PREFIX "$(DESTDIR)/$(datadir)/qjadeo/locale"' >>$@
-
+	echo '#ifdef WIN32' >$@
+	echo '#define MENCODER "mencoder.exe"' >>$@
+	echo '#define XJREMOTE "xjremote.bat"' >>$@
+	echo '#define XJINFO "xjinfo.exe"' >>$@
+	echo '#define BINDIR ""' >>$@
+	echo '#define CONFIG_PREFIX ""' >>$@
+	echo '#else' >>$@
+	echo '#define MENCODER "mencoder"' >>$@
+	echo '#define XJREMOTE "xjremote"' >>$@
+	echo '#define XJINFO "xjinfo"' >>$@
+	echo '#define BINDIR "$(bindir)/"' >>$@
+	echo '#define CONFIG_PREFIX "$(datadir)/qjadeo/locale"' >>$@
+	echo '#endif' >>$@

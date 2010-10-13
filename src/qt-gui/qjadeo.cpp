@@ -67,9 +67,9 @@ QJadeo::QJadeo()
   if (m_alsamidiport.isEmpty()) m_alsamidiport = QString("24");
   if (m_jackmidiport.isEmpty()) m_jackmidiport = QString("");
   if (m_importcodec.isEmpty()) m_importcodec = QString("mpeg4");
-  if (m_mencoderpath.isEmpty()) m_mencoderpath = QString("mencoder");
-  if (m_xjadeopath.isEmpty()) m_xjadeopath = QString(BINDIR "xjremote");
-  if (m_xjinfopath.isEmpty()) m_xjinfopath = QString(BINDIR "xjinfo");
+  if (m_mencoderpath.isEmpty()) m_mencoderpath = QString(MENCODER);
+  if (m_xjadeopath.isEmpty()) m_xjadeopath = QString(BINDIR XJREMOTE);
+  if (m_xjinfopath.isEmpty()) m_xjinfopath = QString(BINDIR XJINFO);
   m_osdfont = m_settings.value("OSD font").toString();
   fileImportAction->setEnabled(testexec(m_mencoderpath));
 
@@ -654,7 +654,7 @@ int main(int argc, char **argv)
   else w.m_xjadeopath = xjadeoPath;
 
   if(xjadeoPath.isEmpty())
-    xjadeoPath = BINDIR "/xjremote";
+    xjadeoPath = BINDIR XJREMOTE;
 
   w.xjadeo = new QProcess(&w);
   w.xjadeo->start(xjadeoPath, QStringList("-R"));
