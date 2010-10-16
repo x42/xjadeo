@@ -147,7 +147,9 @@ int init_jack(const char *client_name, const char *server_name, jack_options_t o
     fprintf (stderr, "unique name `%s' assigned\n", client_name);
   }
   jack_set_process_callback (j_client, process, 0);
+#ifndef HAVE_WINDOWS
   jack_on_shutdown (j_client, ltcjack_shutdown, 0);
+#endif
   j_samplerate=jack_get_sample_rate (j_client);
 	return 0;
 }
