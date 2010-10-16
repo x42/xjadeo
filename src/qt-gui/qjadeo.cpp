@@ -89,6 +89,7 @@ void QJadeo::initialize ()
   if (!m_osdfont.isEmpty()) {
     xjadeo->write(QString("osd font " + m_osdfont + "\n").toAscii());
   }
+  xjadeo->write(QByteArray("set seekmode 1\n"));
   xjadeo->write(QByteArray("osd text \n"));
   xjadeo->write(QByteArray("get width\n"));
   xjadeo->write(QByteArray("get height\n"));
