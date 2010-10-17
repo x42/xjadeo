@@ -71,9 +71,12 @@ void ImportDialog::importAvInfo()
   QStringList argv;
   argv.append( "-v" ); 
   argv.append( SourceLineEdit->text() );
+  infoproc->closeReadChannel(QProcess::StandardError);
+  infoproc->setReadChannel(QProcess::StandardOutput);
   connect( infoproc, SIGNAL(readyReadStandardOutput ()), this, SLOT(readFromStdout()) );
   connect( infoproc, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(infoFinished()));
-  if ( !infoproc->startDetached(xjinfo, argv) ) {
+  infoproc->start(xjinfo, argv);
+  if (!infoproc->waitForStarted()) {
      QMessageBox::warning( 0, "Warning", "Could not start the xjinfo command.", "OK" ); 
   }
 }

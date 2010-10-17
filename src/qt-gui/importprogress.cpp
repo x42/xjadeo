@@ -23,7 +23,6 @@ void ImportProgress::ImportCancel()
 int ImportProgress::mencode(QString commandpath)
 {
   QStringList argv;
-  argv.append(commandpath);
   argv.append("-idx");
   argv.append("-ovc");
   argv.append("lavc");
@@ -62,14 +61,16 @@ int ImportProgress::mencode(QString commandpath)
   argv.append(enc_dst);
   argv.append(enc_src);
   //encoder.setCommunication ( QProcess::Stdout|QProcess::Stderr );
+  //qDebug(argv.join(" ").toAscii().data());
 
-  if(!encoder.startDetached(commandpath, argv)) {
+  encoder.start(commandpath, argv);
+  if(!encoder.waitForStarted()) {
     QMessageBox::QMessageBox::warning( this, "Import Error","Could not launch encoder.","OK", QString::null, QString::null, 0, -1);
     return(1);
   } else {
     connect(&encoder, SIGNAL(readyReadStandardOutput ()), this, SLOT(readFromStdout()));
     connect(&encoder, SIGNAL(readyReadStandardError()), this, SLOT(readFromStderr()));
-    connect(&encoder, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(encodeFinished()));
+    connect(&encoder, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(encodeFinished(int, QProcess::ExitStatus)));
     return(0);
   }
 }
