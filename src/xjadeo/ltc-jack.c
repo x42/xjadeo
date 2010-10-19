@@ -24,7 +24,6 @@
 #include <stdio.h>
 
 #ifdef HAVE_LTCSMPTE
-extern int use_ltc;
 extern double framerate;
 
 #include <math.h>

@@ -187,7 +187,7 @@ void event_loop(void) {
 		else
 #endif
 #ifdef HAVE_LTCSMPTE
-		if (use_ltc) newFrame = ltc_poll_frame();
+		if (ltcjack_connected()) newFrame = ltc_poll_frame();
 		else
 #endif
 
