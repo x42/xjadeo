@@ -49,3 +49,5 @@ VERSION=$(grep " VERSION " config.h | cut -d ' ' -f3 | sed 's/"//g'| sed 's/\./_
 echo $VERSION
 cat $NSIDIR/xjadeo.nsi.tpl | sed 's/VERSION/'$VERSION'/' > $NSIDIR/xjadeo.nsi
 wine "$NSISEXE" $NSIDIR/xjadeo.nsi
+
+echo scp contrib/nsi/jadeo_installer_v$VERSION.exe  rg42.org:/var/sites/robwiki/data/media/oss/xjadeo/
