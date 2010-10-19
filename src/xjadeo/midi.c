@@ -555,7 +555,7 @@ void jm_midi_close(void) {
 
 void jm_midi_open(char *midiid) {
   if (midi_connected()) {
-		fprintf (stderr, "xjadeo is alredy connected to jack-midi.\n");
+		fprintf (stderr, "xjadeo is already connected to jack-midi.\n");
 		return;
   }
 
