@@ -90,7 +90,7 @@ void QJadeo::initialize ()
     xjadeo->write(QString("osd font " + m_osdfont + "\n").toAscii());
   }
   xjadeo->write(QByteArray("set seekmode 1\n"));
-  xjadeo->write(QByteArray("osd text \n"));
+  xjadeo->write(QByteArray("osd notext\n"));
   xjadeo->write(QByteArray("get width\n"));
   xjadeo->write(QByteArray("get height\n"));
   xjadeo->write(QByteArray("get frames\n"));
@@ -111,7 +111,7 @@ void QJadeo::initialize ()
 bool QJadeo::testexec(QString exe)
 {
   return 1;
-  int timeout=10;
+  //int timeout=10;
   QProcess testbin; 
   /* FIXME: there MUST be a better way 
    * than to simply try exeute it .. */
@@ -123,7 +123,7 @@ bool QJadeo::testexec(QString exe)
   }
   //while (testbin.state() && timeout--) usleep (10000);
   //if (timeout<1) testbin.kill();
-//if (testbin.exitStatus() != 0) return(0);
+  //if (testbin.exitStatus() != 0) return(0);
   return(1);
 }
 
@@ -188,7 +188,6 @@ void QJadeo::fileOpen()
   {
     fileLoad(s);
   }
-
 }
 
 void QJadeo::fileDisconnect()
@@ -421,6 +420,20 @@ void QJadeo::osdSMPTEToggled(bool value)
     xjadeo->write(QByteArray("osd smpte -1\n"));
 }
 
+void QJadeo::osdTextOff()
+{
+  QJadeo::osdTextToggled(false);
+  xjadeo->write(QByteArray("get osdcfg\n"));
+}
+
+void QJadeo::osdTextToggled(bool value)
+{
+  if(value)
+    xjadeo->write(QByteArray("osd text\n"));
+  else
+    xjadeo->write(QByteArray("osd notext\n"));
+}
+
 void QJadeo::osdBoxToggled(bool value)
 {
   if(value)
@@ -434,7 +447,7 @@ void QJadeo::seekBarChanged( int value )
   int frame=0;
   QString Temp;
   if(m_frames > 0) {
-  	frame = value*m_frames/1000;	
+  	frame = value*m_frames/1000;
   }
   Temp.sprintf("seek %i\n",frame);
   xjadeo->write(Temp.toAscii());
@@ -557,6 +570,7 @@ void QJadeo::readFromStdout()
 	{
 	  int v= value.toInt();
 	  osdBoxAction->setChecked(v&8);
+	  osdTextAction->setChecked(v&4);
 	  osdSMPTEAction->setChecked(v&2);
 	  osdFrameAction->setChecked(v&1);
 	}
@@ -607,25 +621,14 @@ void QJadeo::fileLoad(const QString & filename)
   m_offset = 0;
   m_framerate = 0;
   m_mididrv = 0;
+  bool showtext = osdTextAction->isChecked();
   xjadeo->write(QString("load " + filename + "\n").toAscii());
+  xjadeo->write(QString("osd text " + filename + "\n").toAscii());
   xjadeo->write(QByteArray("get filename\n"));
-  /*
-  xjadeo->write(QByteArray("get width\n"));
-  xjadeo->write(QByteArray("get height\n"));
-  xjadeo->write(QByteArray("get frames\n"));
-  xjadeo->write(QByteArray("get framerate\n"));
-  xjadeo->write(QByteArray("notify frame\n"));
-  xjadeo->write(QByteArray("get offset\n"));
-  xjadeo->write(QByteArray("get position\n"));
-  xjadeo->write(QByteArray("get seekmode\n"));
-  xjadeo->write(QByteArray("midi driver\n"));
-  xjadeo->write(QByteArray("get syncsource\n"));
-  xjadeo->write(QByteArray("get osdcfg\n"));
-  */
-
+  if (!showtext) {
+    QTimer::singleShot(3000, this, SLOT(osdTextOff()));
+  }
 }
-
-// Program entry point
 
 int main(int argc, char **argv)
 {
@@ -679,10 +682,8 @@ int main(int argc, char **argv)
 
   if (w.xjadeo->state()){
     qDebug("xjadeo is still running.\n");
-    //w.xjadeo->closeReadChannel(QProcess::StandardOutput);
     w.xjadeo->write(QByteArray("notify disable\n"));
     w.xjadeo->write(QByteArray("exit\n"));
-    //w.xjadeo->write(QByteArray("quit\n"));
     QTest::qWait(1000);
   }
   while (w.xjadeo->state()){

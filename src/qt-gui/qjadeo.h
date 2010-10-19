@@ -81,9 +81,11 @@ public slots:
 
   void osdFrameToggled(bool);
   void osdSMPTEToggled(bool);
+  void osdTextToggled(bool);
   void osdBoxToggled(bool);
   void osdFont();
   void seekBarChanged( int );
+  void osdTextOff();
 
 };
 #endif
