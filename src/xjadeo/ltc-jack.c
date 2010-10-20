@@ -28,7 +28,7 @@ extern double framerate;
 
 #include <math.h>
 #include <jack/jack.h>
-#include <ltcsmpte.h>
+#include <ltcsmpte/ltcsmpte.h>
 
 void close_ltcjack(void);
 
