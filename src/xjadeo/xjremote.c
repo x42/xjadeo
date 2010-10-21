@@ -42,7 +42,6 @@ static void printversion (void);
 
 char *program_name;
 int want_quiet   = 0;	/*< --quiet, --silent */
-int want_debug   = 0;	/*< --debug */
 int want_verbose = 0;	/*< --verbose */
 int want_ping    = 1;	/*< --noping */
 int want_unlink  = 0;	/*< --1:unlink mqueues on startup  2: and exit */
@@ -65,7 +64,6 @@ static struct option const long_options[] =
 	{"unlinkonly", no_argument, 0, 'U'},
 	{"id", required_argument, 0, 'I'},
 	{"noping", required_argument, 0, 'P'},
-	{"debug", no_argument, 0, 'D'},
 	{"version", no_argument, 0, 'V'},
 	{NULL, 0, NULL, 0}
 };
@@ -112,6 +110,7 @@ static int decode_switches (int argc, char **argv) {
 			break;
 		case 'R':
 		case 'Q':
+		case 'W':
 			break;
 		case 'V':
 			printversion();
@@ -136,7 +135,7 @@ static void usage (int status) {
 "                            do NOT launch a new xjadeo if none found.\n"
 "  -P, --noping              do not check if xjadeo is alive. just connect.\n"
 "  -q, --quiet, --silent     inhibit usual output\n"
-"  -I, --id <queue-id>       spefify queue id.\n"
+"  -I, --id <queue-id>       specify queue id.\n"
 "  -u, --unlink              remove existing queues\n"
 "  -U, --unlinkonly          remove queues and exit\n"
 "                      NOTE: active connections will not be affected by an\n"
