@@ -22,11 +22,11 @@ validate:
 
 html: validate
 	mkdir -p html 
-	(cd html; xsltproc ../html.xsl ../xjadeo.xml)
+	(cd html; xsltproc --encoding UTF-8 ../html.xsl ../xjadeo.xml)
 	cp -f *.css favicon.ico html
 
 man: validate
-	xsltproc man.xsl xjadeo.xml
+	xsltproc --encoding UTF-8 man.xsl xjadeo.xml
 
 clean:
 	-rm -fr qjadeo.1 xjadeo.1 html xjadeo.ps
