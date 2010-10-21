@@ -9,25 +9,32 @@
   <articleinfo>
     <title><application>xjadeo</application> - X Jack Video Monitor</title>
     <subtitle><ulink url="http://xjadeo.sourceforge.net"></ulink></subtitle>
-     <copyright>
-        <year>2005</year>
-        <year>2006</year>
-        <year>2007</year>
-        <year>2009</year>
-        <year>2010</year>
-        <holder>Robin Gareus, Luis Garrido</holder>
-     </copyright>
+    <copyright>
+      <year>2005</year>
+      <year>2006</year>
+      <year>2007</year>
+      <year>2009</year>
+      <year>2010</year>
+      <holder>Robin Gareus, Luis Garrido</holder>
+    </copyright>
                                                          
      <author>
-        <firstname>Robin</firstname>
-        <surname>Gareus</surname>
-        <email>robin@gareus.org</email>
-        <personblurb>
-          <para>linuxaudio.org</para>
-        </personblurb>
+       <firstname>Robin</firstname>
+       <surname>Gareus</surname>
+       <email>robin@gareus.org</email>
+       <personblurb>
+         <para>linuxaudio.org</para>
+       </personblurb>
      </author>
-
      <abstract>
+       <para>
+         <mediaobject>
+           <imageobject>
+             <imagedata fileref="qjadeo.png" align="center" valign="top"/>
+           </imageobject>
+         </mediaobject>
+       </para>
+
        <para><application>xjadeo</application> is a software video player 
          that displays a video-clip in sync with an external time source 
          (MTC, LTC, JACK-transport).</para>
@@ -148,7 +155,11 @@
 
     <section id="section_binaries">
       <title id="binaries" >Binaries</title>
-      <para>If you are using a "major" GNU/Linux distribution (Debian, Fedora, Ubuntu, SuSe, Gentoo, Slackware, etc.), you can acquire <application>xjadeo</application> directly from your distribution. It can be installed using the normal software installation tools for your distribution. In case your distribution does not provide, or only ships an old version of <application>xjadeo</application>, you can build it from <xref linkend="src"/>.</para>
+      <para>If you are using a "major" GNU/Linux distribution (Debian, Fedora, Ubuntu, SuSe, Gentoo, Slackware, etc.), 
+        you can acquire <application>xjadeo</application> directly from your distribution. 
+        It can be installed using the normal software installation tools for your distribution.
+        In case your distribution does not provide, or only ships an old version of <application>xjadeo</application>,
+        you can build it from <xref linkend="src"/>.</para>
 
       <para>Windows and Mac/OSX binaries are available from the
         <ulink url="http://sourceforge.net/projects/xjadeo/files/">Sourceforge Download Page</ulink>. Note that you'll need to install 
@@ -319,7 +330,9 @@ make install # (requires root privileges) </screen>
 
       <para><application>xjadeo</application> has been designed to aid
       creative people and not as a general purpose video player. As it is most likely that you will work
-      with the video file for a while, you should take some time to convert in to suitable format for your purpose, trading off I/O and the efforts to decode the file.</para>
+      with the video file for a while, you should take some time to convert in to suitable format for your purpose,
+      trading off I/O and the efforts to decode the file.</para>
+
       <para><application>xjadeo</application> uses <ulink
       url="http://ffmpeg.sourceforge.net/">ffmpeg</ulink> to decode the video
       file and supports only seekable video streams. Probably you
@@ -402,8 +415,9 @@ make install # (requires root privileges) </screen>
       However you may find it useful to change some settings during runtime:</para>
 
       <section id="remote_control_interaction">
-              <title>Remote Control</title>
-              <para>If you do not want to re-focus your keyboard to the xjadeo window use <xref linkend="xjremote" /> and jump <xref linkend="remote_control_interface"/>.</para>
+        <title>Remote Control</title>
+        <para>If you do not want to re-focus your keyboard to the xjadeo window use <xref linkend="xjremote" /> and 
+          jump <xref linkend="remote_control_interface"/>.</para>
       </section>
 
       <section id="x_window_interaction">
@@ -1395,7 +1409,9 @@ make install # (requires root privileges) </screen>
             <term><option>-d <replaceable>midi-driver</replaceable></option>,
             <option>--midi-driver <replaceable>midi-driver</replaceable></option></term>
             <listitem>
-              <para>Choose MIDI back-end to use. <replaceable>midi-driver</replaceable> can be either of JACK, ALSA or portmidi - depending on Operating-System and compile-time option.</para>
+              <para>Choose MIDI back-end to use. 
+                <replaceable>midi-driver</replaceable> can be either one of 
+                "JACK", "ALSA" or "portmidi" - depending on the operating-System and compile-time configuration.</para>
             </listitem>
           </varlistentry>
 
@@ -1491,7 +1507,12 @@ make install # (requires root privileges) </screen>
             <term><option>-K</option>,
             <option>--continuous </option></term>
             <listitem>
-              <para>Decode video frame by frame starting from previous key-frame. This particularly useful to read files where not every frame is a key-frame at cost of increased CPU usage. Note that this option adds some extra latency when seeking. Combine with <option>-f -1</option>: It makes sense to set <application>xjadeo</application>'s screen-update frequency to match the frame-rate of the video file.</para>
+              <para>Decode video frame by frame starting from previous key-frame. 
+                This particularly useful to read files where not every frame is a key-frame at cost of increased CPU usage.
+                Note that this option adds some extra latency when seeking.
+                Combine with <option>-f -1</option>: 
+                It makes sense to set <application>xjadeo</application>'s screen-update frequency to match the frame-rate of the video file.
+              </para>
             </listitem>
           </varlistentry>
 
@@ -1804,7 +1825,8 @@ make install # (requires root privileges) </screen>
             Some <option>VALUES</option> are case sensitive (fi. filenames) and are parsed identical to the corresponding 
             command-line arguments (e.g. <option>-x SDL</option> is equivalent to the config-file option <option>videomode=SDL</option>). 
             Boolean values are specified as 'yes' or 'no' (e.g. <option>quiet=yes</option>).</para>
-          <para>currently supported RC-KEYS: fps, fontfile, lash, letterbox, midiclk, mididriver, midiid, midismpte, mq, nosplash, quiet, seek, verbose and videomode. 
+          <para>currently supported RC-KEYS: 
+            fps, fontfile, lash, letterbox, midiclk, mididriver, midiid, midismpte, mq, nosplash, quiet, seek, verbose and videomode. 
             Which are documented in the example <ulink 
               url="http://xjadeo.git.sourceforge.net/git/gitweb.cgi?p=xjadeo/xjadeo;a=blob_plain;f=doc/xjadeorc" >xjadeorc</ulink>
           </para>
