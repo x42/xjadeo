@@ -52,7 +52,7 @@ install: build
 # Build architecture-independent files here.
 binary-indep: build install
 	convert src/xjadeo/icons/xjadeo-color.xpm -resize 48x48! xjadeo.png
-	convert src/qt-gui/images/qjadeo -resize 48x48! qjadeo.png
+	convert src/qt-gui/images/qjadeo.png -resize 48x48! qjadeo.png
 	# menu-entry
 	echo "[Desktop Entry]" > xjadeo.desktop 
 	#echo "Encoding=UTF-8" >> xjadeo.desktop 
