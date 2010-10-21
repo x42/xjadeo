@@ -21,7 +21,7 @@
      <author>
         <firstname>Robin</firstname>
         <surname>Gareus</surname>
-				<email>robin@gareus.org</email>
+        <email>robin@gareus.org</email>
         <personblurb>
           <para>linuxaudio.org</para>
         </personblurb>
@@ -337,18 +337,18 @@ make install # (requires root privileges) </screen>
         This creates from your <filename>input-file.xxx</filename> an
         AVI mpeg4 encoded video file with no sound, an index (-idx) and no
         compression between frames (every frame is a key frame). Thus The file
-				can become really BIG, so watch your disk space.</para>
-			<para>You may want to shrink the size by scaling the geometry of the video-frames, which also taxes less 
-				system resources while displaying it and leaves more space in the screen for your audio software..</para>
+        can become really BIG, so watch your disk space.</para>
+      <para>You may want to shrink the size by scaling the geometry of the video-frames, which also taxes less 
+        system resources while displaying it and leaves more space in the screen for your audio software..</para>
 
       <screen>-vf scale=width:height</screen>
 
-			<para><application>qjadeo</application> provides an "import dialog" available from the File menu, that will 
-				invoke <application>mencoder</application> with these arguments.</para>
+      <para><application>qjadeo</application> provides an "import dialog" available from the File menu, that will 
+        invoke <application>mencoder</application> with these arguments.</para>
 
-			<para>Also note <application>xjadeo</application>'s <option>-K</option> option which allows
-				to seek to frames other than key-frames and enables <application>xjadeo</application> to
-				play back any file without transcoding at expense of increased CPU usage and latency.</para>
+      <para>Also note <application>xjadeo</application>'s <option>-K</option> option which allows
+        to seek to frames other than key-frames and enables <application>xjadeo</application> to
+        play back any file without transcoding at expense of increased CPU usage and latency.</para>
     </section>
 
     <section id="invoking_xjadeo">
@@ -553,8 +553,8 @@ make install # (requires root privileges) </screen>
 
       <section id="howto_ardour2">
         <title>Configure Ardour 2 and Ardour 3 to sync to JACK</title>
-				<para><application>Ardour2</application> has button just right of to the clock which allows to set <application>Ardour's</application> sync mode (Internal, JACK and MTC)</para>
-				<para>Note: All versions or <application>Ardour</application> provide the alternative option to connect <application>xjadeo</application> as a MTC slave instead of using JACK-transport.</para>
+        <para><application>Ardour2</application> has button just right of to the clock which allows to set <application>Ardour's</application> sync mode (Internal, JACK and MTC)</para>
+        <para>Note: All versions or <application>Ardour</application> provide the alternative option to connect <application>xjadeo</application> as a MTC slave instead of using JACK-transport.</para>
       </section>
 
       <section id="howto_rg">
@@ -564,7 +564,7 @@ make install # (requires root privileges) </screen>
             <listitem>
               <para><menuchoice>
                   <guimenu>Settings</guimenu>
-									<guimenuitem>Configure Rosegarden</guimenuitem>
+                  <guimenuitem>Configure Rosegarden</guimenuitem>
                 </menuchoice></para>
             </listitem>
             <listitem>
@@ -645,25 +645,25 @@ make install # (requires root privileges) </screen>
 <!-- CHAPTER 4 -->
 
   <section id="remote_control_interface">
-		<title>Remote Control Interface</title>
+    <title>Remote Control Interface</title>
 
-		<para><application>xjadeo</application> features a remote control mode that allows to modify all
+    <para><application>xjadeo</application> features a remote control mode that allows to modify all
     settings of a running xjadeo instance. When started in remote mode
     (using option <option>-R</option> or <option>--remote</option>)
     <command>xjadeo</command> will interactively accept commands and issue
-		responses through standard input/output mechanism.</para>
+    responses through standard input/output mechanism.</para>
 
-		<para>Since version 0.3.20 xjadeo implements POSIX <ulink 
-				url="http://www.linuxhowtos.org/manpages/7/mq_overview.htm">message queues</ulink>
-			as an alternative to the standard-I/O remote control and since 0.4.11 also System-V IPC.
-			The latter provide the capability to dis- and re-connect to existing xjadeo sessions. 
-			For more information about message queues read the <xref linkend="xjremote" /> manual.</para>
+    <para>Since version 0.3.20 xjadeo implements POSIX <ulink 
+        url="http://www.linuxhowtos.org/manpages/7/mq_overview.htm">message queues</ulink>
+      as an alternative to the standard-I/O remote control and since 0.4.11 also System-V IPC.
+      The latter provide the capability to dis- and re-connect to existing xjadeo sessions. 
+      For more information about message queues read the <xref linkend="xjremote" /> manual.</para>
 
     <para>Note that <application>qjadeo</application> controls xjadeo via message queues.</para>
 
-		<para><application>xjadeo</application>'s remote control interpreter is self documented,
-			use the <option>help</option> command to query the available set of commands.
-			The following list summarizes commonly used commands:</para>
+    <para><application>xjadeo</application>'s remote control interpreter is self documented,
+      use the <option>help</option> command to query the available set of commands.
+      The following list summarizes commonly used commands:</para>
 
     <section id="rc_general">
       <title>General Commands</title>
@@ -820,31 +820,31 @@ make install # (requires root privileges) </screen>
       </section>
 
       <section id="rc_ltc">
-				<title>LTC</title>
+        <title>LTC</title>
 
-				<variablelist>
+        <variablelist>
           <varlistentry>
             <term><option>ltc connect</option></term>
             <listitem>
-							<para>Connect to JACK and sync to audio received on the xjadeo:ltc audio port.</para>
+              <para>Connect to JACK and sync to audio received on the xjadeo:ltc audio port.</para>
             </listitem>
-					</varlistentry>
+          </varlistentry>
 
           <varlistentry>
             <term><option>ltc disconnect</option></term>
             <listitem>
-							<para>Disconnect from JACK and disable LTC sync.</para>
+              <para>Disconnect from JACK and disable LTC sync.</para>
             </listitem>
-					</varlistentry>
+          </varlistentry>
 
           <varlistentry>
             <term><option>ltc status</option></term>
             <listitem>
-							<para>Display status of JACK/LTC connection.</para>
+              <para>Display status of JACK/LTC connection.</para>
             </listitem>
-					</varlistentry>
+          </varlistentry>
         </variablelist>
-			</section>
+      </section>
 
       <section id="rc_midi">
         <title>MIDI</title>
@@ -858,14 +858,14 @@ make install # (requires root privileges) </screen>
               <para>Note: when a MIDI port is connected, the JACK-transport information will be ignored, whether xjadeo is
               connected to JACK or not.</para>
             </listitem>
-					</varlistentry>
+          </varlistentry>
 
           <varlistentry>
-						<term><option>midi driver <replaceable class="option">driver-name</replaceable></option></term>
-						<listitem>
-							<para>Choose MIDI back-end to use (ALSA, portmidi or JACK - available back-ends depend on the operating-system and compile-time configuration), or if <replaceable class="option">driver-name</replaceable> is empty print current driver.</para>
+            <term><option>midi driver <replaceable class="option">driver-name</replaceable></option></term>
+            <listitem>
+              <para>Choose MIDI back-end to use (ALSA, portmidi or JACK - available back-ends depend on the operating-system and compile-time configuration), or if <replaceable class="option">driver-name</replaceable> is empty print current driver.</para>
             </listitem>
-					</varlistentry>
+          </varlistentry>
 
           <varlistentry>
             <term><option>midi connect <replaceable class="option">port</replaceable></option></term>
@@ -875,12 +875,12 @@ make install # (requires root privileges) </screen>
               <para>If using ALSA MIDI, <replaceable
               class="option">port</replaceable> is the ALSA sequencer id of
               the MTC source. A value of -1 will leave
-							<application>xjadeo</application> unconnected.</para>
+              <application>xjadeo</application> unconnected.</para>
 
               <para>for JACK MIDI, <replaceable
               class="option">port</replaceable> is the JACK-MIDI port name to auto-connect to.
               An empty value or non-existing port-name will leave 
-							<application>xjadeo</application> unconnected.</para>
+              <application>xjadeo</application> unconnected.</para>
 
               <para>If using portmidi, <replaceable
               class="option">port</replaceable> is the port number of the MIDI
@@ -901,7 +901,7 @@ make install # (requires root privileges) </screen>
             <term><option>midi status </option></term>
 
             <listitem>
-							<para>Displays the status of the <application>xjadeo</application> MIDI port
+              <para>Displays the status of the <application>xjadeo</application> MIDI port
               connection.</para>
             </listitem>
           </varlistentry>
@@ -919,8 +919,8 @@ make install # (requires root privileges) </screen>
             <term><option>set midisync <replaceable>n</replaceable></option></term>
 
             <listitem>
-							<para>Set MIDI SMPTE conversion mode. <replaceable>n</replaceable> is an integer,
-								corresponding to the <option>-M</option> command line option.</para>
+              <para>Set MIDI SMPTE conversion mode. <replaceable>n</replaceable> is an integer,
+                corresponding to the <option>-M</option> command line option.</para>
             </listitem>
           </varlistentry>
         </variablelist>
@@ -1075,7 +1075,7 @@ make install # (requires root privileges) </screen>
         <varlistentry>
           <term><option>notify loop </option></term>
           <listitem>
-						<para>Enables async messages. <application>xjadeo</application> will generate a '@300' reply message
+            <para>Enables async messages. <application>xjadeo</application> will generate a '@300' reply message
             each time it polls for a time-code.</para>
           </listitem>
         </varlistentry>
@@ -1083,7 +1083,7 @@ make install # (requires root privileges) </screen>
         <varlistentry>
           <term><option>notify frame </option></term>
           <listitem>
-						<para>Enables async messages. <application>xjadeo</application> will generate a '@300' reply message
+            <para>Enables async messages. <application>xjadeo</application> will generate a '@300' reply message
             each time it displays a new video-frame.</para>
           </listitem>
         </varlistentry>
@@ -1103,7 +1103,7 @@ make install # (requires root privileges) </screen>
         <varlistentry>
           <term><option>osd frame <replaceable>ypos</replaceable></option></term>
           <listitem>
-						<para>Render current frame-number on screen. <replaceable>ypos</replaceable> specifies the
+            <para>Render current frame-number on screen. <replaceable>ypos</replaceable> specifies the
             vertical position in percent (0..100). The text is horizontally
             centered. A value &lt;0 disables the frame display.</para>
           </listitem>
@@ -1112,9 +1112,9 @@ make install # (requires root privileges) </screen>
         <varlistentry>
           <term><option>osd smpte <replaceable>ypos</replaceable></option></term>
           <listitem>
-						<para>Render SMPTE on screen. <replaceable>ypos</replaceable> specifies the vertical position
-							in percent. The text is horizontally centered. A <replaceable>ypos</replaceable> value &lt;0
-							disables SMPTE OSD.</para>
+            <para>Render SMPTE on screen. <replaceable>ypos</replaceable> specifies the vertical position
+              in percent. The text is horizontally centered. A <replaceable>ypos</replaceable> value &lt;0
+              disables SMPTE OSD.</para>
           </listitem>
         </varlistentry>
 
@@ -1145,8 +1145,8 @@ make install # (requires root privileges) </screen>
           <term><option>osd pos <replaceable>xalign</replaceable> <replaceable>ypos</replaceable></option></term>
           <listitem>
             <para>Set the position of the OSD text</para>
-						<para><replaceable>xalign</replaceable> is an integer: 0:Left, 1:Center, 2:Right</para>
-						<para><replaceable>ypos</replaceable> specifies the vertical position in percent (0..100).</para>
+            <para><replaceable>xalign</replaceable> is an integer: 0:Left, 1:Center, 2:Right</para>
+            <para><replaceable>ypos</replaceable> specifies the vertical position in percent (0..100).</para>
           </listitem>
         </varlistentry>
 
@@ -1198,89 +1198,89 @@ make install # (requires root privileges) </screen>
       '\n' formatted as: <screen>@&lt;status-integer&gt; &lt;text&gt;</screen>
       each line start with an @ followed by an integer that tells if the
       command succeeded and specifies the format of the text. The status
-			integer is usually a 3 digit decimal number in [100..999]: </para>
-			<variablelist>
-				<varlistentry>
-					<term><option>1xx:</option></term>
-					<listitem>
-						<para>OK. The command succeeded returning a small text info message.</para>
-					</listitem>
-				</varlistentry>
+      integer is usually a 3 digit decimal number in [100..999]: </para>
+      <variablelist>
+        <varlistentry>
+          <term><option>1xx:</option></term>
+          <listitem>
+            <para>OK. The command succeeded returning a small text info message.</para>
+          </listitem>
+        </varlistentry>
 
-				<varlistentry>
-					<term><option>2xx:</option></term>
-					<listitem>
-						<para>the command succeeded and the return text is in format name=value</para>
-						<para>This is used for returning variables. 200-299 defines the
-						type of the value as follows:</para>
+        <varlistentry>
+          <term><option>2xx:</option></term>
+          <listitem>
+            <para>the command succeeded and the return text is in format name=value</para>
+            <para>This is used for returning variables. 200-299 defines the
+            type of the value as follows:</para>
 
-						<variablelist>
-							<varlistentry>
-								<term><option>201:</option></term>
-								<listitem>
-									<para>integer</para>
-								</listitem>
-							</varlistentry>
+            <variablelist>
+              <varlistentry>
+                <term><option>201:</option></term>
+                <listitem>
+                  <para>integer</para>
+                </listitem>
+              </varlistentry>
 
-							<varlistentry>
-								<term><option>202:</option></term>
-								<listitem>
-									<para>double</para>
-								</listitem>
-							</varlistentry>
+              <varlistentry>
+                <term><option>202:</option></term>
+                <listitem>
+                  <para>double</para>
+                </listitem>
+              </varlistentry>
 
-							<varlistentry>
-								<term><option>210:</option></term>
-								<listitem>
-									<para>Two dimensional vector &lt;int&gt;x&lt;int&gt;</para>
-								</listitem>
-							</varlistentry>
+              <varlistentry>
+                <term><option>210:</option></term>
+                <listitem>
+                  <para>Two dimensional vector &lt;int&gt;x&lt;int&gt;</para>
+                </listitem>
+              </varlistentry>
 
-							<varlistentry>
-								<term><option>220:</option></term>
-								<listitem>
-									<para>string</para>
-								</listitem>
-							</varlistentry>
+              <varlistentry>
+                <term><option>220:</option></term>
+                <listitem>
+                  <para>string</para>
+                </listitem>
+              </varlistentry>
 
-							<varlistentry>
-								<term><option>228:</option></term>
-								<listitem>
-									<para>SMPTE-string in format 'HH:MM:SS:FF'</para>
-								</listitem>
-							</varlistentry>
-						</variablelist>
-					</listitem>
-				</varlistentry>
+              <varlistentry>
+                <term><option>228:</option></term>
+                <listitem>
+                  <para>SMPTE-string in format 'HH:MM:SS:FF'</para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </listitem>
+        </varlistentry>
 
-				<varlistentry>
-					<term><option>3xx:</option></term>
-					<listitem>
-						<para>These are messages that are generated by xjadeo notify,
-						not in response to a command. The format and type declaration is
-						identical to 2xx messages. Currently the only 3xx message is 301
-						position=integer.</para>
-					</listitem>
-				</varlistentry>
+        <varlistentry>
+          <term><option>3xx:</option></term>
+          <listitem>
+            <para>These are messages that are generated by xjadeo notify,
+            not in response to a command. The format and type declaration is
+            identical to 2xx messages. Currently the only 3xx message is 301
+            position=integer.</para>
+          </listitem>
+        </varlistentry>
 
-				<varlistentry>
-					<term><option>4xx:</option></term>
-					<listitem>
-						<para>Error message.</para>
-					</listitem>
-				</varlistentry>
+        <varlistentry>
+          <term><option>4xx:</option></term>
+          <listitem>
+            <para>Error message.</para>
+          </listitem>
+        </varlistentry>
 
-				<varlistentry>
-					<term><option>8xx:</option></term>
-					<listitem>
-						<para>Info or help message. These messages are meant to be
-						ignored by automatic parsers and are for user information or
-						displaying comments only.</para>
-					</listitem>
-				</varlistentry>
-			</variablelist>
-		</section>
-	</section>
+        <varlistentry>
+          <term><option>8xx:</option></term>
+          <listitem>
+            <para>Info or help message. These messages are meant to be
+            ignored by automatic parsers and are for user information or
+            displaying comments only.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+  </section>
 
 <!-- MAN PAGES -->
 
@@ -1307,16 +1307,16 @@ make install # (requires root privileges) </screen>
         <cmdsynopsis>
           <command>xjadeo</command>
           <arg choice="opt">-aAbcCDhIkKlLnNPqQRsStvV</arg>
-					<arg choice="opt">-d <replaceable>midi-driver</replaceable></arg>
-					<arg choice="opt">-f <replaceable>fps</replaceable></arg>
-					<arg choice="opt">-F <replaceable>fps</replaceable></arg>
-					<arg choice="opt">-i <replaceable>int</replaceable></arg>
-					<arg choice="opt">-m <replaceable>midi-port</replaceable></arg>
-					<arg choice="opt">-M <replaceable>num</replaceable></arg>
-					<arg choice="opt">-o <replaceable>frames|SMPTE</replaceable></arg>
-					<arg choice="opt">-O <replaceable>osc-port</replaceable></arg>
-					<arg choice="opt">-W <replaceable>rpc-id</replaceable></arg>
-					<arg choice="opt">-x <replaceable>dpy-mode</replaceable></arg>
+          <arg choice="opt">-d <replaceable>midi-driver</replaceable></arg>
+          <arg choice="opt">-f <replaceable>fps</replaceable></arg>
+          <arg choice="opt">-F <replaceable>fps</replaceable></arg>
+          <arg choice="opt">-i <replaceable>int</replaceable></arg>
+          <arg choice="opt">-m <replaceable>midi-port</replaceable></arg>
+          <arg choice="opt">-M <replaceable>num</replaceable></arg>
+          <arg choice="opt">-o <replaceable>frames|SMPTE</replaceable></arg>
+          <arg choice="opt">-O <replaceable>osc-port</replaceable></arg>
+          <arg choice="opt">-W <replaceable>rpc-id</replaceable></arg>
+          <arg choice="opt">-x <replaceable>dpy-mode</replaceable></arg>
           <arg choice="plain"><replaceable>videofile</replaceable></arg>
         </cmdsynopsis>
         <cmdsynopsis>
@@ -1336,14 +1336,14 @@ make install # (requires root privileges) </screen>
       <refsect1>
         <title>DESCRIPTION</title>
 
-				<para><application>xjadeo</application> is a software video player
-					that displays a video-clip in sync with an external time source 
-					(MTC, LTC, JACK-transport).</para>
+        <para><application>xjadeo</application> is a software video player
+          that displays a video-clip in sync with an external time source 
+          (MTC, LTC, JACK-transport).</para>
 
         <para>It has applications in soundtrack composition, video monitoring or
-					any task that requires to associate movie frames with audio events.</para>
+          any task that requires to associate movie frames with audio events.</para>
 
-				<para><application>xjadeo</application> supports different video file formats, video
+        <para><application>xjadeo</application> supports different video file formats, video
         output libraries and sync sources.</para>
       </refsect1>
 
@@ -1357,45 +1357,45 @@ make install # (requires root privileges) </screen>
             <listitem>
               <para>Start xjadeo always-on-top of other windows (this option requires support from window-manager).</para>
             </listitem>
-					</varlistentry>
+          </varlistentry>
 
           <varlistentry>
             <term><option>-A</option>,
             <option>--avverbose</option></term>
             <listitem>
-							<para>Enable verbose ffmpeg messages (format/codec debugging).</para>
+              <para>Enable verbose ffmpeg messages (format/codec debugging).</para>
             </listitem>
           </varlistentry>
 
           <varlistentry>
             <term><option>-b</option>,
-						<option>--letterbox</option></term>
+            <option>--letterbox</option></term>
             <listitem>
-							<para>Retain aspect ratio and draw a letterbox around the video-frame if necessary.</para>
+              <para>Retain aspect ratio and draw a letterbox around the video-frame if necessary.</para>
             </listitem>
           </varlistentry>
 
           <varlistentry>
             <term><option>-c</option>,
-						<option>--no-midiclk</option></term>
+            <option>--no-midiclk</option></term>
             <listitem>
               <para>Do not use MIDI quarter-frames for more exact sync.</para>
             </listitem>
-					</varlistentry>
+          </varlistentry>
 
           <varlistentry>
             <term><option>-C, --midiclk</option>,
-						<option>--midiclk</option></term>
+            <option>--midiclk</option></term>
             <listitem>
               <para>Use MIDI quarter-frame timing for more exact sync (this is enabled by default since version 0.4.11).</para>
             </listitem>
           </varlistentry>
 
           <varlistentry>
-						<term><option>-d <replaceable>midi-driver</replaceable></option>,
-						<option>--midi-driver <replaceable>midi-driver</replaceable></option></term>
+            <term><option>-d <replaceable>midi-driver</replaceable></option>,
+            <option>--midi-driver <replaceable>midi-driver</replaceable></option></term>
             <listitem>
-							<para>Choose MIDI back-end to use. <replaceable>midi-driver</replaceable> can be either of JACK, ALSA or portmidi - depending on Operating-System and compile-time option.</para>
+              <para>Choose MIDI back-end to use. <replaceable>midi-driver</replaceable> can be either of JACK, ALSA or portmidi - depending on Operating-System and compile-time option.</para>
             </listitem>
           </varlistentry>
 
@@ -1410,10 +1410,10 @@ make install # (requires root privileges) </screen>
             <term><option>-f <replaceable>n</replaceable></option>,
             <option>--fps <replaceable>n</replaceable></option></term>
             <listitem>
-							<para>Desired refresh-rate of the video display in frames per second. 
-							Non-integer values are possible. Default: -1.</para>
+              <para>Desired refresh-rate of the video display in frames per second. 
+              Non-integer values are possible. Default: -1.</para>
               <para> If this value is set to zero (or less), xjadeo will use the FPS of the 
-								video-file as its screen update frequency.</para>
+                video-file as its screen update frequency.</para>
             </listitem>
           </varlistentry>
 
@@ -1483,7 +1483,7 @@ make install # (requires root privileges) </screen>
             <listitem>
               <para>Instructs the internal algorithm to seek only to key-frames.
               This option may improve the performance for certain video encodings.</para>
-							<para>The default behavior (without <option>-k</option> and <option>-K</option> arguments) is to search any ANY frame.</para>
+              <para>The default behavior (without <option>-k</option> and <option>-K</option> arguments) is to search any ANY frame.</para>
             </listitem>
           </varlistentry>
 
@@ -1491,7 +1491,7 @@ make install # (requires root privileges) </screen>
             <term><option>-K</option>,
             <option>--continuous </option></term>
             <listitem>
-							<para>Decode video frame by frame starting from previous key-frame. This particularly useful to read files where not every frame is a key-frame at cost of increased CPU usage. Note that this option adds some extra latency when seeking. Combine with <option>-f -1</option>: It makes sense to set <application>xjadeo</application>'s screen-update frequency to match the frame-rate of the video file.</para>
+              <para>Decode video frame by frame starting from previous key-frame. This particularly useful to read files where not every frame is a key-frame at cost of increased CPU usage. Note that this option adds some extra latency when seeking. Combine with <option>-f -1</option>: It makes sense to set <application>xjadeo</application>'s screen-update frequency to match the frame-rate of the video file.</para>
             </listitem>
           </varlistentry>
 
@@ -1501,7 +1501,7 @@ make install # (requires root privileges) </screen>
             <listitem>
               <para>Use LTC as sync-source instead of JACK-transport.</para>
             </listitem>
-					</varlistentry>
+          </varlistentry>
 
           <varlistentry>
             <term><option>-L</option>,
@@ -1516,16 +1516,16 @@ make install # (requires root privileges) </screen>
             <option>--midi <replaceable>midi-port</replaceable></option></term>
             <listitem>
               <para>Get sync from MTC (MIDI Time Code) instead of JACK or LTC.</para>
-							<para>If using JACK-MIDI driver, <replaceable>midi-port</replaceable> is the JACK-MIDI port
-								to use as input - use an empty value ("") to not auto-connect</para>
+              <para>If using JACK-MIDI driver, <replaceable>midi-port</replaceable> is the JACK-MIDI port
+                to use as input - use an empty value ("") to not auto-connect</para>
 
-							<para>If using ALSA MIDI back-end, <replaceable>midi-port</replaceable> is the ALSA sequencer-id 
-								to be used as the MTC source. A value of -1 will leave
+              <para>If using ALSA MIDI back-end, <replaceable>midi-port</replaceable> is the ALSA sequencer-id 
+                to be used as the MTC source. A value of -1 will leave
               <application>xjadeo</application> unconnected.</para>
 
               <para>If using portmidi, <replaceable>port</replaceable> is the port-number of the MIDI
-								input device to use. The value -1 will attempt auto-connect. use <option>-v -m -1</option> to
-								list MIDI ports during auto-detection.</para>
+                input device to use. The value -1 will attempt auto-connect. use <option>-v -m -1</option> to
+                list MIDI ports during auto-detection.</para>
             </listitem>
           </varlistentry>
 
@@ -1555,13 +1555,13 @@ make install # (requires root privileges) </screen>
                   </varlistentry>
                 </variablelist></para>
             </listitem>
-					</varlistentry>
+          </varlistentry>
 
           <varlistentry>
             <term><option>-n</option>,
             <option>--nodropframes</option></term>
             <listitem>
-							<para>Prevent xjadeo from detecting drop-frame-timecode (usually files with 29.97 fps)</para>
+              <para>Prevent xjadeo from detecting drop-frame-timecode (usually files with 29.97 fps)</para>
             </listitem>
           </varlistentry>
 
@@ -1569,7 +1569,7 @@ make install # (requires root privileges) </screen>
             <term><option>-N</option>,
             <option>--dropframes</option></term>
             <listitem>
-							<para>Force xjadeo to use drop-frame-timecode (usually files with 29.97 fps)</para>
+              <para>Force xjadeo to use drop-frame-timecode (usually files with 29.97 fps)</para>
             </listitem>
           </varlistentry>
 
@@ -1579,7 +1579,7 @@ make install # (requires root privileges) </screen>
             <listitem>
               <para>Offset the video a certain number of (video) frames
               relative to the sync master time base. Admits negative
-							values. <replaceable>n</replaceable> can be specified either as integer frame-number or SMPTE text.</para>
+              values. <replaceable>n</replaceable> can be specified either as integer frame-number or SMPTE text.</para>
             </listitem>
           </varlistentry>
 
@@ -1606,8 +1606,8 @@ make install # (requires root privileges) </screen>
             <term><option>-Q</option>,
             <option>--mq</option></term>
             <listitem>
-              <para>Enable POSIX message queues. Sets up a communication channel for use with 
-              <xref linkend="xjremote"/>.  See the <xref linkend="remote_control_interface"/> in the documentation.</para>
+              <para>Enable POSIX message queues. Set up a communication channel for use with 
+              <xref linkend="xjremote"/>.  See the <xref linkend="remote_control_interface"/> in the online documentation.</para>
             </listitem>
           </varlistentry>
 
@@ -1625,7 +1625,7 @@ make install # (requires root privileges) </screen>
             <term><option>-s</option>,
             <option>--fullscreen</option></term>
             <listitem>
-							<para>Start <application>xjadeo</application> in full-screen mode.</para>
+              <para>Start <application>xjadeo</application> in full-screen mode.</para>
             </listitem>
           </varlistentry>
 
@@ -1664,12 +1664,12 @@ make install # (requires root privileges) </screen>
           </varlistentry>
 
           <varlistentry>
-						<term><option>-W <replaceable>rpc-id</replaceable></option>,
-						<option>--ipc <replaceable>rpc-id</replaceable></option></term>
+            <term><option>-W <replaceable>rpc-id</replaceable></option>,
+            <option>--ipc <replaceable>rpc-id</replaceable></option></term>
             <listitem>
-							<para>Set-up IPC message queues for <application>xjremote</application>. 
-								<replaceable>rpc-id</replaceable> specifies a file-path used to identify the message-queue.
-							</para>
+              <para>Set-up IPC message queues for <application>xjremote</application>. 
+                <replaceable>rpc-id</replaceable> specifies a file-path used to identify the message-queue.
+              </para>
             </listitem>
           </varlistentry>
 
@@ -1678,8 +1678,8 @@ make install # (requires root privileges) </screen>
             <option>--vo <replaceable>dpy-mode</replaceable></option>,
             <option>--videomode <replaceable>dpy-mode</replaceable></option></term>
             <listitem>
-							<para>Selects the video output driver. Defaults to 0 (auto-detect). 
-								A value of -1 lists the available modes and exit.</para>
+              <para>Selects the video output driver. Defaults to 0 (auto-detect). 
+                A value of -1 lists the available modes and exit.</para>
             </listitem>
           </varlistentry>
 
@@ -1695,7 +1695,7 @@ make install # (requires root privileges) </screen>
             <para>JACK-transport.</para>
           </listitem>
           <listitem>
-						<para>LTC (Linear/Longitudinal Time Code) - via JACK audio.</para>
+            <para>LTC (Linear/Longitudinal Time Code) - via JACK audio.</para>
           </listitem>
           <listitem>
             <para>MTC (MIDI Time Code) via JACK-MIDI.</para>
@@ -1716,25 +1716,25 @@ make install # (requires root privileges) </screen>
         <title>VIDEO FORMATS</title>
 
         <para><application>xjadeo</application> uses ffmpeg to decode 
-					video files, so a wide range of formats and codecs are supported. 
-					Note, however, that not all the formats support seeking.
-					To transcode a video-file into a suitable format we recommend:
+          video files, so a wide range of formats and codecs are supported. 
+          Note, however, that not all the formats support seeking.
+          To transcode a video-file into a suitable format we recommend:
 
         <screen>mencoder -idx -ovc lavc -lavcopts keyint=1 -nosound input_file.xxx -o output_file.avi</screen>
 
-					This creates from your input-file.xxx an AVI mpeg4 encoded video
-					file with no sound, an index (-idx) and no compression between frames
-					(every frame is a keyframe). The file thus can become really BIG, so
-					watch your disk space.</para>
+          This creates from your input-file.xxx an AVI mpeg4 encoded video
+          file with no sound, an index (-idx) and no compression between frames
+          (every frame is a keyframe). The file thus can become really BIG, so
+          watch your disk space.</para>
 
-				<para>You may want to shrink the size by scaling the geometry of the video-frames, which also taxes less 
-					system resources while displaying it and leaves more space in the screen for your audio software..</para>
+        <para>You may want to shrink the size by scaling the geometry of the video-frames, which also taxes less 
+          system resources while displaying it and leaves more space in the screen for your audio software..</para>
 
         <screen>-vf scale=width:height</screen>
 
-				<para>Also note <application>xjadeo</application>'s <option>-K</option> option which allows
-					to seek to frames other than key-frames and enables <application>xjadeo</application> to
-					play back any file without transcoding at expense of increased CPU usage and latency</para>
+        <para>Also note <application>xjadeo</application>'s <option>-K</option> option which allows
+          to seek to frames other than key-frames and enables <application>xjadeo</application> to
+          play back any file without transcoding at expense of increased CPU usage and latency</para>
       </refsect1>
 
       <refsect1>
@@ -1753,15 +1753,15 @@ make install # (requires root privileges) </screen>
             <para>Scroll Wheel (buttons 4,5) stepwise decreases/increases the window size maintaining the original aspect ratio.</para>
           </listitem>
           <listitem>
-						<para> xjadeo >= v0.3.8 supports keyboard events. Pressing <keycap>Esc</keycap> and <keycap>q</keycap> will end the program.
-							<keycap>f</keycap> toggles full-screen, <keycap>a</keycap> toggles always-on-top. 
-							Press <keycap>m</keycap> to hide mouse cursor. 
-							<keycap>v</keycap>, <keycap>s</keycap>, <keycap>o</keycap>, <keycap>C</keycap> and <keycap>b</keycap> control on-screen-display
-							and <keycap>l</keycap> toggles the letter-box mode. 
-							The time-offset can be modified with <keycap>+</keycap>, <keycap>-</keycap>, <keycap>{</keycap>, <keycap>}</keycap> 
-							and window-size with <keycap>&lt;</keycap>, <keycap>&gt;</keycap>, <keycap>,</keycap>, <keycap>.</keycap>.
-							<keycap>SPACE</keycap> and <keycap>BACKSPACE</keycap> can be used to control JACK-transport. 
-							See <xref linkend="x_window_interaction" /> in the online documentation for a complete list.</para>
+            <para> xjadeo >= v0.3.8 supports keyboard events. Pressing <keycap>Esc</keycap> and <keycap>q</keycap> will end the program.
+              <keycap>f</keycap> toggles full-screen, <keycap>a</keycap> toggles always-on-top. 
+              Press <keycap>m</keycap> to hide mouse cursor. 
+              <keycap>v</keycap>, <keycap>s</keycap>, <keycap>o</keycap>, <keycap>C</keycap> and <keycap>b</keycap> control on-screen-display
+              and <keycap>l</keycap> toggles the letter-box mode. 
+              The time-offset can be modified with <keycap>+</keycap>, <keycap>-</keycap>, <keycap>{</keycap>, <keycap>}</keycap> 
+              and window-size with <keycap>&lt;</keycap>, <keycap>&gt;</keycap>, <keycap>,</keycap>, <keycap>.</keycap>.
+              <keycap>SPACE</keycap> and <keycap>BACKSPACE</keycap> can be used to control JACK-transport. 
+              See <xref linkend="x_window_interaction" /> in the online documentation for a complete list.</para>
           </listitem>
         </itemizedlist>
       </refsect1>
@@ -1771,12 +1771,12 @@ make install # (requires root privileges) </screen>
         <para>When started in remote mode (option <option>-R</option> or
         <option>--remote</option>) <application>xjadeo</application> will
         interactively accept commands and issue responses through its standard
-				input/output mechanism.</para>
+        input/output mechanism.</para>
 
         <para>Use the remote command <command>help</command> to get a quick
         overview of all available commands. Please refer to the online
         documentation for a complete description of the remote
-				commands.</para>
+        commands.</para>
 
         <para><command>xjadeo -Q</command> enables remote control by message-queues; use <command>xjremote</command> to connect.</para>
       </refsect1>
@@ -1798,26 +1798,26 @@ make install # (requires root privileges) </screen>
                         <para>$HOME/xjadeorc</para>
                 </listitem>
           </orderedlist>
-					<para>Each line in the configuration file must be in in the format:<screen>KEY=VALUE</screen>
-						If the first character on a line is either '#' or ';' the line is ignored. 
-						<option>KEYS</option> are not case sensitive. 
-						Some <option>VALUES</option> are case sensitive (fi. filenames) and are parsed identical to the corresponding 
-						command-line arguments (e.g. <option>-x SDL</option> is equivalent to the config-file option <option>videomode=SDL</option>). 
-						Boolean values are specified as 'yes' or 'no' (e.g. <option>quiet=yes</option>).</para>
-					<para>currently supported RC-KEYS: fps, fontfile, lash, letterbox, midiclk, mididriver, midiid, midismpte, mq, nosplash, quiet, seek, verbose and videomode. 
-						Which are documented in the example <ulink 
-							url="http://xjadeo.git.sourceforge.net/git/gitweb.cgi?p=xjadeo/xjadeo;a=blob_plain;f=doc/xjadeorc" >xjadeorc</ulink>
+          <para>Each line in the configuration file must be in in the format:<screen>KEY=VALUE</screen>
+            If the first character on a line is either '#' or ';' the line is ignored. 
+            <option>KEYS</option> are not case sensitive. 
+            Some <option>VALUES</option> are case sensitive (fi. filenames) and are parsed identical to the corresponding 
+            command-line arguments (e.g. <option>-x SDL</option> is equivalent to the config-file option <option>videomode=SDL</option>). 
+            Boolean values are specified as 'yes' or 'no' (e.g. <option>quiet=yes</option>).</para>
+          <para>currently supported RC-KEYS: fps, fontfile, lash, letterbox, midiclk, mididriver, midiid, midismpte, mq, nosplash, quiet, seek, verbose and videomode. 
+            Which are documented in the example <ulink 
+              url="http://xjadeo.git.sourceforge.net/git/gitweb.cgi?p=xjadeo/xjadeo;a=blob_plain;f=doc/xjadeorc" >xjadeorc</ulink>
           </para>
       </refsect1>
       <refsect1>
-				<title>ENVIRONMENT</title>
+        <title>ENVIRONMENT</title>
         <variablelist>
           <varlistentry>
             <term><option>JACK_DEFAULT_SERVER</option></term>
             <listitem>
               <para>Set the jack-server-name to connect to (JACK-transport, JACK-MIDI and LTC)</para>
             </listitem>
-					</varlistentry>
+          </varlistentry>
         </variablelist>
       </refsect1>
 
@@ -1855,19 +1855,19 @@ make install # (requires root privileges) </screen>
       <refsect1>
         <title>DESCRIPTION</title>
 
-				<para><application>xjadeo</application> is a software video player
-					that displays a video-clip in sync with an external time source 
-					(MTC, LTC, JACK-transport).</para>
+        <para><application>xjadeo</application> is a software video player
+          that displays a video-clip in sync with an external time source 
+          (MTC, LTC, JACK-transport).</para>
 
-				<para><command>qjadeo</command> is a graphical front-end to xjadeo. It communicates
-					with xjadeo either directly (single session) or using <command>xjremote</command>.</para>
+        <para><command>qjadeo</command> is a graphical front-end to xjadeo. It communicates
+          with xjadeo either directly (single session) or using <command>xjremote</command>.</para>
       </refsect1>
 
       <refsect1>
         <title>ENVIRONMENT</title>
 
-				<para>If the <option>XJREMOTE</option> variable is set, <application>qjadeo</application>
-					will assume that it holds the path to the <command>xjremote</command> executable.</para>
+        <para>If the <option>XJREMOTE</option> variable is set, <application>qjadeo</application>
+          will assume that it holds the path to the <command>xjremote</command> executable.</para>
       </refsect1>
 
       <refsect1>
@@ -1895,22 +1895,22 @@ make install # (requires root privileges) </screen>
         <cmdsynopsis>
           <command>xjremote</command>
           <arg choice="opt">-fhPquUvV</arg>
-					<arg choice="opt">-I <replaceable>mq-queue-id</replaceable></arg>
+          <arg choice="opt">-I <replaceable>mq-queue-id</replaceable></arg>
         </cmdsynopsis>
       </refsynopsisdiv>
 
       <refsect1 id="xjremote_description">
         <title>DESCRIPTION</title>
 
-				<para><application>xjadeo</application> is a software video player
-					that displays a video-clip in sync with an external time source 
-					(MTC, LTC, JACK-transport).</para>
+        <para><application>xjadeo</application> is a software video player
+          that displays a video-clip in sync with an external time source 
+          (MTC, LTC, JACK-transport).</para>
 
-				<para><command>xjremote</command> connects to a instance of 
-					<application>xjadeo</application> and allows a user to tweak the running configuration.</para>
+        <para><command>xjremote</command> connects to a instance of 
+          <application>xjadeo</application> and allows a user to tweak the running configuration.</para>
 
         <para>If it can not connect, xjremote will start a new instance of xjadeo
-					and open a connection to it unless the <option>-f</option> is given.</para>
+          and open a connection to it unless the <option>-f</option> is given.</para>
       </refsect1>
 
       <refsect1>
@@ -1920,8 +1920,8 @@ make install # (requires root privileges) </screen>
             <term><option>-f</option>,
             <option>--nofork</option></term>
             <listitem>
-							<para>disable automatic startup of <application>xjadeo</application>. Instead xjremote will terminate
-								if it can not connect to a running <application>xjadeo</application>.</para>
+              <para>disable automatic startup of <application>xjadeo</application>. Instead xjremote will terminate
+                if it can not connect to a running <application>xjadeo</application>.</para>
             </listitem>
           </varlistentry>
 
@@ -1937,7 +1937,7 @@ make install # (requires root privileges) </screen>
             <term><option>-I <replaceable>ipc-id</replaceable></option>,
             <option>--id <replaceable>ipc-id</replaceable></option></term>
             <listitem>
-							<para>specify message-queue identifier.</para>
+              <para>specify message-queue identifier.</para>
             </listitem>
           </varlistentry>
 
@@ -2003,10 +2003,10 @@ make install # (requires root privileges) </screen>
             <listitem>
               <para>Print version information end exit.</para>
             </listitem>
-					</varlistentry>
+          </varlistentry>
 
           <varlistentry>
-						<term><option>-W <replaceable>rpc-id</replaceable></option></term>
+            <term><option>-W <replaceable>rpc-id</replaceable></option></term>
             <listitem>
               <para>ignored - <application>xjremote</application> can be used as a drop in replacement for <command>xjadeo -W ..</command>.</para>
             </listitem>
@@ -2019,16 +2019,16 @@ make install # (requires root privileges) </screen>
       <refsect1>
         <title>ENVIRONMENT</title>
 
-				<para>If the <option>XJADEO</option> variable is set, <application>xjremote</application>
-					will assume that it holds the path to the <application>xjadeo</application> executable.</para>
+        <para>If the <option>XJADEO</option> variable is set, <application>xjremote</application>
+          will assume that it holds the path to the <application>xjadeo</application> executable.</para>
       </refsect1>
 
       <refsect1>
         <title>Note</title>
-				<para>Apart from Standard-I/O, <application>xjadeo</application> can use POSIX real-time message-queues (MQ) 
-					or System-V IPC communication.
-					The decision is made when compiling it. Basically GNU/Linux uses MQ (but could use IPC as well).
-					OSX only supports IPC and Windows is limited to standard-I/O only.
+        <para>Apart from Standard-I/O, <application>xjadeo</application> can use POSIX real-time message-queues (MQ) 
+          or System-V IPC communication.
+          The decision is made when compiling it. Basically GNU/Linux uses MQ (but could use IPC as well).
+          OSX only supports IPC and Windows is limited to standard-I/O only.
         </para>
       </refsect1>
 
@@ -2081,7 +2081,7 @@ make install # (requires root privileges) </screen>
             <option>--csv</option></term>
             <listitem>
               <para>comma separated values, one line per video stream in file.
-								Use the built-in help <option>-h</option> to learn about the format.</para>
+                Use the built-in help <option>-h</option> to learn about the format.</para>
             </listitem>
           </varlistentry>
           <varlistentry>
@@ -2112,7 +2112,7 @@ make install # (requires root privileges) </screen>
             <listitem>
               <para>output XML data. This is the default if no option is specified.</para>
               <para>A DTD is available with the source or from
-								<ulink url="http://xjadeo.git.sourceforge.net/git/gitweb.cgi?p=xjadeo/xjadeo;a=blob_plain;f=src/xjadeo/avinfo.dtd">xjadeo.sf.net</ulink>
+                <ulink url="http://xjadeo.git.sourceforge.net/git/gitweb.cgi?p=xjadeo/xjadeo;a=blob_plain;f=src/xjadeo/avinfo.dtd">xjadeo.sf.net</ulink>
               </para>
             </listitem>
           </varlistentry>
