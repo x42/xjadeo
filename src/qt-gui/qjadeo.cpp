@@ -299,8 +299,8 @@ void QJadeo::helpAbout()
   QMessageBox::about(
     this,
     "About qjadeo",
-    "(c) 2006 Robin Gareus & Luis Garrido\n"
-    "http://xjadeo->sf.net"
+    "(c) 2006-2010 Robin Gareus & Luis Garrido\n"
+    "http://xjadeo.sf.net"
   );
 }
 
