@@ -23,7 +23,6 @@ public:
 private:
 
   QStringList m_recentFiles;
-  QSettings m_settings;
 
   int m_movie_width;
   int m_movie_height;

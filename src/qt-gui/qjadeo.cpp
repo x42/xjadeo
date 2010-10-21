@@ -31,11 +31,10 @@
 
 QJadeo::QJadeo()
 {
-
   setupUi(this);
   retranslateUi(this);
 
-  m_settings.beginGroup("/qjadeo");
+  QSettings m_settings("rss", "jadeo");
 
   int windowWidth = m_settings.value("WindowWidth", 460).toInt();
   int windowHeight = m_settings.value("WindowHeight", 100).toInt();
@@ -162,6 +161,8 @@ void QJadeo::fileOpenRecent()
 
 void QJadeo::saveOptions()
 {
+  QSettings m_settings("rss", "jadeo");
+
   m_settings.setValue("WindowWidth", width());
   m_settings.setValue("WindowHeight", height());
   m_settings.setValue("WindowX", x());
@@ -473,7 +474,7 @@ void QJadeo::readFromStdout()
   while(xjadeo->canReadLine())
   {
     QString response = xjadeo->readLine();
-    qDebug(QString("ResponseLine: '" + response+ "'").toAscii().data());
+    //qDebug(QString("ResponseLine: '" + response+ "'").toAscii().data());
 
     int status = response.mid(1, 3).toInt();
 
