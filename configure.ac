@@ -24,7 +24,7 @@ AC_ARG_ENABLE(sdl, AC_HELP_STRING([--disable-sdl], [Disable use of SDL display])
 AC_ARG_ENABLE(ft,    AC_HELP_STRING([--disable-ft],  [Disable freetype On-Screen.Display support]))
 AC_ARG_ENABLE(qtgui, AC_HELP_STRING([--disable-qtgui],[Do not build the Qt GUI controller]))
 AC_ARG_ENABLE(contrib,  AC_HELP_STRING([--enable-contrib],  [Compile and install code in contrib folder]))
-AC_ARG_ENABLE(lash, AC_HELP_STRING([--disable-lash],[disable LASH support]))
+AC_ARG_ENABLE(lash, AC_HELP_STRING([--enable-lash],[enable LASH support (deprecated)]))
 AC_ARG_ENABLE(timescale, AC_HELP_STRING([--disable-timescale],[disable time-mapping/loop-playback support]))
 AC_ARG_ENABLE(framecrop, AC_HELP_STRING([--enable-framecrop],[hardcoded frame cropping - DO NOT USE]))
 AC_ARG_ENABLE(tiff, AC_HELP_STRING([--disable-tiff],[disable libtiff support (affects only contrib/tsmm/)]))
@@ -419,7 +419,7 @@ AC_SUBST(IMLIB2_LIBS)
 dnl ----------------------------------------------
 dnl http://lash.nongnu.org
 dnl ----------------------------------------------
-AS_IF([test "x$enable_lash" != "xno"], [
+AS_IF([test "x$enable_lash" == "xyes"], [
   PKG_CHECK_MODULES(LASH, lash-1.0 >= 0.4.0, LASH_FOUND="yes", [ NULL=0 ])
   
   if test "x$LASH_FOUND" = "xyes"; then
