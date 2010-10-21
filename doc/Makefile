@@ -1,13 +1,13 @@
 #
 # the docbook is not inteded to be built automatically
 # as it requires an internet connection to get the xslt files.
-# and would introduce xml build dependencies...
+# and would introduce XML* dependencies...
 # 
 # precompiled manpages are in included in the distribution,
 # as is the docbook source.
 #
 # an HTML version of the docbook is available online:
-#  http://xjadeo.sourceforge.net/doc/
+#  http://xjadeo.sourceforge.net/
 #
 
 .PHONY: all validate html clean man 
@@ -29,20 +29,12 @@ man: validate
 	xsltproc --encoding UTF-8 man.xsl xjadeo.xml
 
 clean:
-	-rm -fr qjadeo.1 xjadeo.1 html xjadeo.ps
+	-rm -fr qjadeo.1 xjadeo.1 xjinfo.1 xjremote.1 html xjadeo.ps xjadeo.pdf
 
-.PHONY: pub
-pub: dtdvalid html
-	scp html/* sf:/home/groups/x/xj/xjadeo/htdocs/doc/
-	ssh sf chmod -R g+w /home/groups/x/xj/xjadeo/htdocs/doc/
-#make pub requires setup in ~/.ssh/config
-# Host sf
-# HostName shell.sourceforge.net
-# User <username>
-# 
+.PHONY: xjadeo.ps xjadeo.pdf
 
-#.PHONY: xjadeo.ps
+xjadeo.ps: xjadeo.xml
+	jw -f docbook -b ps xjadeo.xml
 
-#xjadeo.ps: xjadeo.xml
-#	jw -f docbook -b ps xjadeo.xml
-
+xjadeo.pdf: xjadeo.xml
+	jw -f docbook -b pdf xjadeo.xml
