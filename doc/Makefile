@@ -23,7 +23,8 @@ validate:
 html: validate
 	mkdir -p html 
 	(cd html; xsltproc --encoding UTF-8 ../html.xsl ../xjadeo.xml)
-	cp -f *.css favicon.ico html
+	cp -f style.css favicon.ico html/
+	cp -f ../src/qt-gui/images/qjadeo.png html/
 
 man: validate
 	xsltproc --encoding UTF-8 man.xsl xjadeo.xml
