@@ -70,7 +70,7 @@
 
       <itemizedlist>
         <listitem>
-          <para>Display modes:
+          <para>Display: full-screen or windowed mode, letterbox, timecode on-screen-display.
             <itemizedlist>
               <listitem>
                 <para>XV/X11 (hardware accelerated)</para>
@@ -109,10 +109,25 @@
                 <para><ulink url="http://en.wikipedia.org/wiki/Linear_timecode">LTC</ulink> using JACK-audio</para>
               </listitem>
             </itemizedlist></para>
+          </listitem>
+
+        <listitem>
+          <para>frame-accurate: tested with 23.976, 24, 24.976, 25, 29.97df, 30, 59.94 and 60 fps video-files.</para>
         </listitem>
 
         <listitem>
-          <para>Remote-control interface allows to query and modify all settings and parameters of a running instance.</para>
+          <para>Timecode conversion and offset calculation.</para>
+        </listitem>
+
+        <listitem>
+          <para>Remote-control interface allows to query and modify all settings and parameters of a running instance.
+            <itemizedlist> 
+              <listitem><para>OSC - <ulink url="http://opensoundcontrol.org/">Opensoundcontrol</ulink></para></listitem>
+              <listitem><para>Standard I/O</para></listitem>
+              <listitem><para>POSIX real-time message queues (MQ)</para></listitem>
+              <listitem><para>System-V IPC</para></listitem>
+            </itemizedlist>
+          </para>
         </listitem>
 
         <listitem>
