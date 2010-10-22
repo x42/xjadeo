@@ -1,4 +1,4 @@
-REV = $(shell git describe --tags HEAD || svnversion -n $(topdir) 2>/dev/null)
+REV = $(shell git describe --always --tags HEAD || svnversion -n $(topdir) 2>/dev/null)
 
 bin_PROGRAMS=xjadeo xjremote xjinfo
 

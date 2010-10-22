@@ -516,20 +516,26 @@ jack video monitor\n", program_name);
 
 static void printversion (void) {
   printf ("xjadeo ");
+  printf ("version %s ", VERSION);
 #ifdef SUBVERSION
-  printf ("version %s svn-%s [ ", VERSION, SUBVERSION);
-#else
-  printf ("version %s [ ", VERSION);
+  if (strlen(SUBVERSION)>0 && strcmp(SUBVERSION, "exported")) {
+    printf ("scm-%s ", SUBVERSION);
+  }
 #endif
+  printf ("[ ");
 #ifdef HAVE_LASH
   printf("LASH ");
 #endif 
+#ifdef HAVE_LTCSMPTE
+  printf("LTC ");
+#endif
 #ifdef HAVE_MQ
   printf("POSIX-MQueue ");
 #elif defined HAVE_IPCMSG
   printf("IPC-MSG ");
 #endif
-  printf("]\n compiled with LIBAVFORMAT_BUILD 0x%x = %i\n", LIBAVFORMAT_BUILD, LIBAVFORMAT_BUILD);
+  printf("]\n compiled with ffmpeg: AVFORMAT=0x%x AVCODEC=0x%x\n", 
+      LIBAVFORMAT_BUILD, LIBAVCODEC_BUILD);
   printf(" MTC-MIDI: ");
 #ifndef HAVE_MIDI
   printf("disabled.");
