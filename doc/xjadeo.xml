@@ -18,45 +18,46 @@
       <holder>Robin Gareus, Luis Garrido</holder>
     </copyright>
                                                          
-     <author>
-       <firstname>Robin</firstname>
-       <surname>Gareus</surname>
-       <email>robin@gareus.org</email>
-       <personblurb>
-         <para>linuxaudio.org</para>
-       </personblurb>
-     </author>
-     <abstract>
-       <para>
-         <mediaobject>
-           <imageobject>
-             <imagedata fileref="xjadeo.png" align="center" valign="top"/>
-           </imageobject>
-         </mediaobject>
-       </para>
+    <author>
+      <firstname>Robin</firstname>
+      <surname>Gareus</surname>
+      <email>robin@gareus.org</email>
+      <personblurb>
+        <para>linuxaudio.org</para>
+      </personblurb>
+    </author>
+    <abstract>
+      <para>
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="xjadeo.png" align="center" valign="top"/>
+          </imageobject>
+        </mediaobject>
+      </para>
 
-       <para><application>xjadeo</application> is a software video player 
-         that displays a video-clip in sync with an external time source 
-         (MTC, LTC, JACK-transport).</para>
-    
-        <para>It has applications in soundtrack composition, video monitoring or
+     <para><application>xjadeo</application> is a software video player 
+       that displays a video-clip in sync with an external time source 
+       (MTC, LTC, JACK-transport).</para>
+   
+      <para>It has applications in soundtrack composition, video monitoring or
         any task that requires to associate movie frames with audio events.</para>
 
-      <para><application>xjadeo</application> supports different video file
+      <para><application>xjadeo</application> supports a multitude of video file
         formats, display libraries and sync sources. It includes an optional
-        GUI <application>qjadeo</application> that provides file-history and
+        GUI <application>qjadeo</application> that provides file-history, video-import/transcoding and
         allows to modify settings of a running <application>xjadeo</application>
         instance.</para>
+
       <para><application>xjadeo</application> is being developed on the
         GNU/Linux operating system, but not limited to it. There are binaries available for Win32 and OSX.</para>
 
       <para>Quick Access Links:
-      <itemizedlist>
-        <listitem><para><ulink url="http://sourceforge.net/projects/xjadeo/">SF-Project Page</ulink></para></listitem>
-        <listitem><para><ulink url="http://sourceforge.net/projects/xjadeo/files/">Download</ulink>.</para></listitem>
-        <listitem><para><ulink url="http://xjadeo.git.sourceforge.net/git/gitweb.cgi?p=xjadeo/xjadeo">Source-Code</ulink>.</para></listitem>
-      </itemizedlist>
-    </para>
+        <itemizedlist>
+          <listitem><para><ulink url="http://sourceforge.net/projects/xjadeo/">SF-Project Page</ulink></para></listitem>
+          <listitem><para><ulink url="http://sourceforge.net/projects/xjadeo/files/">Download</ulink>.</para></listitem>
+          <listitem><para><ulink url="http://xjadeo.git.sourceforge.net/git/gitweb.cgi?p=xjadeo/xjadeo">Source-Code</ulink>.</para></listitem>
+        </itemizedlist>
+      </para>
     </abstract>
   </articleinfo>
 
