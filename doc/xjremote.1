@@ -1,13 +1,22 @@
 '\" t
 .\"     Title: xjremote
-.\"    Author: Robin Gareus
-.\" Generator: DocBook XSL Stylesheets v1.75.0 <http://docbook.sf.net/>
-.\"      Date: 05/29/2009
+.\"    Author: Robin Gareus <robin@gareus.org>
+.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
+.\"      Date: 10/22/2010
 .\"    Manual: Manual Pages
-.\"    Source: http://xjadeo.sf.net 0.4.X
+.\"    Source: http://xjadeo.sf.net 0.6.X
 .\"  Language: English
 .\"
-.TH "XJREMOTE" "1" "05/29/2009" "http://xjadeo\&.sf\&.net 0\&.4" "Manual Pages"
+.TH "XJREMOTE" "1" "10/22/2010" "http://xjadeo\&.sf\&.net 0\&.6" "Manual Pages"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
 .\" -----------------------------------------------------------------
 .\" * set default formatting
 .\" -----------------------------------------------------------------
@@ -19,77 +28,112 @@
 .\" * MAIN CONTENT STARTS HERE *
 .\" -----------------------------------------------------------------
 .SH "NAME"
-xjremote \- CLI front\-end to \fBxjadeo\fR
+xjremote \- CLI remote\-control to \fBxjadeo\fR
 .SH "SYNOPSIS"
 .HP \w'\fBxjremote\fR\ 'u
-\fBxjremote\fR [\-fhquUvV]
+\fBxjremote\fR [\-fhPquUvV] [\-I\ \fI<mq\-queue\-id>\fR]
 .SH "DESCRIPTION"
 .PP
-\fBxjadeo\fR
-displays a video clip in sync with an external time source\&. It is a handy tool to help with the synchronization of the soundtrack of a video file\&.
+xjadeo
+is a software video player that displays a video\-clip in sync with an external time source (MTC, LTC, JACK\-transport)\&.
 .PP
 \fBxjremote\fR
-connects to a instance of xjadeo and allows a user to tweak the running configuration\&.
+connects to a instance of
+xjadeo
+and allows a user to tweak the running configuration\&.
 .PP
-If it can not connect, xjremote will start a new instance of xjadeo and open a connection to it\&. see
+If it can not connect, xjremote will start a new instance of xjadeo and open a connection to it unless the
 \fB\-f\fR
+is given\&.
 .SH "OPTIONS"
 .PP
-\fB\-f, \-\-nofork\fR
+\fB\-f\fR, \fB\-\-nofork\fR
 .RS 4
-disable automatic startup of xjadeo\&. Instead xjremote will terminate if it can not connect to a running xjadeo\&.
+disable automatic startup of
+xjadeo\&. Instead xjremote will terminate if it can not connect to a running
+xjadeo\&.
 .RE
 .PP
-\fB\-h, \-\-help\fR
+\fB\-h\fR, \fB\-\-help\fR
 .RS 4
 Prints usage help and exits\&.
 .RE
 .PP
-\fB\-P, \-\-noping\fR
+\fB\-I \fR\fB\fI<ipc\-id>\fR\fR, \fB\-\-id \fR\fB\fI<ipc\-id>\fR\fR
+.RS 4
+specify message\-queue identifier\&.
+.RE
+.PP
+\fB\-P\fR, \fB\-P, \-\-noping\fR
 .RS 4
 Skip checking for xjadeo live signs (ping)\&.
 .RE
 .PP
-\fB\-q, \-\-quiet, \-\-silent\fR
+\fB\-q\fR, \fB\-\-quiet\fR, \fB\-\-silent\fR
 .RS 4
 Suppresses normal output messages\&.
 .RE
 .PP
+\fB\-Q\fR
+.RS 4
+ignored \-
+xjremote
+can be used as a drop in replacement for
+\fBxjadeo \-Q\fR\&.
+.RE
+.PP
 \fB\-R\fR
 .RS 4
-ignored (no action) \-
-\fBxjremote\fR
+ignored \-
+xjremote
 can be used as a drop in replacement for
 \fBxjadeo \-R\fR\&.
 .RE
 .PP
-\fB\-u, \-\-unlink\fR
+\fB\-u\fR, \fB\-\-unlink\fR
 .RS 4
-remove existing queues\&. unless combined with
-\fB\-f\fR\&. This will launch always a new xjadeo instance after unlinking the queues\&. Note: active connections are not affected\&.
+remove existing queues\&. Unless combined with
+\fB\-f\fR
+this will launch always a new xjadeo instance after unlinking the queues\&. Note: active connections are not affected\&.
 .RE
 .PP
-\fB\-U, \-\-unlinkonly\fR
+\fB\-U\fR, \fB\-\-unlinkonly\fR
 .RS 4
-remove existing queues and exit\&. This is equivalent (but not identical) to
+remove existing message queues and exit\&. If no xjadeo instance is running this is equivalent to
 \fB\-u \-f\fR\&.
 .RE
 .PP
-\fB\-v, \-\-verbose\fR
+\fB\-v\fR, \fB\-\-verbose\fR
 .RS 4
-Prints additional information during the execution\&.
+Print additional information\&.
 .RE
 .PP
-\fB\-V, \-\-version\fR
+\fB\-V\fR, \fB\-\-version\fR
 .RS 4
-Prints version information end exits\&.
+Print version information end exit\&.
+.RE
+.PP
+\fB\-W \fR\fB\fI<rpc\-id>\fR\fR
+.RS 4
+ignored \-
+xjremote
+can be used as a drop in replacement for
+\fBxjadeo \-W \&.\&.\fR\&.
 .RE
 .SH "ENVIRONMENT"
 .PP
-If the XJADEO variable is set, xjremote will assume that it holds the path to the xjadeo executable\&.
+If the
+\fBXJADEO\fR
+variable is set,
+xjremote
+will assume that it holds the path to the
+xjadeo
+executable\&.
 .SH "NOTE"
 .PP
-Xjadeo message queues are experiemental and not completed! With the upcoming introduction of queue\-names or a operation mode that allows multiple clients per connection, xjremote\'s command line options will change\&.
+Apart from Standard\-I/O,
+xjadeo
+can use POSIX real\-time message\-queues (MQ) or System\-V IPC communication\&. The decision is made when compiling it\&. Basically GNU/Linux uses MQ (but could use IPC as well)\&. OSX only supports IPC and Windows is limited to standard\-I/O only\&.
 .SH "SEE ALSO"
 .PP
 xjadeo(1)
@@ -97,11 +141,11 @@ xjadeo(1)
 qjadeo(1)
 .SH "AUTHOR"
 .PP
-\fBRobin Gareus\fR
+\fBRobin Gareus\fR <\&robin@gareus.org\&>
 .RS 4
 linuxaudio.org
 .RE
 .SH "COPYRIGHT"
 .br
-Copyright \(co 2005, 2006, 2007, 2009 Robin Gareus, Luis Garrido
+Copyright \(co 2005, 2006, 2007, 2009, 2010 Robin Gareus, Luis Garrido
 .br

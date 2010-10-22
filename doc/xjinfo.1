@@ -1,13 +1,22 @@
 '\" t
 .\"     Title: xjinfo
-.\"    Author: Robin Gareus
-.\" Generator: DocBook XSL Stylesheets v1.75.0 <http://docbook.sf.net/>
-.\"      Date: 05/29/2009
+.\"    Author: Robin Gareus <robin@gareus.org>
+.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
+.\"      Date: 10/22/2010
 .\"    Manual: Manual Pages
-.\"    Source: http://xjadeo.sf.net 0.4.X
+.\"    Source: http://xjadeo.sf.net 0.6.X
 .\"  Language: English
 .\"
-.TH "XJINFO" "1" "05/29/2009" "http://xjadeo\&.sf\&.net 0\&.4" "Manual Pages"
+.TH "XJINFO" "1" "10/22/2010" "http://xjadeo\&.sf\&.net 0\&.6" "Manual Pages"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
 .\" -----------------------------------------------------------------
 .\" * set default formatting
 .\" -----------------------------------------------------------------
@@ -22,36 +31,38 @@
 xjinfo \- Display A/V file info in XML format\&.
 .SH "SYNOPSIS"
 .HP \w'\fBxjinfo\fR\ 'u
-\fBxjinfo\fR [\-xvhct] \fI<videofile>\fR
+\fBxjinfo\fR [\-chtvVx] \fI<videofile>\fR
 .SH "DESCRIPTION"
 .PP
-\fBxjinfo\fR
+xjinfo
 does basically the same as
-\fBffmpeg \-i\fR
-but displays the information in XML or simple format that can be used for scripting\&.
+\fBffprobe\fR
+but displays the information in XML or simple text format that can be used for scripting\&.
 .SH "OPTIONS"
 .PP
-\fB\-c, \-\-csv\fR
+\fB\-c\fR, \fB\-\-csv\fR
 .RS 4
-comma separated values, one line per video stream in file\&. Use the built\-in help \-h to learn about the format\&.
+comma separated values, one line per video stream in file\&. Use the built\-in help
+\fB\-h\fR
+to learn about the format\&.
 .RE
 .PP
-\fB\-h, \-\-help\fR
+\fB\-h\fR, \fB\-h, \-\-help\fR
 .RS 4
-Prints usage help and exits\&.
+Print usage help and exit\&.
 .RE
 .PP
-\fB\-t, \-\-time, \-\-duration\fR
+\fB\-t\fR, \fB\-\-time\fR, \fB\-\-duration\fR
 .RS 4
 print the duration in seconds (without trailing newline)
 .RE
 .PP
-\fB\-v, \-\-text\fR
+\fB\-v\fR, \fB\-\-text\fR
 .RS 4
 print a single line: duration, fps, geometry and codec info\&.
 .RE
 .PP
-\fB\-x, \-\-xml\fR
+\fB\-x\fR, \fB\-\-xml\fR
 .RS 4
 output XML data\&. This is the default if no option is specified\&.
 .sp
@@ -63,17 +74,17 @@ A DTD is available with the source or from
 xjadeo(1)
 .SH "AUTHOR"
 .PP
-\fBRobin Gareus\fR
+\fBRobin Gareus\fR <\&robin@gareus.org\&>
 .RS 4
 linuxaudio.org
 .RE
 .SH "COPYRIGHT"
 .br
-Copyright \(co 2005, 2006, 2007, 2009 Robin Gareus, Luis Garrido
+Copyright \(co 2005, 2006, 2007, 2009, 2010 Robin Gareus, Luis Garrido
 .br
 .SH "NOTES"
 .IP " 1." 4
 xjadeo.sf.net
 .RS 4
-\%http://xjadeo.svn.sourceforge.net/svnroot/xjadeo/trunk/src/xjadeo/avinfo.dtd
+\%http://xjadeo.git.sourceforge.net/git/gitweb.cgi?p=xjadeo/xjadeo;a=blob_plain;f=src/xjadeo/avinfo.dtd
 .RE

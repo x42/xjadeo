@@ -1,13 +1,22 @@
 '\" t
 .\"     Title: xjadeo
-.\"    Author: Robin Gareus
-.\" Generator: DocBook XSL Stylesheets v1.75.0 <http://docbook.sf.net/>
-.\"      Date: 05/29/2009
+.\"    Author: Robin Gareus <robin@gareus.org>
+.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
+.\"      Date: 10/22/2010
 .\"    Manual: Manual Pages
-.\"    Source: http://xjadeo.sf.net 0.4.X
+.\"    Source: http://xjadeo.sf.net 0.6.X
 .\"  Language: English
 .\"
-.TH "XJADEO" "1" "05/29/2009" "http://xjadeo\&.sf\&.net 0\&.4" "Manual Pages"
+.TH "XJADEO" "1" "10/22/2010" "http://xjadeo\&.sf\&.net 0\&.6" "Manual Pages"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
 .\" -----------------------------------------------------------------
 .\" * set default formatting
 .\" -----------------------------------------------------------------
@@ -19,47 +28,72 @@
 .\" * MAIN CONTENT STARTS HERE *
 .\" -----------------------------------------------------------------
 .SH "NAME"
-xjadeo \- displays a video clip in sync with an external timing source
+xjadeo \- display a video\-clip in sync with an external time source
 .SH "SYNOPSIS"
 .HP \w'\fBxjadeo\fR\ 'u
-\fBxjadeo\fR [\-abfFhiIkKLmMoPqQRStvVx] \fI<videofile>\fR
+\fBxjadeo\fR [\-aAbcCDhIkKlLnNPqQRsStvV] [\-d\ \fI<midi\-driver>\fR] [\-f\ \fI<fps>\fR] [\-F\ \fI<fps>\fR] [\-i\ \fI<int>\fR] [\-m\ \fI<midi\-port>\fR] [\-M\ \fI<num>\fR] [\-o\ \fI<frames|SMPTE>\fR] [\-O\ \fI<osc\-port>\fR] [\-W\ \fI<rpc\-id>\fR] [\-x\ \fI<dpy\-mode>\fR] \fI<videofile>\fR
 .HP \w'\fBxjadeo\fR\ 'u
-\fBxjadeo\fR \-R [\-Q] [\-abfFhikKLmMoqsStvVx] [\fI<videofile>\fR]
+\fBxjadeo\fR \-R [options] [\fI<videofile>\fR]
 .HP \w'\fBxjadeo\fR\ 'u
-\fBxjadeo\fR \-Q [\-R] [\-abfFhikKLmMoqsStvVx] [\fI<videofile>\fR]
+\fBxjadeo\fR \-Q [options] [\fI<videofile>\fR]
 .SH "DESCRIPTION"
 .PP
-\fBxjadeo\fR
-displays a video clip in sync with an external time source\&. It is a handy tool to help with the synchronization of the soundtrack of a video file\&.
-\fBxjadeo\fR
+xjadeo
+is a software video player that displays a video\-clip in sync with an external time source (MTC, LTC, JACK\-transport)\&.
+.PP
+It has applications in soundtrack composition, video monitoring or any task that requires to associate movie frames with audio events\&.
+.PP
+xjadeo
 supports different video file formats, video output libraries and sync sources\&.
 .SH "OPTIONS"
 .PP
-\fB\-a, \-\-ontop\fR
+\fB\-a\fR, \fB\-\-ontop\fR
 .RS 4
-Start xjadeo on top of other windows\&. (affects XV videomode only)\&.
+Start xjadeo always\-on\-top of other windows (this option requires support from window\-manager)\&.
 .RE
 .PP
-\fB\-b, \-\-letterbox\fR
+\fB\-A\fR, \fB\-\-avverbose\fR
 .RS 4
-retain aspect ratio and draw a letterbox around the move if necessary\&. Note that this feature is only available with the Xv and imlib2 video mode\&.
+Enable verbose ffmpeg messages (format/codec debugging)\&.
 .RE
 .PP
-\fB\-C, \-\-midiclk\fR
+\fB\-b\fR, \fB\-\-letterbox\fR
 .RS 4
-use midi quarter frame timing for more exact sync\&.
+Retain aspect ratio and draw a letterbox around the video\-frame if necessary\&.
+.RE
+.PP
+\fB\-c\fR, \fB\-\-no\-midiclk\fR
+.RS 4
+Do not use MIDI quarter\-frames for more exact sync\&.
+.RE
+.PP
+\fB\-C, \-\-midiclk\fR, \fB\-\-midiclk\fR
+.RS 4
+Use MIDI quarter\-frame timing for more exact sync (this is enabled by default since version 0\&.4\&.11)\&.
+.RE
+.PP
+\fB\-d \fR\fB\fI<midi\-driver>\fR\fR, \fB\-\-midi\-driver \fR\fB\fI<midi\-driver>\fR\fR
+.RS 4
+Choose MIDI back\-end to use\&.
+\fI<midi\-driver>\fR
+can be either one of "JACK", "ALSA" or "portmidi" \- depending on the operating\-System and compile\-time configuration\&.
+.RE
+.PP
+\fB\-D, \-\-debug\fR, \fB\-\-debug\fR
+.RS 4
+Enable debug mode\&. Print development related information\&.\&.
 .RE
 .PP
 \fB\-f \fR\fB\fI<n>\fR\fR, \fB\-\-fps \fR\fB\fI<n>\fR\fR
 .RS 4
-Desired refresh rate of the video display in frames per second\&. Lower values lighten the CPU load at the cost of video quality\&. Admits non\-integer values\&. Defaults to 10\&.0 fps\&.
+Desired refresh\-rate of the video display in frames per second\&. Non\-integer values are possible\&. Default: \-1\&.
 .sp
-If this value is set to zero (or less), xjadeo will use the framerate of the video file as its video update frequency\&. This is highly recommended when decoding the video\-frames continuosly without seeking (\fB\-K\fR)
+If this value is set to zero (or less), xjadeo will use the FPS of the video\-file as its screen update frequency\&.
 .RE
 .PP
 \fB\-F \fR\fB\fI<n>\fR\fR, \fB\-\-filefps \fR\fB\fI<n>\fR\fR
 .RS 4
-Override the (autodetected) framerate of the videofile\&.
+Override the (auto\-detected) frame\-rate of the video\-file\&.
 .RE
 .PP
 \fB\-h, \-\-help\fR
@@ -69,7 +103,7 @@ Prints usage help and exits\&.
 .PP
 \fB\-i \fR\fB\fI<n>\fR\fR, \fB\-\-info \fR\fB\fI<n>\fR\fR
 .RS 4
-Displays useful info using the OSD (on\-screen display\&.).PP
+Displays information using the OSD (on\-screen display\&.).PP
 \fB0\fR
 .RS 4
 Off\&.
@@ -90,135 +124,172 @@ SMPTE time code\&.
 Both frame number and SMPTE\&.
 .RE
 .sp
-The remote interface allows more complete control over the OSD\&.
+The remote control interface allows more complete control over the OSD\&.
 .RE
 .PP
-\fB\-I, \-\-ignorefileoffset\fR
+\fB\-I\fR, \fB\-\-ignorefileoffset\fR
 .RS 4
-This option is only useful for video files that with a start\-offset, such as split vob files\&. Per default xjadeo will honor offsets specified in the video\-file header and the file\'s pts/dts\&.
+This option is only useful for video files that with a start\-offset, such as split vob files\&. Per default xjadeo will honor offsets specified in the video\-file header and the file\*(Aqs PTS/DTS\&.
 \fB\-I\fR
 allows to override and subtract this offset and makes the file start at SMPTE position 00:00:00:00\&. (although you can archive the same result, this option is not related to
-\fB\-o\fR
-which actually changes the SMPTE\&.)
+\fB\-o\fR\&.)
 .RE
 .PP
-\fB\-k, \-\-keyframes \fR
+\fB\-k\fR, \fB\-\-keyframes \fR
 .RS 4
-Instructs the internal algorithm to seek only keyframes\&. This option may improve the performance for certain video encodings\&.
+Instructs the internal algorithm to seek only to key\-frames\&. This option may improve the performance for certain video encodings\&.
 .sp
-The default behavior (without \-k and \-K arguments) is to search any ANY frame\&.
+The default behavior (without
+\fB\-k\fR
+and
+\fB\-K\fR
+arguments) is to search any ANY frame\&.
 .RE
 .PP
-\fB\-K, \-\-continuous \fR
+\fB\-K\fR, \fB\-\-continuous \fR
 .RS 4
-Decode video frame by frame, particularly only useful to read files where not every frame is a keyframe at cost of CPU usage\&. Note that this option adds some extra latency when seeking\&. combine with
-\fB\-f \fR: It makes sense to set xjadeo\'s framerate to equal the framerate of the video file\&.
+Decode video frame by frame starting from previous key\-frame\&. This particularly useful to read files where not every frame is a key\-frame at cost of increased CPU usage\&. Note that this option adds some extra latency when seeking\&. Combine with
+\fB\-f \-1\fR: It makes sense to set
+xjadeo\*(Aqs screen\-update frequency to match the frame\-rate of the video file\&.
 .RE
 .PP
-\fB\-L, \-\-nolash\fR
+\fB\-l\fR, \fB\-\-ltc\fR
+.RS 4
+Use LTC as sync\-source instead of JACK\-transport\&.
+.RE
+.PP
+\fB\-L\fR, \fB\-\-nolash\fR
 .RS 4
 Disable LASH support\&.
 .RE
 .PP
-\fB\-m \fR\fB\fI<port>\fR\fR, \fB\-\-midi \fR\fB\fI<port>\fR\fR
+\fB\-m \fR\fB\fI<midi\-port>\fR\fR, \fB\-\-midi \fR\fB\fI<midi\-port>\fR\fR
 .RS 4
-Get sync from MTC (MIDI Time Code) instead of jack\&.
+Get sync from MTC (MIDI Time Code) instead of JACK or LTC\&.
 .sp
-If compiled with ALSA midi,
-\fI<port>\fR
-is the ALSA sequencer id of the MTC source\&. A value of \-1 will leave
-\fBxjadeo\fR
+If using JACK\-MIDI driver,
+\fI<midi\-port>\fR
+is the JACK\-MIDI port to use as input \- use an empty value ("") to not auto\-connect
+.sp
+If using ALSA MIDI back\-end,
+\fI<midi\-port>\fR
+is the ALSA sequencer\-id to be used as the MTC source\&. A value of \-1 will leave
+xjadeo
 unconnected\&.
 .sp
 If using portmidi,
 \fI<port>\fR
-is the portnumber of the midi input to use\&. value \-1 will attempt autoconnect\&. use \-v \-m \-1 to list midi ports during autodetection\&.
+is the port\-number of the MIDI input device to use\&. The value \-1 will attempt auto\-connect\&. use
+\fB\-v \-m \-1\fR
+to list MIDI ports during auto\-detection\&.
 .RE
 .PP
-\fB\-M\fR\fB\fI<n>\fR\fR, \fB\-\-midifps \fR\fB\fI<n>\fR\fR
+\fB\-M \fR\fB\fI<n>\fR\fR, \fB\-\-midifps \fR\fB\fI<n>\fR\fR
 .RS 4
 Conversion between MTC SMPTE and frame number\&.
 .PP
-\fB0\fR
+\fB0\fR (default)
 .RS 4
 Use MTC clock frame rate\&.
 .RE
 .PP
-\fB2\fR
+\fB1\fR
 .RS 4
-Use video file frame rate\&.
+Use video\-file\*(Aqs frame\-rate\&.
 .RE
 .PP
-\fB3\fR
+\fB1\fR
 .RS 4
 Resample video frame rate / MTC\&.
 .RE
 .RE
 .PP
-\fB\-o \fR\fB\fI<n>\fR\fR, \fB\-\-offset \fR\fB\fI<n>\fR\fR
+\fB\-n\fR, \fB\-\-nodropframes\fR
 .RS 4
-Offset the video player a certain number of (video) frames relative to the sync master time base\&. Admits negative values\&.
+Prevent xjadeo from detecting drop\-frame\-timecode (usually files with 29\&.97 fps)
 .RE
 .PP
-\fB\-P, \-\-genpts\fR
+\fB\-N\fR, \fB\-\-dropframes\fR
+.RS 4
+Force xjadeo to use drop\-frame\-timecode (usually files with 29\&.97 fps)
+.RE
+.PP
+\fB\-o \fR\fB\fI<n>\fR\fR, \fB\-\-offset \fR\fB\fI<n>\fR\fR
+.RS 4
+Offset the video a certain number of (video) frames relative to the sync master time base\&. Admits negative values\&.
+\fI<n>\fR
+can be specified either as integer frame\-number or SMPTE text\&.
+.RE
+.PP
+\fB\-P\fR, \fB\-\-genpts\fR
 .RS 4
 This option passed on to ffmpeg and has no effect on older versions of libavformat\&.
 .sp
 it can be used to generate "presentation time stamps" if they are missing in the file, even if it requires parsing future frames\&.
 .RE
 .PP
-\fB\-q, \-\-quiet, \-\-silent\fR
+\fB\-q\fR, \fB\-\-quiet\fR, \fB\-\-silent\fR
 .RS 4
 Suppresses normal output messages\&.
 .RE
 .PP
-\fB\-Q, \-\-mq\fR
+\fB\-Q\fR, \fB\-\-mq\fR
 .RS 4
-Enable POSIX message queues\&. Sets up a communication channel for use with
+Enable POSIX message queues\&. Set up a communication channel for use with
 xjremote(1)\&. See the
 the section called \(lqRemote Control Interface\(rq
-in the documentation\&.
+in the online documentation\&.
 .RE
 .PP
-\fB\-R, \-\-remote\fR
+\fB\-R\fR, \fB\-\-remote\fR
 .RS 4
-Enables interactive (stdin/stdout) control mode\&. Options
+Enable interactive (stdin/stdout) remote control mode\&. Options
 \fB\-\-quiet\fR
 and
 \fB\-\-verbose\fR
 have no effect in remote mode\&.
 .RE
 .PP
-\fB\-s, \-\-fullscreen\fR
+\fB\-s\fR, \fB\-\-fullscreen\fR
 .RS 4
-Start xjadeo in full\-screen mode (affects XV videomode only)\&.
+Start
+xjadeo
+in full\-screen mode\&.
 .RE
 .PP
-\fB\-S, \-\-nosplash\fR
+\fB\-S\fR, \fB\-\-nosplash\fR
 .RS 4
-Skip the on screen display startup sequence\&.
+Skip the on\-screen\-display startup sequence\&.
 .RE
 .PP
-\fB\-t, \-\-try\-codec\fR
+\fB\-t\fR, \fB\-\-try\-codec\fR
 .RS 4
-Checks if the video file is encoded in a format suitable for use with
-\fBxjadeo\fR
-and exits\&. If the video format is not supported the exit code is 1\&.
+Check if the video file is encoded in a format suitable for use with
+xjadeo
+and exit\&. If the video format is not supported the exit code is 1\&.
 .RE
 .PP
-\fB\-v, \-\-verbose\fR
+\fB\-v\fR, \fB\-\-verbose\fR
 .RS 4
-Prints additional information during the execution\&.
+Print additional information\&.
 .RE
 .PP
-\fB\-V, \-\-version\fR
+\fB\-V\fR, \fB\-\-version\fR
 .RS 4
 Display version and compile\-time configuration information and exit\&.
 .RE
 .PP
-\fB\-x \fR\fB\fI<n>\fR\fR, \fB\-\-vo \fR\fB\fI<n>\fR\fR, \fB\-\-videomode \fR\fB\fI<n>\fR\fR
+\fB\-W \fR\fB\fI<rpc\-id>\fR\fR, \fB\-\-ipc \fR\fB\fI<rpc\-id>\fR\fR
 .RS 4
-Selects the video output driver\&. Defaults to 0 (autodetect\&.) A value of \-1 makes the program list the available drivers and exit\&.
+Set\-up IPC message queues for
+xjremote\&.
+\fI<rpc\-id>\fR
+specifies a file\-path used to identify the message\-queue\&.
+.RE
+.PP
+\fB\-x \fR\fB\fI<dpy\-mode>\fR\fR, \fB\-\-vo \fR\fB\fI<dpy\-mode>\fR\fR, \fB\-\-videomode \fR\fB\fI<dpy\-mode>\fR\fR
+.RS 4
+Selects the video output driver\&. Defaults to 0 (auto\-detect)\&. A value of \-1 lists the available modes and exit\&.
 .RE
 .SH "SYNC SOURCES"
 .PP
@@ -233,7 +304,29 @@ currently supports the following synchronization sources:
 .sp -1
 .IP \(bu 2.3
 .\}
-Jack transport\&.
+JACK\-transport\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+LTC (Linear/Longitudinal Time Code) \- via JACK audio\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+MTC (MIDI Time Code) via JACK\-MIDI\&.
 .RE
 .sp
 .RS 4
@@ -266,49 +359,12 @@ MTC (MIDI Time Code) via portmidi\&.
 .sp -1
 .IP \(bu 2.3
 .\}
-remote\-ctrl seeks (not really a sync source)\&.
-.RE
-.SH "VIDEO DRIVERS"
-.PP
-\fBxjadeo\fR
-currently supports the following video output drivers:
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-xv (YUV / YV12)
-.RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-SDL (YUV / YV12)
-.RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-X11 + ImLib (RGB / RGBA)
+remote\-ctrl manual seeks (not really a sync source)\&.
 .RE
 .SH "VIDEO FORMATS"
 .PP
-\fBxjadeo\fR
-uses the ffmpeg libraries to decode video files, so a wide range of codecs is available\&. Note, however, that not all the formats support frame seeking\&. You can use a command like:
+xjadeo
+uses ffmpeg to decode video files, so a wide range of formats and codecs are supported\&. Note, however, that not all the formats support seeking\&. To transcode a video\-file into a suitable format we recommend:
 .sp
 .if n \{\
 .RS 4
@@ -319,10 +375,10 @@ mencoder \-idx \-ovc lavc \-lavcopts keyint=1 \-nosound input_file\&.xxx \-o out
 .if n \{\
 .RE
 .\}
+.sp
+This creates from your input\-file\&.xxx an AVI mpeg4 encoded video file with no sound, an index (\-idx) and no compression between frames (every frame is a keyframe)\&. The file thus can become really BIG, so watch your disk space\&.
 .PP
-This creates from your input\-file\&.xxx an AVI mpeg4 encoded video file with no sound, an index (\-idx) and no compression between frames (every frame is a keyframe)\&. The file thus can become really BIG, so watch out your disk space\&.
-.PP
-You may also want to shrink the size of the frame by adding the option
+You may want to shrink the size by scaling the geometry of the video\-frames, which also taxes less system resources while displaying it and leaves more space in the screen for your audio software\&.\&.
 .sp
 .if n \{\
 .RS 4
@@ -334,22 +390,16 @@ You may also want to shrink the size of the frame by adding the option
 .RE
 .\}
 .PP
-This will reduce the size of the avi file, will tax less the system resources when displayed and will leave more space in the screen for your audio software\&.
+Also note
+xjadeo\*(Aqs
+\fB\-K\fR
+option which allows to seek to frames other than key\-frames and enables
+xjadeo
+to play back any file without transcoding at expense of increased CPU usage and latency
 .SH "USER INPUT"
 .PP
 \fBxjadeo\fR
 window accepts the following input:
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-Resizing the window will resize the movie as well\&. (CAVEAT: resizing a video frame to make it fit the window is a CPU expensive operation unless you are using hardware overlay\&. If you are not comfortable with the frame size of your movie it is more CPU efficient that you re\-encode the video file with the desired size beforehand\&.)
-.RE
 .sp
 .RS 4
 .ie n \{\
@@ -392,42 +442,62 @@ Scroll Wheel (buttons 4,5) stepwise decreases/increases the window size maintain
 .sp -1
 .IP \(bu 2.3
 .\}
-Closing the window or pressing ctrl\-C will terminate
-\fBxjadeo\fR\&.
-.RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-xjadeo >= v0\&.3\&.8 supports keyboard events\&. Pressing \'Esc\' and \'q\' will end the program\&. depending on your display setup xjadeo supports \'f\' toggle fullscreen, \'a\' toggle always\-on\-top and \'m\' to hide mouse cursor keystrokes\&. see
+xjadeo >= v0\&.3\&.8 supports keyboard events\&. Pressing
+Esc
+and
+q
+will end the program\&.
+f
+toggles full\-screen,
+a
+toggles always\-on\-top\&. Press
+m
+to hide mouse cursor\&.
+v,
+s,
+o,
+C
+and
+b
+control on\-screen\-display and
+l
+toggles the letter\-box mode\&. The time\-offset can be modified with
++,
+\-,
+{,
+}
+and window\-size with
+<,
+>,
+,,
+\&.\&.
+SPACE
+and
+BACKSPACE
+can be used to control JACK\-transport\&. See
 the section called \(lqMonitor Window - Key bindings\(rq
-in the documentation for more recent additions\&.
+in the online documentation for a complete list\&.
 .RE
 .SH "REMOTE MODE"
-.PP
-\fBxjadeo \-Q\fR
-enables message queues; use
-\fBxjremote\fR
-to connect\&.
 .PP
 When started in remote mode (option
 \fB\-R\fR
 or
 \fB\-\-remote\fR)
-\fBxjadeo\fR
+xjadeo
 will interactively accept commands and issue responses through its standard input/output mechanism\&.
 .PP
 Use the remote command
 \fBhelp\fR
-to get a quick overview of all available commands\&. please refer to the docbook documentation for a complete description of the remote commands\&.
+to get a quick overview of all available commands\&. Please refer to the online documentation for a complete description of the remote commands\&.
+.PP
+\fBxjadeo \-Q\fR
+enables remote control by message\-queues; use
+\fBxjremote\fR
+to connect\&.
 .SH "FILES"
 .PP
-xjadeo reads the following resource config files in this order:
+xjadeo reads the following resource configuration files in this order:
 .sp
 .RS 4
 .ie n \{\
@@ -463,7 +533,7 @@ $HOME/\&.xjadeorc
 $HOME/xjadeorc
 .RE
 .PP
-Each line in the config file must be in in the format:
+Each line in the configuration file must be in in the format:
 .sp
 .if n \{\
 .RS 4
@@ -475,18 +545,24 @@ KEY=VALUE
 .RE
 .\}
 .sp
-\&. If the first character on a line is either \'#\' or \';\'\&. the line is ignored\&.
+If the first character on a line is either \*(Aq#\*(Aq or \*(Aq;\*(Aq the line is ignored\&.
 \fBKEYS\fR
-are not case sensitive\&.
+are not case sensitive\&. Some
 \fBVALUES\fR
-can be case sensitive (fi\&. filenames) and are parsed identical to the corresponding command line arguments (eg\&.
+are case sensitive (fi\&. filenames) and are parsed identical to the corresponding command\-line arguments (e\&.g\&.
 \fB\-x SDL\fR
-becomes
-\fBvideomode=SDL\fR)\&. Boolean values are specified as \'yes\' or \'no\' (eg\&.
+is equivalent to the config\-file option
+\fBvideomode=SDL\fR)\&. Boolean values are specified as \*(Aqyes\*(Aq or \*(Aqno\*(Aq (e\&.g\&.
 \fBquiet=yes\fR)\&.
 .PP
-currently supported rc KEYS: fps, fontfile, lash, letterbox, midiclk, midismpte, mq, nosplash, quiet, seek, verbose and videomode\&. Which are commented on in the example
+currently supported RC\-KEYS: fps, fontfile, lash, letterbox, midiclk, mididriver, midiid, midismpte, mq, nosplash, quiet, seek, verbose and videomode\&. Which are documented in the example
 \m[blue]\fBxjadeorc\fR\m[]\&\s-2\u[1]\d\s+2
+.SH "ENVIRONMENT"
+.PP
+\fBJACK_DEFAULT_SERVER\fR
+.RS 4
+Set the jack\-server\-name to connect to (JACK\-transport, JACK\-MIDI and LTC)
+.RE
 .SH "SEE ALSO"
 .PP
 qjadeo(1)
@@ -496,17 +572,17 @@ xjremote(1)
 xjinfo(1)
 .SH "AUTHOR"
 .PP
-\fBRobin Gareus\fR
+\fBRobin Gareus\fR <\&robin@gareus.org\&>
 .RS 4
 linuxaudio.org
 .RE
 .SH "COPYRIGHT"
 .br
-Copyright \(co 2005, 2006, 2007, 2009 Robin Gareus, Luis Garrido
+Copyright \(co 2005, 2006, 2007, 2009, 2010 Robin Gareus, Luis Garrido
 .br
 .SH "NOTES"
 .IP " 1." 4
 xjadeorc
 .RS 4
-\%http://xjadeo.svn.sourceforge.net/svnroot/xjadeo/trunk/doc/xjadeorc
+\%http://xjadeo.git.sourceforge.net/git/gitweb.cgi?p=xjadeo/xjadeo;a=blob_plain;f=doc/xjadeorc
 .RE
