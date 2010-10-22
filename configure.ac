@@ -552,7 +552,7 @@ if test "x$enable_contrib" = "xyes"; then
   fi
 fi
 
-AC_CONFIG_FILES([Makefile src/Makefile src/xjadeo/Makefile xjadeo.lsm xjadeo.spec])
+AC_CONFIG_FILES([Makefile src/Makefile src/xjadeo/Makefile xjadeo.lsm])
 
 AC_OUTPUT
 
