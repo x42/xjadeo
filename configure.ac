@@ -48,7 +48,7 @@ LIBSUF=.a
 
 case $target_os in
   *darwin*)
-		echo "TARGET: OSX"
+		AC_MSG_NOTICE([TARGET: OSX])
 		PM_OS=mac
 		AC_DEFINE([HAVE_MACOSX], [], [use macintosh native display])
 		HAVE_MACOSX=1
@@ -57,12 +57,12 @@ dnl 2006/11/13 : 32 bit RGBA is known not to work on OSX ffmpeg+imlib2
 dnl IMLIB2RGBA 
   	;;
   *linux*)
-		echo "TARGET: LINUX"
+		AC_MSG_NOTICE([TARGET: LINUX])
 		PM_OS="linux";
 		AC_DEFINE([IMLIB2RGBA], [], [use native RGB32 ffmpeg -> imlib.])
 	;;
   *mingw32*|*win*)
-		echo "TARGET: WINDOWS"
+		AC_MSG_NOTICE([TARGET: WINDOWS])
 		PM_OS=win
 		AC_DEFINE([HAVE_WINDOWS], [], [windows SDL version])
 		HAVE_WINDOWS=1
@@ -520,8 +520,8 @@ EOF
 
  AC_CONFIG_FILES(src/qt-gui/Makefile src/qt-gui/qjadeo.pro)
 
- if test -z "$HAVE_QT4" -a -z "$HAVE_QT3"; then 
-     AC_MSG_ERROR([TEST_QT3/4: no usable Qt installation found. try --disable-qtgui])
+ if test -z "$HAVE_QT4"; then 
+     AC_MSG_ERROR([no usable Qt installation found. try --disable-qtgui])
  fi
 
 else
@@ -556,53 +556,92 @@ AC_CONFIG_FILES([Makefile src/Makefile src/xjadeo/Makefile xjadeo.lsm])
 
 AC_OUTPUT
 
-echo " "
-echo "------------------------------------------------------------------------"
-echo "  $PACKAGE $VERSION  - Configuration Report"
-echo "------------------------------------------------------------------------"
-echo " "
-echo    " prefix:             $prefix"
-echo    " exec-prefix:        $exec_prefix"
-echo    " install path:       $bindir"
-echo    " System wide config: $sysconfdir/xjadeorc"
-echo " "
-echo    " Video Displays"
-echo -n "   - libxv:          ";	if test -n "$HAVE_LIBXV"; then echo "ok"; else echo "not avail."; fi
-#echo -n "   - libx11/imlib:   ";	if test -n "$HAVE_IMLIB"; then echo "ok"; else echo "not avail."; fi
-echo -n "   - libx11/imlib2:  ";	if test -n "$HAVE_IMLIB2"; then echo "ok"; else echo "not avail."; fi
-echo -n "   - mac/osx:        ";	if test -n "$HAVE_MACOSX"; then echo "ok"; else echo "not avail."; fi
-echo -n "   - SDL:            ";	if test -n "$HAVE_SDL"; then echo "ok"; else echo "not avail."; fi
-echo -n " MIDI:               ";
-if test -n "$HAVE_PORTMIDI"; then echo -n "portmidi "; fi
-if test -n "$HAVE_JACKMIDI"; then echo -n "jack-midi "; fi
-if test -n "$ALSA_SEQ_MIDI"; then echo -n "alsa-seq "; fi
-if test -n "$ALSA_RAW_MIDI"; then echo -n "alsa-RAW "; fi
-if test -z "$HAVE_MIDI"; then echo -n "disabled."; fi
-echo 
-echo -n " LASH:               ";	if test -n "$HAVE_LASH"; then echo "ok"; else echo "not avail."; fi
-echo -n " LTCSMPTE:           ";  if test -n "$HAVE_LTCSMPTE"; then echo "ok"; else echo "not avail."; fi 
-#echo -n " Xpm:                ";	if test -n "$HAVE_XPM"; then echo "ok"; else echo "not avail."; fi
-echo -n " remote control:     ";	if test -n "$HAVE_MQ"; then echo "POSIX-MQ"; elif test -n "$HAVE_IPCMSG"; then echo "IPC-MSG"; else echo "not avail."; fi
-echo -n " OSC remote control: ";	if test -n "$HAVE_LIBLO"; then echo "ok"; else echo "not avail."; fi
-echo -n " On screen display:  ";
-if test -z "$HAVE_FT"; then 
-echo "disabled";
-else echo 
-echo    "   - freetype:       ok";
-echo -n "   - default font:   ";	if test -n "$fontfile" ; then echo "$fontfile"; else echo " - "; fi
-fi
-echo -n " ffmpeg-scaling:     ";	
-if test -n "$HAVE_SWSCALE"; then echo "swscale"; else echo "img_convert"; fi
-echo -n " GUI:                ";	
-if test -n "$HAVE_QT4"; then echo "QT4";
-else if test -n "$HAVE_QT3"; then echo "QT3"
-     else echo "none"; fi
-fi
-echo -n " build contib/*:     ";	if test "x$enable_contrib" = "xyes"; then echo "yes."; else echo "no."; fi
-if test "x$enable_contrib" = "xyes"; then
-     echo -n " libtiff (xjtsmm):   ";	if test -n "$HAVE_TIFF"; then echo "ok"; else echo "not avail."; fi
-fi
-echo " "
-echo "now type 'make'; followed by 'make install' as root."
-echo " "
+MIDIREPORT=""
+if test -n "$HAVE_PORTMIDI"; then MIDIREPORT="${MIDIREPORT}portmidi "; fi
+if test -n "$HAVE_JACKMIDI"; then MIDIREPORT="${MIDIREPORT}jack-midi "; fi
+if test -n "$ALSA_SEQ_MIDI"; then MIDIREPORT="${MIDIREPORT}alsa-seq "; fi
+if test -n "$ALSA_RAW_MIDI"; then MIDIREPORT="${MIDIREPORT}alsa-RAW "; fi
+if test -z "$HAVE_MIDI"; then     MIDIREPORT="${MIDIREPORT}disabled."; fi
 
+if test -n "$HAVE_MQ"; then 
+	RCTLREPORT="POSIX-MQ"; 
+elif test -n "$HAVE_IPCMSG"; then 
+	RCTLREPORT="IPC-MSG"; 
+else 
+	RCTLREPORT="not avail."; 
+fi
+
+if test -z "$HAVE_FT"; then 
+	OSDREPORT="disabled"
+else
+	OSDREPORT="
+   - freetype:       yes
+   - default font:   "
+  if test -n "$fontfile" ; then 
+		OSDREPORT+="$fontfile";
+	else
+		OSDREPORT+="-"
+	fi
+fi
+
+if test -n "$HAVE_SWSCALE"; then 
+	FFSWREPORT="swscale"; 
+else 
+	FFSWREPORT="img_convert"; 
+fi
+
+CONTREPORT="no."
+if test "x$enable_contrib" = "xyes"; then
+	CONTREPORT="yes.
+ libtiff (xjtsmm):   ";
+	if test -n "$HAVE_TIFF"; then 
+		CONTREPORT+="yes";
+	else 
+		CONTREPORT+="not avail.";
+	fi
+fi
+
+if test -n "$HAVE_LIBXV"; then RPT_LIBXV="yes"; else RPT_LIBXV="not avail."; fi
+if test -n "$HAVE_IMLIB2"; then RPT_IMLIB2="yes"; else RPT_IMLIB2="not avail."; fi
+if test -n "$HAVE_MACOSX"; then RPT_MACOSX="yes"; else RPT_MACOSX="not avail."; fi
+if test -n "$HAVE_SDL"; then RPT_SDL="yes"; else RPT_SDL="not avail."; fi
+if test -n "$HAVE_LASH"; then RPT_LASH="yes"; else RPT_LASH="not avail."; fi
+if test -n "$HAVE_LTCSMPTE"; then RPT_LTCSMPTE="yes"; else RPT_LTCSMPTE="not avail."; fi
+if test -n "$HAVE_LIBLO"; then RPT_LIBLO="yes"; else RPT_LIBLO="not avail."; fi
+if test -n "$HAVE_QT4"; then RPT_QT4="Qt4"; else RPT_QT4="none"; fi
+
+AC_MSG_NOTICE([
+
+------------------------------------------------------------------------
+  $PACKAGE $VERSION  - Configuration Report
+------------------------------------------------------------------------
+
+ prefix:             $prefix
+ exec-prefix:        $exec_prefix
+ install path:       $bindir
+ System wide config: $sysconfdir/xjadeorc
+
+ Video Displays
+   - libxv:          $RPT_LIBXV
+   - libx11/imlib2:  $RPT_IMLIB2
+   - mac/osx:        $RPT_MACOSX
+   - SDL:            $RPT_SDL
+
+ Sync:
+   - JACK-transport: yes
+   - LTC:            $RPT_LTCSMPTE
+   - MIDI:           $MIDIREPORT
+
+ ffmpeg-scaling:     $FFSWREPORT
+ remote control:     $RCTLREPORT
+ OSC remote control: $RPT_LIBLO
+
+ LASH:               $RPT_LASH
+ On-screen-display:  $OSDREPORT
+
+ GUI:                $RPT_QT4
+ build contib/*:     $CONTREPORT
+
+
+type "make" followed my "make install" as root.
+])
