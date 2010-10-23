@@ -578,9 +578,9 @@ else
    - freetype:       yes
    - default font:   "
   if test -n "$fontfile" ; then 
-		OSDREPORT+="$fontfile";
+		OSDREPORT="${OSDREPORT}$fontfile";
 	else
-		OSDREPORT+="-"
+		OSDREPORT="${OSDREPORT}-"
 	fi
 fi
 
@@ -590,14 +590,14 @@ else
 	FFSWREPORT="img_convert"; 
 fi
 
-CONTREPORT="no."
+CONTREPORT="no"
 if test "x$enable_contrib" = "xyes"; then
-	CONTREPORT="yes.
+	CONTREPORT="yes
  libtiff (xjtsmm):   ";
 	if test -n "$HAVE_TIFF"; then 
-		CONTREPORT+="yes";
+		CONTREPORT="${CONTREPORT}yes";
 	else 
-		CONTREPORT+="not avail.";
+		CONTREPORT="${CONTREPORT}not avail.";
 	fi
 fi
 
@@ -608,7 +608,8 @@ if test -n "$HAVE_SDL"; then RPT_SDL="yes"; else RPT_SDL="not avail."; fi
 if test -n "$HAVE_LASH"; then RPT_LASH="yes"; else RPT_LASH="not avail."; fi
 if test -n "$HAVE_LTCSMPTE"; then RPT_LTCSMPTE="yes"; else RPT_LTCSMPTE="not avail."; fi
 if test -n "$HAVE_LIBLO"; then RPT_LIBLO="yes"; else RPT_LIBLO="not avail."; fi
-if test -n "$HAVE_QT4"; then RPT_QT4="Qt4"; else RPT_QT4="none"; fi
+if test -n "$HAVE_QT4"; then RPT_QT4="yes"; else RPT_QT4="no"; fi
+if test -n "$HAVE_MACOSX"; then RPT_QT4="${RPT_QT4} (OSX-built-in)"; fi
 
 AC_MSG_NOTICE([
 
@@ -639,7 +640,7 @@ AC_MSG_NOTICE([
  LASH:               $RPT_LASH
  On-screen-display:  $OSDREPORT
 
- GUI:                $RPT_QT4
+ GUI (qjadeo):       $RPT_QT4
  build contib/*:     $CONTREPORT
 
 
