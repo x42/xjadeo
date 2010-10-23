@@ -180,6 +180,7 @@ enum // menubar
         mOSDOffS, 
         mOSDOffF, 
         mSyncJack,
+        mSyncLTC,
         mSyncJackMidi,
         mSyncPortMidi,
         mSyncNone,
@@ -242,9 +243,10 @@ static void checkMyMenu(void) {
   CheckMenuItem (zoomMenu, 6, want_letterbox);
 
   CheckMenuItem (syncMenu, 1, jack_connected());
-  CheckMenuItem (syncMenu, 4, midi_connected() && !strcmp(midi_driver_name(), "PORTMIDI"));
-  CheckMenuItem (syncMenu, 5, midi_connected() && !strcmp(midi_driver_name(), "JACK-MIDI"));
-  CheckMenuItem (syncMenu, 6, (!jack_connected() && !midi_connected()));
+  CheckMenuItem (syncMenu, 4, ltcjack_connected());
+  CheckMenuItem (syncMenu, 5, midi_connected() && !strcmp(midi_driver_name(), "PORTMIDI"));
+  CheckMenuItem (syncMenu, 6, midi_connected() && !strcmp(midi_driver_name(), "JACK-MIDI"));
+  CheckMenuItem (syncMenu, 7, (!jack_connected() && !midi_connected() && !ltcjack_connected()));
 }
 
 // main window setup and painting..
@@ -401,6 +403,7 @@ static void mac_CreateWindow(uint32_t d_width, uint32_t d_height, WindowAttribut
   AppendMenuItemTextWithCFString(syncMenu, CFSTR("JACK"), 0, mSyncJack, &index);
   AppendMenuItemTextWithCFString(syncMenu, CFSTR("Jack Transport"), 0, 0, &index);
   AppendMenuItemTextWithCFString(syncMenu, NULL, kMenuItemAttrSeparator, 0, &index);
+  AppendMenuItemTextWithCFString(syncMenu, CFSTR("LTC (jack)"), 0, mSyncLTC, &index);
   AppendMenuItemTextWithCFString(syncMenu, CFSTR("MTC (portmidi)"), 0, mSyncPortMidi, &index);
   AppendMenuItemTextWithCFString(syncMenu, CFSTR("MTC (jackmidi)"), 0, mSyncJackMidi, &index);
   AppendMenuItemTextWithCFString(syncMenu, CFSTR("none"), 0, mSyncNone, &index);
@@ -1646,10 +1649,23 @@ OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
 #ifdef HAVE_MIDI
 	if (midi_connected()) midi_close();
 #endif
+#ifdef HAVE_LTCSMPTE
+	if (ltcjack_connected()) close_ltcjack();
+#endif
+      break;
+    case mSyncLTC:
+	if (jack_connected()) close_jack();
+#ifdef HAVE_MIDI
+	if (midi_connected()) midi_close();
+#endif
+	open_ltcjack(NULL);
       break;
     case mSyncJackMidi:
     case mSyncPortMidi: {
 	if (jack_connected()) close_jack();
+#ifdef HAVE_LTCSMPTE
+	if (ltcjack_connected()) close_ltcjack();
+#endif
 #ifdef HAVE_MIDI
 	if (midi_connected()) midi_close();
         if (acmd->commandID == mSyncPortMidi) {
