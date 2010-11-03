@@ -5,7 +5,7 @@
 
 #define XJADEORC "xjadeorc"
 #define MAX_LINE_LEN 256 
-#define PATH_MAX 255
+#define PATH_MAX 1024
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -189,7 +189,7 @@ void xjadeorc (void) {
 		sprintf(filename, "%s/.%s", home, XJADEORC);
 		if (testfile(filename)) readconfig(filename);
 	}
-	if (home && (strlen(home) + strlen(XJADEORC) + 2) < PATH_MAX) {
+	if (strlen(XJADEORC) + 2 < PATH_MAX) {
 		sprintf(filename, "./%s", XJADEORC);
 		if (testfile(filename)) readconfig(filename);
 	}

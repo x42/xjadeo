@@ -4,7 +4,7 @@
 #
 # xjadeo checks:  @sysconfdir@/xjadeorc
 #                 $HOME/.xjadeorc
-#                 $HOME/xjadeorc
+#                 ./xjadeorc
 #
 
 #verbose=[yes|no]
