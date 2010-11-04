@@ -61,7 +61,7 @@
     </abstract>
   </articleinfo>
 
-<!-- CHAPTER 1 -->
+<!-- CHAPTER -->
 
   <section id="about">
     <title>About</title>
@@ -158,7 +158,7 @@
 
   </section>
 
-<!-- CHAPTER 2 -->
+<!-- CHAPTER -->
 
   <section id="build_instructions" xreflabel="Build and Install Instructions">
     <title>Build and Install Instructions</title>
@@ -325,7 +325,7 @@ make install # (requires root privileges) </screen>
     </section>
   </section>
 
-<!-- CHAPTER 3 -->
+<!-- CHAPTER -->
 
   <section id="usage" xreflabel="xjadeo usage section">
     <title>Using xjadeo</title>
@@ -610,7 +610,12 @@ make install # (requires root privileges) </screen>
         </para>
       </section>
     </section>
+  </section>
 
+<!-- CHAPTER -->
+
+  <section id="troubleshoot_and_support">
+    <title>Troubleshoot &amp; Support</title>
     <section id="troubleshoot">
       <title>Troubleshoot</title>
 
@@ -672,7 +677,7 @@ make install # (requires root privileges) </screen>
     </section>
   </section>
 
-<!-- CHAPTER 4 -->
+<!-- CHAPTER -->
 
   <section id="remote_control_interface">
     <title>Remote Control Interface</title>
@@ -1309,6 +1314,60 @@ make install # (requires root privileges) </screen>
           </listitem>
         </varlistentry>
       </variablelist>
+    </section>
+  </section>
+
+<!-- CHAPTER -->
+
+  <section id="open_sound_control_interface">
+    <title>Open Sound Control Interface</title>
+    <para> TODO
+    </para>
+  </section>
+
+
+<!-- CHAPTER -->
+
+  <section id="advanced_features">
+    <title>Advanced Features - Artistic Add-ons</title>
+    <para><application>xjadeo</application>'s core functionality - to display a given
+      video frame at a certain point in time - is not only useful for post-production 
+      but has applications in media-art installations.</para>
+    <para>There are two major features which are not enabled by default:
+      <itemizedlist>
+        <listitem><para>time-scale: operations to modify the time-code: multily (slow-down/speed-up), offset and wrap-around/loop.</para></listitem>
+        <listitem><para>Panorama/frame-cropping: allows to display a sub-section of the image.</para></listitem>
+      </itemizedlist>
+    </para>
+    <section>
+      <title>Time-scaling</title>
+      <para>
+        Time-scaling adds three additional parameters to modify the displayed frame. They are applied in the following order:
+        <orderedlist>
+          <listitem><para> scale - multiply frame-number (default: 1.0)</para></listitem>
+          <listitem><para> offset - add integer to frame-number (default: 0)</para></listitem>
+          <listitem><para> wraparound - add/subtract (multiples) of movie-length if the current time-stamp is less/above the movie-duration (default: off)</para></listitem>
+        </orderedlist>
+        These parameters can be set via the <xref linkend="remote_control_interface"/> or by 
+        <xref linkend="open_sound_control_interface"/>.
+      </para>
+    </section>
+    <section>
+      <title>Cave/Panorama mode</title>
+      <para>The Panorama mode needs be enabled at compile-time using  <command>./configure --enable-framecrop</command>.
+        when enabled during compilation <application>xjadeo</application> will crop the image width to 50%. 
+        The x-offset can be modified with the keyboard 
+	<keycap>[</keycap>, <keycap>]</keycap> or
+        <xref linkend="open_sound_control_interface"/>.
+      </para>
+      <para>
+        It is intended to be used with two neighboring movies stitched together:
+        <screen>
+    A B C D
+  AB BC CD DA
+        </screen>
+        To panning across boundaries, the files have to be re-loaded (using OSC or remote-control).
+      </para>
     </section>
   </section>
 
