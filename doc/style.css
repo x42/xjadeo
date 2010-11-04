@@ -112,7 +112,7 @@ div.variablelist dd
  ***************************************************************************/
 
 *
-div.informal table
+div.tbl table
 {
   border: 1px solid #6185a0;
   width: 100%;
@@ -122,13 +122,13 @@ div.informal table
 
 }
 
-div.informal td
+div.tbl td
 {
   padding: 5px;
   border: 1px solid #6185a0;
 }
 
-div.informal th
+div.tbl th
 {
   border: 1px solid white;
   color: white;
