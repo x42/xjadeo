@@ -251,10 +251,10 @@
             <para><ulink url="http://liblo.sourceforge.net/">liblo</ulink> - remote control via <ulink url="http://opensoundcontrol.org/">Opensoundcontrol</ulink></para>
           </listitem>
           <listitem>
-            <para>librt (from the <ulink url="http://www.gnu.org/software/libc/">GNU C Library</ulink> >= 2.3.2) - remote-control via POSIX message queue (requires kernel support - Linux >= 2.6.6)</para>
+            <para>librt (from the <ulink url="http://www.gnu.org/software/libc/">GNU C Library</ulink> &ge; 2.3.2) - remote-control via POSIX message queue (requires kernel support - Linux &ge; 2.6.6)</para>
           </listitem>
           <listitem>
-            <para><ulink url="http://www.nongnu.org/lash/">lash</ulink> - session management (deprecated since <application>xjadeo</application> >=0.6.0).</para>
+            <para><ulink url="http://www.nongnu.org/lash/">lash</ulink> - session management (deprecated<footnote><para>LASH support is still available, but not newer options - in particular LTC and MIDI-drivers - are not saved/restored.</para></footnote> since <application>xjadeo</application> &ge; 0.6.0).</para>
           </listitem>
          </itemizedlist>
       </para>
@@ -311,7 +311,7 @@ make install # (requires root privileges) </screen>
             <term><option>--enable-lash</option></term>
             <listitem>
               <para>enable LASH support (deprecated). New features which were introduced after xjadeo 0.4.10 are not saved/restored with LASH.
-                In particular this affects LTC and JACK-MIDI. Future versions of xjadeo will support JACK-Session management.</para>
+                In particular this affects LTC and JACK-MIDI. Future versions of xjadeo may support JACK-Session management.</para>
             </listitem>
           </varlistentry>
 
@@ -334,7 +334,7 @@ make install # (requires root privileges) </screen>
       <title>Quick Start</title>
       <para>simply run <command>xjadeo video-file.avi</command> from a terminal to get a default monitor window displaying the specified video file synchronously to JACK-transport. You can use <application>qjackctl</application>, <application>ardour</application> or any other JACK-transport aware application to start, stop or reposition the transport location.</para>
 
-      <para><command>xjadeo --help</command> will give you a list of available command line options and refer to the manual-pages (<command>man xjadeo</command>) which are also available in the <xref linkend="manual_pages"/></para>
+      <para><command>xjadeo --help</command> will print a list of available command line options. Refer to the manual-pages (<command>man xjadeo</command>) which are also available in the <xref linkend="manual_pages"/> for available commendline options.</para>
 
       <para>If you prefer, you can also use the graphical user interface <command>qjadeo</command>, be aware that <application>qjadeo</application> only provides access to a limited set of <application>xjadeo</application>'s features.</para>
 
@@ -375,9 +375,12 @@ make install # (requires root privileges) </screen>
       <para><application>qjadeo</application> provides an "import dialog" available from the File menu, that will 
         invoke <application>mencoder</application> with these arguments.</para>
 
-      <para>Also note <application>xjadeo</application>'s <option>-K</option> option which allows
-        to seek to frames other than key-frames and enables <application>xjadeo</application> to
-        play back any file without transcoding at expense of increased CPU usage and latency.</para>
+      <important>
+        <para>Also note <application>xjadeo</application>'s <option>-K</option> option which allows
+          to seek to frames other than key-frames and enables <application>xjadeo</application> to
+          play back any file without transcoding. It comes with the expense of increased CPU usage and possibly increased seek latency. The latter depends on the key-frame interval and video-codec)</para>
+        <para>The same can be achieved by adding <literal>seek=continuously</literal> to <filename>~/.xjadeorc</filename>.</para>
+      </important>
     </section>
 
     <section id="invoking_xjadeo">
@@ -547,7 +550,7 @@ make install # (requires root privileges) </screen>
     </section>
 
     <section id="Setups">
-      <title>Setups</title>
+      <title>Common Setups</title>
 
       <section id="examples" xreflabel="example commandlines">
         <title>Example Commandlines</title>
@@ -1975,9 +1978,12 @@ make install # (requires root privileges) </screen>
 
         <screen>-vf scale=width:height</screen>
 
-        <para>Also note <application>xjadeo</application>'s <option>-K</option> option which allows
-          to seek to frames other than key-frames and enables <application>xjadeo</application> to
-          play back any file without transcoding at expense of increased CPU usage and latency</para>
+        <important>
+          <para>Also note <application>xjadeo</application>'s <option>-K</option> option which allows
+            to seek to frames other than key-frames and enables <application>xjadeo</application> to
+            play back any file without transcoding at. It comes with the expense of increased CPU usage and possibly increased seek latency. The latter depends on the key-frame interval and video-codec)</para>
+          <para>The same can be achieved by adding <literal>seek=continuously</literal> to <filename>~/.xjadeorc</filename>.</para>
+        </important>
       </refsect1>
 
       <refsect1>
