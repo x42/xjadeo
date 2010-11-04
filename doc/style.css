@@ -92,6 +92,11 @@ div.variablelist dd
     font-style: italic;
 }
 
+.important 
+{
+    background-color: #ffcccc;
+}
+
 .availability
 {
     font-style: italic;
@@ -102,36 +107,33 @@ div.variablelist dd
     color: #400000;
 }
 
+/***************************************************************************
+                               Table Layout
+ ***************************************************************************/
 
-div.informaltable table
+*
+div.informal table
 {
   border: 1px solid #6185a0;
   width: 100%;
+  border-spacing:0px;
+  padding:0;
+  margin:0;
+
 }
 
-div.informaltable td
+div.informal td
 {
-  border: 0;
   padding: 5px;
+  border: 1px solid #6185a0;
 }
 
-div.informaltable td.default
+div.informal th
 {
-  text-align: right;
-}
-
-div.informaltable th
-{
-  color: #005aa0;
-  border: 0;
+  border: 1px solid white;
+  color: white;
   padding: 5px;
-  background: #fffff5;
+  background: #005aa0;
   font-weight: normal;
   font-style: italic;
-}
-
-td.varname, td.tagname
-{
-  font-weight: bold;
-  vertical-align: top;
 }

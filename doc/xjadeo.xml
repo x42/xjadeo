@@ -696,9 +696,11 @@ make install # (requires root privileges) </screen>
 
     <para>Note that <application>qjadeo</application> controls xjadeo via message queues.</para>
 
-    <para><application>xjadeo</application>'s remote control interpreter is self documented,
+    <important>
+      <para><application>xjadeo</application>'s remote control interpreter is self documented,
       use the <option>help</option> command to query the available set of commands.
       The following list summarizes commonly used commands:</para>
+    </important>
 
     <section id="rc_general">
       <title>General Commands</title>
@@ -961,7 +963,7 @@ make install # (requires root privileges) </screen>
         </variablelist>
       </section>
 
-      <section id="sync_remote_commands" xreflabel="xjadeo sync. commands" >
+      <section id="sync_remote_commands" xreflabel="xjadeo synchronization commands" >
         <title>General xjadeo sync commands</title>
 
         <variablelist>
@@ -970,8 +972,8 @@ make install # (requires root privileges) </screen>
             class="option">frame</replaceable></option></term>
 
             <listitem>
-              <para>Display the indicated frame (only when disconnected from
-              any sync source.)</para>
+              <para>"Default" frame to display when disconnected from
+              any other sync source.</para>
             </listitem>
           </varlistentry>
 
@@ -1111,7 +1113,7 @@ make install # (requires root privileges) </screen>
           <term><option>notify loop </option></term>
           <listitem>
             <para>Enables async messages. <application>xjadeo</application> will generate a '@300' reply message
-            each time it polls for a time-code.</para>
+              each time it polls for a time-code (one message per loop is emitted at the frequency specified with <option>-f</option> ).</para>
           </listitem>
         </varlistentry>
 
@@ -1321,15 +1323,160 @@ make install # (requires root privileges) </screen>
 
   <section id="open_sound_control_interface">
     <title>Open Sound Control Interface</title>
-    <para> TODO
+    <para>An alternative to the remote-control described in <xref linkend="remote_control_interface"/> is to use <ulink url="http://opensoundcontrol.org/">Opensoundcontrol</ulink>. The drawback with OSC however is that there is no feedback. It is a one-way method of communication. Furthermore OSC usually has more latency compared to POSIX real-time messages, although it is quite possible to play a video sending 'seek' commands. On the upside OSC offers a control interface that works via Network. It is easy to use and ubiquitous. There is support to transmit OSC messages for nearly every programming language and even some hardware controllers - be it arduiuno, iPhone or mixing-desks.
     </para>
+    <para>To enable <application>xjadeo</application>'s OSC interface it needs to be started with the <option>-O <replaceable>port</replaceable></option> option where <replaceable>port</replaceable> is the UDP port number <application>xjadeo</application> listens on for messages.  e.g. <command>xjadeo -O 7890 myvideofile.mov</command>.
+    </para>
+    <table frame="none" tabstyle="informal" cellspacing="0" cellpadding="0"><title>OSC Commands</title>
+      <tgroup cols="3" align="left" colsep="0" rowsep="0">
+        <colspec colname='c1'/>
+        <colspec colname='c2'/>
+        <colspec colname='c3'/>
+        <spanspec spanname="fw" namest="c1" nameend="c3" align="center"/>
+        <thead>
+          <row>
+            <entry>Address Pattern</entry>
+            <entry>Type Tags</entry>
+            <entry>Descrition</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>/jadeo/seek</literal></entry>
+            <entry><literal>i</literal></entry>
+            <entry><para>seek to given frame-number (identical to <literal>seek</literal> from <xref linkend="sync_remote_commands"/> 
+                - xjadeo needs to be disconnected from JACK and MTC sync-sources)</para></entry>
+          </row>
+          <row>
+            <entry><literal>/jadeo/load</literal></entry>
+            <entry><literal>S</literal></entry>
+            <entry><para></para></entry>
+          </row>
+          <row>
+            <entry><literal>/jadeo/fps</literal></entry>
+            <entry><literal>f</literal></entry>
+            <entry><para>set the screen update frequency (<option>-f</option>, <literal>set fps</literal>)</para></entry>
+          </row>
+          <row>
+            <entry><literal>/jadeo/framerate</literal></entry>
+            <entry><literal>f</literal></entry>
+            <entry><para>override video-files frame-rate (<option>-F</option>, <literal>set framerate</literal>)</para></entry>
+          </row>
+          <row>
+            <entry><literal>/jadeo/offset</literal></entry>
+            <entry><literal>i</literal></entry>
+            <entry><para>set time-offset as frame-number (<option>-o</option>, <literal>set offset</literal></para></entry>
+          </row>
+          <row>
+            <entry><literal>/jadeo/offset</literal></entry>
+            <entry><literal>s</literal></entry>
+            <entry><para>set time offset as SMPTE</para></entry>
+          </row>
+          <row>
+            <entry><literal>/jadeo/jack/connect</literal></entry>
+            <entry><literal></literal></entry>
+            <entry><para></para></entry>
+          </row>
+          <row>
+            <entry><literal>/jadeo/jack/disconnect</literal></entry>
+            <entry><literal></literal></entry>
+            <entry><para></para></entry>
+          </row>
+          <row>
+            <entry><literal>/jadeo/osd/font</literal></entry>
+            <entry><literal>s</literal></entry>
+            <entry><para></para></entry>
+          </row>
+          <row>
+            <entry><literal>/jadeo/osd/smtpe</literal></entry>
+            <entry><literal>i</literal></entry>
+            <entry><para></para></entry>
+          </row>
+          <row>
+            <entry><literal>/jadeo/osd/frame</literal></entry>
+            <entry><literal>i</literal></entry>
+            <entry><para></para></entry>
+          </row>
+          <row>
+            <entry><literal>/jadeo/osd/box</literal></entry>
+            <entry><literal>i</literal></entry>
+            <entry><para></para></entry>
+          </row>
+          <row>
+            <entry><literal>/jadeo/quit</literal></entry>
+            <entry><literal></literal></entry>
+            <entry><para></para></entry>
+          </row>
+
+          <row>
+            <entry spanname="fw">The following commands are only available if MIDI is available</entry>
+          </row>
+          <row>
+            <entry><literal>/jadeo/midi/connect</literal></entry>
+            <entry><literal>s</literal></entry>
+            <entry><para></para></entry>
+          </row>
+          <row>
+            <entry><literal>/jadeo/midi/disconnect</literal></entry>
+            <entry><literal></literal></entry>
+            <entry><para></para></entry>
+          </row>
+          <row>
+            <entry><literal>/jadeo/midi/quarterframes</literal></entry>
+            <entry><literal>i</literal></entry>
+            <entry><para></para></entry>
+          </row>
+          <row>
+            <entry><literal>/jadeo/midi/clkconvert</literal></entry>
+            <entry><literal>i</literal></entry>
+            <entry><para></para></entry>
+          </row>
+
+          <row>
+            <entry spanname="fw">The following command is only available if "panorama mode" is enabled.
+              see <xref linkend="advanced_features"/></entry>
+          </row>
+          <row>
+            <entry><literal>/jadeo/pan</literal></entry>
+            <entry><literal>i</literal></entry>
+            <entry><para>(CROPIMG)</para></entry>
+          </row>
+
+          <row>
+            <entry spanname="fw">The following commands are only available if "timescale mode" is enabled.
+              see <xref linkend="advanced_features"/></entry>
+          </row>
+          <row>
+            <entry><literal>/jadeo/timescale</literal></entry>
+            <entry><literal>f</literal></entry>
+            <entry><para>(TIMESCALE)</para></entry>
+          </row>
+          <row>
+            <entry><literal>/jadeo/timescale</literal></entry>
+            <entry><literal>fi</literal></entry>
+            <entry><para>(TIMESCALE)</para></entry>
+          </row>
+          <row>
+            <entry><literal>/jadeo/loop</literal></entry>
+            <entry><literal>i</literal></entry>
+            <entry><para>(TIMESCALE)</para></entry>
+          </row>
+          <row>
+            <entry><literal>/jadeo/reverse</literal></entry>
+            <entry><literal></literal></entry>
+            <entry><para>(TIMESCALE)</para></entry>
+          </row>
+
+        </tbody>
+      </tgroup>
+    </table>
   </section>
 
 
 <!-- CHAPTER -->
 
   <section id="advanced_features">
-    <title>Advanced Features - Artistic Add-ons</title>
+    <title>Advanced Features - Artistic add-ons</title>
     <para><application>xjadeo</application>'s core functionality - to display a given
       video frame at a certain point in time - is not only useful for post-production 
       but has applications in media-art installations.</para>
@@ -1348,7 +1495,7 @@ make install # (requires root privileges) </screen>
           <listitem><para> offset - add integer to frame-number (default: 0)</para></listitem>
           <listitem><para> wraparound - add/subtract (multiples) of movie-length if the current time-stamp is less/above the movie-duration (default: off)</para></listitem>
         </orderedlist>
-        These parameters can be set via the <xref linkend="remote_control_interface"/> or by 
+        These parameters can be set via the remote-control described in<xref linkend="remote_control_interface"/> or by as OSC documented at
         <xref linkend="open_sound_control_interface"/>.
       </para>
     </section>
@@ -1357,7 +1504,7 @@ make install # (requires root privileges) </screen>
       <para>The Panorama mode needs be enabled at compile-time using  <command>./configure --enable-framecrop</command>.
         when enabled during compilation <application>xjadeo</application> will crop the image width to 50%. 
         The x-offset can be modified with the keyboard 
-	<keycap>[</keycap>, <keycap>]</keycap> or
+        <keycap>[</keycap>, <keycap>]</keycap> or
         <xref linkend="open_sound_control_interface"/>.
       </para>
       <para>
@@ -1897,7 +2044,7 @@ make install # (requires root privileges) </screen>
           <para>Each line in the configuration file must be in in the format:<screen>KEY=VALUE</screen>
             If the first character on a line is either '#' or ';' the line is ignored. 
             <option>KEYS</option> are not case sensitive. 
-            Some <option>VALUES</option> are case sensitive (fi. filenames) and are parsed identical to the corresponding 
+            Some <option>VALUES</option> are case sensitive (e.g. filenames) and are parsed identical to the corresponding 
             command-line arguments (e.g. <option>-x SDL</option> is equivalent to the config-file option <option>videomode=SDL</option>). 
             Boolean values are specified as 'yes' or 'no' (e.g. <option>quiet=yes</option>).</para>
           <para>currently supported RC-KEYS: 
