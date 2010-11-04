@@ -15,7 +15,7 @@
 all: html man
 
 dtdvalid:
-	xmllint --noout --valid -dtdvalid http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd  xjadeo.xml
+	xmllint --noout --valid -dtdvalid http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd  xjadeo.xml
 
 validate:
 	xmllint --noout --valid xjadeo.xml
