@@ -834,7 +834,7 @@ make install # (requires root privileges) </screen>
             <term><option>jack connect</option></term>
 
             <listitem>
-              <para>Get the synchronism from JACK-transport.</para>
+              <para>Connect to JACK and sync to JACK-transport.</para>
             </listitem>
           </varlistentry>
 
@@ -1197,7 +1197,7 @@ make install # (requires root privileges) </screen>
         <varlistentry>
           <term><option>osd font <replaceable>font-filename</replaceable></option></term>
           <listitem>
-            <para>Specifies the TrueType Font file to use when rendering
+            <para>Specify a TrueType Font file to be used when rendering On-Screen-Display
             text.</para>
           </listitem>
         </varlistentry>
@@ -1330,14 +1330,14 @@ make install # (requires root privileges) </screen>
     <table frame="none" tabstyle="informal" cellspacing="0" cellpadding="0"><title>OSC Commands</title>
       <tgroup cols="3" align="left" colsep="0" rowsep="0">
         <colspec colname='c1'/>
-        <colspec colname='c2'/>
+        <colspec colname='c2' align="center"/>
         <colspec colname='c3'/>
         <spanspec spanname="fw" namest="c1" nameend="c3" align="center"/>
         <thead>
           <row>
             <entry>Address Pattern</entry>
             <entry>Type Tags</entry>
-            <entry>Descrition</entry>
+            <entry>Description - notes in brackes are corresponding remote-ctl commanands or commandline-options</entry>
           </row>
         </thead>
         <tbody>
@@ -1349,8 +1349,8 @@ make install # (requires root privileges) </screen>
           </row>
           <row>
             <entry><literal>/jadeo/load</literal></entry>
-            <entry><literal>S</literal></entry>
-            <entry><para></para></entry>
+            <entry><literal>s</literal></entry>
+            <entry><para>Load a video file, replacing any previous one. (<literal>load filename</literal>)</para></entry>
           </row>
           <row>
             <entry><literal>/jadeo/fps</literal></entry>
@@ -1370,66 +1370,66 @@ make install # (requires root privileges) </screen>
           <row>
             <entry><literal>/jadeo/offset</literal></entry>
             <entry><literal>s</literal></entry>
-            <entry><para>set time offset as SMPTE</para></entry>
+            <entry><para>set time offset as SMPTE (<literal>set offset</literal></para></entry>
           </row>
           <row>
             <entry><literal>/jadeo/jack/connect</literal></entry>
             <entry><literal></literal></entry>
-            <entry><para></para></entry>
+            <entry><para>Connect to JACK and sync to JACK-transport (<literal>jack connect</literal>)</para></entry>
           </row>
           <row>
             <entry><literal>/jadeo/jack/disconnect</literal></entry>
             <entry><literal></literal></entry>
-            <entry><para></para></entry>
+            <entry><para>Stop synchronization with JACK-transport (<literal>jack disconnect</literal>)</para></entry>
           </row>
           <row>
             <entry><literal>/jadeo/osd/font</literal></entry>
             <entry><literal>s</literal></entry>
-            <entry><para></para></entry>
+            <entry><para>Specify a TrueType Font file to be used when rendering On-Screen-Display text (<literal>osd font</literal>)</para></entry>
           </row>
           <row>
             <entry><literal>/jadeo/osd/smtpe</literal></entry>
             <entry><literal>i</literal></entry>
-            <entry><para></para></entry>
+            <entry><para>if set to <literal>1</literal>: render SMPTE on screen, set to <literal>0</literal> to disable (<option>-i 2</option>, <literal>osd smpte</literal>)</para></entry>
           </row>
           <row>
             <entry><literal>/jadeo/osd/frame</literal></entry>
             <entry><literal>i</literal></entry>
-            <entry><para></para></entry>
+            <entry><para>if set to <literal>1</literal>: render frame-number on screen, set to <literal>0</literal> to disable (<option>-i 1</option>, <literal>osd frame</literal>)</para></entry>
           </row>
           <row>
             <entry><literal>/jadeo/osd/box</literal></entry>
             <entry><literal>i</literal></entry>
-            <entry><para></para></entry>
+            <entry><para>if set to <literal>1</literal>: draw frame-number on screen, set to <literal>0</literal> to disable (<literal>osd box</literal>, <literal>osd nobox</literal>)</para></entry>
           </row>
           <row>
             <entry><literal>/jadeo/quit</literal></entry>
             <entry><literal></literal></entry>
-            <entry><para></para></entry>
+            <entry><para>terminate xjadeo.</para></entry>
           </row>
 
           <row>
-            <entry spanname="fw">The following commands are only available if MIDI is available</entry>
+            <entry spanname="fw">The following commands are only available if MIDI is supported.</entry>
           </row>
           <row>
             <entry><literal>/jadeo/midi/connect</literal></entry>
             <entry><literal>s</literal></entry>
-            <entry><para></para></entry>
+            <entry><para>Get sync from MTC (MIDI Time Code) instead of JACK. The parameter specifies the midi-port to connect to. see <xref linkend="rc_midi"/> for the format. (<option>-m</option>, <option>-d</option>, <literal>midi connect</literal>)</para></entry>
           </row>
           <row>
             <entry><literal>/jadeo/midi/disconnect</literal></entry>
             <entry><literal></literal></entry>
-            <entry><para></para></entry>
+            <entry><para>Close the MIDI device (<literal>midi disconnect</literal>)</para></entry>
           </row>
           <row>
             <entry><literal>/jadeo/midi/quarterframes</literal></entry>
             <entry><literal>i</literal></entry>
-            <entry><para></para></entry>
+            <entry><para><literal>1, 0</literal> en/disable sync to MTC quater frames (<option>-c</option>, <literal>midi clk</literal>)</para></entry>
           </row>
           <row>
             <entry><literal>/jadeo/midi/clkconvert</literal></entry>
             <entry><literal>i</literal></entry>
-            <entry><para></para></entry>
+            <entry><para>specify how to 'convert' MTC SMPTE to framenumber: <literal>0</literal>: use framerate of MTC clock (default); <literal>2</literal>: use video file FPS; <literal>3</literal>: "resample": videoFPS / MTC (<option>-M</option>, <literal>midi sync</literal>)</para></entry>
           </row>
 
           <row>
@@ -1439,7 +1439,7 @@ make install # (requires root privileges) </screen>
           <row>
             <entry><literal>/jadeo/pan</literal></entry>
             <entry><literal>i</literal></entry>
-            <entry><para>(CROPIMG)</para></entry>
+            <entry><para>set the x-offset to the value given in pixels. 0 &le; <replaceable>val</replaceable> &le; <literal>movie-width</literal></para></entry>
           </row>
 
           <row>
@@ -1449,22 +1449,22 @@ make install # (requires root privileges) </screen>
           <row>
             <entry><literal>/jadeo/timescale</literal></entry>
             <entry><literal>f</literal></entry>
-            <entry><para>(TIMESCALE)</para></entry>
+            <entry><para>set time-multiplier default <literal>1.0</literal>.</para></entry>
           </row>
           <row>
             <entry><literal>/jadeo/timescale</literal></entry>
             <entry><literal>fi</literal></entry>
-            <entry><para>(TIMESCALE)</para></entry>
+            <entry><para>set both time-multiplier and offset. default: <literal>1.0, 0</literal></para></entry>
           </row>
           <row>
             <entry><literal>/jadeo/loop</literal></entry>
             <entry><literal>i</literal></entry>
-            <entry><para>(TIMESCALE)</para></entry>
+            <entry><para>wrap-around/loop video. If set to<literal>1</literal> (multiples) of the movie-length are added/subtracted if the current time-stamp is less/above the movie-duration.</para></entry>
           </row>
           <row>
             <entry><literal>/jadeo/reverse</literal></entry>
             <entry><literal></literal></entry>
-            <entry><para>(TIMESCALE)</para></entry>
+            <entry><para>multiplies the current time-scale with <literal>-1.0</literal> and sets a time-offset so that the currently displayed frame is retained.</para></entry>
           </row>
 
         </tbody>
@@ -1495,7 +1495,7 @@ make install # (requires root privileges) </screen>
           <listitem><para> offset - add integer to frame-number (default: 0)</para></listitem>
           <listitem><para> wraparound - add/subtract (multiples) of movie-length if the current time-stamp is less/above the movie-duration (default: off)</para></listitem>
         </orderedlist>
-        These parameters can be set via the remote-control described in<xref linkend="remote_control_interface"/> or by as OSC documented at
+        These parameters can be set via the remote-control described in <xref linkend="remote_control_interface"/> or by as OSC documented at
         <xref linkend="open_sound_control_interface"/>.
       </para>
     </section>
@@ -1504,7 +1504,7 @@ make install # (requires root privileges) </screen>
       <para>The Panorama mode needs be enabled at compile-time using  <command>./configure --enable-framecrop</command>.
         when enabled during compilation <application>xjadeo</application> will crop the image width to 50%. 
         The x-offset can be modified with the keyboard 
-        <keycap>[</keycap>, <keycap>]</keycap> or
+        <keycap>[</keycap>, <keycap>]</keycap> or OSC commands - see
         <xref linkend="open_sound_control_interface"/>.
       </para>
       <para>
