@@ -973,11 +973,11 @@ Dcommand cmd_window[] = {
 
 Dcommand cmd_set[] = {
 	{"fps ", "<float>: set current update frequency", NULL, xapi_sfps , 0 },
-	{"offset", "<int>: set current frame offset", NULL, xapi_soffset , 0 },
+	{"offset ", "<int>: set current frame offset", NULL, xapi_soffset , 0 },
 	{"timescale ", "<float> <int>: set timescale and offset", NULL, xapi_stimescale , 0 },
 	{"loop ", "<int>: 0: normal, 1:wrap around", NULL, xapi_sloop , 0 },
 	{"seekmode ", "<1-3>: seek continuous, to any or to keyframes only", NULL, xapi_sseekmode, 0 },
-	{"framerate ", "<float>: show frame rate of video file", NULL, xapi_sframerate , 0 },
+	{"framerate ", "<float>: override frame rate of video file", NULL, xapi_sframerate , 0 },
 	{"override ", "<int>: disable window events", NULL, xapi_soverride , 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
