@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<article>
+<article lang="en">
   <articleinfo>
     <title><application>xjadeo</application> - X Jack Video Monitor</title>
     <subtitle><ulink url="http://xjadeo.sourceforge.net"></ulink></subtitle>
@@ -53,7 +53,8 @@
       <para>Quick access links:
           <ulink url="http://sourceforge.net/projects/xjadeo/">SF-Project Page</ulink> &nbsp;&nbsp;&nbsp;
           <ulink url="http://sourceforge.net/projects/xjadeo/files/">Download</ulink> &nbsp;&nbsp;&nbsp;
-          <ulink url="http://xjadeo.git.sourceforge.net/git/gitweb.cgi?p=xjadeo/xjadeo">Source-Code</ulink>
+          <ulink url="http://xjadeo.git.sourceforge.net/git/gitweb.cgi?p=xjadeo/xjadeo">Source-Code</ulink> &nbsp;&nbsp;&nbsp;
+          <ulink url="http://xjadeo.sourceforge.net/xjadeo.pdf">This manual as PDF</ulink>
       </para>
     </abstract>
   </articleinfo>
@@ -431,8 +432,8 @@ make install # (requires root privileges) </screen>
         <application>mencoder</application> with these arguments.</para>
 
       <important>
-        <para>Also note <application>xjadeo</application>'s <option>-K</option>
-          option which allows to seek to frames other than key-frames and
+        <para><application>xjadeo</application>'s <option>-K</option>
+          option allows to seek to frames other than key-frames and
           enables <application>xjadeo</application> to play back any file
           without transcoding. It comes with the expense of increased CPU usage
           and possibly increased seek latency. The latter depends on the
@@ -448,7 +449,7 @@ make install # (requires root privileges) </screen>
 
       <para>The command syntax:<command>xjadeo [options] <replaceable>video-file</replaceable></command></para>
 
-      <para>There are numerous options documented at 
+      <para>There are numerous options documented at in the unix man-page 
         <xref linkend="commandline_options"/>. 
         The default settings should be good for most use-cases.
         You can use any application that supports JACK-transport 
