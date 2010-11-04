@@ -210,7 +210,7 @@
         on how to access it.</para>
 
       <para><application>xjadeo</application> is also available as <ulink 
-          url="http://sourceforge.net/projects/xjadeo/files/">source code package</ulink></para>.
+          url="http://sourceforge.net/projects/xjadeo/files/">source code package</ulink>.</para>
     </section>
 
     <section id="build_depends" xreflabel="build dependencies">
@@ -2089,7 +2089,7 @@ make install # (requires root privileges) </screen>
             <option>--videomode <replaceable>dpy-mode</replaceable></option></term>
             <listitem>
               <para>Selects the video output driver. Defaults to
-                <literal>0<literal> (auto-detect). 
+                <literal>0</literal> (auto-detect). 
                 A value of -1 lists the available modes and exit.</para>
             </listitem>
           </varlistentry>
