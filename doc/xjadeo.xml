@@ -348,7 +348,7 @@ make install # (requires root privileges) </screen>
       trading off I/O and the efforts to decode the file.</para>
 
       <para><application>xjadeo</application> uses <ulink
-      url="http://ffmpeg.sourceforge.net/">ffmpeg</ulink> to decode the video
+      url="http://ffmpeg.org/">ffmpeg</ulink> to decode the video
       file and supports only seekable video streams. Probably you
       first need to encode your video file to a supported format.</para>
 
@@ -384,17 +384,53 @@ make install # (requires root privileges) </screen>
     <section id="invoking_xjadeo">
       <title>Invoking xjadeo</title>
 
-      <para>The command syntax: <command>xjadeo [options] &lt;video-file&gt;</command></para>
+      <para>The command syntax: <command>xjadeo [options] <replaceable>video-file</replaceable></command></para>
 
-      <para>There you are. If you use, for instance, muse 0.7, you can now
-      fool around with its transport controls and see your video clip moving
-      along. When the sequencer is playing at normal speed, the video will
-      play at the frame-rate you set on the command line.</para>
+      <para>There are numerous options documented at 
+        <xref linkend="commandline_options"/>. 
+        The default settings should be good for most use-cases.
+        You can use any application that supports JACK-transport 
+        (e.g. <application>qjackctl</application>, 
+        <application>ardour</application>, 
+        <application>gjacktransport</application>,
+        <application>muse</application>,
+        <application>qtractor</application>,  ...) to
+        fool around with its transport controls and see the video clip moving
+        along.</para>
+
+    <section id="configuring_xjadeo">
+      <title>Configuring xjadeo</title>
+      <para>On startup <application>xjadeo</application> reads resource 
+        configuration (rc) files if they exist. They are read before parsing 
+        command-line options so settings specified in the .rc file are 
+        overridden by command-line arguments.
+      </para>
+      <para>xjadeo reads the following resource configuration files in this order:</para>
+      <orderedlist>
+        <listitem>
+          <para><filename>/@SYSCONFDIR@/xjadeorc</filename> (usually <filename>/etc/xjadeorc</filename>
+            or <filename>/usr/local/etc/xjadeorc</filename>, which depends on your
+            distribution and on the configuration when
+            <xref linkend="build"/>)</para>
+        </listitem>
+        <listitem>
+          <para><filename>$HOME/.xjadeorc</filename></para>
+        </listitem>
+        <listitem>
+          <para><filename>./xjadeorc</filename></para>
+        </listitem>
+      </orderedlist>
+      <para>An example rc file, listing all available options is available 
+        with the source-code and can be found online: <ulink
+          url="http://xjadeo.git.sourceforge.net/git/gitweb.cgi?p=xjadeo/xjadeo;a=blob;f=doc/xjadeorc">http://xjadeo.git.sourceforge.net/git/gitweb.cgi?p=xjadeo/xjadeo;a=blob;f=doc/xjadeorc</ulink>
+      </para>
+    </section>
 
       <section id="sync_methods">
         <title>Sync Methods</title>
 
-        <para>xjadeo polls the time code information in the following order, using the first available:</para>
+        <para>xjadeo polls the time code information in the following order,
+          using the first available:</para>
 
         <orderedlist>
           <listitem>
@@ -410,7 +446,7 @@ make install # (requires root privileges) </screen>
           </listitem>
 
           <listitem>
-            <para>default value (settable using <command>seek</command> remote
+            <para>default value (settable using <literal>seek</literal> remote
             command).</para>
           </listitem>
         </orderedlist>
@@ -634,10 +670,12 @@ make install # (requires root privileges) </screen>
         </listitem>
         <listitem>
           <para>run <command>xjadeo -v filename</command> - look for warning and error messages, 
-            verify displayed frame count and JACK-transport information.</para>
+            verify that the detected duration and offset (override with <option>-I</option> is correct.
+            in verbose-more (<option>-v</option>) <application>xjadeo</application> also prints information 
+            about thedisplayed frame and JACK-transport which might give a clue to what is going on.</para>
         </listitem>
         <listitem>
-          <para>play the example video from <ulink
+          <para>open the example video from <ulink
               url="http://xjadeo.git.sourceforge.net/git/gitweb.cgi?p=xjadeo/xjadeo;a=blob;f=contrib/xjadeo-example.avi">http://xjadeo.git.sourceforge.net/git/gitweb.cgi?p=xjadeo/xjadeo;a=blob;f=contrib/xjadeo-example.avi</ulink>
             or validate time-accurancy using time-stamped test videos: <ulink
               url="http://tux.gareus.org/torrents/tsmm_mjpeg-avi_10mins.torrent">http://tux.gareus.org/torrents/tsmm_mjpeg-avi_10mins.torrent</ulink>.
@@ -659,7 +697,9 @@ make install # (requires root privileges) </screen>
 
       <para>Some Video codecs are known not to work properly on some systems.
       This is mostly due to different ffmpeg versions, available codec
-      decoders, etc.</para>
+      decoders, etc. There is nothing we can do about it. You are required 
+      to transcode the video into a suitable format. 
+      see <xref linkend="video_formats"/></para>
 
       <para><application>xjadeo</application> portmidi sync make xjadeo bail
       out if it fails to connect or encounters a MIDI buffer overflow. This is
@@ -678,8 +718,9 @@ make install # (requires root privileges) </screen>
       </screen>
       </para>
 
-      <para>If you experience unexpected behavior please file a bug report in the forum on 
-      <ulink url="http://sourceforge.net/projects/xjadeo/">http://sourceforge.net/projects/xjadeo/</ulink>
+      <para>If you experience unexpected behavior please file a bug report 
+        <ulink url="http://sourceforge.net/projects/xjadeo/support">http://sourceforge.net/projects/xjadeo/support</ulink>
+        or <ulink url="http://sourceforge.net/project/memberlist.php?group_id=131926">contact the developers</ulink>.
       </para>
     </section>
   </section>
@@ -1590,7 +1631,7 @@ make install # (requires root privileges) </screen>
         output libraries and sync sources.</para>
       </refsect1>
 
-      <refsect1>
+      <refsect1 id="commandline_options">
         <title>OPTIONS</title>
         <variablelist>
 
@@ -2038,18 +2079,18 @@ make install # (requires root privileges) </screen>
         <title>FILES</title>
         <para>xjadeo reads the following resource configuration files in this order:</para>
           <orderedlist>
-                <listitem>
-                        <para>/@SYSCONFDIR@/xjadeorc (usually /etc/xjadeorc
-                        or /usr/local/etc/xjadeorc, which depends on your
-                        distribution and on the configuration when
-                        <xref linkend="build"/>)</para>
-                </listitem>
-                <listitem>
-                        <para>$HOME/.xjadeorc</para>
-                </listitem>
-                <listitem>
-                        <para>$HOME/xjadeorc</para>
-                </listitem>
+            <listitem>
+              <para><filename>/@SYSCONFDIR@/xjadeorc</filename> (usually <filename>/etc/xjadeorc</filename>
+                or <filename>/usr/local/etc/xjadeorc</filename>, which depends on your
+                distribution and on the configuration when
+                <xref linkend="build"/>)</para>
+            </listitem>
+            <listitem>
+              <para><filename>$HOME/.xjadeorc</filename></para>
+            </listitem>
+            <listitem>
+              <para><filename>./xjadeorc</filename></para>
+            </listitem>
           </orderedlist>
           <para>Each line in the configuration file must be in in the format:<screen>KEY=VALUE</screen>
             If the first character on a line is either '#' or ';' the line is ignored. 
