@@ -51,12 +51,10 @@
       <para><application>xjadeo</application> is being developed on the
         GNU/Linux operating system, but not limited to it. There are binaries available for Win32 and OSX.</para>
 
-      <para>Quick Access Links:
-        <itemizedlist>
-          <listitem><para><ulink url="http://sourceforge.net/projects/xjadeo/">SF-Project Page</ulink></para></listitem>
-          <listitem><para><ulink url="http://sourceforge.net/projects/xjadeo/files/">Download</ulink>.</para></listitem>
-          <listitem><para><ulink url="http://xjadeo.git.sourceforge.net/git/gitweb.cgi?p=xjadeo/xjadeo">Source-Code</ulink>.</para></listitem>
-        </itemizedlist>
+      <para>Quick access links:
+          <ulink url="http://sourceforge.net/projects/xjadeo/">SF-Project Page</ulink> &nbsp;&nbsp;&nbsp;
+          <ulink url="http://sourceforge.net/projects/xjadeo/files/">Download</ulink> &nbsp;&nbsp;&nbsp;
+          <ulink url="http://xjadeo.git.sourceforge.net/git/gitweb.cgi?p=xjadeo/xjadeo">Source-Code</ulink>
       </para>
     </abstract>
   </articleinfo>
@@ -442,110 +440,116 @@ make install # (requires root privileges) </screen>
       <section id="x_window_interaction">
         <title>Monitor Window - Key bindings</title>
         <para>xjadeo accepts keyboard input (and the X11 version can receive Drag and Drop URIs to load a new file).</para>
-        <para> The current Key bindings are as follows:
-          <variablelist>
-          <varlistentry>
-            <term><keycap>Esc</keycap></term>
-            <listitem> <para>Terminate xjadeo.</para> </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term><keycap>q</keycap></term>
-            <listitem> <para>Identical to pressing the Escape key.</para> </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term><keycap>a</keycap></term>
-            <listitem> <para>Toggle window always-on-top.</para> </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term><keycap>f</keycap></term>
-            <listitem> <para>Toggle full-screen mode.</para> </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term><keycap>l</keycap></term>
-            <listitem> <para>Toggle letterbox / scale breaking aspect-ratio.</para> </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term><keycap>C</keycap></term>
-            <listitem> <para>Clear all on screen display (OSD) information.</para> </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term><keycap>s</keycap></term>
-            <listitem> <para>Toggle OSD smpte.</para> </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term><keycap>v</keycap></term>
-            <listitem> <para>Toggle OSD frame.</para> </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term><keycap>o</keycap></term>
-            <listitem> <para>cycle time-offset OSD: video-frames / SMPTE / off.</para> </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term><keycap>b</keycap></term>
-            <listitem> <para>Draws a black box around OSD items.</para> </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term><keycap>m</keycap></term>
-            <listitem> <para>Toggle mouse pointer visibility.</para> </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term><keycap>&lt;</keycap></term>
-            <listitem> <para>Decrease window size by a factor of 1.2 .</para> </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term><keycap>&gt;</keycap></term>
-            <listitem> <para>Increase window size by a factor of 1.2 .</para> </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term><keycap>.</keycap></term>
-            <listitem> <para>Resize window to original (movie-file) size.</para> </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term><keycap>,</keycap></term>
-            <listitem> <para>Scale window to match movies aspect ratio.</para> </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term><keycap>+</keycap></term>
-            <listitem> <para>Increment A/V offset by 1 video-frame.</para> </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term><keycap>}</keycap></term>
-            <listitem> <para>Increment A/V offset by 1 minute.</para> </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term><keycap>-</keycap></term>
-            <listitem> <para>Decrement A/V offset by 1 video-frame.</para> </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term><keycap>{</keycap></term>
-            <listitem> <para>Decrement A/V offset by 1 minute.</para> </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term><keycap>SPACE</keycap></term>
-            <listitem> <para>If xjadeo is synchronized to JACK-transport, toggle JACK-transport play/pause.</para> </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term><keycap>BACKSPACE</keycap></term>
-            <listitem> <para>If xjadeo is synchronized to JACK-transport, rewind the play-head.</para> </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term><keycap>e</keycap></term>
-            <listitem> <para>Toggle display of Color-Equalizer. (only XV and imlib2)</para> </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term><keycap>E</keycap></term>
-            <listitem> <para>Reset Color-Equalizer to default values.</para> </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term><keycap>0-9</keycap></term>
-            <listitem> <para>change Color-EQ parameters with key pairs. 
-            brightness:1+2, contrast:3+4, gamma:5+6, saturation:7+8, hue:9+0</para>
-            <para>XV color balance is hardware dependant: Some boards do not support all parameters.
-            The imlib2 software EQ is limited to brightness/contrast and gamma correction.</para>
-            </listitem>
-          </varlistentry>
-          </variablelist>
-        </para>
+        <para> The current key-bindings are as follows:</para>
+        <table frame="none" tabstyle="informal" cellspacing="0" cellpadding="0"><title>Key Bindings</title>
+          <tgroup cols="2" align="left" colsep="0" rowsep="0">
+            <colspec colname='c1' align="center"/>
+            <colspec colname='c2'/>
+            <thead><row><entry>Key</entry><entry>Description</entry></row></thead>
+            <tbody>
+              <row>
+                <entry><keycap>Esc</keycap></entry>
+                <entry> <para>Terminate xjadeo.</para> </entry>
+              </row>
+              <row>
+                <entry><keycap>q</keycap></entry>
+                <entry> <para>Identical to pressing the Escape key.</para> </entry>
+              </row>
+              <row>
+                <entry><keycap>a</keycap></entry>
+                <entry> <para>Toggle window always-on-top.</para> </entry>
+              </row>
+              <row>
+                <entry><keycap>f</keycap></entry>
+                <entry> <para>Toggle full-screen mode.</para> </entry>
+              </row>
+              <row>
+                <entry><keycap>l</keycap></entry>
+                <entry> <para>Toggle letterbox / scale breaking aspect-ratio.</para> </entry>
+              </row>
+              <row>
+                <entry><keycap>C</keycap></entry>
+                <entry> <para>Clear all on screen display (OSD) information.</para> </entry>
+              </row>
+              <row>
+                <entry><keycap>s</keycap></entry>
+                <entry> <para>Toggle OSD smpte.</para> </entry>
+              </row>
+              <row>
+                <entry><keycap>v</keycap></entry>
+                <entry> <para>Toggle OSD frame.</para> </entry>
+              </row>
+              <row>
+                <entry><keycap>o</keycap></entry>
+                <entry> <para>cycle time-offset OSD: video-frames / SMPTE / off.</para> </entry>
+              </row>
+              <row>
+                <entry><keycap>b</keycap></entry>
+                <entry> <para>Draws a black box around OSD items.</para> </entry>
+              </row>
+              <row>
+                <entry><keycap>m</keycap></entry>
+                <entry> <para>Toggle mouse pointer visibility.</para> </entry>
+              </row>
+              <row>
+                <entry><keycap>&lt;</keycap></entry>
+                <entry> <para>Decrease window size by a factor of 1.2 .</para> </entry>
+              </row>
+              <row>
+                <entry><keycap>&gt;</keycap></entry>
+                <entry> <para>Increase window size by a factor of 1.2 .</para> </entry>
+              </row>
+              <row>
+                <entry><keycap>.</keycap></entry>
+                <entry> <para>Resize window to original (movie-file) size.</para> </entry>
+              </row>
+              <row>
+                <entry><keycap>,</keycap></entry>
+                <entry> <para>Scale window to match movies aspect ratio.</para> </entry>
+              </row>
+              <row>
+                <entry><keycap>+</keycap></entry>
+                <entry> <para>Increment A/V offset by 1 video-frame.</para> </entry>
+              </row>
+              <row>
+                <entry><keycap>}</keycap></entry>
+                <entry> <para>Increment A/V offset by 1 minute.</para> </entry>
+              </row>
+              <row>
+                <entry><keycap>-</keycap></entry>
+                <entry> <para>Decrement A/V offset by 1 video-frame.</para> </entry>
+              </row>
+              <row>
+                <entry><keycap>{</keycap></entry>
+                <entry> <para>Decrement A/V offset by 1 minute.</para> </entry>
+              </row>
+              <row>
+                <entry><keycap>SPACE</keycap></entry>
+                <entry> <para>If xjadeo is synchronized to JACK-transport, toggle JACK-transport play/pause.</para> </entry>
+              </row>
+              <row>
+                <entry><keycap>BACKSPACE</keycap></entry>
+                <entry> <para>If xjadeo is synchronized to JACK-transport, rewind the play-head.</para> </entry>
+              </row>
+              <row>
+                <entry><keycap>e</keycap></entry>
+                <entry> <para>Toggle display of Color-Equalizer. (only XV and imlib2)</para> </entry>
+              </row>
+              <row>
+                <entry><keycap>E</keycap></entry>
+                <entry> <para>Reset Color-Equalizer to default values.</para> </entry>
+              </row>
+              <row>
+                <entry><keycap>0-9</keycap></entry>
+                <entry> <para>change Color-EQ parameters with key pairs. 
+                brightness:1+2, contrast:3+4, gamma:5+6, saturation:7+8, hue:9+0</para>
+                <para>XV color balance is hardware dependant: Some boards do not support all parameters.
+                The imlib2 software EQ is limited to brightness/contrast and gamma correction.</para>
+                </entry>
+              </row>
+          </tbody>
+          </tgroup>
+        </table>
       </section>
     </section>
 
