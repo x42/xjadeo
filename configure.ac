@@ -43,6 +43,8 @@ AC_ARG_WITH(ffmpegprefix, AS_HELP_STRING([--with-ffmpegprefix], [override pkg-co
 AC_ARG_WITH(ffmpegsrc, AS_HELP_STRING([--with-ffmpegsrc], [location of ffmpeg source, use to statically link against ffmpeg]), ffmpegsrc="$withval", ffmpegsrc="")
 AC_ARG_WITH(ffmpegldadd, AS_HELP_STRING([--with-ffmpegldadd], [ld options for static ffmpeg eg. "-lmp3lame -ldts -lfaac -logg -lxvidcore"]), ffmpegldadd="$withval", ffmpegldadd="")
 
+AC_ARG_WITH(qt4prefix, AS_HELP_STRING([--with-qt4prefix], [prefix for Qt4 installation, e.g. "/usr/lib/qt4"]), qt4prefix="$withval", qt4prefix="")
+
 LIBPREF=lib
 LIBSUF=.a
 
@@ -467,62 +469,29 @@ dnl ----------------------------------------------
 
 if test "x$enable_qtgui" != "xno"; then
 
+ if test "x$qt4prefix" = "x"; then
+   qt4prefix=$($PKG_CONFIG --variable=prefix QtGui)
+ fi
+ 
  # Check for Qt qmake utility.
- AC_PATH_PROG(ac_qmake, qmake, [no], $QTDIR/bin:${PATH})
- AC_PATH_PROG(ac_lrelease, lrelease, [no], $QTDIR/bin:${PATH})
+ AC_PATH_PROG(ac_qmake, qmake, [no], $qt4prefix/bin)
+ AC_PATH_PROG(ac_lrelease, lrelease, [no], $qt4prefix/bin)
  if test "x$ac_qmake" = "xno" -o "x$ac_lrelease" = "xno" ; then
     AC_MSG_ERROR([qmake not found: please install the Qt4 development
-    package of your distribution. try setting the QTDIR env. variable; or use --disable-qtgui to compile xjadeo.])
+    package of your distribution. Try setting the --with-qt4config parameter; or use --disable-qtgui to compile xjadeo.])
  fi
+ 
+ HAVE_QT4=1
+ 
  if test -n "$HAVE_WINDOWS"; then
    ac_qmake_args="-spec win32-x-g++ -config release"
  fi
  AC_SUBST(ac_qmake)
  AC_SUBST(ac_qmake_args)
 
- # Check for Qt4
-
- AC_MSG_NOTICE([Checking for Qt4...])
-
- cat > conftest.c << EOF
-#include <qglobal.h>
-#if QT_VERSION < 0x040000
-#error Qt library is older than 4.0.0
-#endif
-EOF
-
- $ac_qmake -project -nopwd -t lib -o conftest.pro "CONFIG+=qt warn_on release" conftest.c &> /dev/null
- if test $? -ne 0; then
-  AC_MSG_WARN([TEST_QT4: could not create a project file. Try to set the QTDIR env. variable.])
- fi
-
- $ac_qmake -makefile -o conftest.mak conftest.pro &> /dev/null
- if test $? -ne 0; then
-  AC_MSG_WARN([TEST_QT4: could not create a Makefile.])
- fi
-
- make -s -f conftest.mak &>/dev/null
- if test $? -ne 0; then
-  AC_MSG_NOTICE([Qt4 not found.])
- else
-  make -f conftest.mak distclean &>/dev/null
-  AC_MSG_NOTICE([Found Qt4])
-  # Check for Qt qmake utility.
-  #AC_PATH_PROG(ac_qt3to4, qt3to4, [no], $QTDIR/bin:${PATH})
-  #if test "x$ac_qt3to4" = "xno"; then
-  #   AC_MSG_ERROR([qt3to4 not found: install Qt3Support, the Qt 3 compatibility module for Qt 4])
-  #fi
-  #AC_SUBST(ac_qt3to4)
-  HAVE_QT4=1
- fi
-
  ac_qtgui_dir="qt-gui"
 
  AC_CONFIG_FILES(src/qt-gui/Makefile src/qt-gui/qjadeo.pro)
-
- if test -z "$HAVE_QT4"; then 
-     AC_MSG_ERROR([no usable Qt installation found. try --disable-qtgui])
- fi
 
 else
  ac_qtgui_dir=""
