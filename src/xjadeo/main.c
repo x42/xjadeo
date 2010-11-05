@@ -431,23 +431,25 @@ jack video monitor\n", program_name);
 "  -V, --version             print version information and exit\n"
 "  -q, --quiet, --silent     inhibit usual output\n"
 "  -v, --verbose             print more information\n"
-"  -A, --avverbose           dump ffmpeg messages.\n"
-"  -S, --nosplash            do not display splash image on startup.\n"
 "\n"
-"  -s, --fullscreen          start xjadeo in fullscreen mode.\n"
-  "                            requires x11 or xv videomode.\n"
+"  -A, --avverbose           dump ffmpeg messages.\n"
 "  -a, --ontop               stack xjadeo window on top of the desktop.\n"
 "                            requires x11 or xv videomode and EWMH.\n"
 "  -b, --letterbox           retain apect ratio when scaling (Xv only).\n"
 #ifdef HAVE_MIDI
 "  -c, --no-midiclk          ignore MTC quarter frames.\n"
 #endif
-#ifdef HAVE_LTCSMPTE
-"  -l, --ltc                 sync to LinearTimeCode (audio-jack).\n"
+#ifdef HAVE_MIDI
+"  -d <name>,                specify midi-driver to use. run 'xjadeo -V' to\n"
+"     --midi-driver <name>   list supported driver(s). <name> is not case-\n"
+"                            sensitive and can be shortened to the first unique\n"
+"                            name. eg '-d j' for jack, '-d alsa-r' for alsa-raw\n"
 #endif
 "  -f <val>, --fps <val>     display update freq. - default -1 use file's fps\n"
 "  -i <int> --info <int>     render OnScreenDisplay info: 0:off, %i:frame,\n"
 "                            %i:smpte, %i:both. (use remote ctrl for more opts.)\n"
+"",	OSD_FRAME,OSD_SMPTE,OSD_FRAME|OSD_SMPTE); // :)
+  printf ("" /* take a breath */
 "  -I, --ignorefileoffset    set the beginning of the file to SMPTE zero.\n"
 "                            eg. override timestamps of split vob files.\n"
 "  -k, --keyframes           seek to keyframes only\n"
@@ -458,13 +460,10 @@ jack video monitor\n", program_name);
 "  --lash-no-autoresume      [liblash option]\n"
 "  --lash-no-start-server    [liblash option]\n"
 #endif /* HAVE_LASH */
-"",	OSD_FRAME,OSD_SMPTE,OSD_FRAME|OSD_SMPTE); // :)
-  printf ("" /* take a breath */
+#ifdef HAVE_LTCSMPTE
+"  -l, --ltc                 sync to LinearTimeCode (audio-jack).\n"
+#endif
 #ifdef HAVE_MIDI
-"  -d <name>,                specify midi-driver to use. run 'xjadeo -V' to\n"
-"     --midi-driver <name>   list supported driver(s). <name> is not case-\n"
-"                            sensitive and can be shortened to the first unique\n"
-"                            name. eg '-d j' for jack, '-d alsa-r' for alsa-raw\n"
 "  -m <port>,                use MTC instead of jack-transport\n"
 "      --midi <port>         <port> argument is driver-specific:\n"
 "                            * jack-midi: specify midi-port name to connect to\n"
@@ -481,7 +480,7 @@ jack video monitor\n", program_name);
 "                            2: use video file FPS\n" 
 "                            3: \"resample\": videoFPS / MTC \n" 
 #endif /* HAVE_MIDI */
-/*
+/* - undocumented /hidden/ options
 "  -n , --nodropframes       parse MTC as announced, but do not use frame-drop\n" 
 "                            algorithm for OSD - useful for debugging\n"
 "  -N , --dropframes         force the SMPTE converter to use the drop-frames\n" 
@@ -493,19 +492,23 @@ jack video monitor\n", program_name);
 "                            unless you really know what you are doing.\n" 
 */
 "  -o <int>, --offset <int>  add/subtract <int> video-frames to/from timecode\n"
-"  -P , --genpts             ffmpeg option - ignore timestamps in the file.\n"
-#ifdef HAVE_MQ
-"  -Q, --mq                  set-up RT message queues for xjremote\n"
-#elif defined HAVE_IPCMSG
-"  -W, --ipc                 set-up IPC message queues for xjremote\n"
-#endif
 #ifdef HAVE_LIBLO
 "  -O <port>, --osc <port>   listen for OSC messages on given port.\n"
 #endif
+"  -P , --genpts             ffmpeg option - ignore timestamps in the file.\n"
+#ifdef HAVE_MQ
+"  -Q, --mq                  set-up RT message queues for xjremote\n"
+#endif
 "  -R, --remote              remote control (stdin) - implies non verbose&quiet\n"
+"  -S, --nosplash            do not display splash image on startup.\n"
+"  -s, --fullscreen          start xjadeo in fullscreen mode.\n"
+"                            requires x11 or xv videomode.\n"
 "  -t, --try-codec           checks if the video-file can be played by jadeo.\n"
 "                            exits with code 1 if the file is not supported.\n"
 "			     no window is opened in this mode.\n"
+#ifdef HAVE_IPCMSG
+"  -W, --ipc                 set-up IPC message queues for xjremote\n"
+#endif
 "  -x <int>, --vo <int>,     set the video output mode (default: 0 - autodetect\n"
 "      --videomode <int>     -1 prints a list of available modes.\n"
 "  \n"
