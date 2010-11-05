@@ -2,12 +2,12 @@
 .\"     Title: xjadeo
 .\"    Author: Robin Gareus <robin@gareus.org>
 .\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 10/22/2010
+.\"      Date: 11/05/2010
 .\"    Manual: Manual Pages
 .\"    Source: http://xjadeo.sf.net 0.6.X
 .\"  Language: English
 .\"
-.TH "XJADEO" "1" "10/22/2010" "http://xjadeo\&.sf\&.net 0\&.6" "Manual Pages"
+.TH "XJADEO" "1" "11/05/2010" "http://xjadeo\&.sf\&.net 0\&.6" "Manual Pages"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -72,7 +72,7 @@ Do not use MIDI quarter\-frames for more exact sync\&.
 Use MIDI quarter\-frame timing for more exact sync (this is enabled by default since version 0\&.4\&.11)\&.
 .RE
 .PP
-\fB\-d \fR\fB\fI<midi\-driver>\fR\fR, \fB\-\-midi\-driver \fR\fB\fI<midi\-driver>\fR\fR
+\fB\-d \fR\fB\fI<midi\-driver>\fR\fR, \fB\-\-midi\-driver \fR\fB\fI<midi\-driver>\fR\fR\fB \fR
 .RS 4
 Choose MIDI back\-end to use\&.
 \fI<midi\-driver>\fR
@@ -81,7 +81,7 @@ can be either one of "JACK", "ALSA" or "portmidi" \- depending on the operating\
 .PP
 \fB\-D, \-\-debug\fR, \fB\-\-debug\fR
 .RS 4
-Enable debug mode\&. Print development related information\&.\&.
+Enable debug mode\&. Print development related information\&.
 .RE
 .PP
 \fB\-f \fR\fB\fI<n>\fR\fR, \fB\-\-fps \fR\fB\fI<n>\fR\fR
@@ -103,7 +103,8 @@ Prints usage help and exits\&.
 .PP
 \fB\-i \fR\fB\fI<n>\fR\fR, \fB\-\-info \fR\fB\fI<n>\fR\fR
 .RS 4
-Displays information using the OSD (on\-screen display\&.).PP
+Displays information using the OSD (on\-screen display\&.)
+.PP
 \fB0\fR
 .RS 4
 Off\&.
@@ -179,7 +180,7 @@ unconnected\&.
 .sp
 If using portmidi,
 \fI<port>\fR
-is the port\-number of the MIDI input device to use\&. The value \-1 will attempt auto\-connect\&. use
+is the port\-number of the MIDI input device to use\&. The value \-1 will attempt auto\-connect\&. Use
 \fB\-v \-m \-1\fR
 to list MIDI ports during auto\-detection\&.
 .RE
@@ -211,7 +212,7 @@ Prevent xjadeo from detecting drop\-frame\-timecode (usually files with 29\&.97 
 .PP
 \fB\-N\fR, \fB\-\-dropframes\fR
 .RS 4
-Force xjadeo to use drop\-frame\-timecode (usually files with 29\&.97 fps)
+Force xjadeo to use drop\-frame\-timecode (drop\-frame\-timecode is only valid for files with 29\&.97 fps but your milage may vary)
 .RE
 .PP
 \fB\-o \fR\fB\fI<n>\fR\fR, \fB\-\-offset \fR\fB\fI<n>\fR\fR
@@ -238,7 +239,7 @@ Suppresses normal output messages\&.
 Enable POSIX message queues\&. Set up a communication channel for use with
 xjremote(1)\&. See the
 the section called \(lqRemote Control Interface\(rq
-in the online documentation\&.
+in the online documentation for more information\&.
 .RE
 .PP
 \fB\-R\fR, \fB\-\-remote\fR
@@ -289,7 +290,9 @@ specifies a file\-path used to identify the message\-queue\&.
 .PP
 \fB\-x \fR\fB\fI<dpy\-mode>\fR\fR, \fB\-\-vo \fR\fB\fI<dpy\-mode>\fR\fR, \fB\-\-videomode \fR\fB\fI<dpy\-mode>\fR\fR
 .RS 4
-Selects the video output driver\&. Defaults to 0 (auto\-detect)\&. A value of \-1 lists the available modes and exit\&.
+Selects the video output driver\&. Defaults to
+\fB0\fR
+(auto\-detect)\&. A value of \-1 lists the available modes and exit\&.
 .RE
 .SH "SYNC SOURCES"
 .PP
@@ -389,13 +392,32 @@ You may want to shrink the size by scaling the geometry of the video\-frames, wh
 .if n \{\
 .RE
 .\}
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBImportant\fR
+.ps -1
+.br
 .PP
 Also note
 xjadeo\*(Aqs
 \fB\-K\fR
 option which allows to seek to frames other than key\-frames and enables
 xjadeo
-to play back any file without transcoding at expense of increased CPU usage and latency
+to play back any file without transcoding at\&. It comes with the expense of increased CPU usage and possibly increased seek latency\&. The latter depends on the key\-frame interval and video\-codec)
+.PP
+The same can be achieved by adding
+\fBseek=continuously\fR
+to
+~/\&.xjadeorc\&.
+.sp .5v
+.RE
 .SH "USER INPUT"
 .PP
 \fBxjadeo\fR
@@ -442,7 +464,7 @@ Scroll Wheel (buttons 4,5) stepwise decreases/increases the window size maintain
 .sp -1
 .IP \(bu 2.3
 .\}
-xjadeo >= v0\&.3\&.8 supports keyboard events\&. Pressing
+xjadeo ≥ v0\&.3\&.8 supports keyboard events\&. Pressing
 Esc
 and
 q
@@ -450,7 +472,7 @@ will end the program\&.
 f
 toggles full\-screen,
 a
-toggles always\-on\-top\&. Press
+togglesalways\-on\-top\&. Press
 m
 to hide mouse cursor\&.
 v,
@@ -507,7 +529,11 @@ xjadeo reads the following resource configuration files in this order:
 .sp -1
 .IP "  1." 4.2
 .\}
-/@SYSCONFDIR@/xjadeorc (usually /etc/xjadeorc or /usr/local/etc/xjadeorc, which depends on your distribution and on the configuration when
+/@SYSCONFDIR@/xjadeorc
+(usually
+/etc/xjadeorc
+or
+/usr/local/etc/xjadeorc, which depends on your distribution and on the configuration when
 building xjadeo)
 .RE
 .sp
@@ -530,7 +556,7 @@ $HOME/\&.xjadeorc
 .sp -1
 .IP "  3." 4.2
 .\}
-$HOME/xjadeorc
+\&./xjadeorc
 .RE
 .PP
 Each line in the configuration file must be in in the format:
@@ -545,14 +571,22 @@ KEY=VALUE
 .RE
 .\}
 .sp
-If the first character on a line is either \*(Aq#\*(Aq or \*(Aq;\*(Aq the line is ignored\&.
+If the first character on a line is either
+\fB#\fR
+or
+\fB;\fR
+the line is ignored\&.
 \fBKEYS\fR
 are not case sensitive\&. Some
 \fBVALUES\fR
-are case sensitive (fi\&. filenames) and are parsed identical to the corresponding command\-line arguments (e\&.g\&.
+are case sensitive (e\&.g\&. filenames) and are parsed identical to the corresponding command\-line arguments (e\&.g\&.
 \fB\-x SDL\fR
 is equivalent to the config\-file option
-\fBvideomode=SDL\fR)\&. Boolean values are specified as \*(Aqyes\*(Aq or \*(Aqno\*(Aq (e\&.g\&.
+\fBvideomode=SDL\fR)\&. Boolean values are specified as
+\fByes\fR
+or
+\fBno\fR
+(e\&.g\&.
 \fBquiet=yes\fR)\&.
 .PP
 currently supported RC\-KEYS: fps, fontfile, lash, letterbox, midiclk, mididriver, midiid, midismpte, mq, nosplash, quiet, seek, verbose and videomode\&. Which are documented in the example
@@ -561,7 +595,7 @@ currently supported RC\-KEYS: fps, fontfile, lash, letterbox, midiclk, mididrive
 .PP
 \fBJACK_DEFAULT_SERVER\fR
 .RS 4
-Set the jack\-server\-name to connect to (JACK\-transport, JACK\-MIDI and LTC)
+Set the jack\-server\-name to connect to (used by JACK\-transport, JACK\-MIDI and LTC)
 .RE
 .SH "SEE ALSO"
 .PP
@@ -570,6 +604,8 @@ qjadeo(1)
 xjremote(1)
 .PP
 xjinfo(1)
+.PP
+\m[blue]\fBonline\-manual\fR\m[]\&\s-2\u[2]\d\s+2
 .SH "AUTHOR"
 .PP
 \fBRobin Gareus\fR <\&robin@gareus.org\&>
@@ -585,4 +621,9 @@ Copyright \(co 2005, 2006, 2007, 2009, 2010 Robin Gareus, Luis Garrido
 xjadeorc
 .RS 4
 \%http://xjadeo.git.sourceforge.net/git/gitweb.cgi?p=xjadeo/xjadeo;a=blob_plain;f=doc/xjadeorc
+.RE
+.IP " 2." 4
+online-manual
+.RS 4
+\%http://xjadeo.sourceforge.net/
 .RE
