@@ -2176,7 +2176,7 @@ make install # (requires root privileges) </screen>
             <para>Scroll Wheel (buttons 4,5) stepwise decreases/increases the window size maintaining the original aspect ratio.</para>
           </listitem>
           <listitem>
-            <para> xjadeo >= v0.3.8 supports keyboard events. Pressing <keycap>Esc</keycap> and <keycap>q</keycap> will end the program.
+            <para> xjadeo &ge; v0.3.8 supports keyboard events. Pressing <keycap>Esc</keycap> and <keycap>q</keycap> will end the program.
               <keycap>f</keycap> toggles full-screen, <keycap>a</keycap> toggles always-on-top. 
               Press <keycap>m</keycap> to hide mouse cursor. 
               <keycap>v</keycap>, <keycap>s</keycap>, <keycap>o</keycap>, <keycap>C</keycap> and <keycap>b</keycap> control on-screen-display
