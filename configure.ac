@@ -8,7 +8,7 @@ AC_CANONICAL_TARGET
 
 VERSION_MAJOR=0
 VERSION_MINOR=6
-VERSION_SUB=0-rc1
+VERSION_SUB=0-rc2
 
 dnl Every other copy of the package version number gets its value from here
 AM_INIT_AUTOMAKE(xjadeo, [${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_SUB}])
@@ -219,7 +219,7 @@ if test "x$enable_midi" != "xno"; then
 		AC_CHECK_LIB([portmidi], [Pm_CountDevices], [FOUND_L_PORTMIDI=yes])
 	fi
 	if test "x$FOUND_H_PORTMIDI$FOUND_L_PORTMIDI" = "xyesyes"; then
-		MIDI_LIBS="-lportmidi"
+		MIDI_LIBS="-lportmidi -lporttime"
 	fi
 
 	if test "x$PORTMIDI" != "xno" -a -n "$portmidisrc" -a -n "$PM_OS"; then
