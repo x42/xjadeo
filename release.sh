@@ -5,6 +5,7 @@
 # - debian/changelog
 
 VERSION=$(awk '/define VERSION /{print $3;}' config.h | sed 's/"//g')
+WINVERS=$(grep " VERSION " config.h | cut -d ' ' -f3 | sed 's/"//g'| sed 's/\./_/g')
 SFUSER=x42
 
 if [ -z "$VERSION" ]; then 
@@ -41,7 +42,7 @@ sftp $SFUSER,xjadeo@frs.sourceforge.net << EOF
 cd /home/frs/project/x/xj/xjadeo/xjadeo
 mkdir v${VERSION}
 cd v${VERSION}
-put contrib/nsi/jadeo_installer_v${VERSION}.exe
+put contrib/nsi/jadeo_installer_v${WINVERS}.exe
 put xjadeo-${VERSION}.tar.gz
 put /tmp/jadeo-${VERSION}.dmg
 EOF
@@ -50,7 +51,7 @@ EOF
 sftp $SFUSER,xjadeo@web.sourceforge.net << EOF
 cd htdocs/
 rm *
-lcd doc/html
+lcd doc/
 put -P xjadeo.pdf
 lcd html
 put -P *
