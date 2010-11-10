@@ -4,9 +4,16 @@
 # - configure.ac
 # - debian/changelog
 
+SFUSER=x42
+
+make clean
+sh autogen.sh
+./configure --enable-contrib
+make -C doc html xjadeo.pdf
+make dist
+
 VERSION=$(awk '/define VERSION /{print $3;}' config.h | sed 's/"//g')
 WINVERS=$(grep " VERSION " config.h | cut -d ' ' -f3 | sed 's/"//g'| sed 's/\./_/g')
-SFUSER=x42
 
 if [ -z "$VERSION" ]; then 
   echo "unknown VERSION number"
@@ -17,12 +24,6 @@ if [ ! -f /tmp/jadeo-${VERSION}.dmg ]; then
 	echo "BUILD OSX package first!";
 	exit
 fi
-
-make clean
-sh autogen.sh
-./configure --enable-contrib
-make -C doc html xjadeo.pdf
-make dist
 
 ./x-win32.sh
 ./configure
