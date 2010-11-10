@@ -20,13 +20,15 @@ if [ -z "$VERSION" ]; then
   exit 1;
 fi
 
-if [ ! -f /tmp/jadeo-${VERSION}.dmg ]; then
-	echo "BUILD OSX package first!";
-	exit
-fi
+if [ -z "$SRCONLY" ]; then
+	if [ ! -f /tmp/jadeo-${VERSION}.dmg ]; then
+		echo "BUILD OSX package first!";
+		exit
+	fi
 
-./x-win32.sh
-./configure
+	./x-win32.sh
+	./configure
+fi
 
 git commit -a
 git tag "v$VERSION" || (echo -n "version tagging failed. - press Enter to continue, CTRL-C to stop."; read; )
