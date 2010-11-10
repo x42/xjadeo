@@ -211,7 +211,7 @@ void QJadeo::fileExit()
 
 void QJadeo::filePreferences()
 {
-  PrefDialog *pdialog = new PrefDialog::PrefDialog(this);
+  PrefDialog *pdialog = (PrefDialog*) new PrefDialog::PrefDialog(this);
   if (pdialog) {
     /* set values */
     pdialog->prefLineJackMidi->setText(m_jackmidiport);
@@ -252,7 +252,7 @@ void QJadeo::filePreferences()
 
 void QJadeo::fileImport()
 {
-  ImportDialog *idialog = new ImportDialog::ImportDialog(this);
+  ImportDialog *idialog = (ImportDialog*) new ImportDialog::ImportDialog(this);
 
   if (idialog) {
     QString src, dst;
@@ -280,7 +280,7 @@ void QJadeo::fileImport()
     }
     /* start encoding */
     if(!src.isEmpty() && !dst.isEmpty()) 
-      iprog = new ImportProgress::ImportProgress(this);
+      iprog = (ImportProgress*) new ImportProgress::ImportProgress(this);
     if(iprog) { 
       if(!iprog->setEncoderFiles(src,dst)) {
         iprog->setEncoderArgs(m_importcodec,fps,w,h);
