@@ -610,7 +610,7 @@ AC_MSG_NOTICE([
  On-screen-display:  $OSDREPORT
 
  GUI (qjadeo):       $RPT_QT4
- build contib/*:     $CONTREPORT
+ build contrib/*:    $CONTREPORT
 
 
 type "make" followed my "make install" as root.
