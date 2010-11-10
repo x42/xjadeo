@@ -60,10 +60,12 @@
         &nbsp;&nbsp;&nbsp;
         <ulink
           url="http://xjadeo.git.sourceforge.net/git/gitweb.cgi?p=xjadeo/xjadeo"
-          >Source-Code</ulink> &nbsp;&nbsp;&nbsp;
+          >Source-Code</ulink>
+        &nbsp;&nbsp;&nbsp;
         <ulink
           url="http://xjadeo.sourceforge.net/xjadeo.pdf">This manual as PDF
         </ulink>
+        &nbsp;&nbsp;&nbsp;
         <ulink
           url="http://sourceforge.net/apps/phpbb/xjadeo">Message Board
         </ulink>
@@ -1940,7 +1942,7 @@ make install # (requires root privileges) </screen>
           formats, video output libraries and sync sources.</para>
       </refsect1>
 
-      <refsect1 id="commandline_options">
+      <refsect1 id="commandline_options" xreflabel="command-line options">
         <title>OPTIONS</title>
         <variablelist>
 
