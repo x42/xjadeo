@@ -486,7 +486,7 @@ make install # (requires root privileges) </screen>
 
       <para>The command syntax:<command>xjadeo [options] <replaceable>video-file</replaceable></command></para>
 
-      <para>There are numerous options documented at in the unix man-page 
+      <para>There are numerous options documented in the unix man-page, see 
         <xref linkend="commandline_options"/>. 
         The default settings should be good for most use-cases.
         You can use any application that supports JACK-transport 
