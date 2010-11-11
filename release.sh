@@ -4,19 +4,7 @@
 # - configure.ac
 # - debian/changelog
 
-VERSION=$(awk '/define VERSION /{print $3;}' config.h | sed 's/"//g')
-WINVERS=$(grep " VERSION " config.h | cut -d ' ' -f3 | sed 's/"//g'| sed 's/\./_/g')
 SFUSER=x42
-
-if [ -z "$VERSION" ]; then 
-  echo "unknown VERSION number"
-  exit 1;
-fi
-
-if [ ! -f /tmp/jadeo-${VERSION}.dmg ]; then
-	echo "BUILD OSX package first!";
-	exit
-fi
 
 make clean
 sh autogen.sh
@@ -24,8 +12,23 @@ sh autogen.sh
 make -C doc html xjadeo.pdf
 make dist
 
-./x-win32.sh
-./configure
+VERSION=$(awk '/define VERSION /{print $3;}' config.h | sed 's/"//g')
+WINVERS=$(grep " VERSION " config.h | cut -d ' ' -f3 | sed 's/"//g'| sed 's/\./_/g')
+
+if [ -z "$VERSION" ]; then 
+  echo "unknown VERSION number"
+  exit 1;
+fi
+
+if [ -z "$SRCONLY" ]; then
+	if [ ! -f /tmp/jadeo-${VERSION}.dmg ]; then
+		echo "BUILD OSX package first!";
+		exit
+	fi
+
+	./x-win32.sh
+	./configure
+fi
 
 git commit -a
 git tag "v$VERSION" || (echo -n "version tagging failed. - press Enter to continue, CTRL-C to stop."; read; )

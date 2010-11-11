@@ -1,3 +1,8 @@
+xjadeo (0.6.0-rc3) unstable; urgency=low
+  * release candidate v0.6 ... see git changelog
+
+ -- Robin Gareus <robin@gareus.org>  Wed, 10 Nov 2010 20:51:49 +0100
+
 xjadeo (0.6.0-rc2) unstable; urgency=low
   * release candidate v0.6 ...
 
@@ -5,6 +10,8 @@ xjadeo (0.6.0-rc2) unstable; urgency=low
 
 xjadeo (0.6.0-rc1) unstable; urgency=low
   * release candidate v0.6 ...
+    detailed changelog will be included here in 0.6.0 
+    http://xjadeo.git.sourceforge.net/git/gitweb.cgi?p=xjadeo/xjadeo
 
  -- Robin Gareus <robin@gareus.org>  Thu, 21 Oct 2010 13:06:23 +0200
 

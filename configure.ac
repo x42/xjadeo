@@ -8,7 +8,7 @@ AC_CANONICAL_TARGET
 
 VERSION_MAJOR=0
 VERSION_MINOR=6
-VERSION_SUB=0-rc2
+VERSION_SUB=0-rc3
 
 dnl Every other copy of the package version number gets its value from here
 AM_INIT_AUTOMAKE(xjadeo, [${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_SUB}])
@@ -161,7 +161,7 @@ AC_SUBST(JACK_LIBS)
 
 MQ_LIBS=""
 if test "x$enable_mq" != "xno"; then
-	AC_SEARCH_LIBS( mq_open, rt, AC_DEFINE(HAVE_MQ) MQ_LIBS="-lrt" HAVE_MQ=1 )
+	AC_SEARCH_LIBS( mq_open, rt, AC_DEFINE(HAVE_MQ) MQ_LIBS="-lrt -lpthread" HAVE_MQ=1 )
 fi
 AC_SUBST(MQ_LIBS)
 AC_DEFINE(MQLEN, 512, [ max length of a remote control line. ])
@@ -250,7 +250,7 @@ dnl ppc-portmidi : cc -dynamiclib pm_mac/*.o porttime/*.o -flat_namespace -undef
 		HAVE_MIDI=1
 		ALSA_SEQ_MIDI=1
 		ALSA_RAW_MIDI=1
-		MIDI_LIBS="$MIDI_LIBS -lasound"
+		MIDI_LIBS="$MIDI_LIBS -lasound -lpthread"
 	fi
 	if test "x$FOUND_H_PORTMIDI$FOUND_L_PORTMIDI" = "xyesyes"; then
 		AC_DEFINE(HAVE_MIDI) 
@@ -610,7 +610,7 @@ AC_MSG_NOTICE([
  On-screen-display:  $OSDREPORT
 
  GUI (qjadeo):       $RPT_QT4
- build contib/*:     $CONTREPORT
+ build contrib/*:    $CONTREPORT
 
 
 type "make" followed my "make install" as root.
