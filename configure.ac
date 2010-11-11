@@ -194,7 +194,7 @@ AS_IF([test "x$enable_osc" != "xno"], [
 	if test -n "$liblosrc"; then
 		AC_CHECK_FILES([$liblosrc/src/.libs/liblo.a $liblosrc/lo/lo.h],[AC_DEFINE(HAVE_LIBLO) HAVE_LIBLO=1 LIBLO_CFLAGS="-I$liblosrc/lo" LIBLO_LIBS="$liblosrc/src/.libs/liblo.a" ])
 	else
-		PKG_CHECK_MODULES(LIBLO, liblo, [ AC_DEFINE(HAVE_LIBLO) HAVE_LIBLO=1 ])
+		PKG_CHECK_MODULES(LIBLO, liblo, [ AC_DEFINE(HAVE_LIBLO) HAVE_LIBLO=1 ], [ NULL=0] )
 	fi
 ])
 
