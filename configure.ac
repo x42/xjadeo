@@ -219,7 +219,10 @@ if test "x$enable_midi" != "xno"; then
 		AC_CHECK_LIB([portmidi], [Pm_CountDevices], [FOUND_L_PORTMIDI=yes])
 	fi
 	if test "x$FOUND_H_PORTMIDI$FOUND_L_PORTMIDI" = "xyesyes"; then
-		MIDI_LIBS="-lportmidi -lporttime"
+		MIDI_LIBS="-lportmidi"
+		if test "$PM_OS" != "mac"; then
+		  MIDI_LIBS="${MIDI_LIBS} -lporttime"
+	  fi
 	fi
 
 	if test "x$PORTMIDI" != "xno" -a -n "$portmidisrc" -a -n "$PM_OS"; then
