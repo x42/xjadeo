@@ -1,8 +1,8 @@
-bin_PROGRAMS=xjtsmm
+noinst_PROGRAMS=xjtsmm
 
 xjtsmm_SOURCES = tsmm.c ../../aclocal.m4 ../../config.h  ../../src/xjadeo/smpte.c ../../src/xjadeo/freetype.c
 xjtsmm_CFLAGS = -Wall -g -O3  -I../../src/xjadeo/ $(TIFF_CFLAGS) @FREETYPE_CFLAGS@ $(LASH_CFLAGS)
-xjtsmm_LDADD = $(TIFF_LIBS) @FREETYPE_LIBS@ 
+xjtsmm_LDADD = $(TIFF_LIBS) @FREETYPE_LIBS@  -lm
 
 MAINTAINERCLEANFILES = Makefile.in
 
