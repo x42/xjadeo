@@ -612,6 +612,16 @@ AC_MSG_NOTICE([
  GUI (qjadeo):       $RPT_QT4
  build contrib/*:    $CONTREPORT
 
+])
 
-type "make" followed my "make install" as root.
+if test "x$enable_contrib" = "xyes"; then
+AC_MSG_NOTICE([
+ Note for Packagers: --enable-contrib does not make a difference when packaging
+ all Programs in contrib are noinst targets. They are intended for advanced
+ users, developers or testing only.
+])
+fi
+
+AC_MSG_NOTICE([
+ type "make" followed my "make install" as root.
 ])
