@@ -38,4 +38,9 @@ xjadeo.ps: xjadeo.xml
 	jw -f docbook -b ps xjadeo.xml
 
 xjadeo.pdf: xjadeo.xml
-	jw -f docbook -b pdf xjadeo.xml
+	dblatex \
+	  -P newtbl.autowidth=all \
+	  -P latex.hyperparam=colorlinks,linkcolor=blue \
+	  -P doc.collab.show=0 \
+	  -P latex.output.revhistory=0 \
+	  xjadeo.xml
