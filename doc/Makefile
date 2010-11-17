@@ -44,4 +44,5 @@ xjadeo.pdf: xjadeo.xml
 	  -P doc.collab.show=0 \
 	  -P latex.output.revhistory=0 \
 	  -P make.year.ranges=1 \
+	  -P doc.lot.show="" \
 	  xjadeo.xml

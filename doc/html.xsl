@@ -11,6 +11,9 @@ href="http://docbook.sourceforge.net/release/xsl/current/xhtml/chunk.xsl"/>
  
 <xsl:variable name="toc.max.depth">2</xsl:variable>
 <xsl:variable name="html.stylesheet">style.css</xsl:variable>
+<xsl:param name="generate.revhistory.link" select="1"></xsl:param>
+<xsl:param name="make.year.ranges" select="1"></xsl:param>
+<xsl:param name="chunk.first.sections" select="1"></xsl:param>
 <xsl:template name="user.head.content"><link rel="shortcut icon" href="favicon.ico"/></xsl:template>
 <!--<xsl:variable name="admon.graphics">0</xsl:variable>-->
 <!--<xsl:variable name="chunk.section.depth">1</xsl:variable>-->
