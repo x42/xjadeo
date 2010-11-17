@@ -864,7 +864,19 @@ make install # (requires root privileges) </screen></para>
               <para>Set "JACK-transport mode" to "Sync"</para>
             </listitem>
           </itemizedlist></para>
+        </section>
+
+      <section id="howto_tco">
+        <title>Sync to RME HDME</title>
+
+        <para>If you own a 
+          <ulink url="http://www.rme-audio.de/en_products_hdsp_tco.php">RME HDSP Time Code Option</ulink>
+          Module which  is available for selected RME cards. You can use the MTC which is generated automatically 
+          by hardware. Simply connect the MIDI port (which shows up as standard ALSA interface on Linux) to 
+          <application>xjadeo</application>'s MTC input.
+        </para>
       </section>
+
     </section>
   </section>
 
