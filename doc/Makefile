@@ -35,7 +35,14 @@ clean:
 .PHONY: xjadeo.ps xjadeo.pdf
 
 xjadeo.ps: xjadeo.xml
-	jw -f docbook -b ps xjadeo.xml
+	dblatex -tps -T native \
+	  -P newtbl.autowidth=default \
+	  -P latex.hyperparam=colorlinks,linkcolor=blue \
+	  -P doc.collab.show=0 \
+	  -P latex.output.revhistory=0 \
+	  -P make.year.ranges=1 \
+	  -P doc.lot.show="" \
+	  xjadeo.xml
 
 xjadeo.pdf: xjadeo.xml
 	dblatex -T native \

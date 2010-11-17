@@ -45,7 +45,10 @@
     <abstract>
       <para><mediaobject>
           <imageobject>
-            <imagedata align="center" fileref="xjadeo.png" valign="top"/>
+            <imagedata align="center" fileref="xjadeo.eps" valign="top" format="EPS"/>
+          </imageobject>
+          <imageobject>
+            <imagedata align="center" fileref="xjadeo.png" valign="top" format="PNG"/>
           </imageobject>
         </mediaobject></para>
 
