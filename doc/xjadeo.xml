@@ -129,7 +129,7 @@
           <para>Sync sources:<itemizedlist>
               <listitem>
                 <para><ulink url="http://jackaudio.org/">JACK</ulink>
-                transport mechanism.</para>
+                  <ulink url="http://jackaudio.org/files/docs/html/transport-design.html">transport mechanism</ulink>.</para>
               </listitem>
 
               <listitem>
@@ -568,6 +568,21 @@ make install # (requires root privileges) </screen></para>
         by clamping the displayed frame-number into the range of the video
         file duration.</para>
       </section>
+    </section>
+
+    <section id="qt_gui">
+      <title><application>qjadeo</application> - Graphical User Interface</title>
+      <para>...</para>
+    </section>
+
+    <section id="osxjadeo">
+      <title>Notes for OSX <application>Jadeo</application></title>
+      <para>...</para>
+    </section>
+
+    <section id="winxjadeo">
+      <title><application>Xjadeo</application> on Windows</title>
+      <para>...</para>
     </section>
 
     <section id="interaction">
