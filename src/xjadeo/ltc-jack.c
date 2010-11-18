@@ -33,7 +33,6 @@ extern double framerate;
 void close_ltcjack(void);
 
 SMPTEDecoder *ltc_decoder = NULL;
-long int monotonic_fcnt = 0;
 #define LTCFPS (25)
 
 jack_nframes_t j_samplerate = 48000;
@@ -58,21 +57,17 @@ int myProcess(SMPTEDecoder *d, long int *jt)  {
     SMPTETime stime;
     i=0;
 
-    
-    // TODO: use frame.posinfo for latency compensation..
     SMPTEFrameToTime(&frame.base,&stime);
     SMPTEDecoderErrors(d,&errors);
 
     if (jt) {
       *jt=((stime.hours*60+stime.mins)*60 +stime.secs)*j_samplerate 
-	  + (int)floor(stime.frame*(double)j_samplerate/LTCFPS);
-    //printf("debug %i %lu \n",*jt,frame.posinfo);
+					 + (int)floor(stime.frame*(double)j_samplerate/LTCFPS
+					 + frame.startpos
+				);
+    //printf("LTC-debug %i %li %li\n",*jt,frame.startpos, frame.endpos);
 		//TODO: use LTCsmpte's framerate or xjadeo convertor!
     }
-    /* TODO use frame.startpos or frame.endpos
-		 * if (jf) {
-      *jf= frame.posinfo;
-    }*/
 
 #ifdef DEBUG
     int ms;
@@ -107,12 +102,11 @@ int process (jack_nframes_t nframes, void *arg) {
 		snd=(int)rint((127.0*val)+128.0);
 		sound[i] = (unsigned char) (snd&0xff);
 	}
-	SMPTEDecoderWrite(ltc_decoder,sound,nframes,monotonic_fcnt-j_latency);
+	SMPTEDecoderWrite(ltc_decoder,sound,nframes,-j_latency);
 #if 1 
 	myProcess(ltc_decoder,&ltc_position);
 #endif
 
-  monotonic_fcnt += nframes; // XXX we don't need that here - TODO simply use latency as posinfo and subtract it later..
   return 0;      
 }
 
