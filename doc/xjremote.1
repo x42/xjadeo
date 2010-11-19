@@ -2,12 +2,12 @@
 .\"     Title: xjremote
 .\"    Author: Robin Gareus <robin@gareus.org>
 .\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 11/05/2010
+.\"      Date: 11/19/2010
 .\"    Manual: Manual Pages
 .\"    Source: http://xjadeo.sf.net 0.6.X
 .\"  Language: English
 .\"
-.TH "XJREMOTE" "1" "11/05/2010" "http://xjadeo\&.sf\&.net 0\&.6" "Manual Pages"
+.TH "XJREMOTE" "1" "11/19/2010" "http://xjadeo\&.sf\&.net 0\&.6" "Manual Pages"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,15 +34,17 @@ xjremote \- CLI remote\-control to \fBxjadeo\fR
 \fBxjremote\fR [\-fhPquUvV] [\-I\ \fI<mq\-queue\-id>\fR]
 .SH "DESCRIPTION"
 .PP
-xjadeo
+Xjadeo
 is a software video player that displays a video\-clip in sync with an external time source (MTC, LTC, JACK\-transport)\&.
 .PP
 \fBxjremote\fR
 connects to a instance of
-xjadeo
+Xjadeo
 and allows a user to tweak the running configuration\&.
 .PP
-If it can not connect, xjremote will start a new instance of xjadeo and open a connection to it unless the
+If it can not connect, xjremote will start a new instance of
+Xjadeo
+and open a connection to it unless the
 \fB\-f\fR
 is given\&.
 .SH "OPTIONS"
@@ -50,8 +52,8 @@ is given\&.
 \fB\-f\fR, \fB\-\-nofork\fR
 .RS 4
 disable automatic startup of
-xjadeo\&. Instead xjremote will terminate if it can not connect to a running
-xjadeo\&.
+Xjadeo\&. Instead xjremote will terminate if it can not connect to a running
+Xjadeo\&.
 .RE
 .PP
 \fB\-h\fR, \fB\-\-help\fR
@@ -66,7 +68,9 @@ specify message\-queue identifier\&.
 .PP
 \fB\-P\fR, \fB\-P, \-\-noping\fR
 .RS 4
-Skip checking for xjadeo live signs (ping)\&.
+Skip checking for
+Xjadeo
+life signs (ping)\&.
 .RE
 .PP
 \fB\-q\fR, \fB\-\-quiet\fR, \fB\-\-silent\fR
@@ -94,12 +98,16 @@ can be used as a drop in replacement for
 .RS 4
 remove existing queues\&. Unless combined with
 \fB\-f\fR
-this will launch always a new xjadeo instance after unlinking the queues\&. Note: active connections are not affected\&.
+this will launch always a new
+Xjadeo
+instance after unlinking the queues\&. Note: active connections are not affected\&.
 .RE
 .PP
 \fB\-U\fR, \fB\-\-unlinkonly\fR
 .RS 4
-remove existing message queues and exit\&. If no xjadeo instance is running this is equivalent to
+remove existing message queues and exit\&. If no
+Xjadeo
+instance is running this is equivalent to
 \fB\-u \-f\fR\&.
 .RE
 .PP
@@ -127,23 +135,28 @@ If the
 variable is set,
 xjremote
 will assume that it holds the path to the
-xjadeo
+Xjadeo
 executable\&.
 .SH "NOTE"
 .PP
 Apart from Standard\-I/O,
-xjadeo
+Xjadeo
 can either use POSIX real\-time message\-queues (MQ) or System\-V IPC communication\&. The decision is made when compiling it\&. Basically GNU/Linux uses MQ (but could use IPC as well)\&. OSX only supports IPC and Windows is limited to standard\-I/O only\&.
 .SH "SEE ALSO"
 .PP
 xjadeo(1)
 .PP
 qjadeo(1)
-.SH "AUTHOR"
+.SH "AUTHORS"
 .PP
 \fBRobin Gareus\fR <\&robin@gareus.org\&>
 .RS 4
 linuxaudio.org
+.RE
+.PP
+\fBLuis Garrido\fR <\&luisgarrido@users.sourceforge.net\&>
+.RS 4
+luisgarrido.users.sourceforge.net
 .RE
 .SH "COPYRIGHT"
 .br
