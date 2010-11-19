@@ -25,6 +25,7 @@ html: validate
 	(cd html; xsltproc --encoding UTF-8 ../html.xsl ../xjadeo.xml)
 	cp -f style.css favicon.ico html/
 	cp -f xjadeo.png html/
+	cp -f qjadeo.png html/
 
 man: validate
 	xsltproc --encoding UTF-8 man.xsl xjadeo.xml

@@ -572,7 +572,53 @@ make install # (requires root privileges) </screen></para>
 
     <section id="qt_gui">
       <title><application>qjadeo</application> - Graphical User Interface</title>
-      <para>...</para>
+      <para>To provide easy accesibility and integration into the desktop environment,
+        <application>Xjadeo</application> is supplemented by a graphical user interface:
+        <application>qjadeo</application> is a remote control application that launches
+        <application>Xjadeo</application> and allows to control
+        settings which otherwise would be need to be specified on the command-line.
+      </para>
+
+      <para>
+        <mediaobject>
+          <imageobject>
+            <imagedata align="center" fileref="qjadeo.eps" valign="middle" format="EPS"/>
+          </imageobject>
+          <imageobject>
+            <imagedata align="center" fileref="qjadeo.png" valign="middle" format="PNG"/>
+          </imageobject>
+          <textobject>
+            <phrase>Qjadeo screenshot</phrase>
+          </textobject>
+          <caption>
+            <para>Screenshot of <application>qjadeo</application>'s main window.</para>
+          </caption>
+        </mediaobject>
+      </para>
+
+      <para>
+        <application>qjadeo</application> offers "click and go" interface to the most common tasks:
+        <itemizedlist>
+          <listitem><para>Load/replace video-file to display.</para></listitem>
+          <listitem><para>Provides a history of recently used files.</para></listitem>
+          <listitem><para>Change the sync-source on the fly.</para></listitem>
+          <listitem><para>Frontend for importing/transcoding cideo-files (using <application>mencoder</application>).</para></listitem>
+          <listitem><para>Control On-Screen-Display and set OSD font.</para></listitem>
+          <listitem><para>manually seek through the video-file using a slider.</para></listitem>
+          <listitem><para>Change the decoder seek mode.</para></listitem>
+        </itemizedlist>
+        Combined with keyboard shortcuts that can be used with the <application>Xjadeo</application>
+        window itself (see <xref linkend="interaction"/>),
+        this covers all functionality (but for some obscure switches) available from the commandline.
+      </para>
+
+      <para>
+        Once started, <application>qjadeo</application> can be terminating without closing
+        the monitor window.
+        Re-launching <application>qjadeo</application> will re-connect to the running
+        instance of <application>Xjadeo</application>.
+      </para>
+
     </section>
 
     <section id="osxjadeo">
