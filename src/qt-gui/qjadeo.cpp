@@ -86,7 +86,7 @@ QJadeo::QJadeo()
 void QJadeo::initialize () 
 {
   if (!m_osdfont.isEmpty()) {
-    xjadeo->write(QString("osd font " + m_osdfont + "\n").toAscii());
+    xjadeo->write(QString("osd font " + m_osdfont + "\n").toUtf8());
   }
   xjadeo->write(QByteArray("set seekmode 1\n"));
   xjadeo->write(QByteArray("osd notext\n"));
@@ -461,7 +461,7 @@ void QJadeo::osdFont()
   if(!s.isNull())
   {
     m_osdfont = s;
-    xjadeo->write(QString("osd font " + s + "\n").toAscii());
+    xjadeo->write(QString("osd font " + s + "\n").toUtf8());
     xjadeo->write(QByteArray("osd text \n"));
   }
 }
@@ -623,8 +623,8 @@ void QJadeo::fileLoad(const QString & filename)
   m_framerate = 0;
   m_mididrv = 0;
   bool showtext = osdTextAction->isChecked();
-  xjadeo->write(QString("load " + filename + "\n").toAscii());
-  xjadeo->write(QString("osd text " + filename + "\n").toAscii());
+  xjadeo->write(QString("load " + filename + "\n").toUtf8());
+  xjadeo->write(QString("osd text " + filename + "\n").toUtf8());
   xjadeo->write(QByteArray("get filename\n"));
   if (!showtext) {
     QTimer::singleShot(3000, this, SLOT(osdTextOff()));
