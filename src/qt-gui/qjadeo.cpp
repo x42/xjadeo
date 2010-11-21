@@ -100,6 +100,7 @@ void QJadeo::initialize ()
   xjadeo->write(QByteArray("get syncsource\n"));
   xjadeo->write(QByteArray("get position\n"));
   xjadeo->write(QByteArray("get seekmode\n"));
+  xjadeo->write(QByteArray("get letterbox\n"));
   xjadeo->write(QByteArray("notify frame\n"));
 }
 
@@ -346,6 +347,20 @@ void QJadeo::zoomFullScreen()
   ).toAscii());
 }
 
+void QJadeo::zoomAspect()
+{
+  xjadeo->write(QByteArray("window fixaspect\n"));
+}
+
+void QJadeo::zoomLetterbox(bool value)
+{
+  if (value) {
+    xjadeo->write(QByteArray("window letterbox on\n"));
+  } else {
+    xjadeo->write(QByteArray("window letterbox off\n"));
+  }
+}
+
 void QJadeo::syncJack()
 {
   xjadeo->write(QByteArray("ltc disconnect\n"));
@@ -567,6 +582,11 @@ void QJadeo::readFromStdout()
 	  ;// set default folder and file in 
 	   // File selection dialog.
 	}
+        else if(name == "letterbox")
+	{
+	  int v= value.toInt();
+	  actionLetterbox->setChecked(v&1);
+	}
         else if(name == "osdmode")
 	{
 	  int v= value.toInt();
@@ -607,6 +627,7 @@ void QJadeo::readFromStdout()
 	  xjadeo->write(QByteArray("midi driver\n"));
 	  xjadeo->write(QByteArray("get syncsource\n"));
 	  xjadeo->write(QByteArray("get position\n"));
+	  xjadeo->write(QByteArray("get letterbox\n"));
 	}
     }
   }

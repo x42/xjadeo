@@ -61,6 +61,9 @@ public slots:
   void zoom200();
   void zoomFullScreen();
 
+  void zoomAspect();
+  void zoomLetterbox(bool);
+
   void syncJack();
   void syncLTCJack();
   void syncMTCalsa();
