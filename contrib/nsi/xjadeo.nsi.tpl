@@ -47,6 +47,8 @@ Section "jadeo (required)"
   File "xjadeo.nsi"
 
   File "qjadeo.exe"
+  File "qjadeo_fr_qm"
+  File "qjadeo_ru_qm"
   File "QtCore4.dll"
   File "QtGui4.dll"
   File "QtSvg4.dll"
