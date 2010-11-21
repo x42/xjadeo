@@ -515,7 +515,7 @@ void QJadeo::readFromStdout()
 	  }
         }
         else if(name == "filename")
-          updateRecentFiles(value);
+          updateRecentFiles(QString::fromUtf8(value.toAscii().data(),-1));
         else if(name == "movie_width")
           m_movie_width = value.toInt();
         else if(name == "movie_height")
