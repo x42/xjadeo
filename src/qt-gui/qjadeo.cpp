@@ -636,9 +636,9 @@ int main(int argc, char **argv)
 
   QApplication a(argc, argv);
   QString sLocale = QLocale::system().name();
+  QTranslator translator;
 
   if (sLocale != "C") {
-    QTranslator translator;
     QString sLocName = "qjadeo_" + sLocale;
     if (!translator.load(sLocName, ".")) {
         QString sLocPath = CONFIG_PREFIX;
