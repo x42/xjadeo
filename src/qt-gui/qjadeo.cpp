@@ -183,7 +183,7 @@ void QJadeo::saveOptions()
 
 void QJadeo::fileOpen()
 {
-  QString s = QFileDialog::getOpenFileName(this, "Choose video file", "", 0);
+  QString s = QFileDialog::getOpenFileName(this, tr("Choose video file"), "", 0);
 
   if(!s.isNull())
   {
@@ -456,7 +456,7 @@ void QJadeo::seekBarChanged( int value )
 
 void QJadeo::osdFont()
 {
-  QString s = QFileDialog::getOpenFileName(this, "Choose a font", "", "TrueType fonts (*.ttf)");
+  QString s = QFileDialog::getOpenFileName(this, tr("Choose a font"), "", "TrueType fonts (*.ttf)");
 
   if(!s.isNull())
   {
@@ -635,23 +635,21 @@ int main(int argc, char **argv)
 {
 
   QApplication a(argc, argv);
-  QTranslator translator;
-  QJadeo w;
-  QString sLocale = w.locale().name();
-    if (sLocale != "C") {
-        QString sLocName = "qjadeo_" + sLocale;
-        if (!translator.load(sLocName, ".")) {
-            QString sLocPath = CONFIG_PREFIX;
-            if (!translator.load(sLocName, sLocPath))
-                fprintf(stderr, "Warning: no locale found: %s/%s.qm\n", sLocPath.toAscii().data(), sLocName.toAscii().data());
-        }
-        a.installTranslator(&translator);
+  QString sLocale = QLocale::system().name();
+
+  if (sLocale != "C") {
+    QTranslator translator;
+    QString sLocName = "qjadeo_" + sLocale;
+    if (!translator.load(sLocName, ".")) {
+        QString sLocPath = CONFIG_PREFIX;
+        if (!translator.load(sLocName, sLocPath)) {
+            fprintf(stderr, "Warning: no locale found: %s/%s.qm\n", sLocPath.toAscii().data(), sLocName.toAscii().data());
+	}
     }
+    a.installTranslator(&translator);
+  }
 
-
-
-// Launch xjadeo
-
+  QJadeo w;
   QString xjadeoPath(getenv("XJREMOTE"));
 
   if(xjadeoPath.isEmpty())
@@ -665,7 +663,7 @@ int main(int argc, char **argv)
   w.xjadeo->start(xjadeoPath, QStringList("-R"));
   if(!w.xjadeo->waitForStarted())
   {
-    QMessageBox::QMessageBox::critical( &w, "qjadeo","can not execute xjadeo/xjremote.","Exit", QString::null, QString::null, 0, -1);
+    QMessageBox::QMessageBox::critical( &w, "qjadeo", "can not execute xjadeo/xjremote." ,"Exit", QString::null, QString::null, 0, -1);
     //qFatal("Could not start xjadeo executable: " + xjadeoPath);
     //qFatal("Try to set the XJREMOTE environment variable to point to xjadeo.");
     exit(1);
