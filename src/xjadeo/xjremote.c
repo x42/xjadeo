@@ -587,6 +587,7 @@ void *rx_thread (void *arg) {
 
 		for(i = 0; i<rv; i++)
 			putchar(rxbuf.mtext[i]);
+		fflush(stdout);
 
 		if (!strncmp(rxbuf.mtext,"@100 quit.",9)) {
 			if (want_verbose) 

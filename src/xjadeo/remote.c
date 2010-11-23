@@ -1266,11 +1266,14 @@ int remote_read_ipc () {
 		return (-1);
 	}
 
-	// TODO WHILE  LOOP..
-	char *t;
-	if ((t = strchr(rxbuf.mtext, '\n'))) *t='\0';
-	//if (strlen(rxbuf.mtext) < 1) return 0; // continue;
-	exec_remote_cmd_recursive(cmd_root,rxbuf.mtext);
+	char *t, *s;
+	s=rxbuf.mtext;
+	while (s && *s && (t = strchr(s, '\n'))) {
+		*t='\0';
+	  if (strlen(s) < 1) continue;
+	  exec_remote_cmd_recursive(cmd_root,s);
+		s=t+1;
+	}
 	remote_read_ipc(); // read all queued messages..
 	return(0);
 }
