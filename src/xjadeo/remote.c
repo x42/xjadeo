@@ -1243,7 +1243,7 @@ int myipc_reply(int id, char *msg){
 	struct msgbuf1 txbuf;
 	txbuf.mtype=1;
   snprintf(txbuf.mtext, BUFSIZ, "@%i %s\n", id, msg); // XXX
-  if (msgsnd(msqtx, (const void*) &txbuf, strlen(txbuf.mtext), 0) == -1) {
+  if (msgsnd(msqtx, (const void*) &txbuf, strlen(txbuf.mtext), IPC_NOWAIT) == -1) {
 		fprintf(stderr, "msgsnd failed., Error = %d: %s\n", errno, strerror(errno));
 		return -1;
 	}
@@ -1271,6 +1271,7 @@ int remote_read_ipc () {
 	if ((t = strchr(rxbuf.mtext, '\n'))) *t='\0';
 	//if (strlen(rxbuf.mtext) < 1) return 0; // continue;
 	exec_remote_cmd_recursive(cmd_root,rxbuf.mtext);
+	remote_read_ipc(); // read all queued messages..
 	return(0);
 }
 

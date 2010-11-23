@@ -634,11 +634,11 @@ void tx_loop(int msqid) {
       //strncpy(txbuf.mtext,buf,BUFSIZ-1); // add '\n' and '\0'
       txbuf.mtext[BUFSIZ-1]=0;
 
-      while (--retry && msgsnd(msqid, (const void*) &txbuf, strlen(txbuf.mtext), 0) == -1) {
+      while (--retry && msgsnd(msqid, (const void*) &txbuf, strlen(txbuf.mtext), IPC_NOWAIT) == -1) {
         usleep(50000);
       }
       if (!retry) {
-				printf("CTL: msgsnd failed. Error = %d: %s\n", errno, strerror(errno));
+				fprintf(stderr, "CTL: msgsnd failed. Error = %d: %s\n", errno, strerror(errno));
       }
       
       offset-=((++end)-buf);
