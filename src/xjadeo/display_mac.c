@@ -1291,6 +1291,7 @@ int open_window_mac (void) {
   ShowWindow (theWindow);
 //SelectWindow (theWindow);
   SetWindowGroupLevel(winGroup, CGWindowLevelForKey(levelList[winLevel]));
+  GetWindowBounds(theWindow, kWindowContentRgn, &oldWinBounds);
 
   if(vo_fs)
     window_fullscreen();
@@ -1359,7 +1360,8 @@ void getpos_mac (int *x, int *y) {
 
 void fullscreen_mac (int a) {
   vo_fs=a;
-  window_fullscreen();
+  if (vo_fs != vo_mac_fs)
+    window_fullscreen();
 }
 
 int get_fullscreen_mac() {
