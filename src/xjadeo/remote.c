@@ -1267,7 +1267,7 @@ int remote_read_ipc () {
 	}
 
 	char *t, *s;
-	s=rxbuf.mtext;
+	s=rxbuf.mtext; // TODO remember end of long messages..
 	while (s && *s && (t = strchr(s, '\n'))) {
 		*t='\0';
 	  if (strlen(s) < 1) continue;
