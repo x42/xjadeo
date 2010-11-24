@@ -1799,18 +1799,17 @@ make install # (requires root privileges) </screen></para>
     option where <replaceable>port</replaceable> is the UDP port number
     <application>Xjadeo</application> listens on for messages. e.g. <screen>xjadeo -O 7890 myvideofile.mov</screen></para>
 
-    <table frame="all" tabstyle="tbl">
-      <title>OSC Commands</title>
+    <para>
+      See <xref linkend="osc1"/>, <xref linkend="osc2"/> and <xref linkend="osc3"/> for a list of supported commands.
+    </para>
 
+    <table frame="all" tabstyle="tbl" id="osc1">
+      <title>OSC Commands</title>
       <tgroup align="left" cols="3">
         <colspec colname="c1"/>
-
         <colspec align="center" colname="c2"/>
-
         <colspec colname="c3" colwidth="*"/>
-
         <spanspec align="center" nameend="c3" namest="c1" spanname="fw"/>
-
         <thead>
           <row>
             <entry>Address Pattern</entry>
@@ -1944,6 +1943,28 @@ make install # (requires root privileges) </screen></para>
             <entry><para>terminate <application>Xjadeo</application>.</para></entry>
           </row>
 
+          </tbody>
+        </tgroup>
+      </table>
+    <table frame="all" tabstyle="tbl" id="osc2">
+      <title>OSC Commands to configure MIDI sync</title>
+      <tgroup align="left" cols="3">
+        <colspec colname="c1"/>
+        <colspec align="center" colname="c2"/>
+        <colspec colname="c3" colwidth="*"/>
+        <spanspec align="center" nameend="c3" namest="c1" spanname="fw"/>
+        <thead>
+          <row>
+            <entry>Address Pattern</entry>
+
+            <entry>Type Tags</entry>
+
+            <entry>Description - notes in brackes are corresponding remote-ctl
+            commands or commandline-options</entry>
+          </row>
+        </thead>
+        <tbody>
+
           <row>
             <entry spanname="fw">The following commands are only available if
             MIDI is supported.</entry>
@@ -1990,6 +2011,27 @@ make install # (requires root privileges) </screen></para>
             "resample": videoFPS / MTC (<option>-M</option>,<literal>midi
             sync</literal>)</para></entry>
           </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <table frame="all" tabstyle="tbl" id="osc3">
+      <title>non-standard OSC Commands</title>
+      <tgroup align="left" cols="3">
+        <colspec colname="c1"/>
+        <colspec align="center" colname="c2"/>
+        <colspec colname="c3" colwidth="*"/>
+        <spanspec align="center" nameend="c3" namest="c1" spanname="fw"/>
+        <thead>
+          <row>
+            <entry>Address Pattern</entry>
+
+            <entry>Type Tags</entry>
+
+            <entry>Description - notes in brackes are corresponding remote-ctl
+            commands or commandline-options</entry>
+          </row>
+        </thead>
+        <tbody>
 
           <row>
             <entry spanname="fw">The following command is only available if
