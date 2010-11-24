@@ -47,8 +47,8 @@ Section "jadeo (required)"
   File "xjadeo.nsi"
 
   File "qjadeo.exe"
-  File "qjadeo_fr_qm"
-  File "qjadeo_ru_qm"
+  File "qjadeo_fr.qm"
+  File "qjadeo_ru.qm"
   File "QtCore4.dll"
   File "QtGui4.dll"
   File "QtSvg4.dll"
@@ -115,6 +115,8 @@ Section "Uninstall"
   Delete $INSTDIR\FreeMonoBold.ttf
   Delete $INSTDIR\xjadeo.nsi
   Delete $INSTDIR\qjadeo.exe
+  Delete $INSTDIR\qjadeo_fr.qm
+  Delete $INSTDIR\qjadeo_ru.qm
   Delete $INSTDIR\QtCore4.dll
   Delete $INSTDIR\QtGui4.dll
   Delete $INSTDIR\QtSvg4.dll
