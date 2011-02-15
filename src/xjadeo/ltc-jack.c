@@ -33,7 +33,6 @@ extern double framerate;
 void close_ltcjack(void);
 
 SMPTEDecoder *ltc_decoder = NULL;
-#define LTCFPS (25)
 
 jack_nframes_t j_samplerate = 48000;
 jack_port_t *j_input_port = NULL;
@@ -58,21 +57,23 @@ int myProcess(SMPTEDecoder *d, long int *jt)  {
     i=0;
 
     SMPTEFrameToTime(&frame.base,&stime);
+#ifdef DEBUG
     SMPTEDecoderErrors(d,&errors);
+#endif
 
     if (jt) {
-      *jt=((stime.hours*60+stime.mins)*60 +stime.secs)*j_samplerate 
-					 + (int)floor(stime.frame*(double)j_samplerate/LTCFPS
-					 + frame.startpos
+      *jt=(long int) ((stime.hours*60+stime.mins)*60 +stime.secs)*j_samplerate 
+					 + (long int)floor((double)stime.frame*(double)j_samplerate/framerate
+					 + frame.startpos 
 				);
-    //printf("LTC-debug %i %li %li\n",*jt,frame.startpos, frame.endpos);
+		//printf("LTC-debug %li %li %li\n",*jt,frame.startpos, frame.endpos);
 		//TODO: use LTCsmpte's framerate or xjadeo convertor!
     }
 
 #ifdef DEBUG
     int ms;
     SMPTEDecoderFrameToMillisecs(d,&frame,&ms);
-    printf("Ch%i: %02d:%02d:%02d:%02d %8d %d \n",chn+1,
+    printf("LTC: %02d:%02d:%02d:%02d %8d %d \n",
       stime.hours,stime.mins,
       stime.secs,stime.frame,
       ms,
@@ -151,10 +152,10 @@ int init_jack(const char *client_name, const char *server_name, jack_options_t o
  *
  */
 int jack_portsetup(void) {
-	int fps_num = 25; // XXX -> extern from main.c
-	int fps_den = 1;
 	FrameRate *fps;
-	ltc_decoder = SMPTEDecoderCreate(j_samplerate,(fps=FR_create(fps_num,fps_den,FRF_NONE)),8,1);
+	fps = FR_create(1, 1, FRF_NONE);
+	FR_setdbl(fps, framerate, 1); // auto-detect drop-frames
+	ltc_decoder = SMPTEDecoderCreate(j_samplerate,fps,8,1);
 	FR_free(fps);
   
 	char name[64];
