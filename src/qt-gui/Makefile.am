@@ -4,7 +4,7 @@ EXTRA_DIST= qjadeo.cpp qjadeo.pro.in mainwindow.ui qjadeo.h\
 	importdialog.ui prefdialog.ui importprogress.ui \
 	importdialog.h importprogress.h prefdialog.h \
 	importdialog.cpp importprogress.cpp prefdialog.cpp \
-	qjadeo_fr.ts qjadeo_ru.ts \
+	qjadeo_fr.ts qjadeo_ru.ts qjadeo_el_GR.ts \
 	Makefile.am qjadeo.qrc qjadeo.rc
 
 qmake = @ac_qmake@
@@ -25,7 +25,7 @@ sources = qjadeo.cpp \
 	importdialog.cpp  importprogress.cpp prefdialog.cpp \
 	importdialog.ui prefdialog.ui importprogress.ui 
 
-TRANSLATIONS = qjadeo_fr.ts qjadeo_ru.ts
+TRANSLATIONS = qjadeo_fr.ts qjadeo_ru.ts qjadeo_el_GR.ts
 
 all:	$(name)
 
