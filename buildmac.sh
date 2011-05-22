@@ -48,7 +48,7 @@ rm -f $LIBS_PATH/*.dylib
 follow_dependencies () {
     libname=$1
     cd "$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Frameworks"
-    dependencies=`otool -arch all -L "$libname"  | egrep '\/(opt|usr)\/local\/lib' | awk '{print $1}'`
+    dependencies=`otool -arch all -L "$libname"  | egrep '\/((opt|usr)\/local\/lib|gtk\/inst\/lib)'| awk '{print $1}'`
     for l in $dependencies; do
         depname=`basename $l`
         deppath=`dirname $l`
@@ -87,7 +87,7 @@ deploy_lib () {
 }
 
 update_executable() {
-    LIBS=`otool -arch all -L "$TARGET" | egrep '\/(opt|usr)\/local\/lib' | awk '{print $1}'`
+    LIBS=`otool -arch all -L "$TARGET" | egrep '\/((opt|usr)\/local\/lib|gtk\/inst\/lib)'| awk '{print $1}'`
     for l in $LIBS; do
         libname=`basename $l`
         libpath=`dirname $l`
@@ -103,14 +103,14 @@ update_executable() {
 
 update_executable
 
-cd $LIBS_PATH && MORELIBS=`otool -arch all -L * | egrep '\/(opt|usr)\/local\/lib' | awk '{print $1}'` && cd -
+cd $LIBS_PATH && MORELIBS=`otool -arch all -L * | egrep '\/((opt|usr)\/local\/lib|gtk\/inst\/lib)'| awk '{print $1}'` && cd -
 while [ "X$MORELIBS" != "X" ]; do
     for l in $MORELIBS; do
         libname=`basename $l`
         libpath=`dirname $l`
         deploy_lib "$libname" "$libpath"
     done
-    cd $LIBS_PATH && MORELIBS=`otool -arch all -L * | egrep '\/(opt|usr)\/local\/lib' | awk '{print $1}'` && cd -
+    cd $LIBS_PATH && MORELIBS=`otool -arch all -L * | egrep '\/((opt|usr)\/local\/lib|gtk\/inst\/lib)'| awk '{print $1}'` && cd -
 done
 update_executable
 
@@ -150,7 +150,7 @@ DiskDevice=$(hdid -nomount "${TMPFILE}" | grep Apple_HFS | cut -f 1 -d ' ')
 newfs_hfs -v "${VOLNAME}" "${DiskDevice}"
 mount -t hfs "${DiskDevice}" "${MNTPATH}"
 
-cp -r ${TARGET_BUILD_DIR}/Jadeo.app ${MNTPATH}/
+cp -r ${TARGET_BUILD_DIR}/${PRODUCT_NAME}.app ${MNTPATH}/
 
 # TODO: remove .svn files..
 
