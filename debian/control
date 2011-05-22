@@ -6,7 +6,7 @@ Maintainer: Robin Gareus <robin@gareus.org>
 Standards-Version: 3.9.1
 Build-Depends: debhelper (>= 7.0.50), imlib11-dev | libimlib2-dev, libxv-dev,
  libavcodec-dev, libavformat-dev, libavutil-dev, libswscale-dev,
- libjack0.100.0-dev | libjack-dev, libx11-dev, libfreetype6-dev,
+ libjack-jackd2-dev | libjack-dev, libx11-dev, libfreetype6-dev,
  libportmidi-dev | libasound2-dev, libltcsmpte-dev, libxpm-dev,
  liblo-dev, libqt4-dev
 
