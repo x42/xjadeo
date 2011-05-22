@@ -8,7 +8,7 @@ EXTRA_DIST= qjadeo.cpp qjadeo.pro.in mainwindow.ui qjadeo.h\
 	Makefile.am qjadeo.qrc qjadeo.rc
 
 qmake = @ac_qmake@
-lrelease  = lrelease
+lrelease  = @ac_lrelease@
 qmakeargs = @ac_qmake_args@
 
 COPY = /bin/cp
