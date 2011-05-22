@@ -92,6 +92,7 @@ extern int	want_quiet;
 extern int	want_debug;
 extern int	want_verbose;
 extern int	want_avverbose;
+extern int	want_nosplash;
 extern int	want_genpts;
 extern int	want_ignstart;
 extern int	remote_en;
@@ -122,7 +123,7 @@ double 		tpf = 1.0; /* pts/dts increments per video-frame - cached value */
 // main event loop
 //--------------------------------------------
 //
-void select_sleep (int usec) {
+int select_sleep (int usec) {
 	int remote_activity = 0;
 	fd_set fd;
 	int max_fd=0;
@@ -155,8 +156,12 @@ void select_sleep (int usec) {
 		Sleep((usec+ 999) /1000);
 	}
 #else
-	if (select(max_fd, &fd, NULL, NULL, &tv)) remote_read_io();
+	if (select(max_fd, &fd, NULL, NULL, &tv)) {
+		remote_read_io();
+		return 1;
+	}
 #endif
+	return remote_activity;
 }
 
 void event_loop(void) {
@@ -195,6 +200,16 @@ void event_loop(void) {
 
 		if (newFrame <0 ) newFrame=userFrame;
 
+#if 0 // DEBUG
+		static long		oldFrame = 0;
+		if (oldFrame != newFrame) {
+			if (oldFrame +1 != newFrame) {
+				printf("\ndiscontinuity %li -> %li\n", oldFrame, newFrame);
+			}
+			oldFrame=newFrame;
+		}
+#endif
+
 #ifdef TIMEMAP
 		newFrame = (long) floor((double) newFrame * timescale) + timeoffset;
 		// TODO: calc newFrames/frames instead of while-loop
@@ -206,7 +221,7 @@ void event_loop(void) {
 
 		offFrame = newFrame + ts_offset;
 		long curFrame = dispFrame;
-		display_frame((int64_t)(offFrame), force_redraw);
+		display_frame((int64_t)(offFrame), force_redraw, !splashed || want_nosplash);
 
 		if ((remote_en||mq_en||ipc_queue) && ((remote_mode&1) || ((remote_mode&2)&& curFrame!=dispFrame)) ) {
 		/*call 	xapi_pposition ?? -> rv:200
@@ -220,10 +235,9 @@ void event_loop(void) {
 
 		if (splashed) {
 			if (splashed == -1) {
-				splashed =  5.5/dly;	
-				splash(buffer);
+				splashed =  4.5/dly;	
 			}
-			if(!--splashed) force_redraw=1;
+			splash(buffer);
 		}
 
 		if(want_verbose) {
@@ -244,7 +258,11 @@ void event_loop(void) {
 		elapsed_time = ((double) (clock2.tv_sec-clock1.tv_sec)) + ((double) (clock2.tv_usec-clock1.tv_usec)) / 1000000.0;
 		if(elapsed_time < dly) {
 			nanos = (long) floor(1e9L * (dly - elapsed_time));
-			select_sleep(nanos/1000L);
+			if (!select_sleep(nanos/1000L)) {
+				if (splashed) {
+					if(!--splashed) force_redraw=1;
+				}
+			}
 		}
 		clock1.tv_sec=clock2.tv_sec;
 		clock1.tv_usec=clock2.tv_usec;
@@ -715,7 +733,7 @@ read_frame:
 	return (0); // seek failed.
 }
 
-void display_frame(int64_t timestamp, int force_update) {
+void display_frame(int64_t timestamp, int force_update, int do_render) {
 	static AVPacket packet;
 	static int      fFirstTime=1;
 	int             frameFinished;
@@ -776,7 +794,8 @@ void display_frame(int64_t timestamp, int force_update) {
 					(AVPicture*)pFrame, pCodecCtx->pix_fmt, pCodecCtx->width, 
 					pCodecCtx->height);
 #endif
-				render_buffer(buffer); // in pFrameFMT
+				if (do_render) 
+					render_buffer(buffer); // in pFrameFMT
 				av_free_packet(&packet); /* XXX */
 				break;
 			} else  { 

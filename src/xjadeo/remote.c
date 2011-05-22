@@ -618,7 +618,8 @@ void xapi_osd_on(void *d) {
 
 void xapi_osd_text(void *d) {
 	snprintf(OSD_text,128,"%s",(char*)d);
-	display_frame((int64_t)(dispFrame),1); // update OSD
+	force_redraw=1;
+	//display_frame((int64_t)(dispFrame),1,1); // update OSD
 	xapi_osd_on(NULL);
 }
 

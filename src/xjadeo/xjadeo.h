@@ -132,7 +132,7 @@ void remote_printf(int val, const char *format, ...);
 int remote_fd_set(fd_set *fd);
 
 /* xjadeo.c */
-void display_frame(int64_t timestamp, int force_update);
+void display_frame(int64_t timestamp, int force_update, int do_render);
 int open_movie(char* file_name);
 int close_movie();
 void avinit (void);
