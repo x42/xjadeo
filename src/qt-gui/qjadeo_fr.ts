@@ -1,4 +1,6 @@
-<!DOCTYPE TS><TS>
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.0">
 <context>
     <name>ImportDialog</name>
     <message>
@@ -77,6 +79,14 @@
         <source>&amp;OK</source>
         <translation>&amp;OK</translation>
     </message>
+    <message>
+        <source>select video file to convert</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>choose a destinaton filename</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ImportProgress</name>
@@ -97,7 +107,7 @@
     </message>
     <message>
         <source>screen updates per sec.</source>
-        <translation>Fréquence de rafraîchissement d'écran:</translation>
+        <translation>Fréquence de rafraîchissement d&apos;écran:</translation>
     </message>
     <message>
         <source>time offset in video-frames:</source>
@@ -157,11 +167,11 @@
     </message>
     <message>
         <source>ActionGroup</source>
-        <translation>GroupeAction</translation>
+        <translation type="obsolete">GroupeAction</translation>
     </message>
     <message>
         <source>Sync</source>
-        <translation>Sync</translation>
+        <translation type="obsolete">Sync</translation>
     </message>
     <message>
         <source>JACK Transport</source>
@@ -185,7 +195,7 @@
     </message>
     <message>
         <source>Zoom</source>
-        <translation>Zoom</translation>
+        <translation type="obsolete">Zoom</translation>
     </message>
     <message>
         <source>50%</source>
@@ -258,6 +268,30 @@
     <message>
         <source>continuously</source>
         <translation>continuellement</translation>
+    </message>
+    <message>
+        <source>Ctrl+Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Filename</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ctrl+W</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Letterbox</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Resize to aspect-ratio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LTC (JACK)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -333,6 +367,25 @@
     <message>
         <source>&amp;OK</source>
         <translation>&amp;OK</translation>
+    </message>
+    <message>
+        <source>Select default destination folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QJadeo</name>
+    <message>
+        <source>&amp;%1 %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Choose video file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Choose a font</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

@@ -155,193 +155,213 @@
         <translation>&amp;Масштаб</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="251"/>
+        <location filename="mainwindow.ui" line="254"/>
         <source>&amp;OSD</source>
         <translation>&amp;OSD</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="261"/>
+        <location filename="mainwindow.ui" line="264"/>
         <source>&amp;Seek</source>
         <translation>Пере&amp;ход</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="269"/>
+        <location filename="mainwindow.ui" line="272"/>
         <source>&amp;Help</source>
         <translation>&amp;Справка</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="287"/>
+        <location filename="mainwindow.ui" line="290"/>
         <source>&amp;Open...</source>
         <translation>&amp;Открыть...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="290"/>
+        <location filename="mainwindow.ui" line="293"/>
         <source>Open</source>
         <translation>Открыть</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="293"/>
+        <location filename="mainwindow.ui" line="296"/>
         <source>Ctrl+O</source>
         <translation>Ctrl+O</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="301"/>
+        <location filename="mainwindow.ui" line="304"/>
         <source>&amp;Close xjadeo and Exit</source>
         <translation>&amp;Закрыть xjadeo и выйти</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="304"/>
+        <location filename="mainwindow.ui" line="307"/>
         <source>Exit</source>
         <translation>Выход</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="315"/>
+        <location filename="mainwindow.ui" line="310"/>
+        <source>Ctrl+Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="318"/>
         <source>&amp;About</source>
         <translation>&amp;О программе</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="318"/>
+        <location filename="mainwindow.ui" line="321"/>
         <source>About</source>
         <translation>О программе</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="332"/>
         <location filename="mainwindow.ui" line="335"/>
+        <location filename="mainwindow.ui" line="338"/>
         <source>Frame number</source>
         <translation>Номер кадра</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="346"/>
         <location filename="mainwindow.ui" line="349"/>
+        <location filename="mainwindow.ui" line="352"/>
         <source>SMPTE</source>
         <translation>SMPTE</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="360"/>
         <location filename="mainwindow.ui" line="363"/>
+        <location filename="mainwindow.ui" line="366"/>
         <source>Filename</source>
         <translation>Имя файла</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="374"/>
         <location filename="mainwindow.ui" line="377"/>
+        <location filename="mainwindow.ui" line="380"/>
         <source>Box</source>
         <translation>Рисовать фон</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="385"/>
         <location filename="mainwindow.ui" line="388"/>
+        <location filename="mainwindow.ui" line="391"/>
         <source>Font...</source>
         <translation>Шрифт...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="396"/>
+        <location filename="mainwindow.ui" line="399"/>
         <source>&amp;Import</source>
         <translation>&amp;Импортировать</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="399"/>
+        <location filename="mainwindow.ui" line="402"/>
         <source>Import</source>
         <translation>Импортировать</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="402"/>
+        <location filename="mainwindow.ui" line="405"/>
         <source>Convert video files.</source>
         <translation>Сконвертировать видеофайлы</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="410"/>
+        <location filename="mainwindow.ui" line="413"/>
         <source>&amp;Configure qjadeo</source>
         <translation>&amp;Настроить qjadeo</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="413"/>
+        <location filename="mainwindow.ui" line="416"/>
         <source>Configure qjadeo</source>
         <translation>Настроить qjadeo</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="421"/>
+        <location filename="mainwindow.ui" line="424"/>
         <source>Disconnect and &amp;Exit</source>
         <translation>Отсоединиться и в&amp;ыйти</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="424"/>
+        <location filename="mainwindow.ui" line="427"/>
         <source>Disconnect</source>
         <translation>Отсоединиться</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="435"/>
-        <location filename="mainwindow.ui" line="438"/>
+        <location filename="mainwindow.ui" line="430"/>
+        <source>Ctrl+W</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="441"/>
+        <source>Letterbox</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="446"/>
+        <source>Resize to aspect-ratio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="455"/>
+        <location filename="mainwindow.ui" line="458"/>
         <source>to any frame</source>
         <translation>К любому кадру</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="449"/>
-        <location filename="mainwindow.ui" line="452"/>
+        <location filename="mainwindow.ui" line="469"/>
+        <location filename="mainwindow.ui" line="472"/>
         <source>keyframes only</source>
         <translation>Только по ключевым кадрам</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="463"/>
-        <location filename="mainwindow.ui" line="466"/>
+        <location filename="mainwindow.ui" line="483"/>
+        <location filename="mainwindow.ui" line="486"/>
         <source>continuously</source>
         <translation>Непрерывно</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="478"/>
-        <location filename="mainwindow.ui" line="481"/>
+        <location filename="mainwindow.ui" line="499"/>
+        <location filename="mainwindow.ui" line="502"/>
         <source>JACK Transport</source>
         <translation>Транспорт JACK</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="492"/>
-        <location filename="mainwindow.ui" line="495"/>
+        <location filename="mainwindow.ui" line="513"/>
+        <location filename="mainwindow.ui" line="516"/>
         <source>LTC (JACK)</source>
         <translation>LTC (JACK)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="506"/>
-        <location filename="mainwindow.ui" line="509"/>
+        <location filename="mainwindow.ui" line="527"/>
+        <location filename="mainwindow.ui" line="530"/>
         <source>MTC (JACK MIDI)</source>
         <translation>MTC (JACK MIDI)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="520"/>
-        <location filename="mainwindow.ui" line="523"/>
+        <location filename="mainwindow.ui" line="541"/>
+        <location filename="mainwindow.ui" line="544"/>
         <source>MTC (ALSA SEQ)</source>
         <translation>MTC (ALSA SEQ)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="534"/>
+        <location filename="mainwindow.ui" line="555"/>
         <source>off (slider)</source>
         <translation>Выкл (ползунок)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="537"/>
+        <location filename="mainwindow.ui" line="558"/>
         <source>off</source>
         <translation>Выкл</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="550"/>
-        <location filename="mainwindow.ui" line="553"/>
+        <location filename="mainwindow.ui" line="571"/>
+        <location filename="mainwindow.ui" line="574"/>
         <source>50%</source>
         <translation>50%</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="561"/>
-        <location filename="mainwindow.ui" line="564"/>
+        <location filename="mainwindow.ui" line="582"/>
+        <location filename="mainwindow.ui" line="585"/>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="572"/>
-        <location filename="mainwindow.ui" line="575"/>
+        <location filename="mainwindow.ui" line="593"/>
+        <location filename="mainwindow.ui" line="596"/>
         <source>200%</source>
         <translation>200%</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="583"/>
-        <location filename="mainwindow.ui" line="586"/>
+        <location filename="mainwindow.ui" line="604"/>
+        <location filename="mainwindow.ui" line="607"/>
         <source>Maximize</source>
         <translation>Во весь экран</translation>
     </message>
@@ -447,9 +467,19 @@
 <context>
     <name>QJadeo</name>
     <message>
-        <location filename="qjadeo.cpp" line="136"/>
+        <location filename="qjadeo.cpp" line="137"/>
         <source>&amp;%1 %2</source>
         <translation>&amp;%1 %2</translation>
+    </message>
+    <message>
+        <location filename="qjadeo.cpp" line="187"/>
+        <source>Choose video file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="qjadeo.cpp" line="474"/>
+        <source>Choose a font</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

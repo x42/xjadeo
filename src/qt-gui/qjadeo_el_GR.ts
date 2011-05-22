@@ -1,4 +1,6 @@
-<!DOCTYPE TS><TS>
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.0">
 <context>
     <name>ImportDialog</name>
     <message>
@@ -75,7 +77,15 @@
     </message>
     <message>
         <source>&amp;OK</source>
-        <translation>&amp;Εντάξει</translation>
+        <translation>&amp;OK</translation>
+    </message>
+    <message>
+        <source>select video file to convert</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>choose a destinaton filename</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -257,7 +267,31 @@
     </message>
     <message>
         <source>continuously</source>
-        <translation>συνεχώς</translation>
+        <translation>continuellement</translation>
+    </message>
+    <message>
+        <source>Ctrl+Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Filename</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ctrl+W</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Letterbox</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Resize to aspect-ratio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LTC (JACK)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -332,7 +366,26 @@
     </message>
     <message>
         <source>&amp;OK</source>
-        <translation>&amp;Εντάξει</translation>
+        <translation>&amp;OK</translation>
+    </message>
+    <message>
+        <source>Select default destination folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QJadeo</name>
+    <message>
+        <source>&amp;%1 %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Choose video file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Choose a font</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>
