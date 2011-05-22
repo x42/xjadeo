@@ -491,6 +491,7 @@ if test "x$enable_qtgui" != "xno"; then
  fi
  AC_SUBST(ac_qmake)
  AC_SUBST(ac_qmake_args)
+ AC_SUBST(ac_lrelease)
 
  ac_qtgui_dir="qt-gui"
 
