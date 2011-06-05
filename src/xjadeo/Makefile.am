@@ -1,5 +1,5 @@
 #TODO: use a dedicated script for 'git desc' - this is "non-POSIX" way:
-REV = $(shell git describe --always --tags HEAD || svnversion -n $(topdir) 2>/dev/null)
+REV = $(shell test -d ../../.git && git describe --always --tags HEAD 2>/dev/null)
 
 bin_PROGRAMS=xjadeo xjremote xjinfo
 
