@@ -54,6 +54,11 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+/* ffmpeg backwards compat */
+#ifndef CODEC_TYPE_VIDEO
+#define CODEC_TYPE_VIDEO AVMEDIA_TYPE_VIDEO
+#endif
+
 //------------------------------------------------
 // extern Globals (main.c)
 //------------------------------------------------
@@ -343,7 +348,11 @@ int open_movie(char* file_name) {
 		return (-1);
 	}
 
+#if LIBAVFORMAT_BUILD < 3473920
 	if (!want_quiet) dump_format(pFormatCtx, 0, file_name, 0);
+#else
+	if (!want_quiet) av_dump_format(pFormatCtx, 0, file_name, 0);
+#endif
 
 	/* Find the first video stream */
 	for(i=0; i<pFormatCtx->nb_streams; i++)
