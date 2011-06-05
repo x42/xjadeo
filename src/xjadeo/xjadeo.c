@@ -348,7 +348,7 @@ int open_movie(char* file_name) {
 		return (-1);
 	}
 
-#if LIBAVFORMAT_BUILD < 3473920
+#if LIBAVFORMAT_BUILD < 0x350200
 	if (!want_quiet) dump_format(pFormatCtx, 0, file_name, 0);
 #else
 	if (!want_quiet) av_dump_format(pFormatCtx, 0, file_name, 0);

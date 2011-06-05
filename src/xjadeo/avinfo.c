@@ -54,7 +54,20 @@
 #ifdef OLD_FFMPEG
 #include <avformat.h>
 #else
+#include <libavutil/imgutils.h>
 #include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
+#endif
+
+/* ffmpeg backwards compat */
+#ifndef CODEC_TYPE_VIDEO
+#define CODEC_TYPE_VIDEO AVMEDIA_TYPE_VIDEO
+#endif
+#ifndef CODEC_TYPE_DATA
+#define CODEC_TYPE_DATA AVMEDIA_TYPE_DATA
+#endif
+#ifndef CODEC_TYPE_AUDIO
+#define CODEC_TYPE_AUDIO AVMEDIA_TYPE_AUDIO
 #endif
 
 char *program_name;
@@ -134,30 +147,6 @@ static int decode_switches (int argc, char **argv) {
 }
 
 	
-void print_error(const char *filename, int err)
-{
-  switch (err) {
-#ifndef HAVE_WINDOWS
-  case AVERROR_NUMEXPECTED:
-    fprintf(stderr, "%s: Incorrect image filename syntax.\n"
-		"Use '%%d' to specify the image number:\n"
-		"  for img1.jpg, img2.jpg, ..., use 'img%%d.jpg';\n"
-		"  for img001.jpg, img002.jpg, ..., use 'img%%03d.jpg'.\n",
-		filename);
-    break;
-  case AVERROR_INVALIDDATA:
-    fprintf(stderr, "%s: Error while parsing header\n", filename);
-    break;
-  case AVERROR_NOFMT:
-    fprintf(stderr, "%s: Unknown format\n", filename);
-    break;
-#endif
-  default:
-    fprintf(stderr, "%s: Error while opening file\n", filename);
-    break;
-  }
-}
-
 int main(int argc, char *argv[])
 {
   AVFormatContext *ic;
@@ -181,7 +170,7 @@ int main(int argc, char *argv[])
 
   err = av_open_input_file(&ic, fn, file_iformat, 0, ap);
   if (err < 0) {
-    print_error(fn, err);
+    fprintf(stderr, "%s: Error while opening file\n", fn);
     return 1;
   }
 
@@ -233,7 +222,11 @@ int main(int argc, char *argv[])
 	printf("w:%d ", codec->width);
 	printf("h:%d #", codec->height);
 	if (p) printf("%s,", p->name);
+#if LIBAVFORMAT_BUILD < 3473920
 	printf("%s", avcodec_get_pix_fmt_name(codec->pix_fmt));
+#else
+	printf("%s", av_get_pix_fmt_name(codec->pix_fmt));
+#endif
 	printf("\n");
 	break;
       }
@@ -265,7 +258,11 @@ int main(int argc, char *argv[])
 	printf("%d,", codec->height);
 	printf("%d:%d,", codec->sample_aspect_ratio.num,codec->sample_aspect_ratio.den);
 	if (p) printf("%s,", p->name);
+#if LIBAVFORMAT_BUILD < 3473920
 	printf("%s", avcodec_get_pix_fmt_name(codec->pix_fmt));
+#else
+	printf("%s", av_get_pix_fmt_name(codec->pix_fmt));
+#endif
 	printf("\n");
       }
     }
@@ -293,6 +290,7 @@ int main(int argc, char *argv[])
   printf("  <bitrate>%d</bitrate>\n", ic->bit_rate);
   printf("  <size>%lld</size>\n", ic->file_size);
   printf("  <startoffset>%lld</startoffset>\n", ic->start_time);
+#if LIBAVFORMAT_BUILD < 3473920
   if (ic->title) printf("  <title>%s</title>\n", ic->title);
 
   if (ic->copyright) printf("  <copyright>%s</copyright>\n", ic->copyright);
@@ -303,6 +301,12 @@ int main(int argc, char *argv[])
   if (ic->year) printf("  <year>%d</year>\n", ic->year);
   if (ic->track) printf("  <track>%d</track>\n", ic->track);
   if (ic->genre) printf("  <genre>%s</genre>\n", ic->genre);
+#else
+  AVMetadataTag *next = NULL;
+  while((next=av_metadata_get(ic->metadata, "", next, AV_METADATA_IGNORE_SUFFIX))) {
+    printf("  <%s>%s</%s>\n", next->key, next->value ,next->key);
+  }
+#endif
 
 #if LIBAVFORMAT_BUILD > 4629
   printf("  <muxrate>%d</muxrate>\n", ic->mux_rate);
@@ -366,7 +370,11 @@ int main(int argc, char *argv[])
 #else
       printf("    <framerate>%.2f</framerate>\n", av_q2d(st->r_frame_rate));
 #endif
+#if LIBAVFORMAT_BUILD < 3473920
       printf("    <pixelformat>%s</pixelformat>\n", avcodec_get_pix_fmt_name(codec->pix_fmt));
+#else
+      printf("    <pixelformat>%s</pixelformat>\n", av_get_pix_fmt_name(codec->pix_fmt));
+#endif
     }
 
     if (codec->channels) 
