@@ -54,9 +54,11 @@
 #ifdef OLD_FFMPEG
 #include <avformat.h>
 #else
-#include <libavutil/imgutils.h>
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
+#if LIBAVFORMAT_BUILD >= 3473920
+#include <libavutil/imgutils.h>
+#endif
 #endif
 
 /* ffmpeg backwards compat */
