@@ -21,13 +21,15 @@ if [ -z "$VERSION" ]; then
 fi
 
 if [ -z "$SRCONLY" ]; then
-	if [ ! -f /tmp/jadeo-${VERSION}.dmg ]; then
-		echo "BUILD OSX package first!";
-		exit
-	fi
+  if [ ! -f /tmp/jadeo-${VERSION}.dmg ]; then
+    echo "BUILD OSX package first!";
+    exit
+  fi
 
-	./x-win32.sh
-	./configure
+  if [ ! -f contrib/nsi/jadeo_installer_v${WINVERS}.exe ]; then
+    ./x-win32.sh
+    ./configure
+  fi
 fi
 
 git commit -a
