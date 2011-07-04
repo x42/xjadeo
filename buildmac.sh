@@ -75,7 +75,14 @@ deploy_lib () {
     check=`echo $INSTALLED | grep $libname`
     if [ "X$check" = "X" ]; then
         if [ ! -f "$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Frameworks/$libname" ]; then
-            cp -f "$libpath/$libname" "$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Frameworks/$libname"
+            cp -f "$libpath/$libname" "$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Frameworks/$libname.ALL"
+						# strip 64 bit version 
+						lipo "$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Frameworks/$libname.ALL" \
+						  -remove x86_64 -output \
+							"$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Frameworks/$libname" || \
+						cp "$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Frameworks/$libname.ALL" \
+							"$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Frameworks/$libname"
+						rm "$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Frameworks/$libname.ALL"
             install_name_tool \
                 -id @executable_path/../Frameworks/$libname \
                 "$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Frameworks/$libname"
