@@ -1,4 +1,25 @@
 xjadeo (0.6.0-rc7) unstable; urgency=low
+  * Changes since 0.6.0-rc7:
+    * fixed LTC parsing for other than 25fps
+    * splash screen update (fixed duration)
+    * added greek translation by Michales Michaloudes.
+    * ffmpeg compat 
+    * build system updates (require libX, git version detection..)
+    * version 0.6.0
+  * Changes since 0.4.X:
+    * rewritten/updated manual
+    * win32 support
+    * qjadeo QT3 -> QT4
+    * added LTC sync source
+    * disabled LASH (by default) 
+      - soon to be removed in favor of JACK-Session
+    * various autoconf updates
+    * interaction overrides and remote-control features
+      for ardour integration
+
+ -- Robin Gareus <robin@gareus.org>  Sun, 03 Jul 2011 13:40:23 +0200
+
+xjadeo (0.6.0-rc7) unstable; urgency=low
   * release candidate v0.6 ... see git changelog
 
  -- Robin Gareus <robin@gareus.org>  Sun, 21 Nov 2010 20:02:28 +0100
