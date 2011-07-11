@@ -29,6 +29,7 @@ AC_ARG_ENABLE(timescale, AC_HELP_STRING([--disable-timescale],[disable time-mapp
 AC_ARG_ENABLE(framecrop, AC_HELP_STRING([--enable-framecrop],[hardcoded frame cropping - DO NOT USE]))
 AC_ARG_ENABLE(tiff, AC_HELP_STRING([--disable-tiff],[disable libtiff support (affects only contrib/tsmm/)]))
 AC_ARG_ENABLE(mq, AC_HELP_STRING([--disable-mq],[disable POSIX message-queue remote control]))
+AC_ARG_ENABLE(jacksession, AC_HELP_STRING([--disable-jacksession],[disable JACK-Session support]))
 AC_ARG_ENABLE(ipc, AC_HELP_STRING([--disable-ipc],[disable IPC message-queue remote control]))
 AC_ARG_ENABLE(osc, AC_HELP_STRING([--disable-osc],[disable OSC remote support]))
 AC_ARG_ENABLE(midi, AC_HELP_STRING([--disable-midi],[Do not build any of the MIDI drivers]))
@@ -111,6 +112,7 @@ AH_TEMPLATE([HAVE_PORTMIDI], [Define as 1 if to enable the portmidi driver])
 AH_TEMPLATE([HAVE_JACKMIDI], [Define as 1 to enable JACK-MIDI])
 AH_TEMPLATE([ALSA_SEQ_MIDI], [Define as 1 to enable ALSA sequencer midi])
 AH_TEMPLATE([ALSA_RAW_MIDI], [Define as 1 to enable ALSA-raw midi driver])
+AH_TEMPLATE([JACK_SESSION], [Define as 1 to enable JACK Session support])
 AH_TEMPLATE([HAVE_LTCSMPTE], [Define as 1 if you have ltcsmpte.sf.net ]) 
 AH_TEMPLATE([HAVE_LASH], [Define as 1 if you have lash])
 AH_TEMPLATE([HAVE_XPM], [Define as 1 if you have libXpm])
@@ -158,6 +160,9 @@ LIBS="$LIBS -L/usr/X11R6/lib"
 PKG_CHECK_MODULES(JACK, jack, , [AC_MSG_ERROR(*** You need the JACK audio development kit (jackaudio.org). ***)])
 AC_SUBST(JACK_CFLAGS)
 AC_SUBST(JACK_LIBS)
+if test "x$enable_jacksession" != "xno"; then
+  AC_CHECK_HEADERS([jack/session.h] , AC_DEFINE(JACK_SESSION) JACK_SESSION=1)
+fi
 
 MQ_LIBS=""
 if test "x$enable_mq" != "xno"; then
@@ -582,6 +587,7 @@ if test -n "$HAVE_LTCSMPTE"; then RPT_LTCSMPTE="yes"; else RPT_LTCSMPTE="not ava
 if test -n "$HAVE_LIBLO"; then RPT_LIBLO="yes"; else RPT_LIBLO="not avail."; fi
 if test -n "$HAVE_QT4"; then RPT_QT4="yes"; else RPT_QT4="no"; fi
 if test -n "$HAVE_MACOSX"; then RPT_QT4="${RPT_QT4} (OSX-built-in)"; fi
+if test -n "$JACK_SESSION"; then RPT_JACKSESSION="yes"; else RPT_JACKSESSION="not avail."; fi
 
 AC_MSG_NOTICE([
 
@@ -605,6 +611,7 @@ AC_MSG_NOTICE([
    - LTC:            $RPT_LTCSMPTE
    - MIDI:           $MIDIREPORT
 
+ JACK-session:       $RPT_JACKSESSION
  ffmpeg-scaling:     $FFSWREPORT
  remote control:     $RCTLREPORT
  OSC remote control: $RPT_LIBLO

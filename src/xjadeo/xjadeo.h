@@ -177,6 +177,9 @@ void shutdown_osc(void);
 
 /* configfile.c */
 void xjadeorc (void);
+int testfile (char *filename);
+int saveconfig (const char *filename);
+int readconfig (char *fn);
 
 /* freetype - On screen display */
 int render_font (char *fontfile, char *text);

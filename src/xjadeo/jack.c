@@ -43,6 +43,27 @@ extern lash_client_t *lash_client;
 jack_client_t *jack_client = NULL;
 char jackid[16];
 
+#ifdef JACK_SESSION
+#include <jack/session.h>
+extern char *jack_uuid;
+extern int	loop_flag;
+void jack_session_cb( jack_session_event_t *event, void *arg ) {
+	char filename[256];
+	char command[256];
+	snprintf( filename, sizeof(filename), "%sxjadeo.state", event->session_dir );
+	snprintf( command,  sizeof(command),  "xjadeo -U %s --rc ${SESSION_DIR}xjadeo.state", event->client_uuid );
+
+	//TODO save-state in filename
+	saveconfig(filename);
+
+	event->command_line = strdup(command);
+	jack_session_reply( jack_client, event );
+  if( event->type == JackSessionSaveAndQuit )
+		loop_flag=0;
+	jack_session_event_free( event );
+}
+#endif
+
 /* when jack shuts down... */
 void jack_shutdown(void *arg)
 {
@@ -66,12 +87,20 @@ void open_jack(void )
 	int i = 0;
 	do {
 		snprintf(jackid,16,"xjadeo-%i",i);
-		jack_client = jack_client_open (jackid, JackUseExactName, NULL);
+#ifdef JACK_SESSION
+		if (jack_uuid) 
+			jack_client = jack_client_open (jackid, JackUseExactName|JackSessionID, NULL, jack_uuid);
+		else
+#endif
+		  jack_client = jack_client_open (jackid, JackUseExactName, NULL);
 	} while (jack_client == 0 && i++<16);
 
 	if (!jack_client) {
 		fprintf(stderr, "could not connect to jack server.\n");
 	} else { 
+#ifdef JACK_SESSION
+		jack_set_session_callback (jack_client, jack_session_cb, NULL);
+#endif
 #ifndef HAVE_WINDOWS
 		jack_on_shutdown (jack_client, jack_shutdown, 0);
 		jack_activate(jack_client);

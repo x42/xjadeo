@@ -130,7 +130,7 @@ int remote_mode =0;	/* 0: undirectional ; >0: bidir
 int try_codec =0;	/* --try-codec */
 
 #ifdef HAVE_MIDI
-char midiid[128] = "-2";/* --midi # -1: autodetect -2: jack*/
+char midiid[128] = "-2";/* --midi # -1: autodetect -2: jack-transport, -3: none/userFrame */
 int midi_clkconvert =0;	/* --midifps [0:MTC|1:VIDEO|2:RESAMPLE] */
 char *midi_driver = NULL; /* --mididriver */
 #endif
@@ -139,8 +139,19 @@ int have_dropframes =0; /* detected from MTC;  TODO: force to zero if jack or us
 int jack_clkconvert =1; /* --jackfps  - NOT YET IMPLEMENTED
                           [0:audio_frames_per_video_frame
                            1:video-file] */
+int use_jack = 1;
 #ifdef HAVE_LTCSMPTE
 int use_ltc = 0;        /* -l , --ltc */
+#endif 
+char *load_rc = NULL;
+char *load_movie = NULL;
+#ifdef JACK_SESSION
+char *jack_uuid = NULL;
+int jack_session_restore = 0;
+int js_winx = -1;
+int js_winy = -1;
+int js_winw = -1;
+int js_winh = -1;
 #endif 
 
 #ifdef HAVE_LASH
@@ -209,7 +220,7 @@ static struct option const long_options[] =
   {"info", no_argument, 0, 'i'},
   {"ontop", no_argument, 0, 'a'},
   {"fullscreen", no_argument, 0, 's'},
-  {"nolash", no_argument, 0, 'L'},
+  {"nolash", required_argument, 0, 'L'},
   {"dropframes", no_argument, 0, 'N'},
   {"nodropframes", no_argument, 0, 'n'},
   {"letterbox", no_argument, 0, 'b'},
@@ -222,6 +233,10 @@ static struct option const long_options[] =
 #endif
 #ifdef HAVE_LTCSMPTE
   {"ltc", no_argument, 0, 'l'},
+#endif
+#ifdef JACK_SESSION
+  {"uuid", required_argument, 0, 'U'},
+  {"rc", required_argument, 0, 'r'},
 #endif
 #ifdef HAVE_LIBLO
   {"osc", required_argument, 0, 'O'},
@@ -269,6 +284,10 @@ decode_switches (int argc, char **argv)
 #endif
 #ifdef HAVE_LTCSMPTE
 			   "l"	/* --ltc */
+#endif
+#ifdef JACK_SESSION
+			   "r:"	/* --rc */
+			   "U:"	/* --uuid */
 #endif
 			   "N"	/* --dropframes */
 			   "n"	/* --nodropframes */
@@ -400,6 +419,16 @@ decode_switches (int argc, char **argv)
           use_ltc = 1;
 	  break;
 #endif
+	case 'U':		/* --uuid */
+#ifdef JACK_SESSION
+          if (jack_uuid) free(jack_uuid);
+          jack_uuid = strdup(optarg);
+#endif
+	  break;
+	case 'r':		/* --rc */
+          if (load_rc) free(load_rc);
+          load_rc = strdup(optarg);
+	  break;
 	case 'V':
 	  printversion();
 	  exit(0);
@@ -446,7 +475,7 @@ jack video monitor\n", program_name);
 "                            name. eg '-d j' for jack, '-d alsa-r' for alsa-raw\n"
 #endif
 "  -f <val>, --fps <val>     display update freq. - default -1 use file's fps\n"
-"  -i <int> --info <int>     render OnScreenDisplay info: 0:off, %i:frame,\n"
+"  -i <int>, --info <int>    render OnScreenDisplay info: 0:off, %i:frame,\n"
 "                            %i:smpte, %i:both. (use remote ctrl for more opts.)\n"
 "",	OSD_FRAME,OSD_SMPTE,OSD_FRAME|OSD_SMPTE); // :)
   printf ("" /* take a breath */
@@ -462,6 +491,9 @@ jack video monitor\n", program_name);
 #endif /* HAVE_LASH */
 #ifdef HAVE_LTCSMPTE
 "  -l, --ltc                 sync to LinearTimeCode (audio-jack).\n"
+#endif
+#ifdef JACK_SESSION
+"  -U, --uuid                specify JACK-SESSION UUID.\n"
 #endif
 #ifdef HAVE_MIDI
 "  -m <port>,                use MTC instead of jack-transport\n"
@@ -499,6 +531,7 @@ jack video monitor\n", program_name);
 #ifdef HAVE_MQ
 "  -Q, --mq                  set-up RT message queues for xjremote\n"
 #endif
+"  -r <file>, --rc <file>    .rc settings file to load.\n"
 "  -R, --remote              remote control (stdin) - implies non verbose&quiet\n"
 "  -S, --nosplash            do not display splash image on startup.\n"
 "  -s, --fullscreen          start xjadeo in fullscreen mode.\n"
@@ -531,6 +564,9 @@ static void printversion (void) {
 #endif 
 #ifdef HAVE_LTCSMPTE
   printf("LTC ");
+#endif
+#ifdef JACK_SESSION
+  printf("JACK-SESSION ");
 #endif
 #ifdef HAVE_MQ
   printf("POSIX-MQueue ");
@@ -634,6 +670,8 @@ void clean_up (int status) {
   close_jack();
 
   if (smpte_offset) free(smpte_offset);
+  if (load_rc) free(load_rc);
+  if (load_movie) free(load_movie);
   
   if (!want_quiet)
     fprintf(stdout, "\nBye!\n");
@@ -705,12 +743,17 @@ main (int argc, char **argv)
   if (videomode < 0) vidoutmode(videomode); // dump modes and exit.
 
   if ((i+1)== argc) movie = argv[i];
-  else if ((remote_en || mq_en || ipc_queue) && i==argc) movie = "";
+  else if ((remote_en || mq_en || ipc_queue || load_rc) && i==argc) movie = "";
 #ifndef HAVE_MACOSX
   else usage (EXIT_FAILURE);
 #else
   else movie = "";
 #endif
+
+  if (load_rc) {
+    if (testfile(load_rc)) readconfig(load_rc);
+    if (load_movie) movie = load_movie;
+  }
 
   if (want_verbose) printf ("xjadeo %s\n", VERSION);
 
@@ -775,6 +818,14 @@ main (int argc, char **argv)
 
 #ifdef HAVE_MIDI
   midi_choose_driver(midi_driver);
+
+#ifdef JACK_SESSION
+  if (jack_uuid && !strcmp(midi_driver_name(), "JACK-MIDI")) {
+    // don't auto-connect jack-midi on session restore.
+    if (atoi(midiid) == 0) midiid[0]='\0';
+  }
+#endif
+
   if (atoi(midiid) >= -1 ) {
     if (!want_quiet) 
       printf("using MTC as sync-source.\n");
@@ -789,7 +840,8 @@ main (int argc, char **argv)
   {
     if (!want_quiet) 
       printf("using JACK-transport as sync source.\n");
-    open_jack();
+    if (use_jack)
+      open_jack();
   }
 
 #ifdef HAVE_MQ

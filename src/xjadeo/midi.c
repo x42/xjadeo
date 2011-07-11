@@ -37,6 +37,12 @@
  * select on run-time...
  */
 
+#ifdef JACK_SESSION
+#include <jack/session.h>
+extern char *jack_uuid;
+void jack_session_cb( jack_session_event_t *event, void *arg );
+#endif
+
 #ifdef HAVE_MIDI
 
 /*
@@ -563,7 +569,12 @@ void jm_midi_open(char *midiid) {
   char jackmidiid[16];
 	do {
 		snprintf(jackmidiid,16,"xjadeo-%i",i);
-		jack_midi_client = jack_client_open (jackmidiid, JackUseExactName, NULL);
+#ifdef JACK_SESSION
+		if (jack_uuid) 
+			jack_midi_client = jack_client_open (jackmidiid, JackUseExactName|JackSessionID, NULL, jack_uuid);
+		else
+#endif
+			jack_midi_client = jack_client_open (jackmidiid, JackUseExactName, NULL);
 	} while (jack_midi_client == NULL && i++<16);
 
 	if (!jack_midi_client) {
@@ -571,6 +582,9 @@ void jm_midi_open(char *midiid) {
     return;
   }
 
+#ifdef JACK_SESSION
+		jack_set_session_callback (jack_midi_client, jack_session_cb, NULL);
+#endif
 #ifndef HAVE_WINDOWS
   jack_on_shutdown (jack_midi_client, jack_midi_shutdown, 0);
 #endif

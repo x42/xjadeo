@@ -1,6 +1,6 @@
 2006-11-27  x42  <robin@gareus.org>
  *** CHANGELOG STYLE CHANGE ***
- svn log and debian/changelog have replaced this file.
+ git log and debian/changelog have replaced this file.
  
 2006-11-25  x42  <robin@gareus.org>
  - manual and xjadeorc typo

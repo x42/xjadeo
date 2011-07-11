@@ -798,6 +798,10 @@ void xj_handle_X_events (void) {
 						jackt_rewind();
 					} else if (key == 0x20 ) { // ' ' // SPACE 
 						jackt_toggle();
+#if 0 // TEST - save current config -- JACK-SESSION
+					} else if (key == 0x78 ) { // 'x' 
+						saveconfig("/tmp/xj.cfg");
+#endif
 					} else if (want_debug) {
 						printf("unassigned key pressed: '%c' 0x%x\n",key,key);
 					}

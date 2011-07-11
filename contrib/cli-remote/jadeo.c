@@ -58,6 +58,13 @@ double 	delay = 0.04; // HERE: for MTC timeout only
 lash_client_t *lash_client;
 #endif
 
+#ifdef JACK_SESSION
+// XXX jadeo does not actually support JACK-SESSION
+// but it uses xjadeo's jack.c
+char *jack_uuid = NULL;                                                                                                                        
+int loop_flag = 1;                                                  
+#endif  
+
 /* mode of operation */
 int jack = 1;
 int readfromstdin = 1; // set to 0 or 1!
@@ -149,5 +156,9 @@ int main (int argc, char **argv) {
 	else midi_close();
 #endif
 	return (0);
+}
+
+int saveconfig (const char *filename) {
+	return 0;
 }
 /* vim:set ts=8 sts=8 sw=8: */

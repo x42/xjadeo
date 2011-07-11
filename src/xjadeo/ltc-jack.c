@@ -23,6 +23,12 @@
 
 #include <stdio.h>
 
+#ifdef JACK_SESSION
+#include <jack/session.h>
+extern char *jack_uuid;
+void jack_session_cb( jack_session_event_t *event, void *arg );
+#endif
+
 #ifdef HAVE_LTCSMPTE
 extern double framerate;
 
@@ -47,7 +53,9 @@ long int ltc_position = 0;
  */
 int myProcess(SMPTEDecoder *d, long int *jt)  {
   SMPTEFrameExt frame;
+#ifdef DEBUG
   int errors;
+#endif
   int i=0;
   int rv=0;
   int flush = 0; // XXX process only last LTC (0: all in decoder queue)
@@ -123,9 +131,15 @@ void ltcjack_shutdown (void *arg) {
 /**
  * open a client connection to the JACK server 
  */
-int init_jack(const char *client_name, const char *server_name, jack_options_t options) {
+int init_jack(const char *client_name) {
   jack_status_t status;
-  j_client = jack_client_open (client_name, options, &status, server_name);
+  jack_options_t options = JackNullOption;
+#ifdef JACK_SESSION
+	if (jack_uuid) 
+		j_client = jack_client_open (client_name, options|JackSessionID, &status, jack_uuid);
+	else
+#endif
+		j_client = jack_client_open (client_name, options, &status);
   if (j_client == NULL) {
     fprintf (stderr, "jack_client_open() failed, status = 0x%2.0x\n", status);
     if (status & JackServerFailed) {
@@ -141,6 +155,9 @@ int init_jack(const char *client_name, const char *server_name, jack_options_t o
     fprintf (stderr, "unique name `%s' assigned\n", client_name);
   }
   jack_set_process_callback (j_client, process, 0);
+#ifdef JACK_SESSION
+		jack_set_session_callback (j_client, jack_session_cb, NULL);
+#endif
 #ifndef HAVE_WINDOWS
   jack_on_shutdown (j_client, ltcjack_shutdown, 0);
 #endif
@@ -181,9 +198,7 @@ long ltc_poll_frame (void) {
 void open_ltcjack(char *autoconnect) { 
 	// TODO: jack-client name ID?!
 	char * client_name = "xjadeo-ltc";
-	const char * server_name = NULL;
-  jack_options_t options = JackNullOption;
-  if (init_jack(client_name, server_name, options)) {
+  if (init_jack(client_name)) {
 		close_ltcjack();
 		return;
 	}

@@ -124,6 +124,25 @@ extern int	OSD_mode;
 const AVRational c1_Q = { 1, 1 };
 double 		tpf = 1.0; /* pts/dts increments per video-frame - cached value */
 
+#ifdef JACK_SESSION
+extern int jack_session_restore;
+extern int js_winx;
+extern int js_winy;
+extern int js_winw;
+extern int js_winh;
+#endif
+
+void js_apply() {
+#ifdef JACK_SESSION
+	if (jack_session_restore) {
+		jack_session_restore = 0;
+		if (js_winx > 0 && js_winy > 0)
+			Xposition(js_winx, js_winy);
+		if (js_winw > 0 && js_winh > 0)
+			Xresize(js_winw,js_winh);
+	}
+#endif
+}
 //--------------------------------------------
 // main event loop
 //--------------------------------------------
@@ -189,6 +208,7 @@ void event_loop(void) {
 			select_sleep(2e5L);
 			handle_X_events();
 			lash_process();
+			js_apply();
 			continue;
 		}
     
@@ -258,6 +278,7 @@ void event_loop(void) {
 
 		handle_X_events();
 		lash_process();
+		js_apply();
     
 		gettimeofday(&clock2, NULL);
 		elapsed_time = ((double) (clock2.tv_sec-clock1.tv_sec)) + ((double) (clock2.tv_usec-clock1.tv_usec)) / 1000000.0;
