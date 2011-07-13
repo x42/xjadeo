@@ -1,6 +1,6 @@
 /* xjadeo - jack video monitor
  *
- * (c) 2010  Robin Gareus <robin@gareus.org>
+ * (c) 2010, 2011  Robin Gareus <robin@gareus.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ jack_default_audio_sample_t *j_in;
 jack_nframes_t j_latency = 0;
 jack_client_t *j_client = NULL;
 
-long int ltc_position = 0;
+volatile long int ltc_position = 0;
 
 /**
  * 
@@ -56,10 +56,11 @@ int myProcess(SMPTEDecoder *d, long int *jt)  {
 #ifdef DEBUG
   int errors;
 #endif
-  int i=0;
+  int i=0; /* marker - if queue is flushed - don't read the last */
   int rv=0;
-  int flush = 0; // XXX process only last LTC (0: all in decoder queue)
-  while (flush && SMPTEDecoderRead(d,&frame)) {i++;}
+#if 0 /* process only last LTC (0: all in decoder queue) */
+  while (SMPTEDecoderRead(d,&frame)) {i++;}
+#endif
   while (i || SMPTEDecoderRead(d,&frame)) {
     SMPTETime stime;
     i=0;
@@ -122,10 +123,7 @@ int process (jack_nframes_t nframes, void *arg) {
 		sound[i] = (unsigned char) (snd&0xff);
 	}
 	SMPTEDecoderWrite(ltc_decoder,sound,nframes,-j_latency);
-#if 1 
 	myProcess(ltc_decoder,&ltc_position);
-#endif
-
   return 0;      
 }
 
@@ -204,13 +202,10 @@ int jack_portsetup(void) {
 /* API */
 
 long ltc_poll_frame (void) {
-	//myProcess(ltc_decoder, NULL, NULL);
 	return ((ltc_position)*framerate/j_samplerate);
-	return 0;
 }
 
 void open_ltcjack(char *autoconnect) { 
-	// TODO: jack-client name ID?!
 	char * client_name = "xjadeo-ltc";
   if (init_jack(client_name)) {
 		close_ltcjack();
@@ -220,7 +215,7 @@ void open_ltcjack(char *autoconnect) {
 		close_ltcjack();
 		return;
 	}
-// TODO:  autoconnect
+// TODO: autoconnect jack port ?!
   if (jack_activate (j_client)) {
 		close_ltcjack();
 		return;
