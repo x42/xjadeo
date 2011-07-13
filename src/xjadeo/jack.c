@@ -34,8 +34,8 @@
 //extern long frames;
 extern double framerate;
 extern int want_quiet;
-extern int want_quiet;
 extern int jack_clkconvert;
+extern int interaction_override;
 #ifdef HAVE_LASH
 extern lash_client_t *lash_client;
 #endif
@@ -47,20 +47,30 @@ char jackid[16];
 #include <jack/session.h>
 extern char *jack_uuid;
 extern int	loop_flag;
-void jack_session_cb( jack_session_event_t *event, void *arg ) {
+void jack_session_cb(jack_session_event_t *event, void *arg) {
 	char filename[256];
 	char command[256];
-	snprintf( filename, sizeof(filename), "%sxjadeo.state", event->session_dir );
-	snprintf( command,  sizeof(command),  "xjadeo -U %s --rc ${SESSION_DIR}xjadeo.state", event->client_uuid );
+	if (interaction_override&0x20) {
+		/* DO NOT SAVE SESSION 
+		 * e.g. if xjadeo will be restored by wrapper-program
+		 * f.i. ardour3+videotimeline
+		 */
+	  jack_session_reply(jack_client, event);
+	  jack_session_event_free(event);
+		return;
+	}
+
+	snprintf(filename, sizeof(filename), "%sxjadeo.state", event->session_dir );
+	snprintf(command,  sizeof(command),  "xjadeo -U %s --rc ${SESSION_DIR}xjadeo.state", event->client_uuid );
 
 	//TODO save-state in filename
 	saveconfig(filename);
 
 	event->command_line = strdup(command);
 	jack_session_reply( jack_client, event );
-  if( event->type == JackSessionSaveAndQuit )
+  if(event->type == JackSessionSaveAndQuit)
 		loop_flag=0;
-	jack_session_event_free( event );
+	jack_session_event_free(event);
 }
 #endif
 

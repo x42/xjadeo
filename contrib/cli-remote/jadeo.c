@@ -63,6 +63,7 @@ lash_client_t *lash_client;
 // but it uses xjadeo's jack.c
 char *jack_uuid = NULL;                                                                                                                        
 int loop_flag = 1;                                                  
+int interaction_override =0;
 #endif  
 
 /* mode of operation */
