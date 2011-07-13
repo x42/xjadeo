@@ -1,4 +1,11 @@
-xjadeo (0.6.0-rc7) unstable; urgency=low
+xjadeo (0.6.1) unstable; urgency=low
+  * added qjadeo translations - thanks to Alexandre Prokoudine
+  * JACK-Session support.
+  * LTC+JACK - new jack latency API
+
+ -- Robin Gareus <robin@gareus.org>  Wed, 13 Jul 2011 14:11:31 +0200
+
+xjadeo (0.6.0) unstable; urgency=low
   * Changes since 0.6.0-rc7:
     * fixed LTC parsing for other than 25fps
     * splash screen update (fixed duration)
