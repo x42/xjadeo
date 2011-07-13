@@ -62,7 +62,7 @@
 #endif
 
 /* ffmpeg backwards compat */
-#ifndef HAVE_WINDOWS /* temp workaround - win32 older ffmpeg */
+#ifndef HAVE_WINDOWS /* XXX temp workaround - win32 older ffmpeg */
 #ifndef CODEC_TYPE_VIDEO
 #define CODEC_TYPE_VIDEO AVMEDIA_TYPE_VIDEO
 #endif

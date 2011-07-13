@@ -98,12 +98,12 @@ int myProcess(SMPTEDecoder *d, long int *jt)  {
  */
 int process (jack_nframes_t nframes, void *arg) {
 	j_in = jack_port_get_buffer (j_input_port, nframes);
-#ifdef HAVE_WINDOWS /* win32 uses old version of JACK */
+#ifndef NEW_JACK_LATENCY_API 
 	j_latency = jack_port_get_total_latency(j_client,j_input_port);
 #else
 	jack_latency_range_t jlty;
 	jack_port_get_latency_range(j_input_port, JackCaptureLatency, &jlty);
-	j_latency = jlty->max;
+	j_latency = jlty.max;
 #endif
 
   //assert(nframes <= 4096); // XXX

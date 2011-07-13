@@ -129,6 +129,7 @@ AH_TEMPLATE([TIMEMAP], [enable dynamic time scaling])
 AH_TEMPLATE([CROPIMG], [enable frame cropping])
 AH_TEMPLATE([DRAW_CROSS], [paint a X on screen when unable to decode or display a frame.])
 AH_TEMPLATE([HAVE_JACK_VIDEO], [experimental code to use jack_video, jack-svn >= r591])
+AH_TEMPLATE([NEW_JACK_LATENCY_API], [use new JACK latency API])
 AH_TEMPLATE([HAVE_SWSCALE], [Define as 1 if you have ffmpeg with swscale support])
 AH_TEMPLATE([OLD_FFMPEG], [Define as 1 if you older versions of ffmpeg that provide all include headers in one folder. ])
 
@@ -162,6 +163,7 @@ AC_SUBST(JACK_CFLAGS)
 AC_SUBST(JACK_LIBS)
 if test "x$enable_jacksession" != "xno"; then
   AC_CHECK_HEADERS([jack/session.h] , AC_DEFINE(JACK_SESSION) JACK_SESSION=1)
+	AC_SEARCH_LIBS(jack_port_get_latency_range, jack, AC_DEFINE(NEW_JACK_LATENCY_API) NEW_JACK_LATENCY_API=1 )
 fi
 
 MQ_LIBS=""
