@@ -92,6 +92,14 @@ int myProcess(SMPTEDecoder *d, long int *jt)  {
   return rv;
 }
 
+#ifdef NEW_JACK_LATENCY_API 
+int jack_latency_cb(void *arg) {
+	jack_latency_range_t jlty;
+	jack_port_get_latency_range(j_input_port, JackCaptureLatency, &jlty);
+	j_latency = jlty.max;
+	return 0;
+}
+#endif
 
 /**
  * jack audio process callback
@@ -100,10 +108,6 @@ int process (jack_nframes_t nframes, void *arg) {
 	j_in = jack_port_get_buffer (j_input_port, nframes);
 #ifndef NEW_JACK_LATENCY_API 
 	j_latency = jack_port_get_total_latency(j_client,j_input_port);
-#else
-	jack_latency_range_t jlty;
-	jack_port_get_latency_range(j_input_port, JackCaptureLatency, &jlty);
-	j_latency = jlty.max;
 #endif
 
   //assert(nframes <= 4096); // XXX
@@ -162,7 +166,11 @@ int init_jack(const char *client_name) {
   }
   jack_set_process_callback (j_client, process, 0);
 #ifdef JACK_SESSION
-		jack_set_session_callback (j_client, jack_session_cb, NULL);
+	jack_set_session_callback (j_client, jack_session_cb, NULL);
+#endif
+#ifdef NEW_JACK_LATENCY_API 
+	jack_set_graph_order_callback (j_client, jack_latency_cb, NULL);
+	jack_latency_cb(NULL);
 #endif
 #ifndef HAVE_WINDOWS
   jack_on_shutdown (j_client, ltcjack_shutdown, 0);
