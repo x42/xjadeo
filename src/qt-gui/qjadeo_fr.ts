@@ -13,15 +13,15 @@
     </message>
     <message>
         <source>Source:</source>
-        <translation>Source:</translation>
+        <translation>Source :</translation>
     </message>
     <message>
         <source>File Info:</source>
-        <translation>Info Fichier:</translation>
+        <translation>Info Fichier :</translation>
     </message>
     <message>
         <source>Destination:</source>
-        <translation>Destination:</translation>
+        <translation>Destination :</translation>
     </message>
     <message>
         <source>Encoder Settings</source>
@@ -29,7 +29,7 @@
     </message>
     <message>
         <source>Width:</source>
-        <translation>Largeur:</translation>
+        <translation>Largeur :</translation>
     </message>
     <message>
         <source>Scale</source>
@@ -37,7 +37,7 @@
     </message>
     <message>
         <source>Height:</source>
-        <translation>Hauteur:</translation>
+        <translation>Hauteur :</translation>
     </message>
     <message>
         <source>Break Aspect Ratio</source>
@@ -45,7 +45,7 @@
     </message>
     <message>
         <source>FPS:</source>
-        <translation>FPS:</translation>
+        <translation>FPS :</translation>
     </message>
     <message>
         <source>24</source>
@@ -81,11 +81,11 @@
     </message>
     <message>
         <source>select video file to convert</source>
-        <translation type="unfinished"></translation>
+        <translation>choisir le fichier vidéo à convertir</translation>
     </message>
     <message>
         <source>choose a destinaton filename</source>
-        <translation type="unfinished"></translation>
+        <translation>choisir un nom de fichier de destination</translation>
     </message>
 </context>
 <context>
@@ -107,11 +107,11 @@
     </message>
     <message>
         <source>screen updates per sec.</source>
-        <translation>Fréquence de rafraîchissement d&apos;écran:</translation>
+        <translation>rafraîchissements de l&apos;écran par sec.</translation>
     </message>
     <message>
         <source>time offset in video-frames:</source>
-        <translation>Décalage dans les trames vidéo:</translation>
+        <translation>décalage temporel dans les trames vidéo :</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -166,14 +166,6 @@
         <translation>&amp;À propos</translation>
     </message>
     <message>
-        <source>ActionGroup</source>
-        <translation type="obsolete">GroupeAction</translation>
-    </message>
-    <message>
-        <source>Sync</source>
-        <translation type="obsolete">Sync</translation>
-    </message>
-    <message>
         <source>JACK Transport</source>
         <translation>Transport JACK</translation>
     </message>
@@ -192,10 +184,6 @@
     <message>
         <source>off (slider)</source>
         <translation>éteinte (glissière)</translation>
-    </message>
-    <message>
-        <source>Zoom</source>
-        <translation type="obsolete">Zoom</translation>
     </message>
     <message>
         <source>50%</source>
@@ -271,27 +259,27 @@
     </message>
     <message>
         <source>Ctrl+Q</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+Q</translation>
     </message>
     <message>
         <source>Filename</source>
-        <translation type="unfinished"></translation>
+        <translation>Nom de fichier</translation>
     </message>
     <message>
         <source>Ctrl+W</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+W</translation>
     </message>
     <message>
         <source>Letterbox</source>
-        <translation type="unfinished"></translation>
+        <translation>Letterbox</translation>
     </message>
     <message>
         <source>Resize to aspect-ratio</source>
-        <translation type="unfinished"></translation>
+        <translation>Redimensionner au ratio d&apos;aspect</translation>
     </message>
     <message>
         <source>LTC (JACK)</source>
-        <translation type="unfinished"></translation>
+        <translation>LTC (JACK)</translation>
     </message>
 </context>
 <context>
@@ -306,23 +294,23 @@
     </message>
     <message>
         <source>Autoconnect ALSA Midi port (MTC):</source>
-        <translation>Se connecter automatiquement ce port ALSA Midi (MTC):</translation>
+        <translation>Se connecter automatiquement ce port ALSA Midi (MTC) :</translation>
     </message>
     <message>
         <source>Autoconnect JACK Midi port (MTC):</source>
-        <translation>Se connecter automatiquement ce port JACK Midi (MTC):</translation>
+        <translation>Se connecter automatiquement ce port JACK Midi (MTC) :</translation>
     </message>
     <message>
         <source>xjadeo/xjremote executable:</source>
-        <translation>Exécutable xjadeo/xjremote:</translation>
+        <translation>Exécutable xjadeo/xjremote :</translation>
     </message>
     <message>
         <source>xjinfo executable:</source>
-        <translation>Exécutable xjinfo:</translation>
+        <translation>Exécutable xjinfo :</translation>
     </message>
     <message>
         <source>mencoder executable:</source>
-        <translation>Exécutable mencoder:</translation>
+        <translation>Exécutable mencoder :</translation>
     </message>
     <message>
         <source>Import Settings</source>
@@ -330,7 +318,7 @@
     </message>
     <message>
         <source>Import to Codec:</source>
-        <translation>Codec:</translation>
+        <translation>Importer vers le Codec :</translation>
     </message>
     <message>
         <source>mpeg4</source>
@@ -354,11 +342,11 @@
     </message>
     <message>
         <source>mencoder options:</source>
-        <translation>Options de mencoder:</translation>
+        <translation>Options de mencoder :</translation>
     </message>
     <message>
         <source>Default Import Destination Path:</source>
-        <translation>Chemin de destination par défaut:</translation>
+        <translation>Chemin de destination par défaut :</translation>
     </message>
     <message>
         <source>&amp;Cancel</source>
@@ -370,22 +358,22 @@
     </message>
     <message>
         <source>Select default destination folder</source>
-        <translation type="unfinished"></translation>
+        <translation>Choisir le dossier de destination par défaut</translation>
     </message>
 </context>
 <context>
     <name>QJadeo</name>
     <message>
         <source>&amp;%1 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;%1 %2</translation>
     </message>
     <message>
         <source>Choose video file</source>
-        <translation type="unfinished"></translation>
+        <translation>Choisir le fichier vidéo</translation>
     </message>
     <message>
         <source>Choose a font</source>
-        <translation type="unfinished"></translation>
+        <translation>Choisir une police</translation>
     </message>
 </context>
 </TS>
