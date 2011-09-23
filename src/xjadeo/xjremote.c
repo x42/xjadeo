@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #include <getopt.h>
 
@@ -184,9 +185,13 @@ void execjadeo(int flags, char *queuefile) {
 
 	if (xjadeo) {
 		printf("# executing: %s\n",xjadeo);
-		if (flags&1) { close(0); close(1); close(2);}
+		if (flags&1) { 
+			close(0);
+			dup2(open("/dev/null", 0), 1);
+			dup2(open("/dev/null", 0), 2);
+		}
 		if (flags&4)
-			execl(xjadeo,"xjadeo", "-W", queuefile, NULL);
+			execl(xjadeo,"xjadeo", "-q", "-W", queuefile, NULL);
 		else if (flags&2) 
 			execl(xjadeo,"xjadeo", "-R", NULL);
 		else 
@@ -557,11 +562,7 @@ restart:
 #include <sys/ipc.h>
 #include <sys/msg.h>
 
-#include <sys/stat.h>
-#include <fcntl.h>
-
 #include <errno.h>
-
 
 struct msgbuf1 {
 	long    mtype;
