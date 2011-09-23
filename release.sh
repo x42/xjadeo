@@ -35,7 +35,7 @@ fi
 git commit -a
 git tag "v$VERSION" || (echo -n "version tagging failed. - press Enter to continue, CTRL-C to stop."; read; )
 # upload to rg42.org git
-git push
+git push origin
 git push --tags
 # upload to sourceforge git
 git push sf
