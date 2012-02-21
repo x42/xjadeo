@@ -332,7 +332,9 @@ void init_moviebuffer(void) {
 
 void avinit (void) {
 	av_register_all();
+#if LIBAVFORMAT_BUILD < 0x351400
 	avcodec_init();
+#endif
 	avcodec_register_all();
 	if(!want_avverbose) av_log_set_level(AV_LOG_QUIET);
 }
@@ -359,7 +361,12 @@ int open_movie(char* file_name) {
 	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset);
   
 	/* Open video file */
-	if(av_open_input_file(&pFormatCtx, file_name, NULL, 0, NULL)!=0) {
+#if LIBAVFORMAT_BUILD < 0x350500
+	if(av_open_input_file(&pFormatCtx, file_name, NULL, 0, NULL)!=0)
+#else
+	if(avformat_open_input(&pFormatCtx, file_name, NULL, NULL)!=0)
+#endif
+	{
 		if (!remote_en && !mq_en && !ipc_queue) //TODO prevent msg only when starting up with no file...
 			fprintf( stderr, "Cannot open video file %s\n", file_name);
 		return (-1);
