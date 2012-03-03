@@ -361,9 +361,10 @@ int open_movie(char* file_name) {
 	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset);
   
 	/* Open video file */
-#if LIBAVFORMAT_BUILD < 0x350500
+#if LIBAVFORMAT_BUILD <= 0x350500
 	if(av_open_input_file(&pFormatCtx, file_name, NULL, 0, NULL)!=0)
 #else
+	pFormatCtx=NULL;
 	if(avformat_open_input(&pFormatCtx, file_name, NULL, NULL)!=0)
 #endif
 	{
