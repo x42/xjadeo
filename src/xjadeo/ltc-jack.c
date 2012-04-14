@@ -46,7 +46,7 @@ jack_default_audio_sample_t *j_in;
 jack_nframes_t j_latency = 0;
 jack_client_t *j_client = NULL;
 
-volatile long int ltc_position = 0;
+static long int ltc_position = 0;
 
 /**
  * 

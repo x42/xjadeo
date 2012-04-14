@@ -685,10 +685,8 @@ void xapi_psync(void *d) {
 }
 
 void xapi_osd_pos(void *d) {
-	int x,y;
 	char *t0= (char*)d;
 	char *t1;
-	x=0;y=0;
 	
 	if ((t1=strchr(t0,' ')) && ++t1) {
 		OSD_tx=atoi(t0);
