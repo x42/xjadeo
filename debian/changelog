@@ -1,8 +1,9 @@
 xjadeo (0.6.3) unstable; urgency=low
 
   * update to new ffmpeg API
+  * fixed some compiler warnings.
 
- -- Robin Gareus <robin@gareus.org>  Sat, 14 Apr 2012 23:58:09 +0200
+ -- Robin Gareus <robin@gareus.org>  Sun, 15 Apr 2012 00:15:44 +0200
 
 xjadeo (0.6.2) unstable; urgency=low
   * updated French translation Raphael Doursenaud)
