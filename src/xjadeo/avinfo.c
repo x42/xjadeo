@@ -49,34 +49,14 @@
 #endif
 
 #include <getopt.h>
+#include "ffcompat.h"
 
-
-#ifdef OLD_FFMPEG
-#include <avformat.h>
-#else
-#include <libavformat/avformat.h>
-#include <libavcodec/avcodec.h>
 #if LIBAVFORMAT_BUILD >= 3473920
 #include <libavutil/imgutils.h>
-#endif
-#endif
-
-/* ffmpeg backwards compat */
-#ifndef HAVE_WINDOWS /* XXX temp workaround - win32 older ffmpeg */
-#ifndef CODEC_TYPE_VIDEO
-#define CODEC_TYPE_VIDEO AVMEDIA_TYPE_VIDEO
-#endif
-#ifndef CODEC_TYPE_DATA
-#define CODEC_TYPE_DATA AVMEDIA_TYPE_DATA
-#endif
-#ifndef CODEC_TYPE_AUDIO
-#define CODEC_TYPE_AUDIO AVMEDIA_TYPE_AUDIO
-#endif
 #endif
 
 char *program_name;
 int want_mode  = 0;	/*< 0:xml 1:time 2:videoinfo */
-
 
 static void usage (int status)
 {
@@ -172,13 +152,17 @@ int main(int argc, char *argv[])
   av_register_all();
   av_log_set_level(AV_LOG_QUIET);
 
+#if 1 // XXX check libav
   err = av_open_input_file(&ic, fn, file_iformat, 0, ap);
+#else
+  err = avformat_open_input(&ic, fn, file_iformat, ap);
+#endif
   if (err < 0) {
     fprintf(stderr, "%s: Error while opening file\n", fn);
     return 1;
   }
 
-  ret = av_find_stream_info(ic);
+  ret = avformat_find_stream_info(ic, NULL);
   if (ret < 0) {
     fprintf(stderr, "%s: could not find codec parameters\n", fn);
     return 1;

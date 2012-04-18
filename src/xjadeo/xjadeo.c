@@ -32,35 +32,7 @@
  *
  */
 #include "xjadeo.h"
-
-#ifdef OLD_FFMPEG
-#include <avcodec.h> // needed for PIX_FMT 
-#include <avformat.h>
-#else
-#include <libavcodec/avcodec.h> // needed for PIX_FMT 
-#include <libavformat/avformat.h>
-#endif
-
-#ifdef HAVE_SWSCALE
-#ifdef OLD_FFMPEG
-#include <swscale.h>
-#else
-#include <libswscale/swscale.h>
-#endif
-#endif
-
-#include <time.h>
-#include <getopt.h>
-#include <sys/time.h>
-#include <unistd.h>
-
-/* ffmpeg backwards compat */
-
-#ifndef HAVE_WINDOWS /* XXX temp workaround - win32 older ffmpeg */
-#ifndef CODEC_TYPE_VIDEO
-#define CODEC_TYPE_VIDEO AVMEDIA_TYPE_VIDEO
-#endif
-#endif
+#include "ffcompat.h"
 
 //------------------------------------------------
 // extern Globals (main.c)
@@ -70,6 +42,7 @@ extern int 	loop_run;
 
 extern int               movie_width;
 extern int               movie_height;
+extern float             movie_aspect;
 extern AVFormatContext   *pFormatCtx;
 extern int               videoStream;
 extern AVCodecContext    *pCodecCtx;
@@ -374,9 +347,9 @@ int open_movie(char* file_name) {
 	}
 
 	/* Retrieve stream information */
-	if(av_find_stream_info(pFormatCtx)<0) {
+	if(avformat_find_stream_info(pFormatCtx, NULL)<0) {
 		fprintf( stderr, "Cannot find stream information in file %s\n", file_name);
-		av_close_input_file(pFormatCtx);
+		avformat_close_input(&pFormatCtx);
 		return (-1);
 	}
 
@@ -400,7 +373,7 @@ int open_movie(char* file_name) {
 
 	if(videoStream==-1) {
 		fprintf( stderr, "Cannot find a video stream in file %s\n", file_name);
-		av_close_input_file(pFormatCtx);
+		avformat_close_input(&pFormatCtx);
 		return( -1 );
 	}
 
@@ -493,14 +466,14 @@ int open_movie(char* file_name) {
 	pCodec=avcodec_find_decoder(pCodecCtx->codec_id);
 	if(pCodec==NULL) {
 		fprintf( stderr, "Cannot find a codec for file: %s\n", file_name);
-		av_close_input_file(pFormatCtx);
+		avformat_close_input(&pFormatCtx);
 		return( -1 );
 	}
     
   // Open codec
-	if(avcodec_open(pCodecCtx, pCodec)<0) {
+	if(avcodec_open2(pCodecCtx, pCodec, NULL)<0) {
 		fprintf( stderr, "Cannot open the codec for file %s\n", file_name);
-		av_close_input_file(pFormatCtx);
+		avformat_close_input(&pFormatCtx);
 		return( -1 );
 	}
   
@@ -508,7 +481,7 @@ int open_movie(char* file_name) {
 	if(pFrame==NULL) {
 		fprintf( stderr, "Cannot allocate video frame buffer\n");
 		avcodec_close(pCodecCtx);
-		av_close_input_file(pFormatCtx);
+		avformat_close_input(&pFormatCtx);
 		return(-1);
 	}
 
@@ -517,7 +490,7 @@ int open_movie(char* file_name) {
 		fprintf( stderr, "Cannot allocate display frame buffer\n");
 		av_free(pFrame);
 		avcodec_close(pCodecCtx);
-		av_close_input_file(pFormatCtx);
+		avformat_close_input(&pFormatCtx);
 		return(-1);
 	}
 
@@ -572,13 +545,12 @@ void render_empty_frame(int blit) {
 	if (render_fmt == PIX_FMT_YUV420P) 
 	for (x=0,y=0;x< movie_width-1; x++,y= movie_height*x/movie_width) {
 		 int yoff=(x+movie_width*y);
-		 int uvoff=((x/2)+movie_width/2*(y/2));
+		 //int uvoff=((x/2)+movie_width/2*(y/2));
 		 buffer[yoff]=127; buffer[yoff+1]=127; 
 
 		 yoff=(x+movie_width*(movie_height-y-1));
-		 uvoff=((x/2)+movie_width/2*((movie_height-y-1)/2));
-		 buffer[yoff]=127;
-		 buffer[yoff+1]=127;
+		 //uvoff=((x/2)+movie_width/2*((movie_height-y-1)/2));
+		 buffer[yoff]=127; buffer[yoff+1]=127;
 	}
 	if (render_fmt == PIX_FMT_RGB24) 
 	for (x=0,y=0;x< movie_width-1; x++,y= movie_height*x/movie_width) {
@@ -888,7 +860,7 @@ int close_movie() {
 	avcodec_close(pCodecCtx);
 
 	//Close the video file
-	av_close_input_file(pFormatCtx);
+	avformat_close_input(&pFormatCtx);
 	duration = frames = 1;
 	framerate = 10; // prevent slow reaction to remote-ctl (event loop).
 	return (0);
