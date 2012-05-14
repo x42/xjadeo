@@ -6,7 +6,7 @@ NSISEXE=/home/rgareus/.wine/drive_c/Program\ Files/NSIS/makensis.exe
 unset CC
 if test -z "$NORECONF"; then
 PKG_CONFIG_PATH=$WINEBASEDIR/lib/pkgconfig/ CFLAGS="-I$WINEBASEDIR/include -I.." LDFLAGS="-L$WINEBASEDIR/lib/ -L$WINEBASEDIR/bin" \
-	./configure --host=i586-mingw32msvc --build=i386-linux --prefix=/home/rgareus/.wine/drive_c/x-prefix/ \
+	./configure --host=i586-mingw32msvc --build=i386-linux --prefix=$WINEBASEDIR \
 	  --disable-xv --disable-imlib2 --disable-lash --disable-mq --disable-ipc --disable-osc \
 	  --with-fontfile=./FreeMonoBold.ttf \
 	|| exit
@@ -23,11 +23,19 @@ make -C src/xjadeo xjinfo.exe || exit
 cp -v src/xjadeo/xjinfo.exe $NSIDIR
 
 WINEBIN=$WINEBASEDIR/bin/
-cp -v src/xjadeo/xjadeo.exe $NSIDIR
-cp -v $WINEBIN/avcodec-52.dll $NSIDIR
-cp -v $WINEBIN/avformat-52.dll $NSIDIR
-cp -v $WINEBIN/avutil-49.dll $NSIDIR
-cp -v $WINEBIN/swscale-0.dll $NSIDIR
+#cp -v src/xjadeo/xjadeo.exe $WINEBIN
+
+
+cp -v $WINEBIN/avcodec-54.dll $NSIDIR
+cp -v $WINEBIN/avformat-54.dll $NSIDIR
+cp -v $WINEBIN/avutil-51.dll $NSIDIR
+cp -v $WINEBIN/swscale-2.dll $NSIDIR
+#cp -v $WINEBIN/avdevice-53.dll $NSIDIR
+#cp -v $WINEBIN/avfilter-2.dll $NSIDIR
+#cp -v $WINEBIN/postproc-52.dll $NSIDIR
+#cp -v $WINEBIN/avresample-0.dll $NSIDIR
+#cp -v $WINEBIN/swresample-0.dll $NSIDIR
+
 cp -v $WINEBIN/freetype6.dll $NSIDIR
 cp -v $WINEBIN/SDL.dll $NSIDIR
 cp -v $WINEBIN/zlib1.dll $NSIDIR
