@@ -45,6 +45,7 @@ extern int interaction_override; // disable some options.
 
 extern int movie_width;
 extern int movie_height;
+extern float movie_aspect;
 extern double delay;
 extern double framerate;
 extern int start_fullscreen;
@@ -572,7 +573,6 @@ void window_resized_mac() {
   GetPortBounds( GetWindowPort(theWindow), &winRect );
 
   if(want_letterbox) {
-    float movie_aspect  =  (float)movie_width / (float)movie_height; // XXX todo pixel aspect ?
     float window_aspect = (float)((float)(winRect.right)/(float)winRect.bottom);
 	
     if (window_aspect > movie_aspect ) {
@@ -653,7 +653,6 @@ void window_fullscreen() {
     int panscan_x = 0; // offset window->image
     int panscan_y = 0;
     if(want_letterbox) {
-      float movie_aspect  =  (float)movie_width / (float)movie_height; // XXX todo pixel aspect ?
       float window_aspect = (float)((float)(device_width)/(float)device_height);
 	
       if (window_aspect > movie_aspect)
@@ -1038,11 +1037,12 @@ static int draw_frame(uint8_t *src) {
  * xjadeo API
  */
 
-int open_window_mac (void) { 
+int open_window_mac (void) {
   uint32_t width   = movie_width;
   uint32_t height  = movie_height; 
-  uint32_t d_width = movie_width;
-  uint32_t d_height= movie_height;
+
+  uint32_t d_height= ffctv_height;
+  uint32_t d_width = ffctv_width
 
   device_id = 0;
   image_format = PIX_FMT_YUV420P;
@@ -1512,22 +1512,22 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
     } break;
     case 'm': mousepointer_mac(2); break;
     case '.': { //'.' // resize 100%
-      resize_mac(movie_width, movie_height);
+      resize_mac(ffctv_width, ffctv_height);
     } break;
     case ',': { //',' // resize to aspect ratio
       unsigned int my_Width,my_Height;
       getsize_mac(&my_Width,&my_Height);
-      if( ((float)movie_width/(float)movie_height) < ((float)my_Width/(float)my_Height) )
-        my_Width=floor((float)my_Height * (float)movie_width / (float)movie_height);
+      if( movie_aspect < ((float)my_Width/(float)my_Height) )
+        my_Width=floor((float)my_Height * movie_aspect);
       else
-        my_Height=floor((float)my_Width * (float)movie_height / (float)movie_width);
+        my_Height=floor((float)my_Width / movie_aspect);
       resize_mac(my_Width, my_Height);
     } break;
     case '<': { //'<' // resize *.83
       unsigned int my_Width,my_Height;
       getsize_mac(&my_Width,&my_Height);
       float step=0.2*my_Height;
-      my_Width-=floor(step*((float)movie_width/(float)movie_height));
+      my_Width-=floor(step*movie_aspect);
       my_Height-=step;
       resize_mac(my_Width, my_Height);
     } break;
@@ -1535,7 +1535,7 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       unsigned int my_Width,my_Height;
       getsize_mac(&my_Width,&my_Height);
       float step=0.2*my_Height;
-      my_Width+=floor(step*((float)movie_width/(float)movie_height));
+      my_Width+=floor(step*movie_aspect);
       my_Height+=step;
       resize_mac(my_Width, my_Height);
     } break;
@@ -1580,18 +1580,23 @@ OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
       NavOpenSettings();
       break;
     case mHalfScreen:
-      resize_mac(movie_width/2, movie_height/2);
+      {
+        resize_mac(ffctv_width/2, ffctv_height/2);
+      }
       break;
     case mNormalScreen:
-      resize_mac(movie_width, movie_height);
-    //SizeWindow(theWindow, d_width, (d_width/movie_aspect), 1);
+      {
+        resize_mac(ffctv_width, ffctv_height);
+      }
       break;
   //case kHICommandFullScreen:
     case mFullScreen:
       vo_fs = (!(vo_fs)); window_fullscreen();
       break;
     case mDoubleScreen:
-      resize_mac(movie_width*2, movie_height*2);
+      {
+        resize_mac(ffctv_width*2, ffctv_height*2);
+      }
       break;
     case mKeepAspect:
       want_letterbox = !want_letterbox;

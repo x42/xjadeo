@@ -31,6 +31,7 @@
 #endif
 
 #if LIBAVUTIL_BUILD >= 0x320000
+#define PIX_FMT_BGRA32 PIX_FMT_BGRA
 #define PIX_FMT_RGBA32 PIX_FMT_RGBA
 #endif
 

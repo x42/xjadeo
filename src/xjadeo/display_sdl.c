@@ -83,7 +83,12 @@ int open_window_sdl (void) {
 	full_screen_width = video_info->current_w;
 	full_screen_height = video_info->current_h;
 
-	sdl_screen = SDL_SetVideoMode(movie_width,movie_height, video_bpp,MYSDLFLAGS);
+	sdl_rect.x = 0;
+	sdl_rect.y = 0;
+	sdl_rect.h = ffctv_height;
+	sdl_rect.w = ffctv_width;
+
+	sdl_screen = SDL_SetVideoMode(sdl_rect.w, sdl_rect.h, video_bpp,MYSDLFLAGS);
 	SDL_WM_SetCaption("xjadeo", "xjadeo");
 
 // FIXME: on linux the SDL_*_OVERLAY are defined as FOURCC numbers rather than beeing abstract 
@@ -100,10 +105,7 @@ int open_window_sdl (void) {
 		printf("OVERLAY error.\n");
 		goto no_overlay;
 	}
-	sdl_rect.x = 0;
-	sdl_rect.y = 0;
-	sdl_rect.w = sdl_overlay->w;
-	sdl_rect.h = sdl_overlay->h;
+
 	resized_sdl();
 
 	if (sdl_overlay->pitches[0] != movie_width ||
@@ -185,6 +187,7 @@ void resize_sdl (unsigned int x, unsigned int y) {
 	sdl_rect.w=x;
 	sdl_rect.h=y;
 	resized_sdl();
+	force_redraw=1;
 }
 
 void getsize_sdl (unsigned int *x, unsigned int *y) {
@@ -300,15 +303,14 @@ void sdl_toggle_fullscreen(int action) {
 }
 
 void calc_letterbox(int src_w, int src_h, int out_w, int out_h, int *sca_w, int *sca_h) {
-  if (src_w*out_h > src_h*out_w) {
+	const float asp_src = movie_aspect?movie_aspect:(float)src_w/src_h;
+  if (asp_src * out_h > out_w) {
     (*sca_w)=out_w;
-    (*sca_h)=(int)round((float)out_w*(float)src_h/(float)src_w);
-  } else {
+    (*sca_h)=(int)round((float)out_w/asp_src);
+	} else {
     (*sca_h)=out_h;
-    (*sca_w)=(int)round((float)out_h*(float)src_w/(float)src_h);
-  }
-  //(*sca_w)=(((*sca_w) + 1) >>1)<<1;
-  //(*sca_h)=(((*sca_h) + 1) >>1)<<1;
+    (*sca_w)=(int)round((float)out_h*asp_src);
+	}
 }
 
 void newsrc_sdl (void) {
@@ -361,24 +363,24 @@ void handle_X_events_sdl (void) {
 					unsigned int my_Width,my_Height;
 					getsize_sdl(&my_Width,&my_Height);
 					float step=0.2*my_Height;
-					my_Width-=floor(step*((float)movie_width/(float)movie_height));
+					my_Width-=floor(step*movie_aspect);
 					my_Height-=step;
 					resize_sdl(my_Width, my_Height);
 				} else if(ev.key.keysym.sym== SDLK_GREATER || (ev.key.keysym.sym== SDLK_PERIOD && ev.key.keysym.mod&KMOD_SHIFT) ) { // '>'
 					unsigned int my_Width,my_Height;
 					getsize_sdl(&my_Width,&my_Height);
 					float step=0.2*my_Height;
-					my_Width+=floor(step*((float)movie_width/(float)movie_height));
+					my_Width+=floor(step*movie_aspect);
 					my_Height+=step;
 					resize_sdl(my_Width, my_Height);
 				} else if(ev.key.keysym.sym==SDLK_PERIOD) {
-					resize_sdl(movie_width, movie_height);
+					resize_sdl(ffctv_width, ffctv_height);
 				} else if(ev.key.keysym.sym== SDLK_COMMA) { // ','
 						unsigned int my_Width,my_Height;
 						getsize_sdl(&my_Width,&my_Height);
-						if( ((float)movie_width/(float)movie_height) < ((float)my_Width/(float)my_Height) )
-							my_Width=floor((float)my_Height * (float)movie_width / (float)movie_height);
-						else 	my_Height=floor((float)my_Width * (float)movie_height / (float)movie_width);
+						if( movie_aspect < ((float)my_Width/(float)my_Height) )
+							my_Width=rint((float)my_Height * movie_aspect);
+						else 	my_Height=rint((float)my_Width / movie_aspect);
 						resize_sdl(my_Width, my_Height);
 				} else if(ev.key.keysym.sym==SDLK_o) {
 					if (OSD_mode&OSD_OFFF) {
@@ -447,7 +449,7 @@ void handle_X_events_sdl (void) {
 				break;
 			case SDL_MOUSEBUTTONUP:
 				if(ev.button.button == SDL_BUTTON_LEFT) {
-						resize_sdl(movie_width,movie_height);
+					resize_sdl(ffctv_width, ffctv_height);
 				} else 
 #if 0 // fix aspect only on right-button and scroll. 
 					 if(ev.button.button == SDL_BUTTON_WHEELUP ||
@@ -461,18 +463,18 @@ void handle_X_events_sdl (void) {
 
 					if(ev.button.button == SDL_BUTTON_WHEELUP) {
 						float step=sqrt((float)my_Height);
-						my_Width-=floor(step*((float)movie_width/(float)movie_height));
+						my_Width-=floor(step*movie_aspect);
 						my_Height-=step;
 					}
 					if(ev.button.button == SDL_BUTTON_WHEELDOWN) {
 						float step=sqrt((float)my_Height);
-						my_Width+=floor(step*((float)movie_width/(float)movie_height));
+						my_Width+=floor(step*movie_aspect);
 						my_Height+=step;
 					} 
 					// resize to match movie aspect ratio
-					if( ((float)movie_width/(float)movie_height) < ((float)my_Width/(float)my_Height) )
-						my_Width=floor((float)my_Height * (float)movie_width / (float)movie_height);
-					else my_Height=floor((float)my_Width * (float)movie_height / (float)movie_width);
+					if( movie_aspect < ((float)my_Width/(float)my_Height) )
+						my_Width=floor((float)my_Height * movie_aspect);
+					else my_Height=floor((float)my_Width / movie_aspect);
 
 					resize_sdl(my_Width,my_Height);
 				}

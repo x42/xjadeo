@@ -42,6 +42,8 @@ extern int 	loop_run;
 
 extern int               movie_width;
 extern int               movie_height;
+extern int               ffctv_width;
+extern int               ffctv_height;
 extern float             movie_aspect;
 extern AVFormatContext   *pFormatCtx;
 extern int               videoStream;
@@ -187,7 +189,7 @@ void event_loop(void) {
 			js_apply();
 			continue;
 		}
-    
+
 #ifdef HAVE_MIDI
 		if (midi_connected()) newFrame = midi_poll_frame();
 		else
@@ -255,7 +257,7 @@ void event_loop(void) {
 		handle_X_events();
 		lash_process();
 		js_apply();
-    
+
 		gettimeofday(&clock2, NULL);
 		elapsed_time = ((double) (clock2.tv_sec-clock1.tv_sec)) + ((double) (clock2.tv_usec-clock1.tv_usec)) / 1000000.0;
 		if(elapsed_time < dly) {
@@ -278,7 +280,6 @@ void event_loop(void) {
 void render_empty_frame(int blit);
 
 void init_moviebuffer(void) {
-  
 	int     numBytes;
 	if (buffer) free(buffer);
 	if (want_debug)
@@ -332,7 +333,7 @@ int open_movie(char* file_name) {
 	videoStream=-1;
 	// recalc offset with new framerate
 	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset);
-  
+
 	/* Open video file */
 #if LIBAVFORMAT_BUILD <= 0x350500
 	if(av_open_input_file(&pFormatCtx, file_name, NULL, 0, NULL)!=0)
@@ -393,13 +394,13 @@ int open_movie(char* file_name) {
 	}
 	else framerate = 1.0/av_q2d(av_stream->time_base);
 #endif
-  
+
 	// detect drop frame timecode
-  if (fabs(framerate - 30000.0/1001.0) < 0.01) {
-    have_dropframes=1;
+	if (fabs(framerate - 30000.0/1001.0) < 0.01) {
+		have_dropframes=1;
 	  if(!want_quiet)
 		  fprintf(stdout, "enabled drop-frame-timecode (use -n to override).\n");
-  }
+	}
 
 #if defined(__BIG_ENDIAN__) && (__ppc__) && LIBAVFORMAT_BUILD <= 4616
 // this cast is weird, but it works.. the bytes seem to be in 'correct' order, but the two
@@ -436,14 +437,14 @@ int open_movie(char* file_name) {
 		fprintf(stdout, "total frames: %ld\n", frames);
 		fprintf(stdout, "file start offset: %lld video-frames\n",file_frame_offset);
 	}
-  
-  // Get a pointer to the codec context for the video stream
+
+	// Get a pointer to the codec context for the video stream
 #if LIBAVFORMAT_BUILD > 4629
 	pCodecCtx=pFormatCtx->streams[videoStream]->codec;
 #else
 	pCodecCtx=&(pFormatCtx->streams[videoStream]->codec);
 #endif
-  
+
 #ifdef CROPIMG
 	movie_width = pCodecCtx->width / 2; // TODO allow configuration
 	movie_height = pCodecCtx->height;
@@ -451,6 +452,25 @@ int open_movie(char* file_name) {
 	movie_width = pCodecCtx->width;
 	movie_height = pCodecCtx->height;
 #endif
+
+	if (movie_aspect<=0.0) {
+		if (av_stream->sample_aspect_ratio.num)
+			movie_aspect = av_q2d(av_stream->sample_aspect_ratio);
+		else if (av_stream->codec->sample_aspect_ratio.num)
+			movie_aspect = av_q2d(av_stream->codec->sample_aspect_ratio);
+		else
+			movie_aspect = 0;
+	}
+	if (movie_aspect <= 0.0)
+		movie_aspect = 1.0;
+	movie_aspect *= (float)movie_width / (float)movie_height;
+
+	ffctv_height = movie_height;
+	ffctv_width = ((int)rint(movie_height * movie_aspect)) & ~1;
+	if (ffctv_width > movie_width) {
+		ffctv_width = movie_width;
+		ffctv_height = ((int)rint(movie_width / movie_aspect)) & ~1;
+	}
 
 // somewhere around LIBAVFORMAT_BUILD  4630 
 #ifdef AVFMT_FLAG_GENPTS
@@ -462,21 +482,21 @@ int open_movie(char* file_name) {
 	if (!want_quiet) {
 		fprintf( stderr, "movie size:  %ix%i px\n", movie_width,movie_height);
 	}
-  // Find the decoder for the video stream
+	// Find the decoder for the video stream
 	pCodec=avcodec_find_decoder(pCodecCtx->codec_id);
 	if(pCodec==NULL) {
 		fprintf( stderr, "Cannot find a codec for file: %s\n", file_name);
 		avformat_close_input(&pFormatCtx);
 		return( -1 );
 	}
-    
-  // Open codec
+
+	// Open codec
 	if(avcodec_open2(pCodecCtx, pCodec, NULL)<0) {
 		fprintf( stderr, "Cannot open the codec for file %s\n", file_name);
 		avformat_close_input(&pFormatCtx);
 		return( -1 );
 	}
-  
+
 	pFrame=avcodec_alloc_frame();
 	if(pFrame==NULL) {
 		fprintf( stderr, "Cannot allocate video frame buffer\n");
@@ -627,9 +647,9 @@ int my_seek_frame (AVPacket *packet, int64_t timestamp) {
 	printf("\nDEBUG: want frame=%li  ", (long int) timestamp);
 # endif
 
-  if (filefps > 0) {
+	if (filefps > 0) {
 		timestamp*=tpf;
-  } else {
+	} else {
 	// does not work with -F <double>, but it's more accurate when rounding ratios
 		timestamp=av_rescale_q(timestamp,c1_Q,v_stream->time_base); 
 		timestamp=av_rescale_q(timestamp,c1_Q,v_stream->r_frame_rate); //< timestamp/=framerate; 
@@ -686,8 +706,8 @@ read_frame:
 			av_free_packet(packet);
 		goto read_frame;
 	}
-  /* backwards compatible - no cont. seeking (seekmode ANY or KEY ; cmd-arg: -K, -k)
-   * do we want a AVSEEK_FLAG_ANY + SEEK_CONTINUOUS option ?? not now.  */
+	/* backwards compatible - no cont. seeking (seekmode ANY or KEY ; cmd-arg: -K, -k)
+	 * do we want a AVSEEK_FLAG_ANY + SEEK_CONTINUOUS option ?? not now.  */
 #if LIBAVFORMAT_BUILD < 4617
 	return (1);
 #endif
@@ -713,7 +733,7 @@ read_frame:
 		return (0);
 	}
 #if 0
-  if (mtsb != AV_NOPTS_VALUE && mtsb!=0) my_avprev = mtsb;
+	if (mtsb != AV_NOPTS_VALUE && mtsb!=0) my_avprev = mtsb;
 	if (mtsb > timestamp) { printf("WRONG want:%lli got:%lli\n", timestamp, mtsb); my_avprev = mtsb;}
 	if (mtsb == timestamp) printf("Right.\n");
 #endif
@@ -833,7 +853,7 @@ void display_frame(int64_t timestamp, int force_update, int do_render) {
 		render_empty_frame(1);
 	}
 }
-  
+
 int close_movie() {
 	if(current_file) free(current_file);
 	current_file=NULL;

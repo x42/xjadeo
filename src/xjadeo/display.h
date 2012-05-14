@@ -1,6 +1,8 @@
 /* shared header file for xjadeo display backends */
 
   extern int movie_width, movie_height;
+  extern int ffctv_width, ffctv_height;
+  extern float movie_aspect;
   extern int loop_flag, loop_run;
   extern uint8_t *buffer;
 

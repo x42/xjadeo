@@ -14,7 +14,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
  *
- * (c) 2006 
+ * (c) 2006 - 2012
  *  Robin Gareus <robin@gareus.org>
  *  Luis Garrido <luisgarrido@users.sourceforge.net>
  *
@@ -41,16 +41,16 @@ void jackt_rewind();
 
 #if (HAVE_LIBXV || HAVE_IMLIB || HAVE_IMLIB2)
 
-Display      		*xj_dpy = NULL;
-Window			xj_rwin, xj_win;
+Display *xj_dpy = NULL;
+Window	xj_rwin, xj_win;
 int			xj_screen; 
-GC           		xj_gc;
-Atom      		xj_del_atom; 
+GC      xj_gc;
+Atom    xj_del_atom; 
 int			xj_ontop = 0;  
 int			xj_fullscreen = 0;  
 int			xj_mouse = 0; 
 
-int          		xj_dwidth, xj_dheight; // cache window size for rendering currently only Xv
+int     xj_dwidth, xj_dheight; // cache window size for rendering currently only Xv
 int			xj_box[4]; // letterbox site - currently only Xv & imlib2
 
 /*******************************************************************************
@@ -116,11 +116,11 @@ static void net_wm_set_property(char *atom, int state) {
 	xev.xclient.data.l[1] = property;
 	xev.xclient.data.l[2] = 0;
 	
-        if (!XSendEvent(xj_dpy, DefaultRootWindow(xj_dpy), False,
-		   SubstructureRedirectMask|SubstructureNotifyMask, &xev))
-        {
-            fprintf(stderr,"error changing X11 property\n");
-        }
+	if (!XSendEvent(xj_dpy, DefaultRootWindow(xj_dpy), False,
+				SubstructureRedirectMask|SubstructureNotifyMask, &xev))
+	{
+			fprintf(stderr,"error changing X11 property\n");
+	}
 }
 
 #ifdef HAVE_XPM
@@ -138,12 +138,12 @@ void xj_set_hints (void) {
 	char *w_name ="xjadeo";
 	char *i_name ="xjadeo";
 
-    /* default settings which allow arbitraray resizing of the window */
+	/* default settings which allow arbitraray resizing of the window */
 	hints.flags = PSize | PMaxSize | PMinSize;
 	hints.min_width = movie_width / 16;
 	hints.min_height = movie_height / 16;
 
-    /* maximum dimensions for Xv support are about 2048x2048 */
+	/* maximum dimensions for Xv support are about 2048x2048 */
 	hints.max_width = 2048;
 	hints.max_height = 2048;
 
@@ -248,8 +248,8 @@ void xj_letterbox() {
 		xj_box[2]=xj_dwidth;
 		xj_box[3]=xj_dheight;
 	} else { /* letterbox; */
-		float asp_src= (float)movie_width/movie_height;
-		float asp_dst= (float)xj_dwidth/xj_dheight;
+		const float asp_src = movie_aspect?movie_aspect:(float)movie_width/(float)movie_height;
+		const float asp_dst = (float)xj_dwidth / (float)xj_dheight;
 		if (asp_dst > asp_src ) {
 			xj_box[3]=xj_dheight;
 			xj_box[2]=xj_box[3]*asp_src;
@@ -278,23 +278,23 @@ void set_x11_icon_name(unsigned char *icon) {
  * Drag and Drop - common X11 code
  */
 # ifdef DND 
-  Atom 			xj_a_XdndDrop;   
-  Atom 			xj_a_XdndFinished;   
-  Atom 			xj_a_XdndActionCopy;   
-  Atom 			xj_a_XdndLeave;   
-  Atom 			xj_a_XdndPosition;   
-  Atom 			xj_a_XdndStatus;   
-  Atom 			xj_a_XdndEnter;   
-  Atom 			xj_a_XdndAware;   
-  Atom 			xj_a_XdndTypeList;   
-  Atom 			xj_a_XdndSelection;   
-  Atom			xj_atom;
-  int 			dnd_source;
-  const int 		xdnd_version = 5;
+	Atom 			xj_a_XdndDrop;   
+	Atom 			xj_a_XdndFinished;   
+	Atom 			xj_a_XdndActionCopy;   
+	Atom 			xj_a_XdndLeave;   
+	Atom 			xj_a_XdndPosition;   
+	Atom 			xj_a_XdndStatus;   
+	Atom 			xj_a_XdndEnter;   
+	Atom 			xj_a_XdndAware;   
+	Atom 			xj_a_XdndTypeList;   
+	Atom 			xj_a_XdndSelection;   
+	Atom			xj_atom;
+	int 			dnd_source;
+	const int 		xdnd_version = 5;
 
 void HandleEnter(XEvent * xe) {
 	long *l = xe->xclient.data.l;
-    	xj_atom= None;
+	xj_atom= None;
 	Atom ok0 = XInternAtom(xj_dpy, "text/uri-list", False);
 	Atom ok1 = XInternAtom(xj_dpy, "text/plain", False);
 	Atom ok2 = XInternAtom(xj_dpy, "UTF8_STRING", False);
@@ -303,14 +303,14 @@ void HandleEnter(XEvent * xe) {
 	if (version > xdnd_version) return;
 	dnd_source = l[0];
 
-        if (l[1] & 0x1UL) {
+	if (l[1] & 0x1UL) {
 		Atom type = 0;
 		int f,ll;
 		unsigned long n, a;
 		unsigned char *data;
 		int offset = 0;
 		a=1;
-      		while(a && xj_atom== None){
+	while(a && xj_atom== None){
 			XGetWindowProperty(xj_dpy, dnd_source, xj_a_XdndTypeList, offset,
 			256, False, XA_ATOM, &type, &f,&n,&a,&data);
 				if(data == NULL || type != XA_ATOM || f != 8*sizeof(Atom)){
@@ -339,8 +339,8 @@ void HandleEnter(XEvent * xe) {
 
 void SendStatus (XEvent * xe) {
 	XEvent xev;
-        xev.xany.type = ClientMessage;
-        xev.xany.display = xj_dpy;
+	xev.xany.type = ClientMessage;
+	xev.xany.display = xj_dpy;
 	xev.xclient.window       = dnd_source;
 	xev.xclient.message_type = xj_a_XdndStatus;
 	xev.xclient.format = 32;
@@ -357,8 +357,8 @@ void SendStatus (XEvent * xe) {
 void SendFinished (void) {
 	XEvent xev;
 	memset(&xev,0,sizeof(XEvent));
-        xev.xany.type = ClientMessage;
-        xev.xany.display = xj_dpy;
+	xev.xany.type = ClientMessage;
+	xev.xany.display = xj_dpy;
 	xev.xclient.window       = dnd_source;
 	xev.xclient.message_type = xj_a_XdndFinished;
 	xev.xclient.format = 32;
@@ -378,7 +378,7 @@ void getDragData (XEvent *xe) {
 	if(xe->xselection.property != xj_a_XdndSelection) return;
 
 	XGetWindowProperty(xj_dpy, xe->xselection.requestor,
-            xe->xselection.property, 0, 65536, 
+			xe->xselection.property, 0, 65536, 
 	    True, xj_atom, &type, &f, &n, &a, &data);
 
 	SendFinished();
@@ -545,7 +545,7 @@ void xj_handle_X_events (void) {
 							fprintf(stderr,"[x11] DnD owner mismatch.");
 					}
 					if(want_debug) printf("DROP!\n");
-    					if (xj_atom!= None) {
+					if (xj_atom!= None) {
 						XConvertSelection(xj_dpy, xj_a_XdndSelection, xj_atom, xj_a_XdndSelection, xj_win, CurrentTime);
 					}
 					SendFinished();
@@ -604,7 +604,7 @@ void xj_handle_X_events (void) {
 			case ButtonRelease:
 				if (event.xbutton.button == 1) {
 					if ((interaction_override&0x8) == 0)
-					  xj_resize(movie_width, movie_height);
+					  xj_resize(ffctv_width, ffctv_height);
 				} else {
 					unsigned int my_Width,my_Height;
 					xj_get_window_size(&my_Width,&my_Height);
@@ -612,20 +612,20 @@ void xj_handle_X_events (void) {
 
 					if (event.xbutton.button == 4 && my_Height > 32 && my_Width > 32)  {
 						float step=sqrt((float)my_Height);
-						my_Width-=floor(step*((float)movie_width/(float)movie_height));
+						my_Width-=floor(step*movie_aspect);
 						my_Height-=step;
 					//	xj_resize(my_Width, my_Height);
 					}
 					if (event.xbutton.button == 5) {
 						float step=sqrt((float)my_Height);
-						my_Width+=floor(step*((float)movie_width/(float)movie_height));
+						my_Width+=floor(step*movie_aspect);
 						my_Height+=step;
 					}
 
 					// resize to match movie aspect ratio
-					if( ((float)movie_width/(float)movie_height) < ((float)my_Width/(float)my_Height) )
-						my_Width=floor((float)my_Height * (float)movie_width / (float)movie_height);
-					else	my_Height=floor((float)my_Width * (float)movie_height / (float)movie_width);
+					if( movie_aspect < ((float)my_Width/(float)my_Height) )
+						my_Width=floor((float)my_Height * movie_aspect);
+					else	my_Height=floor((float)my_Width / movie_aspect);
 
 					xj_resize(my_Width, my_Height);
 				}
@@ -723,19 +723,19 @@ void xj_handle_X_events (void) {
 						xj_set_eq("gamma",0);
 						force_redraw=1;
 					} else if (key == 0x2e ) { //'.' // resize 100%
-						xj_resize(movie_width, movie_height);
+						xj_resize(ffctv_width, ffctv_height);
 					} else if (key == 0x2c ) { //',' // resize to aspect ratio
 						unsigned int my_Width,my_Height;
 						xj_get_window_size(&my_Width,&my_Height);
-						if( ((float)movie_width/(float)movie_height) < ((float)my_Width/(float)my_Height) )
-							my_Width=floor((float)my_Height * (float)movie_width / (float)movie_height);
-						else 	my_Height=floor((float)my_Width * (float)movie_height / (float)movie_width);
+						if( movie_aspect < ((float)my_Width/(float)my_Height) )
+							my_Width=rint((float)my_Height * movie_aspect);
+						else 	my_Height=rint((float)my_Width / movie_aspect);
 						xj_resize(my_Width, my_Height);
 					} else if (key == 0x3c ) { //'<' // resize *.83
 						unsigned int my_Width,my_Height;
 						xj_get_window_size(&my_Width,&my_Height);
 						float step=0.2*my_Height;
-						my_Width-=floor(step*((float)movie_width/(float)movie_height));
+						my_Width-=floor(step*movie_aspect);
 						my_Height-=step;
 						xj_resize(my_Width, my_Height);
 
@@ -743,7 +743,7 @@ void xj_handle_X_events (void) {
 						unsigned int my_Width,my_Height;
 						xj_get_window_size(&my_Width,&my_Height);
 						float step=0.2*my_Height;
-						my_Width+=floor(step*((float)movie_width/(float)movie_height));
+						my_Width+=floor(step*movie_aspect);
 						my_Height+=step;
 						xj_resize(my_Width, my_Height);
 					} else if (key == 0x2b ) { //'+' // A/V offset
@@ -837,18 +837,18 @@ void xj_handle_X_events (void) {
 
 
 
-  Screen       		*xv_scn;
-  int          		xv_swidth, xv_sheight;
+	Screen       		*xv_scn;
+	int          		xv_swidth, xv_sheight;
 
-  XEvent       		xv_event;
-  XvPortID    	 	xv_port;
-  XShmSegmentInfo  	xv_shminfo;
-  XvImage      		*xv_image;
+	XEvent       		xv_event;
+	XvPortID    	 	xv_port;
+	XShmSegmentInfo  	xv_shminfo;
+	XvImage      		*xv_image;
 
-  char	 		*xv_buffer;
-  size_t		xv_len;
-  int			xv_one_memcpy = 0; 
-  int			xv_pic_format = FOURCC_I420; 
+	char	 		*xv_buffer;
+	size_t		xv_len;
+	int			xv_one_memcpy = 0; 
+	int			xv_pic_format = FOURCC_I420; 
 
 void allocate_xvimage (void) {
 	// YV12 has 12 bits per pixel. 8bitY 2+2 UV
@@ -857,7 +857,7 @@ void allocate_xvimage (void) {
 	/* shared memory allocation etc.  */
 	xv_image = XvShmCreateImage(xj_dpy, xv_port,
 		xv_pic_format, NULL, // FIXME: use xjadeo buffer directly 
-		xj_dwidth, xj_dheight, //768, 486, //720, 576,
+		xv_swidth, xv_sheight, //768, 486, //720, 576,
 		&xv_shminfo);
 
 	/* TODO: check that this does not break support for some VIC's 
@@ -891,25 +891,18 @@ void deallocate_xvimage(void) {
 
 inline void xv_draw_colorkey(void)
 {
-  if ( 0 ) // manual fill 
-  {
-    unsigned long xv_colorkey = 0xaaffee;
-    XSetForeground( xj_dpy, xj_gc, xv_colorkey );
-    XFillRectangle( xj_dpy, xj_win, xj_gc, xj_box[0], xj_box[1], xj_box[2], xj_box[3] );
-  }
-
-  if ( 1 ) // bars
-  {
-    XSetForeground( xj_dpy, xj_gc, 0 );
-    if (xj_box[1] > 0 ) { 
-    	XFillRectangle( xj_dpy, xj_win, xj_gc, 0, 0, xj_box[2], xj_box[1]);
-    	XFillRectangle( xj_dpy, xj_win, xj_gc, 0, xj_box[1]+xj_box[3], xj_box[2], xj_box[1]+xj_box[3]+xj_box[1]);
-    } /* else */
-    if (xj_box[0] > 0 ) {
-    	XFillRectangle( xj_dpy, xj_win, xj_gc, 0, 0, xj_box[0], xj_box[3]);
-    	XFillRectangle( xj_dpy, xj_win, xj_gc, xj_box[0]+xj_box[2], 0, xj_box[0]+xj_box[2]+xj_box[0], xj_box[3]);
-    }
-  }
+	if ( 1 ) // bars
+	{
+		XSetForeground( xj_dpy, xj_gc, 0 );
+		if (xj_box[1] > 0 ) { 
+			XFillRectangle( xj_dpy, xj_win, xj_gc, 0, 0, xj_box[2], xj_box[1]);
+			XFillRectangle( xj_dpy, xj_win, xj_gc, 0, xj_box[1]+xj_box[3], xj_box[2], xj_box[1]+xj_box[3]+xj_box[1]);
+		} /* else */
+		if (xj_box[0] > 0 ) {
+			XFillRectangle( xj_dpy, xj_win, xj_gc, 0, 0, xj_box[0], xj_box[3]);
+			XFillRectangle( xj_dpy, xj_win, xj_gc, xj_box[0]+xj_box[2], 0, xj_box[0]+xj_box[2]+xj_box[0], xj_box[3]);
+		}
+	}
 }
 
 void render_xv (uint8_t *mybuffer) {
@@ -987,8 +980,12 @@ void newsrc_xv (void) {
 
 	deallocate_xvimage();
 
-  	xj_dwidth = xv_swidth = movie_width;
-	xj_dheight = xv_sheight = movie_height;
+	xv_swidth = movie_width;
+	xv_sheight = movie_height;
+
+	xj_dwidth = ffctv_width;
+	xj_dheight = ffctv_height;
+
 	xj_letterbox();
 	allocate_xvimage();
 	xj_render();
@@ -1005,125 +1002,119 @@ void newsrc_xv (void) {
 }
 
 #ifdef COLOREQ
-int xv_set_eq(char *name, int value)
-{
-    XvAttribute *attributes;
-    int i, howmany, xv_atom;
+int xv_set_eq(char *name, int value) {
+	XvAttribute *attributes;
+	int i, howmany, xv_atom;
 
-    /* get available attributes */
-    attributes = XvQueryPortAttributes(xj_dpy, xv_port, &howmany);
-    for (i = 0; i < howmany && attributes; i++)
-        if (attributes[i].flags & XvSettable)
-        {
-            xv_atom = XInternAtom(xj_dpy, attributes[i].name, True);
-            if (xv_atom != None)
-            {
-                int hue = 0, port_value, port_min, port_max;
+	/* get available attributes */
+	attributes = XvQueryPortAttributes(xj_dpy, xv_port, &howmany);
+	for (i = 0; i < howmany && attributes; i++)
+		if (attributes[i].flags & XvSettable) {
+			xv_atom = XInternAtom(xj_dpy, attributes[i].name, True);
+			if (xv_atom != None) {
+				int hue = 0, port_value, port_min, port_max;
 
-                if (!strcmp(attributes[i].name, "XV_BRIGHTNESS") &&
-                    (!strcasecmp(name, "brightness")))
-                    port_value = value;
-                else if (!strcmp(attributes[i].name, "XV_CONTRAST") &&
-                         (!strcasecmp(name, "contrast")))
-                    port_value = value;
-                else if (!strcmp(attributes[i].name, "XV_SATURATION") &&
-                         (!strcasecmp(name, "saturation")))
-                    port_value = value;
-                else if (!strcmp(attributes[i].name, "XV_HUE") &&
-                         (!strcasecmp(name, "hue")))
-                {
-                    port_value = value;
-                    hue = 1;
-                } else
-                    /* Note: since 22.01.2002 GATOS supports these attrs for radeons (NK) */
-                if (!strcmp(attributes[i].name, "XV_RED_INTENSITY") &&
-                        (!strcasecmp(name, "red_intensity")))
-                    port_value = value;
-                else if (!strcmp(attributes[i].name, "XV_GREEN_INTENSITY")
-                         && (!strcasecmp(name, "green_intensity")))
-                    port_value = value;
-                else if (!strcmp(attributes[i].name, "XV_BLUE_INTENSITY")
-                         && (!strcasecmp(name, "blue_intensity")))
-                    port_value = value;
-                else
-                    continue;
+				if (!strcmp(attributes[i].name, "XV_BRIGHTNESS")
+						&& (!strcasecmp(name, "brightness")))
+					port_value = value;
+				else if (!strcmp(attributes[i].name, "XV_CONTRAST")
+						&& (!strcasecmp(name, "contrast")))
+					port_value = value;
+				else if (!strcmp(attributes[i].name, "XV_SATURATION")
+						&& (!strcasecmp(name, "saturation")))
+					port_value = value;
+				else if (!strcmp(attributes[i].name, "XV_HUE")
+						&& (!strcasecmp(name, "hue")))
+				{
+					port_value = value;
+					hue = 1;
+				} else
+				/* Note: since 22.01.2002 GATOS supports these attrs for radeons (NK) */
+				if (!strcmp(attributes[i].name, "XV_RED_INTENSITY")
+						&& (!strcasecmp(name, "red_intensity")))
+					port_value = value;
+				else if (!strcmp(attributes[i].name, "XV_GREEN_INTENSITY")
+						&& (!strcasecmp(name, "green_intensity")))
+					port_value = value;
+				else if (!strcmp(attributes[i].name, "XV_BLUE_INTENSITY")
+						&& (!strcasecmp(name, "blue_intensity")))
+					port_value = value;
+				else
+					continue;
 
-                port_min = attributes[i].min_value;
-                port_max = attributes[i].max_value;
+				port_min = attributes[i].min_value;
+				port_max = attributes[i].max_value;
 
-                /* nvidia hue workaround */
-                if (hue && port_min == 0 && port_max == 360)
-                    port_value = (port_value >= 0) ? (port_value - 1000) : (port_value + 1000);
+				/* nvidia hue workaround */
+				if (hue && port_min == 0 && port_max == 360)
+					port_value = (port_value >= 0) ? (port_value - 1000) : (port_value + 1000);
 
-                /* -1000 <= val <= 1000 */
-                port_value = (int) rint((port_value + 1000.0) * (port_max - port_min) / 2000.0) + port_min;
-	//	printf("SET port value:%i\n",port_value);
-                XvSetPortAttribute(xj_dpy, xv_port, xv_atom, port_value);
-                return (0); // OK
-            }
-        }
-    return (1); // not found.
+				/* -1000 <= val <= 1000 */
+				port_value = (int) rint((port_value + 1000.0) * (port_max - port_min) / 2000.0) + port_min;
+//	printf("SET port value:%i\n",port_value);
+				XvSetPortAttribute(xj_dpy, xv_port, xv_atom, port_value);
+				return (0); // OK
+			}
+		}
+	return (1); // not found.
 }
 
 int xv_get_eq(char *name, int *value)
 {
-    XvAttribute *attributes;
-    int i, howmany, xv_atom;
+	XvAttribute *attributes;
+	int i, howmany, xv_atom;
 
-    /* get available attributes */
-    attributes = XvQueryPortAttributes(xj_dpy, xv_port, &howmany);
-    for (i = 0; i < howmany && attributes; i++)
-        if (attributes[i].flags & XvGettable)
-        {
-            xv_atom = XInternAtom(xj_dpy, attributes[i].name, True);
-            if (xv_atom != None)
-            {
-                int val, port_value = 0, port_min, port_max;
+	/* get available attributes */
+	attributes = XvQueryPortAttributes(xj_dpy, xv_port, &howmany);
+	for (i = 0; i < howmany && attributes; i++)
+		if (attributes[i].flags & XvGettable) {
+			xv_atom = XInternAtom(xj_dpy, attributes[i].name, True);
+			if (xv_atom != None) {
+				int val, port_value = 0, port_min, port_max;
 
-                XvGetPortAttribute(xj_dpy, xv_port, xv_atom, &port_value);
+				XvGetPortAttribute(xj_dpy, xv_port, xv_atom, &port_value);
 
-                port_min = attributes[i].min_value;
-                port_max = attributes[i].max_value;
+				port_min = attributes[i].min_value;
+				port_max = attributes[i].max_value;
 
-                /* -1000 <= val <= 1000 */
-                val = (port_value - port_min)*2000.0/(port_max - port_min) - 1000;
-	//	printf("DEBUG: got port att:%s value:%i\n",attributes[i].name,port_value);
+				/* -1000 <= val <= 1000 */
+				val = (port_value - port_min)*2000.0/(port_max - port_min) - 1000;
+				//printf("DEBUG: got port att:%s value:%i\n",attributes[i].name,port_value);
 
-                if (!strcmp(attributes[i].name, "XV_BRIGHTNESS") &&
-                    (!strcasecmp(name, "brightness")))
-                    *value = val;
-                else if (!strcmp(attributes[i].name, "XV_CONTRAST") &&
-                         (!strcasecmp(name, "contrast")))
-                    *value = val;
-                else if (!strcmp(attributes[i].name, "XV_SATURATION") &&
-                         (!strcasecmp(name, "saturation")))
-                    *value = val;
-                else if (!strcmp(attributes[i].name, "XV_HUE") &&
-                         (!strcasecmp(name, "hue")))
-                {
-                    /* nasty nvidia detect */
-                    if (port_min == 0 && port_max == 360)
-                        *value = (val >= 0) ? (val - 100) : (val + 100);
-                    else
-                        *value = val;
-                }
-		else if (!strcmp(attributes[i].name, "XV_RED_INTENSITY") &&
-                        (!strcasecmp(name, "red_intensity")))
-                    *value = val;
-                else if (!strcmp(attributes[i].name, "XV_GREEN_INTENSITY")
-                         && (!strcasecmp(name, "green_intensity")))
-                    *value = val;
-                else if (!strcmp(attributes[i].name, "XV_BLUE_INTENSITY")
-                         && (!strcasecmp(name, "blue_intensity")))
-                    *value = val;
-                else
-                    continue;
-
-	//	printf( "xv_get_eq called! (%s, %d)\n", name, *value);
-                return (0); // all right
-            }
-        }
-    return (1); //error.
+				if (!strcmp(attributes[i].name, "XV_BRIGHTNESS")
+						&& (!strcasecmp(name, "brightness")))
+					*value = val;
+				else if (!strcmp(attributes[i].name, "XV_CONTRAST")
+						&& (!strcasecmp(name, "contrast")))
+					*value = val;
+				else if (!strcmp(attributes[i].name, "XV_SATURATION")
+						&& (!strcasecmp(name, "saturation")))
+					*value = val;
+				else if (!strcmp(attributes[i].name, "XV_HUE")
+						&& (!strcasecmp(name, "hue")))
+				{
+					/* nasty nvidia detect */
+					if (port_min == 0 && port_max == 360)
+						*value = (val >= 0) ? (val - 100) : (val + 100);
+					else
+						*value = val;
+				}
+				else if (!strcmp(attributes[i].name, "XV_RED_INTENSITY")
+						&& (!strcasecmp(name, "red_intensity")))
+					*value = val;
+				else if (!strcmp(attributes[i].name, "XV_GREEN_INTENSITY")
+						&& (!strcasecmp(name, "green_intensity")))
+					*value = val;
+				else if (!strcmp(attributes[i].name, "XV_BLUE_INTENSITY")
+						&& (!strcasecmp(name, "blue_intensity")))
+					*value = val;
+				else
+					continue;
+//	printf( "xv_get_eq called! (%s, %d)\n", name, *value);
+				return (0); // all right
+			}
+		}
+	return (1); //error.
 }
 #endif
 
@@ -1151,7 +1142,7 @@ int open_window_xv (void) {
 
 	/* So let's first check for an available adaptor and port */
 	if(Success != XvQueryAdaptors(xj_dpy, xj_rwin, &ad_cnt, &ad_info)) {
-    		/* Xv extension probably not present */
+		/* Xv extension probably not present */
 		return (1);
 	}
 
@@ -1241,8 +1232,12 @@ int open_window_xv (void) {
  * default settings: source, destination and logical widht/height
  * are set to our well known dimensions.
  */
-	xj_dwidth = xv_swidth = movie_width;
-	xj_dheight = xv_sheight = movie_height;
+	xv_swidth = movie_width;
+	xv_sheight = movie_height;
+
+	xj_dwidth = ffctv_width;
+	xj_dheight = ffctv_height;
+
 	xj_letterbox();
 
 	xj_win = XCreateSimpleWindow(xj_dpy, xj_rwin,
@@ -1290,7 +1285,7 @@ int open_window_xv (void) {
 	Atom xj_a_colorkey = XInternAtom (xj_dpy, "XV_COLORKEY", True);
 	if (xj_a_colorkey!=None && Success == XvGetPortAttribute(xj_dpy, xv_port, xj_a_colorkey, &value)) {
 		XvSetPortAttribute(xj_dpy, xv_port, xj_a_colorkey, 0x00000000); // AARRGGBB
- 	}
+	}
 	#endif
 	return 0;
 }
@@ -1358,32 +1353,32 @@ int open_window_imlib (void) {
 	}
 
 	imlib = Imlib_init(xj_dpy);
-  
+
 	xj_screen = DefaultScreen(xj_dpy); 
 	xj_rwin = RootWindow(xj_dpy, xj_screen);
 	depth = DefaultDepth(xj_dpy, xj_screen);
-  
+
 	xj_win = XCreateSimpleWindow(
 		xj_dpy, xj_rwin,
 		0,             // x
 		0,             // y
-		movie_width,   // width
-		movie_height,  // height
+		ffctv_width,   // width
+		ffctv_height,  // height
 		0,             // border
 		BlackPixel(xj_dpy, xj_screen), 
 		WhitePixel(xj_dpy, xj_screen)
 	);
 
 	xj_set_hints();
-  
+
 	ev_mask =  KeyPressMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | StructureNotifyMask;
 	XSelectInput(xj_dpy, xj_win, ev_mask);
- 
+
 #ifdef DND 
 	init_dnd();
 #endif
 	XMapRaised(xj_dpy, xj_win);
-     
+
 	/* express interest in WM killing this app */
 	if ((xj_del_atom = XInternAtom(xj_dpy, "WM_DELETE_WINDOW", True)) != None)
 		XSetWMProtocols(xj_dpy, xj_win, &xj_del_atom, 1);
@@ -1413,28 +1408,29 @@ void close_window_imlib(void)
 //	XCloseDisplay(xj_dpy);
 	imlib=NULL;  
 }
-        
+
 void render_imlib (uint8_t *mybuffer) {
 	unsigned int my_Width,my_Height;
 	ImlibImage *iimage;
 	if (!mybuffer || !imlib) return;
 	iimage = Imlib_create_image_from_data(imlib, mybuffer, NULL, movie_width, movie_height);
 
-    /* get the current window size */
+	/* get the current window size */
 	xj_get_window_size(&my_Width,&my_Height);
 
-    /* Render the original 24-bit Image data into a pixmap of size w * h */
+	/* Render the original 24-bit Image data into a pixmap of size w * h */
 	Imlib_render(imlib,iimage, my_Width,my_Height );
 
-    /* Extract the Image and mask pixmaps from the Image */
+	/* Extract the Image and mask pixmaps from the Image */
 	pxm=Imlib_move_image(imlib,iimage);
-    /* The mask will be 0 if the image has no transparency */
-//	pxmmask=Imlib_move_mask(imlib,iimage);
-    /* Put the Image pixmap in the background of the window */
+	/* The mask will be 0 if the image has no transparency */
+	//pxmmask=Imlib_move_mask(imlib,iimage);
+
+	/* Put the Image pixmap in the background of the window */
 	XSetWindowBackgroundPixmap(xj_dpy,xj_win,pxm);       
 	XClearWindow(xj_dpy,xj_win);       
-   //	No need to sync. XPending will take care in the event loop.
-   //	XSync(xj_dpy, False);     
+	//No need to sync. XPending will take care in the event loop.
+	//XSync(xj_dpy, False);     
 	Imlib_free_pixmap(imlib, pxm);
 	Imlib_kill_image(imlib, iimage);
 }
@@ -1489,33 +1485,34 @@ int open_window_imlib2 (void) {
 		fprintf( stderr, "Cannot connect to X server\n");
 		return (1); 
 	}
- 
+
 	xj_screen = DefaultScreen(xj_dpy); 
 	xj_rwin = RootWindow(xj_dpy, xj_screen); 
 	im_depth = DefaultDepth(xj_dpy, xj_screen);
 	im_vis = DefaultVisual(xj_dpy, xj_screen);
 	im_cm = DefaultColormap(xj_dpy, xj_screen);
 
-	xj_dwidth = movie_width;
-	xj_dheight = movie_height;
+	xj_dwidth = ffctv_width;
+	xj_dheight = ffctv_height;
+
 	xj_letterbox();
 
 	xj_win = XCreateSimpleWindow(
 		xj_dpy, xj_rwin,
 		0,             // x
 		0,             // y
-		movie_width,   // width
-		movie_height,  // height
+		xj_dwidth,     // width
+		xj_dheight,    // height
 		0,             // border
 		BlackPixel(xj_dpy, xj_screen), 
 		WhitePixel(xj_dpy, xj_screen)
 	);
 
 	xj_set_hints();
-         
+
 	ev_mask =  KeyPressMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | StructureNotifyMask;
 	XSelectInput(xj_dpy, xj_win, ev_mask);
- 
+
 #ifdef DND 
 	init_dnd();
 #endif
@@ -1750,15 +1747,9 @@ void newsrc_imlib2 (void) {
 	}
 #endif
 
-#if 1 // keep current window size when loading a new file ?? -> TODO config option
-      // and also other video modes.. 
 	xj_get_window_size(&my_Width,&my_Height);
-#else
-	my_Width=movie_width;
-	my_Height=movie_height;
-#endif
-	xj_dwidth= my_Width;
-	xj_dheight= my_Height;
+	xj_dwidth = ffctv_width;
+	xj_dheight = ffctv_height;
 	xj_letterbox();
 	xj_resize( my_Width, my_Height);
 }

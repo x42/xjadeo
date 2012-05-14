@@ -69,6 +69,9 @@ extern int       loop_flag;
 
 extern int               movie_width;
 extern int               movie_height;
+extern int               ffctv_width;
+extern int               ffctv_height;
+extern float             movie_aspect;
 extern AVFrame           *pFrameFMT;
 extern uint8_t           *buffer;
 
@@ -256,33 +259,35 @@ void xapi_saspect (void *d) {
 	Xgetsize(&my_Width,&my_Height); 
 	// resize to match movie aspect ratio
 	// dup code in display_x11.c (!)
-	if( ((float)movie_width/(float)movie_height) < ((float)my_Width/(float)my_Height) )
-		my_Width=floor((float)my_Height * (float)movie_width / (float)movie_height);
-	else	my_Height=floor((float)my_Width * (float)movie_height / (float)movie_width);
+	if( movie_aspect < ((float)my_Width/(float)my_Height) )
+		my_Width=floor((float)my_Height * movie_aspect);
+	else	my_Height=floor((float)my_Width / movie_aspect);
 
 	remote_printf(100,"resizing window to %ux%u",my_Width, my_Height);
 	Xresize(my_Width, my_Height);
 }
 
 void xapi_swinsize(void *d) {
-	unsigned int x,y;
+	unsigned int w,h;
 	char *size= (char*)d;
 	char *tmp;
-	x=movie_width;y=movie_height;
+
+	h=ffctv_height;
+	w=ffctv_width;
 	
 	if ((tmp=strchr(size,'x')) && ++tmp) {
-		x=atoi(size);
-		y=atoi(tmp);
+		w=atoi(size);
+		h=atoi(tmp);
 	} else {
 		int percent=atoi(size);
 		if (percent > 0 && percent <= 500) {
-			x*= percent; x/=100;
-			y*= percent; y/=100;
+			w*= percent; w/=100;
+			h*= percent; h/=100;
 		}
 	}
 
-	remote_printf(100,"resizing window to %ux%u",x,y);
-	Xresize(x,y);
+	remote_printf(100,"resizing window to %ux%u",w,h);
+	Xresize(w,h);
 }
 
 void xapi_ontop(void *d) {

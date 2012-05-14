@@ -227,7 +227,7 @@ const vidout VO[] = {
 		NULLOUTPUT},
 #endif
 #ifdef IMLIB2RGBA
-	{ PIX_FMT_RGBA32,   SUP_IMLIB2,   "ImLib2/x11 (RGBA32)",
+	{ PIX_FMT_BGRA32,   SUP_IMLIB2,   "ImLib2/x11 (RGBA32)",
 #else
 	{ PIX_FMT_RGB24,   SUP_IMLIB2,   "ImLib2/x11 (RGB24)",
 #endif
@@ -338,6 +338,9 @@ int vidoutmode(int user_req) {
 		 (POINTER) = &_##FUNC##_RGB; \
 		VARS.bpp = 3; \
 	} else if ((FORMAT) == PIX_FMT_RGBA32) { \
+		(POINTER) = &_##FUNC##_RGB; \
+		VARS.bpp = 4; \
+	} else if ((FORMAT) == PIX_FMT_BGRA32) { \
 		(POINTER) = &_##FUNC##_RGB; \
 		VARS.bpp = 4; \
 	} else return ; 

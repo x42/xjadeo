@@ -16,7 +16,7 @@
  *
  * Credits:
  *
- * xjadeo:  (c) 2006 
+ * xjadeo:  (c) 2006 - 2012
  *  Luis Garrido <luisgarrido@users.sourceforge.net>
  *  Robin Gareus <robin@gareus.org>
  *
@@ -70,10 +70,13 @@ int 	  loop_run = 1;
       
 // Video Decoder 
 
-int               movie_width = 100;
+int               movie_width  = 100;
 int               movie_height = 100;
+int               ffctv_width  = 100;
+int               ffctv_height = 100;
+float             movie_aspect = 0;
 AVFormatContext   *pFormatCtx;
-int               videoStream=-1;
+int               videoStream = -1;
 AVCodecContext    *pCodecCtx;
 AVFrame           *pFrame;
 AVFrame           *pFrameFMT = NULL;
