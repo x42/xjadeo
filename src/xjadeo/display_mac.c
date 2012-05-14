@@ -45,6 +45,8 @@ extern int interaction_override; // disable some options.
 
 extern int movie_width;
 extern int movie_height;
+extern int ffctv_width;
+extern int ffctv_height;
 extern float movie_aspect;
 extern double delay;
 extern double framerate;
@@ -447,6 +449,7 @@ static void mac_CreateWindow(uint32_t d_width, uint32_t d_height, WindowAttribut
 
 DialogRef midiAlertDialog = 0;
 static OSStatus midiAlert(void) {
+  OSStatus status = 0;
   const EventTypeSpec win_events[] = {
     { kEventClassWindow, kEventWindowClosed },
     { kEventClassCommand, kEventCommandProcess }
@@ -456,6 +459,7 @@ static OSStatus midiAlert(void) {
   ShowWindow (GetDialogWindow(midiAlertDialog));
   InstallWindowEventHandler (GetDialogWindow(midiAlertDialog), NewEventHandlerUPP (DialogEventHandler), GetEventTypeCount(win_events), win_events, GetDialogWindow(midiAlertDialog), NULL);
   RunAppModalLoopForWindow (GetDialogWindow(midiAlertDialog));
+  return(status);
 }
 
 // TODO 
@@ -494,7 +498,7 @@ static OSStatus OpenDocuments( AEDescList docList ) {
 
   for( index = 1; index <= count; index++ ) {
     if ( (status = AEGetNthPtr( &docList, index, typeFSRef, NULL, NULL, &fsRef, sizeof(FSRef), NULL) ) == noErr ) {
-      char revpath[PATH_MAX];
+      unsigned char revpath[PATH_MAX];
       OSErr error; 
       error = FSRefMakePath(&fsRef, revpath, sizeof(revpath));
       if (error !=noErr) continue;
@@ -1042,7 +1046,7 @@ int open_window_mac (void) {
   uint32_t height  = movie_height; 
 
   uint32_t d_height= ffctv_height;
-  uint32_t d_width = ffctv_width
+  uint32_t d_width = ffctv_width;
 
   device_id = 0;
   image_format = PIX_FMT_YUV420P;

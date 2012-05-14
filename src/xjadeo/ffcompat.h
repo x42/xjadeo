@@ -34,13 +34,13 @@
 #endif
 
 
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(53, 5, 0)
+#if LIBAVCODEC_VERSION_INT <= AV_VERSION_INT(53, 7, 0)
 static inline int
 avcodec_open2(AVCodecContext *avctx, AVCodec *codec, void **options __attribute__((unused)))                                                     
 {
   return avcodec_open(avctx, codec);
 }
-#endif /* AVCODEC < 53.5.0 */
+#endif /* AVCODEC < 53.7.0 */
 
 
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(53, 5, 0)
