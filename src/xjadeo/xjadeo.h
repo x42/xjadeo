@@ -30,8 +30,10 @@
 #include <libavutil/avutil.h>
 #endif
 
-#if LIBAVUTIL_BUILD >= 0x320000
+#ifndef PIX_FMT_BGRA32
 #define PIX_FMT_BGRA32 PIX_FMT_BGRA
+#endif
+#ifndef PIX_FMT_RGBA32
 #define PIX_FMT_RGBA32 PIX_FMT_RGBA
 #endif
 

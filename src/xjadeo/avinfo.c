@@ -134,7 +134,6 @@ static int decode_switches (int argc, char **argv) {
 int main(int argc, char *argv[])
 {
   AVFormatContext *ic;
-  AVFormatParameters params, *ap = &params;
   AVCodec *p;
   AVInputFormat *file_iformat = NULL;
   int err, ret, i, flags;
@@ -152,10 +151,10 @@ int main(int argc, char *argv[])
   av_register_all();
   av_log_set_level(AV_LOG_QUIET);
 
-#if 1 // XXX check libav
-  err = av_open_input_file(&ic, fn, file_iformat, 0, ap);
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(53, 7, 0)
+  err = av_open_input_file(&ic, fn, file_iformat, 0, NULL);
 #else
-  err = avformat_open_input(&ic, fn, file_iformat, ap);
+  err = avformat_open_input(&ic, fn, file_iformat, NULL);
 #endif
   if (err < 0) {
     fprintf(stderr, "%s: Error while opening file\n", fn);
@@ -276,7 +275,9 @@ int main(int argc, char *argv[])
 
   printf("  <time>%02lld:%02lld:%02lld.%01lld</time>\n", hours, mins, secs, (us * 10) / AV_TIME_BASE);
   printf("  <bitrate>%d</bitrate>\n", ic->bit_rate);
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(54, 0, 0)
   printf("  <size>%lld</size>\n", ic->file_size);
+#endif
   printf("  <startoffset>%lld</startoffset>\n", ic->start_time);
 #if LIBAVFORMAT_BUILD < 3473920
   if (ic->title) printf("  <title>%s</title>\n", ic->title);
@@ -289,15 +290,22 @@ int main(int argc, char *argv[])
   if (ic->year) printf("  <year>%d</year>\n", ic->year);
   if (ic->track) printf("  <track>%d</track>\n", ic->track);
   if (ic->genre) printf("  <genre>%s</genre>\n", ic->genre);
-#else
+#elif LIBAVCODEC_VERSION_INT < AV_VERSION_INT(54, 0, 0)
   AVMetadataTag *next = NULL;
   while((next=av_metadata_get(ic->metadata, "", next, AV_METADATA_IGNORE_SUFFIX))) {
     printf("  <%s>%s</%s>\n", next->key, next->value ,next->key);
   }
+#else
+  AVDictionaryEntry *next = NULL;
+  while((next=av_dict_get(ic->metadata, "", next, AV_DICT_IGNORE_SUFFIX))) {
+    printf("  <%s>%s</%s>\n", next->key, next->value ,next->key);
+  }
 #endif
 
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(54, 0, 0) 
 #if LIBAVFORMAT_BUILD > 4629
   printf("  <muxrate>%d</muxrate>\n", ic->mux_rate);
+#endif
 #endif
   printf("  <streams>%d</streams>\n", ic->nb_streams);
 

@@ -21,7 +21,6 @@
 
 /* ffmpeg backwards compat */
 
-#ifndef HAVE_WINDOWS /* XXX temp workaround - win32 older ffmpeg */
 #ifndef CODEC_TYPE_VIDEO
 #define CODEC_TYPE_VIDEO AVMEDIA_TYPE_VIDEO
 #endif
@@ -30,7 +29,6 @@
 #endif
 #ifndef CODEC_TYPE_AUDIO
 #define CODEC_TYPE_AUDIO AVMEDIA_TYPE_AUDIO
-#endif
 #endif
 
 
