@@ -70,10 +70,10 @@ int 	  loop_run = 1;
       
 // Video Decoder 
 
-int               movie_width  = 100;
-int               movie_height = 100;
-int               ffctv_width  = 100;
-int               ffctv_height = 100;
+int               movie_width  = 320;
+int               movie_height = 180;
+int               ffctv_width  = 320;
+int               ffctv_height = 180;
 float             movie_aspect = 0;
 AVFormatContext   *pFormatCtx;
 int               videoStream = -1;
