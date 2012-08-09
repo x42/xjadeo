@@ -926,7 +926,7 @@ long as_midi_poll_frame (void) {
 	return(frame);
 }
 
-inline void as_midi_close(void) {
+void as_midi_close(void) {
 	if(!seq) return;
 	aseq_stop =1;
 	pthread_join(aseq_thread,NULL);

@@ -91,7 +91,7 @@ void check_wm_atoms(void) {
 	XFree(args);
 }
 #else
-inline void check_wm_atoms(void) { ; }
+void check_wm_atoms(void) { ; }
 #endif
 
 static void net_wm_set_property(char *atom, int state) {
