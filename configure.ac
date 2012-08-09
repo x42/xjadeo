@@ -34,6 +34,7 @@ AC_ARG_ENABLE(ipc, AC_HELP_STRING([--disable-ipc],[disable IPC message-queue rem
 AC_ARG_ENABLE(osc, AC_HELP_STRING([--disable-osc],[disable OSC remote support]))
 AC_ARG_ENABLE(midi, AC_HELP_STRING([--disable-midi],[Do not build any of the MIDI drivers]))
 AC_ARG_ENABLE(ltc, AC_HELP_STRING([--disable-ltc],[disable LTC sync support]))
+AC_ARG_ENABLE(portmidi, AC_HELP_STRING([--disable-portmidi],[disable portmidi support]))
 
 AC_ARG_WITH(fontfile, AS_HELP_STRING([--with-fontfile=file.ttf], [specify a path to a truetype font file to be used as default OSD font.]), fontfile="$withval", fontfile="")
 
@@ -220,7 +221,7 @@ dnl ----------------------------------------------
 if test "x$enable_midi" != "xno"; then
 	MIDI_CFLAGS=""
 	MIDI_CFLAGS=""
-	if test "x$PORTMIDI" != "xno" -a -z "$portmidisrc" ; then
+	if test "x$enable_portmidi" != "xno" -a -z "$portmidisrc" ; then
 		AC_CHECK_HEADERS(portmidi.h porttime.h , [FOUND_H_PORTMIDI=yes])
 		AC_CHECK_LIB([portmidi], [Pm_CountDevices], [FOUND_L_PORTMIDI=yes])
 	fi
@@ -231,7 +232,7 @@ if test "x$enable_midi" != "xno"; then
 	  fi
 	fi
 
-	if test "x$PORTMIDI" != "xno" -a -n "$portmidisrc" -a -n "$PM_OS"; then
+	if test "x$enable_portmidi" != "xno" -a -n "$portmidisrc" -a -n "$PM_OS"; then
 		AC_CHECK_FILES([$portmidisrc/porttime/porttime.h $portmidisrc/pm_common/portmidi.h],[FOUND_H_PORTMIDI=yes])
 dnl ppc-portmidi : cc -dynamiclib pm_mac/*.o porttime/*.o -flat_namespace -undefined suppress -o portmidi.dylib
 
