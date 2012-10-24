@@ -115,6 +115,7 @@ AH_TEMPLATE([ALSA_SEQ_MIDI], [Define as 1 to enable ALSA sequencer midi])
 AH_TEMPLATE([ALSA_RAW_MIDI], [Define as 1 to enable ALSA-raw midi driver])
 AH_TEMPLATE([JACK_SESSION], [Define as 1 to enable JACK Session support])
 AH_TEMPLATE([HAVE_LTCSMPTE], [Define as 1 if you have ltcsmpte.sf.net ]) 
+AH_TEMPLATE([HAVE_LTC], [Define as 1 if you have libltc - http://github.com/x42/libltc ])
 AH_TEMPLATE([HAVE_LASH], [Define as 1 if you have lash])
 AH_TEMPLATE([HAVE_XPM], [Define as 1 if you have libXpm])
 AH_TEMPLATE([HAVE_SDL], [Define as 1 if  you have the SDL toolkit])
@@ -445,14 +446,23 @@ AC_SUBST(LASH_CFLAGS)
 AC_SUBST(LASH_LIBS)
 
 dnl ----------------------------------------------
-dnl http://ltcsmpte.sf.net
+dnl https://github.com/x42/libltc
 dnl ----------------------------------------------
 AS_IF([ test "x$enable_ltc" != "xno"], [
+	PKG_CHECK_MODULES(LTC, ltc, [ AC_DEFINE(HAVE_LTC) HAVE_LTC=1 ], [ NULL=0] )
+])
+AC_SUBST(LTC_CFLAGS)
+AC_SUBST(LTC_LIBS)
+
+
+dnl ----------------------------------------------
+dnl http://ltcsmpte.sf.net -- deprecated
+dnl ----------------------------------------------
+AS_IF([ test "x$enable_ltc" != "xno" -a -z "$HAVE_LTC" ], [
 	PKG_CHECK_MODULES(LTCSMPTE, ltcsmpte, [ AC_DEFINE(HAVE_LTCSMPTE) HAVE_LTCSMPTE=1 ], [ NULL=0] )
 ])
 AC_SUBST(LTCSMPTE_CFLAGS)
 AC_SUBST(LTCSMPTE_LIBS)
-
 
 dnl ----------------------------------------------
 dnl contrib/tsmm
@@ -586,11 +596,14 @@ if test -n "$HAVE_IMLIB2"; then RPT_IMLIB2="yes"; else RPT_IMLIB2="not avail."; 
 if test -n "$HAVE_MACOSX"; then RPT_MACOSX="yes"; else RPT_MACOSX="not avail."; fi
 if test -n "$HAVE_SDL"; then RPT_SDL="yes"; else RPT_SDL="not avail."; fi
 if test -n "$HAVE_LASH"; then RPT_LASH="yes"; else RPT_LASH="not avail."; fi
-if test -n "$HAVE_LTCSMPTE"; then RPT_LTCSMPTE="yes"; else RPT_LTCSMPTE="not avail."; fi
 if test -n "$HAVE_LIBLO"; then RPT_LIBLO="yes"; else RPT_LIBLO="not avail."; fi
 if test -n "$HAVE_QT4"; then RPT_QT4="yes"; else RPT_QT4="no"; fi
 if test -n "$HAVE_MACOSX"; then RPT_QT4="${RPT_QT4} (OSX-built-in)"; fi
 if test -n "$JACK_SESSION"; then RPT_JACKSESSION="yes"; else RPT_JACKSESSION="not avail."; fi
+
+if test -n "$HAVE_LTC"; then RPT_LTC="yes";
+elif test -n "$HAVE_LTCSMPTE"; then RPT_LTC="yes, libltcsmpte -- deprecated, use https://github.com/x42/libltc";
+else RPT_LTC="not avail."; fi
 
 AC_MSG_NOTICE([
 
@@ -611,7 +624,7 @@ AC_MSG_NOTICE([
 
  Sync:
    - JACK-transport: yes
-   - LTC:            $RPT_LTCSMPTE
+   - LTC:            $RPT_LTC
    - MIDI:           $MIDIREPORT
 
  JACK-session:       $RPT_JACKSESSION

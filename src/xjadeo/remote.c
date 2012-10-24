@@ -533,7 +533,7 @@ void xapi_ltc_status(void *d) {
 }
 
 void xapi_open_ltc(void *d) {
-#ifdef HAVE_LTCSMPTE
+#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
 #ifdef HAVE_MIDI
 	midi_close();
 #endif
@@ -549,7 +549,7 @@ void xapi_open_ltc(void *d) {
 }
 
 void xapi_close_ltc(void *d) {
-#ifdef HAVE_LTCSMPTE
+#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
 	close_ltcjack();
 	remote_printf(100,"closed ltc-jack connection");
 #else
@@ -561,7 +561,7 @@ void xapi_open_jack(void *d) {
 #ifdef HAVE_MIDI
 	midi_close();
 #endif
-#ifdef HAVE_LTCSMPTE
+#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
 	close_ltcjack();
 #endif
 	open_jack();
@@ -677,7 +677,7 @@ void xapi_posd(void *d) {
 
 void xapi_psync(void *d) {
 	int ss =0;
-#ifdef HAVE_LTCSMPTE
+#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
 	if (ltcjack_connected()) ss=3;
 	else
 #endif

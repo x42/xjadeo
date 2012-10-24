@@ -1660,7 +1660,7 @@ OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
 #ifdef HAVE_MIDI
 	if (midi_connected()) midi_close();
 #endif
-#ifdef HAVE_LTCSMPTE
+#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
 	if (ltcjack_connected()) close_ltcjack();
 #endif
       break;
@@ -1674,7 +1674,7 @@ OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
     case mSyncJackMidi:
     case mSyncPortMidi: {
 	if (jack_connected()) close_jack();
-#ifdef HAVE_LTCSMPTE
+#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
 	if (ltcjack_connected()) close_ltcjack();
 #endif
 #ifdef HAVE_MIDI

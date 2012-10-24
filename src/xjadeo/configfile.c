@@ -47,7 +47,7 @@ extern int avoid_lash;
 extern char *midi_driver;
 extern int use_jack;
 extern int interaction_override;
-#ifdef HAVE_LTCSMPTE
+#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
 extern int use_ltc;
 #endif 
 
@@ -142,12 +142,12 @@ int parseoption (char *item, char *value) {
     rv=1;
   } else if (!strncasecmp(item,"SYNCSOURCE",10)) {
 		use_jack=1;
-#ifdef HAVE_LTCSMPTE
+#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
 		use_ltc=0;
 #endif
 		switch (atoi(value)) {
 			case 3:
-#ifdef HAVE_LTCSMPTE
+#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
 				use_ltc=1;
 #endif
 #ifdef HAVE_MIDI
@@ -382,7 +382,7 @@ int saveconfig (const char *fn) {
 	fprintf(fp, "SMPTEOFFSET=%s\n", smpte_offset?smpte_offset:"0");
 // use current setting and connection -- not commandline
 	int ss =0;
-#ifdef HAVE_LTCSMPTE
+#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
 	if (ltcjack_connected()) ss=3;
 	else
 #endif

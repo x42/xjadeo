@@ -143,7 +143,7 @@ int jack_clkconvert =1; /* --jackfps  - NOT YET IMPLEMENTED
                           [0:audio_frames_per_video_frame
                            1:video-file] */
 int use_jack = 1;
-#ifdef HAVE_LTCSMPTE
+#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
 int use_ltc = 0;        /* -l , --ltc */
 #endif 
 char *load_rc = NULL;
@@ -234,9 +234,7 @@ static struct option const long_options[] =
   {"midiclk", no_argument, 0, 'C'},
   {"no-midiclk", no_argument, 0, 'c'},
 #endif
-#ifdef HAVE_LTCSMPTE
   {"ltc", no_argument, 0, 'l'},
-#endif
 #ifdef JACK_SESSION
   {"uuid", required_argument, 0, 'U'},
   {"rc", required_argument, 0, 'r'},
@@ -285,9 +283,7 @@ decode_switches (int argc, char **argv)
 			   "C"	/* --midiclk */
 			   "c"	/* --no-midiclk */
 #endif
-#ifdef HAVE_LTCSMPTE
 			   "l"	/* --ltc */
-#endif
 #ifdef JACK_SESSION
 			   "r:"	/* --rc */
 			   "U:"	/* --uuid */
@@ -417,9 +413,13 @@ decode_switches (int argc, char **argv)
           midi_clkadj = 0;
 	  break;
 #endif
-#ifdef HAVE_LTCSMPTE
+#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
 	case 'l':		/* --ltc */
           use_ltc = 1;
+	  break;
+#else
+	case 'l':		/* --ltc */
+	  printf("This version of xjadeo is compiled without LTC support\n");
 	  break;
 #endif
 	case 'U':		/* --uuid */
@@ -492,9 +492,7 @@ jack video monitor\n", program_name);
 "  --lash-no-autoresume      [liblash option]\n"
 "  --lash-no-start-server    [liblash option]\n"
 #endif /* HAVE_LASH */
-#ifdef HAVE_LTCSMPTE
 "  -l, --ltc                 sync to LinearTimeCode (audio-jack).\n"
-#endif
 #ifdef JACK_SESSION
 "  -U, --uuid                specify JACK-SESSION UUID.\n"
 #endif
@@ -565,7 +563,7 @@ static void printversion (void) {
 #ifdef HAVE_LASH
   printf("LASH ");
 #endif 
-#ifdef HAVE_LTCSMPTE
+#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
   printf("LTC ");
 #endif
 #ifdef JACK_SESSION
@@ -666,7 +664,7 @@ void clean_up (int status) {
   if (midi_connected()) midi_close(); 
   else
 #endif
-#ifdef HAVE_LTCSMPTE
+#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
   if (ltcjack_connected()) close_ltcjack(); 
   else
 #endif
@@ -808,7 +806,7 @@ main (int argc, char **argv)
                 if (midi_connected()) midi_close(); 
                 else
 #endif
-#ifdef HAVE_LTCSMPTE
+#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
                 if (ltcjack_connected()) close_ltcjack(); 
                 else
 #endif
@@ -835,7 +833,7 @@ main (int argc, char **argv)
     midi_open(midiid);
   } else 
 #endif
-#ifdef HAVE_LTCSMPTE
+#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
   if (use_ltc) {
     open_ltcjack(NULL);
   } else

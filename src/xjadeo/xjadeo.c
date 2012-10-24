@@ -84,7 +84,7 @@ extern int	mq_en;
 extern char	*ipc_queue;
 extern double	delay;
 extern int	seekflags;
-#ifdef HAVE_LTCSMPTE
+#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
 extern int  use_ltc;
 #endif
 
@@ -194,7 +194,7 @@ void event_loop(void) {
 		if (midi_connected()) newFrame = midi_poll_frame();
 		else
 #endif
-#ifdef HAVE_LTCSMPTE
+#if (defined HAVE_LTCSMPTE || defined HAVE_LTC)
 		if (ltcjack_connected()) newFrame = ltc_poll_frame();
 		else
 #endif
