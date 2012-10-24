@@ -227,13 +227,11 @@ static struct option const long_options[] =
   {"dropframes", no_argument, 0, 'N'},
   {"nodropframes", no_argument, 0, 'n'},
   {"letterbox", no_argument, 0, 'b'},
-#ifdef HAVE_MIDI
   {"midi", required_argument, 0, 'm'},
   {"midifps", required_argument, 0, 'M'},
   {"midi-driver", required_argument, 0, 'd'},
   {"midiclk", no_argument, 0, 'C'},
   {"no-midiclk", no_argument, 0, 'c'},
-#endif
   {"ltc", no_argument, 0, 'l'},
 #ifdef JACK_SESSION
   {"uuid", required_argument, 0, 'U'},
@@ -276,13 +274,11 @@ decode_switches (int argc, char **argv)
 			   "s"	/* start in full-screen mode */
 			   "i:"	/* info - OSD-mode */
 			   "b"	/* letterbox */
-#ifdef HAVE_MIDI
 			   "m:"	/* midi interface */
 			   "M:"	/* midi clk convert */
 			   "d:"	/* midi driver */
 			   "C"	/* --midiclk */
 			   "c"	/* --no-midiclk */
-#endif
 			   "l"	/* --ltc */
 #ifdef JACK_SESSION
 			   "r:"	/* --rc */
@@ -412,6 +408,14 @@ decode_switches (int argc, char **argv)
 	case 'c':		/* --no-midiclk */
           midi_clkadj = 0;
 	  break;
+#else
+	case 'm':		/* --midi */
+	case 'd':		/* --midi-driver */
+	case 'M':		/* --midifps */
+	case 'C':		/* --midiclk */
+	case 'c':		/* --no-midiclk */
+	  printf("This version of xjadeo is compiled without MIDI support\n");
+	  break;
 #endif
 #if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
 	case 'l':		/* --ltc */
@@ -468,15 +472,11 @@ jack video monitor\n", program_name);
 "  -a, --ontop               stack xjadeo window on top of the desktop.\n"
 "                            requires x11 or xv videomode and EWMH.\n"
 "  -b, --letterbox           retain apect ratio when scaling (Xv only).\n"
-#ifdef HAVE_MIDI
 "  -c, --no-midiclk          ignore MTC quarter frames.\n"
-#endif
-#ifdef HAVE_MIDI
 "  -d <name>,                specify midi-driver to use. run 'xjadeo -V' to\n"
 "     --midi-driver <name>   list supported driver(s). <name> is not case-\n"
 "                            sensitive and can be shortened to the first unique\n"
 "                            name. eg '-d j' for jack, '-d alsa-r' for alsa-raw\n"
-#endif
 "  -f <val>, --fps <val>     display update freq. - default -1 use file's fps\n"
 "  -i <int>, --info <int>    render OnScreenDisplay info: 0:off, %i:frame,\n"
 "                            %i:smpte, %i:both. (use remote ctrl for more opts.)\n"
@@ -496,7 +496,6 @@ jack video monitor\n", program_name);
 #ifdef JACK_SESSION
 "  -U, --uuid                specify JACK-SESSION UUID.\n"
 #endif
-#ifdef HAVE_MIDI
 "  -m <port>,                use MTC instead of jack-transport\n"
 "      --midi <port>         <port> argument is driver-specific:\n"
 "                            * jack-midi: specify midi-port name to connect to\n"
@@ -512,7 +511,6 @@ jack video monitor\n", program_name);
 "      --midifps <int>       0: use framerate of MTC clock (default)\n" 
 "                            2: use video file FPS\n" 
 "                            3: \"resample\": videoFPS / MTC \n" 
-#endif /* HAVE_MIDI */
 /* - undocumented /hidden/ options
 "  -n , --nodropframes       parse MTC as announced, but do not use frame-drop\n" 
 "                            algorithm for OSD - useful for debugging\n"
