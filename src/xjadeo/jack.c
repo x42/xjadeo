@@ -159,8 +159,10 @@ void jackt_toggle() {
 void close_jack(void)
 {
 	if (jack_client) {
-		jack_deactivate (jack_client);
-		jack_client_close (jack_client);
+		jack_client_t *b = jack_client;
+		jack_client=NULL;
+		jack_deactivate (b);
+		jack_client_close (b);
 	}
 	jack_client=NULL;
 }
