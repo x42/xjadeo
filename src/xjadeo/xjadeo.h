@@ -63,9 +63,8 @@ enum { OSD_LEFT=-1, OSD_CENTER=-2, OSD_RIGHT=-3 }; ///< use positive values as p
 
 /* define maximum size for OSD in pixel */
 #ifdef HAVE_FT
-# define ST_WIDTH   (1024)
-# define ST_HEIGHT  (30)
-# define ST_PX      (24)
+# define ST_WIDTH   (1920)
+# define ST_HEIGHT  (128)
 #else 
 # define ST_WIDTH   (0)
 # define ST_HEIGHT  (0)
@@ -183,5 +182,5 @@ int saveconfig (const char *filename);
 int readconfig (char *fn);
 
 /* freetype - On screen display */
-int render_font (char *fontfile, char *text);
+int render_font (char *fontfile, char *text, int px);
 

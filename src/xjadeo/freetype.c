@@ -62,7 +62,7 @@ draw_bitmap( FT_Bitmap*  bitmap,
   }
 }
 
-int render_font (char *fontfile, char *text)
+int render_font (char *fontfile, char *text, int px)
 {
   FT_Library    library;
   FT_Face       face;
@@ -89,7 +89,7 @@ int render_font (char *fontfile, char *text)
   if ( error ) return(-1);
 
   /* use 25 at 72 dpi */
-  error = FT_Set_Char_Size( face, ST_PX*64, 0, 72, 0 );  /* set character size */
+  error = FT_Set_Char_Size( face, 0, px*64, 0, 72 );  /* set character size */
   if ( error ) return(-1);
 
   slot = face->glyph;
@@ -143,7 +143,7 @@ int render_font (char *fontfile, char *text)
 
 unsigned char ST_image[1][1];
 int ST_rightend = 0;
-int render_font (char *fontfile, char *text) {return -1;};
+int render_font (char *fontfile, char *text, int px) {return -1;};
 
 #endif /* HAVE_FT*/
 

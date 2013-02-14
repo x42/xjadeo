@@ -409,6 +409,9 @@ void OSD_bar(int rfmt, uint8_t *mybuffer, int yperc, double min,double max,doubl
 }
 
 
+#define MIN(A,B) (((A)<(B)) ? (A) : (B))
+#define MAX(A,B) (((A)>(B)) ? (A) : (B))
+
 void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int yperc) {
 	int x,y, xalign, yalign;
 	rendervars rv;
@@ -420,22 +423,25 @@ void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int yperc) {
 
 	SET_RFMT(rfmt,_render,rv,render)
 
-	if ( render_font(OSD_fontfile, text) ) return;
+	const int fontsize = MIN(MAX(16, movie_height/15),120);
+
+	if ( render_font(OSD_fontfile, text, fontsize) ) return;
 
 	if (xpos == OSD_LEFT) xalign=ST_PADDING; // left
 	else if (xpos == OSD_RIGHT) xalign=movie_width-ST_PADDING-ST_rightend; // right
 	else xalign=(movie_width-ST_rightend)/2; // center
-
-	yalign= (movie_height - ST_HEIGHT) * yperc /100.0;
+	const int fh = MIN(ST_HEIGHT, fontsize*4/3);
+	const int fo = ST_HEIGHT - fh;
+	yalign= (movie_height - fh) * yperc /100.0;
 
 	int donext =0;
-	for (y=0; y<ST_HEIGHT && (y+yalign) < movie_height;y++) {
+	for (y=0; y < fh && (y+yalign) < movie_height;y++) {
 		donext=0;
 		for (x=0; x<ST_rightend && (x+xalign) < movie_width ;x++) {
-			if (ST_image[y][x]>= ST_BG || donext) {
-				_render(mybuffer,&rv,(x+xalign),(y+yalign),ST_image[y][x]);
+			if (ST_image[y+fo][x]>= ST_BG || donext) {
+				_render(mybuffer,&rv,(x+xalign),(y+yalign),ST_image[y+fo][x]);
 			}
-			if (ST_image[y][x]>= ST_BG && rfmt == PIX_FMT_UYVY422) donext=1; 
+			if (ST_image[y+fo][x]>= ST_BG && rfmt == PIX_FMT_UYVY422) donext=1;
 			else donext=0;
 		}
 

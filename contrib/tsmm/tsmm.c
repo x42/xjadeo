@@ -29,6 +29,8 @@
 
 #include <xjadeo.h>
 
+#define MIN(A,B) (((A)<(B)) ? (A) : (B))
+
 
 char *program_name;
 /* hardcoded settings */
@@ -44,7 +46,9 @@ int want_autodrop =1;   /* --nodropframes -n (hidden option) */
 double	framerate = 25;
 
 
+//#define OSD_fontfile "/home/rgareus/.fonts/DroidSansMono.ttf"
 #define OSD_fontfile FONT_FILE
+
 extern unsigned char ST_image[][ST_WIDTH];
 extern int ST_rightend;
 int OSD_mode = 0;
@@ -60,9 +64,9 @@ typedef struct {
 static void usage (int status)
 {
   printf ("%s -   render time-code on tiff frames\n", program_name);
-  printf ("usage: %s <folder> [fps] [duration]\n", program_name);
+  printf ("usage: %s <folder> [fps] [duration] [height]\n", program_name);
   printf (""
-"\n  xjtsmm generates a tiff image-sequence"
+"\n  xjtsmm generates a tiff image-sequence (16:9)"
 "\n  with the frame number and SMPTE rendered on a black background."
 "\n  use with .../xjadeo/trunk/contrib/tsmm/tsmm.pl"
 "\n  to generate a video-file from the image-sequence."
@@ -81,8 +85,10 @@ void set_positions(int *xalign, int *yalign, int w, int h, int xpos, int yperc) 
 		else if (xpos == OSD_RIGHT) *xalign=w-ST_PADDING-ST_rightend; // right
 		else *xalign=(w-ST_rightend)/2; // center
 	}
-	if (yalign) 
-		*yalign= (h - ST_HEIGHT) * yperc /100.0;
+	if (yalign) {
+		int fh = MIN(ST_HEIGHT, h/15);
+		*yalign= (h - fh) * yperc /100.0;
+	}
 
    //	if (xalign && yalign) printf ("DEBUG: x:%i y:%i\n",*xalign,*yalign);
 }
@@ -133,19 +139,21 @@ int render_frame (char *filename, int w, int h, text_element *te)  {
 	buf = _TIFFmalloc(imageStripsize);
 	memset(buf,0,imageStripsize);
 	ii=0;
+	const int fh = MIN(ST_HEIGHT, h/15);
+	const int fo = ST_HEIGHT - fh;
 	while (te[ii].text) {
 		int x,y;
 		if (want_verbose)
 			printf("rendering text: %s\n",te[ii].text);
-		if ( render_font(OSD_fontfile, te[ii].text) ) return(1);
+		if ( render_font(OSD_fontfile, te[ii].text, h/15) ) return(1);
 		set_positions(&xalign, &yalign, w, h, te[ii].xpos, te[ii].yperc);
 		for (x=0; x<ST_rightend && (x+xalign) < w ;x++) {
-			for (y=0; y<ST_HEIGHT && (y+yalign) < h;y++) {
-				if (ST_image[y][x]>= ST_BG) {
+			for (y=0; y < fh && (y+yalign) < h;y++) {
+				if (ST_image[y+fo][x]>= ST_BG) {
 					i= spp* ((x+xalign)+w*(y+yalign));
-					((uint8*)buf)[i+0] = ST_image[y][x];
-					((uint8*)buf)[i+1] = ST_image[y][x];
-					((uint8*)buf)[i+2] = ST_image[y][x];
+					((uint8*)buf)[i+0] = ST_image[y+fo][x];
+					((uint8*)buf)[i+1] = ST_image[y+fo][x];
+					((uint8*)buf)[i+2] = ST_image[y+fo][x];
 				}
 			}
 		}
@@ -176,8 +184,8 @@ int main (int argc, char **argv) {
 	int i;
 	int err = 0;
 	int last_frame=150;
-	int w=352;
-	int h=192;
+	int w=640;
+	int h=360;
 	program_name=argv[0];
 
 	if (argc<2) usage(1);
@@ -197,15 +205,22 @@ int main (int argc, char **argv) {
 	} else {
 	  	last_frame=smptestring_to_frame("2:10:15");
 	}
-	if (argc>4) usage(1);
+	if (argc>4) {
+		h = atoi(argv[4]);
+		w = h * 16 / 9;
+		if (w < 352 || w > 2048) {
+			printf("\nWARNING: untested video geometry!\n\n");
+		}
+	}
+	if (argc>5) usage(1);
 
 	if (test_dir(filepath)) {
 		printf("directory %s does not exist\n",filepath);
 		return(1);
 	}
 	printf("writing %s/frame_%07i.tif -> %s/frame_%07i.tif\n",filepath,0,filepath,last_frame);
-	printf("waiting 5 sec. press CTRL-C to interrupt.\n");  fflush(stdout);
-	sleep(5);
+	printf("waiting 3 sec. press CTRL-C to interrupt.\n");  fflush(stdout);
+	sleep(3);
 
 	te[0].xpos=OSD_CENTER;
 	te[0].yperc=5;
