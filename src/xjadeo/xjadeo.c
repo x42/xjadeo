@@ -782,7 +782,7 @@ void display_frame(int64_t timestamp, int force_update, int do_render) {
 	dispFrame = timestamp;
 	if (OSD_mode&OSD_FRAME) 
 		snprintf(OSD_frame,48,"Frame: %li", dispFrame);
-	if (OSD_mode&OSD_SMPTE) frame_to_smptestring(OSD_smpte,dispFrame);
+	if (OSD_mode&OSD_SMPTE) frame_to_smptestring(OSD_smpte,dispFrame - ts_offset);
 
 	if(fFirstTime) {
 		fFirstTime=0;
