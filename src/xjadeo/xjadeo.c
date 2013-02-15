@@ -715,10 +715,10 @@ read_frame:
 	if (seekflags!=SEEK_CONTINUOUS) return (1);
 
 #ifdef FFDEBUG
-	printf("\nDEBUG: got pts=%li dts:%li frame:%g/%g    ##\n", 
+	printf("\nDEBUG: got pts=%li dts:%li frame: p:%g d:%g    ##\n",
 		(long int) packet->pts , (long int) packet->dts,
-		packet->dts*av_q2d(v_stream->time_base)*framerate,
-		packet->pts*av_q2d(v_stream->time_base)*framerate);
+		packet->pts*framerate*av_q2d(v_stream->time_base),
+		packet->dts*framerate*av_q2d(v_stream->time_base));
 #endif
 	mtsb = packet->pts;  
 
