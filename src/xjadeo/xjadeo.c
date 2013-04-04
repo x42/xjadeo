@@ -738,7 +738,12 @@ read_frame:
 	if (mtsb == timestamp) printf("Right.\n");
 #endif
 
-	if (mtsb >= timestamp) return (1); // ok!
+#if 1
+	if (mtsb >= timestamp)
+#else // test & check time-base/ framerate re-scaling
+	if ((mtsb*framerate*av_q2d(v_stream->time_base)) >= (timestamp*framerate*av_q2d(v_stream->time_base)))
+#endif
+		return (1); // ok!
 
 	/* skip to next frame */
 #ifdef FFDEBUG
