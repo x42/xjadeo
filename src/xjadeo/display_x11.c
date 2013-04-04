@@ -610,13 +610,12 @@ void xj_handle_X_events (void) {
 					xj_get_window_size(&my_Width,&my_Height);
 
 
-					if (event.xbutton.button == 4 && my_Height > 32 && my_Width > 32)  {
+					if (event.xbutton.button == 5 && my_Height > 32 && my_Width > 32)  {
 						float step=sqrt((float)my_Height);
 						my_Width-=floor(step*movie_aspect);
 						my_Height-=step;
-					//	xj_resize(my_Width, my_Height);
 					}
-					if (event.xbutton.button == 5) {
+					if (event.xbutton.button == 4) {
 						float step=sqrt((float)my_Height);
 						my_Width+=floor(step*movie_aspect);
 						my_Height+=step;
