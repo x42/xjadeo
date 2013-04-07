@@ -1,0 +1,13 @@
+#!/bin/bash
+
+: ${OSCHOST=localhost}
+: ${OSCPORT=5678}
+
+while read cmd
+do
+	if test "$cmd" == "exit" -o "$cmd" == "quit"; then
+		oscsend $OSCHOST $OSCPORT /jadeo/cmd s "unload"
+		exit
+	fi
+	oscsend $OSCHOST $OSCPORT /jadeo/cmd s "$cmd"
+done
