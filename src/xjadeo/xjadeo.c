@@ -102,6 +102,8 @@ extern int	OSD_mode;
 const AVRational c1_Q = { 1, 1 };
 double 		tpf = 1.0; /* pts/dts increments per video-frame - cached value */
 
+static int      fFirstTime=1;
+
 #ifdef JACK_SESSION
 extern int jack_session_restore;
 extern int js_winx;
@@ -324,6 +326,7 @@ int open_movie(char* file_name) {
 		close_movie();
 	}
 
+	fFirstTime = 1;
 	pFrameFMT = NULL;
 	movie_width  = 320;
 	movie_height = 180;
@@ -345,6 +348,7 @@ int open_movie(char* file_name) {
 	{
 		if (!remote_en && !mq_en && !ipc_queue) //TODO prevent msg only when starting up with no file...
 			fprintf( stderr, "Cannot open video file %s\n", file_name);
+		pFormatCtx=NULL;
 		return (-1);
 	}
 
@@ -352,6 +356,7 @@ int open_movie(char* file_name) {
 	if(avformat_find_stream_info(pFormatCtx, NULL)<0) {
 		fprintf( stderr, "Cannot find stream information in file %s\n", file_name);
 		avformat_close_input(&pFormatCtx);
+		pFormatCtx=NULL;
 		return (-1);
 	}
 
@@ -376,6 +381,7 @@ int open_movie(char* file_name) {
 	if(videoStream==-1) {
 		fprintf( stderr, "Cannot find a video stream in file %s\n", file_name);
 		avformat_close_input(&pFormatCtx);
+		pFormatCtx=NULL;
 		return( -1 );
 	}
 
@@ -489,6 +495,8 @@ int open_movie(char* file_name) {
 	if(pCodec==NULL) {
 		fprintf( stderr, "Cannot find a codec for file: %s\n", file_name);
 		avformat_close_input(&pFormatCtx);
+		pFormatCtx = NULL;
+		pCodecCtx = NULL;
 		return( -1 );
 	}
 
@@ -496,6 +504,8 @@ int open_movie(char* file_name) {
 	if(avcodec_open2(pCodecCtx, pCodec, NULL)<0) {
 		fprintf( stderr, "Cannot open the codec for file %s\n", file_name);
 		avformat_close_input(&pFormatCtx);
+		pFormatCtx = NULL;
+		pCodecCtx = NULL;
 		return( -1 );
 	}
 
@@ -504,6 +514,8 @@ int open_movie(char* file_name) {
 		fprintf( stderr, "Cannot allocate video frame buffer\n");
 		avcodec_close(pCodecCtx);
 		avformat_close_input(&pFormatCtx);
+		pFormatCtx = NULL;
+		pCodecCtx = NULL;
 		return(-1);
 	}
 
@@ -513,6 +525,8 @@ int open_movie(char* file_name) {
 		av_free(pFrame);
 		avcodec_close(pCodecCtx);
 		avformat_close_input(&pFormatCtx);
+		pFormatCtx = NULL;
+		pCodecCtx = NULL;
 		return(-1);
 	}
 
@@ -540,6 +554,7 @@ void override_fps (double fps) {
 int64_t my_avprev = 0; // last recent seeked timestamp
 
 void render_empty_frame(int blit) {
+	if (!buffer) return;
 	// clear image (black / or YUV green)
 	if (render_fmt == PIX_FMT_UYVY422) {
 		int i;
@@ -775,8 +790,9 @@ read_frame:
 
 void display_frame(int64_t timestamp, int force_update, int do_render) {
 	static AVPacket packet;
-	static int      fFirstTime=1;
 	int             frameFinished;
+
+	if (!buffer || !current_file) { return; }
 
 	if (timestamp - file_frame_offset< 0) timestamp=0;
 	else if(timestamp - file_frame_offset>= frames) timestamp = frames - 1;
@@ -793,7 +809,7 @@ void display_frame(int64_t timestamp, int force_update, int do_render) {
 
 	if(fFirstTime) {
 		fFirstTime=0;
-		packet.data=NULL;
+		memset(&packet, 0, sizeof(AVPacket));
 	}
 
 	if (pFrameFMT && my_seek_frame(&packet, timestamp)) {
@@ -889,6 +905,8 @@ int close_movie() {
 	//Close the video file
 	avformat_close_input(&pFormatCtx);
 	duration = frames = 1;
+	pCodecCtx = NULL;
+	pFormatCtx = NULL;
 	framerate = 10; // prevent slow reaction to remote-ctl (event loop).
 	return (0);
 }

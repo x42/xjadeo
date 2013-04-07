@@ -75,10 +75,10 @@ int               movie_height = 180;
 int               ffctv_width  = 320;
 int               ffctv_height = 180;
 float             movie_aspect = 320.0 / 180.0;
-AVFormatContext   *pFormatCtx;
+AVFormatContext   *pFormatCtx = NULL;
 int               videoStream = -1;
-AVCodecContext    *pCodecCtx;
-AVFrame           *pFrame;
+AVCodecContext    *pCodecCtx = NULL;
+AVFrame           *pFrame = NULL;
 AVFrame           *pFrameFMT = NULL;
 uint8_t           *buffer = NULL;
 
