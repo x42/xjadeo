@@ -1,3 +1,15 @@
+xjadeo (0.7.0) unstable; urgency=low
+  * fixes for clang/llvm compiler
+  * SMPTE on-screen-display ignore offset
+  * use libltc; deprecate libltcsmpte support
+  * reset aspect-ratio when opening a new file
+  * add /jadeo/cmd OSC command - full remote control
+  * fix OSC concurrency problems.
+  * graceful jack shutdown handling
+  * reverse scroll-wheel zoom direction
+
+ -- Robin Gareus <robin@gareus.org>  Sun, 07 Apr 2013 22:59:25 +0200
+
 xjadeo (0.6.4) unstable; urgency=low
 
   * pixel and display aspect ratio corrections done during rendering

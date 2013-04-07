@@ -7,8 +7,8 @@ AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
 VERSION_MAJOR=0
-VERSION_MINOR=6
-VERSION_SUB=4
+VERSION_MINOR=7
+VERSION_SUB=0
 
 dnl Every other copy of the package version number gets its value from here
 AM_INIT_AUTOMAKE(xjadeo, [${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_SUB}])
