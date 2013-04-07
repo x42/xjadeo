@@ -742,7 +742,7 @@ main (int argc, char **argv)
   if (videomode < 0) vidoutmode(videomode); // dump modes and exit.
 
   if ((i+1)== argc) movie = argv[i];
-  else if ((remote_en || mq_en || ipc_queue || load_rc) && i==argc) movie = "";
+  else if ((remote_en || mq_en || ipc_queue || osc_port || load_rc) && i==argc) movie = "";
 #ifndef HAVE_MACOSX
   else usage (EXIT_FAILURE);
 #else
