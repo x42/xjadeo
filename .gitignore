@@ -43,12 +43,14 @@ Makefile.in
 /src/qt-gui/release/
 *.qm
 
-
 #win32 build
 /contrib/nsi/*.dll
 /contrib/nsi/*.exe
 /contrib/nsi/xjadeo.nsi
 /contrib/nsi/*.ttf
+
+# OSX
+/contrib/Jadeo.app/
 
 # misc
 /doc/html/
