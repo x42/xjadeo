@@ -147,6 +147,9 @@ int select_sleep (int usec) {
 		if (!remote_read_ipc()) remote_activity=1;
 	}
 #endif
+#ifdef HAVE_LIBLO
+	remote_activity |= process_osc();
+#endif
 	if (remote_activity) {
 	  tv.tv_sec = 0; tv.tv_usec = 1;
 	}

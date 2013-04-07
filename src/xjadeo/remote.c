@@ -153,7 +153,7 @@ void xapi_open(void *d) {
 	if ( open_movie(fn)) 
 		remote_printf(403, "failed to open file '%s'",fn);
 	else	remote_printf(129, "opened file: '%s'",fn);
-        init_moviebuffer();
+	init_moviebuffer();
 	newsourcebuffer();
 	force_redraw=1;
 	//display_frame((int64_t)(dispFrame),1); // update screen
@@ -1105,6 +1105,10 @@ int remote_read_io(void) {
 	}
 
 	return(rx>0?0:-1);
+}
+
+void exec_remote_cmd (char *cmd) {
+	exec_remote_cmd_recursive(cmd_root, cmd);
 }
 
 #ifdef HAVE_WINDOWS

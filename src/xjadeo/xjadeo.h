@@ -118,6 +118,7 @@ int Xgetontop (void);
 int Xgetfullscreen (void);
 
 /* remote.c */
+void exec_remote_cmd (char *cmd);
 void close_remote_ctrl (void) ;
 void open_remote_ctrl (void);
 void close_mq_ctrl (void) ;
@@ -174,6 +175,7 @@ int midi_choose_driver(char *);
 /* xjosc.c */
 int initialize_osc(int osc_port);
 void shutdown_osc(void);
+int process_osc(void);
 
 /* configfile.c */
 void xjadeorc (void);

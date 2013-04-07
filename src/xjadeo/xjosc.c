@@ -26,8 +26,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
-#include <pthread.h>
-#include <lo/lo.h>
+#include <lo/lo_lowlevel.h>
 #include "xjadeo.h"
 
 extern int	want_verbose;
@@ -180,14 +179,10 @@ int oscb_pan (const char *path, const char *types, lo_arg **argv, int argc, lo_m
 
 int oscb_load (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   if (1 || want_verbose) fprintf(stderr, "OSC: %s <- s:%s\n", path, &argv[0]->s);
-  loop_run=0; // TODO lock !!
-  double dly = delay>0?delay:(1.0/framerate);
-  usleep(ceil(2e6*dly)); 
   open_movie(&argv[0]->s);
   init_moviebuffer();
   newsourcebuffer();
   force_redraw=1;
-  loop_run=1;
   return(0);
 }
 
@@ -231,6 +226,12 @@ int oscb_osdbox (const char *path, const char *types, lo_arg **argv, int argc, l
   return(0);
 }
 
+int oscb_remotecmd (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+  if (want_verbose) fprintf(stderr, "OSC: %s <- s:%s\n", path, &argv[0]->s);
+  exec_remote_cmd (&argv[0]->s);
+  return(0);
+}
+
 // X11 options
 
 /*
@@ -269,7 +270,7 @@ static void oscb_error(int num, const char *m, const char *path) {
 
 //////////////////////////////////////////////////////////////////////////////
 
-lo_server_thread osc_server = NULL;
+lo_server osc_server = NULL;
 
 int initialize_osc(int osc_port) {
   char tmp[8];
@@ -277,7 +278,7 @@ int initialize_osc(int osc_port) {
 
   snprintf(tmp, sizeof(tmp), "%d", port);
   fprintf(stderr, "OSC trying port:%i\n",port);
-  osc_server = lo_server_thread_new (tmp, oscb_error);
+  osc_server = lo_server_new (tmp, oscb_error);
 //fprintf (stderr,"OSC port %i is in use.\n", port);
 
   if (!osc_server) {
@@ -287,58 +288,68 @@ int initialize_osc(int osc_port) {
 
   if(!want_quiet) {
     char *urlstr;
-    urlstr = lo_server_thread_get_url (osc_server);
+    urlstr = lo_server_get_url (osc_server);
     fprintf(stderr, "OSC server name: %s\n",urlstr);
     free (urlstr);
   }
 
-  lo_server_thread_add_method(osc_server, "/jadeo/seek", "i", &oscb_seek, NULL); // IFF no MIDI-TC and no JACK-TS - seek to this frame
-  lo_server_thread_add_method(osc_server, "/jadeo/load", "S", &oscb_load, NULL);
+  lo_server_add_method(osc_server, "/jadeo/seek", "i", &oscb_seek, NULL); // IFF no MIDI-TC and no JACK-TS - seek to this frame
+  lo_server_add_method(osc_server, "/jadeo/load", "S", &oscb_load, NULL);
 #ifdef CROPIMG
-  lo_server_thread_add_method(osc_server, "/jadeo/pan", "i", &oscb_pan, NULL);
+  lo_server_add_method(osc_server, "/jadeo/pan", "i", &oscb_pan, NULL);
 #endif
 #ifdef TIMEMAP
-  lo_server_thread_add_method(osc_server, "/jadeo/timescale", "f", &oscb_timescale, NULL);
-  lo_server_thread_add_method(osc_server, "/jadeo/timescale", "fi", &oscb_timescale2, NULL);
-  lo_server_thread_add_method(osc_server, "/jadeo/loop", "i", &oscb_loop, NULL);
-  lo_server_thread_add_method(osc_server, "/jadeo/reverse", "", &oscb_reverse, NULL);
+  lo_server_add_method(osc_server, "/jadeo/timescale", "f", &oscb_timescale, NULL);
+  lo_server_add_method(osc_server, "/jadeo/timescale", "fi", &oscb_timescale2, NULL);
+  lo_server_add_method(osc_server, "/jadeo/loop", "i", &oscb_loop, NULL);
+  lo_server_add_method(osc_server, "/jadeo/reverse", "", &oscb_reverse, NULL);
 #endif
-  lo_server_thread_add_method(osc_server, "/jadeo/fps", "f", &oscb_fps, NULL); // set screen update fps
-  lo_server_thread_add_method(osc_server, "/jadeo/framerate", "f", &oscb_framerate, NULL); //  override file's fps
-  lo_server_thread_add_method(osc_server, "/jadeo/offset", "i", &oscb_offset, NULL); // set offset by frame-number
-  lo_server_thread_add_method(osc_server, "/jadeo/offset", "s", &oscb_offsetsmpte, NULL); // set offset as SMPTE
+  lo_server_add_method(osc_server, "/jadeo/fps", "f", &oscb_fps, NULL); // set screen update fps
+  lo_server_add_method(osc_server, "/jadeo/framerate", "f", &oscb_framerate, NULL); //  override file's fps
+  lo_server_add_method(osc_server, "/jadeo/offset", "i", &oscb_offset, NULL); // set offset by frame-number
+  lo_server_add_method(osc_server, "/jadeo/offset", "s", &oscb_offsetsmpte, NULL); // set offset as SMPTE
 
-  lo_server_thread_add_method(osc_server, "/jadeo/jack/connect", "", &oscb_jackconnect, NULL);
-  lo_server_thread_add_method(osc_server, "/jadeo/jack/disconnect", "", &oscb_jackdisconnect, NULL);
+  lo_server_add_method(osc_server, "/jadeo/jack/connect", "", &oscb_jackconnect, NULL);
+  lo_server_add_method(osc_server, "/jadeo/jack/disconnect", "", &oscb_jackdisconnect, NULL);
 #ifdef HAVE_MIDI
-  lo_server_thread_add_method(osc_server, "/jadeo/midi/connect", "s", &oscb_midiconnect, NULL);
-  lo_server_thread_add_method(osc_server, "/jadeo/midi/disconnect", "", &oscb_mididisconnect, NULL);
-  lo_server_thread_add_method(osc_server, "/jadeo/midi/quarterframes", "i", &oscb_midiquarterframes, NULL);
-  lo_server_thread_add_method(osc_server, "/jadeo/midi/clkconvert", "i", &oscb_midiclkconvert, NULL);
+  lo_server_add_method(osc_server, "/jadeo/midi/connect", "s", &oscb_midiconnect, NULL);
+  lo_server_add_method(osc_server, "/jadeo/midi/disconnect", "", &oscb_mididisconnect, NULL);
+  lo_server_add_method(osc_server, "/jadeo/midi/quarterframes", "i", &oscb_midiquarterframes, NULL);
+  lo_server_add_method(osc_server, "/jadeo/midi/clkconvert", "i", &oscb_midiclkconvert, NULL);
 #endif
 
-  lo_server_thread_add_method(osc_server, "/jadeo/osd/font", "s", &oscb_osdfont, NULL);
-  lo_server_thread_add_method(osc_server, "/jadeo/osd/smtpe", "i", &oscb_osdsmtpe, NULL);
-  lo_server_thread_add_method(osc_server, "/jadeo/osd/frame", "i", &oscb_osdframe, NULL);
-  lo_server_thread_add_method(osc_server, "/jadeo/osd/box", "i", &oscb_osdbox, NULL);
+  lo_server_add_method(osc_server, "/jadeo/osd/font", "s", &oscb_osdfont, NULL);
+  lo_server_add_method(osc_server, "/jadeo/osd/smtpe", "i", &oscb_osdsmtpe, NULL);
+  lo_server_add_method(osc_server, "/jadeo/osd/frame", "i", &oscb_osdframe, NULL);
+  lo_server_add_method(osc_server, "/jadeo/osd/box", "i", &oscb_osdbox, NULL);
 
+  lo_server_add_method(osc_server, "/jadeo/cmd", "s", &oscb_remotecmd, NULL);
 
-  lo_server_thread_add_method(osc_server, "/jadeo/quit", "", &oscb_quit, NULL);
+  lo_server_add_method(osc_server, "/jadeo/quit", "", &oscb_quit, NULL);
 
-  lo_server_thread_start(osc_server);
   if(want_verbose) fprintf(stderr, "OSC server started on port %i\n",port);
   return (0);
 }
 
+int process_osc(void) {
+  int rv = 0;
+  if (!osc_server) return 0;
+  while (lo_server_recv_noblock(osc_server, 0) > 0) {
+    rv++;
+  }
+  return rv;
+}
+
 void shutdown_osc(void) {
   if (!osc_server) return;
-  lo_server_thread_stop(osc_server);
+  lo_server_free(osc_server);
   if(!want_verbose) fprintf(stderr, "OSC server shut down.\n");
 }
 
 #else
 int initialize_osc(int osc_port) {return(1);}
 void shutdown_osc(void) {;}
+int process_osc(void) {return(0);}
 #endif
 
 /* vi:set ts=8 sts=2 sw=2: */
