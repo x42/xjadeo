@@ -327,6 +327,7 @@ int open_movie(char* file_name) {
 	pFrameFMT = NULL;
 	movie_width  = 320;
 	movie_height = 180;
+	movie_aspect = (float)movie_width / (float) movie_height;
 	duration = frames = 1;
 	framerate = 10; // prevent slow reaction to remote-ctl (event loop).
 	file_frame_offset = 0;
@@ -453,6 +454,7 @@ int open_movie(char* file_name) {
 	movie_height = pCodecCtx->height;
 #endif
 
+	movie_aspect = 0;
 	if (movie_aspect<=0.0) {
 		if (av_stream->sample_aspect_ratio.num)
 			movie_aspect = av_q2d(av_stream->sample_aspect_ratio);
