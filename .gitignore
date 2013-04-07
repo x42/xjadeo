@@ -1,0 +1,59 @@
+*.o
+*.swp
+/cscope.*
+/tags
+
+# autotools
+Makefile
+Makefile.in
+.deps
+/config.*
+/depcomp
+/install-sh
+/missing
+/aclocal.m4
+/autom4te.cache
+/configure
+/compile
+/build-stamp
+/stamp-h1
+/xjadeo.lsm
+
+# releases
+/*.tar.gz
+
+# generated files
+/src/xjadeo/paths.h
+/src/qt-gui/mydirs.h
+
+# binaries
+/src/xjadeo/xjadeo
+/src/xjadeo/xjinfo
+/src/xjadeo/xjremote
+/src/qt-gui/qjadeo
+/contrib/tsmm/xjtsmm
+/contrib/cli-remote/jadeo-rcli
+
+# QT
+/src/qt-gui/moc_*
+/src/qt-gui/qjadeo.mak*
+/src/qt-gui/ui_*
+/src/qt-gui/qjadeo.pro
+/src/qt-gui/qrc_qjadeo.cpp
+/src/qt-gui/release/
+*.qm
+
+
+#win32 build
+/contrib/nsi/*.dll
+/contrib/nsi/*.exe
+/contrib/nsi/xjadeo.nsi
+/contrib/nsi/*.ttf
+
+# misc
+/doc/html/
+/doc/xjadeo.*
+/debian/files
+/debian/xjadeo/
+/debian/xjadeo.debhelper.log
+/debian/xjadeo.substvars
