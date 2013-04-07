@@ -813,25 +813,8 @@ void display_frame(int64_t timestamp, int force_update, int do_render) {
 	}
 
 	if (pFrameFMT && my_seek_frame(&packet, timestamp)) {
-		#if 0
-		AVStream *v_stream = pFormatCtx->streams[videoStream];
-		long int myts = (packet.pts==AV_NOPTS_VALUE)?packet.dts:packet.pts;
-		long int myf = (long int) (myts*av_q2d(v_stream->time_base)*framerate);
-		if(want_verbose && myf != dispFrame) //< TODO: make it want_debug 
-			fprintf(stdout, "\t\t\t\tdecoder:%07li  \r", myf);
-		#endif
 		/* Decode video frame */
 		while (1) {
-		#if 0
-			if (packet.pts> 0 && OSD_mode&OSD_FRAME) {
-				myts = (packet.pts==AV_NOPTS_VALUE)?packet.dts:packet.pts;
-				myf = (long int) (myts*av_q2d(v_stream->time_base)*framerate);
-				if (want_ignstart)  // timestamps in the file start counting at ..->start_time 
-					myf-= (long int) ( framerate*(pFormatCtx->start_time/ (double) AV_TIME_BASE));
-				if (myf != dispFrame) 
-					snprintf(OSD_frame,49,"Frame: %li[%li]", dispFrame, myf);
-			}
-		#endif
 			frameFinished=0;	
 			if(packet.stream_index==videoStream) 
 #if LIBAVCODEC_VERSION_MAJOR < 52 || ( LIBAVCODEC_VERSION_MAJOR == 52 && LIBAVCODEC_VERSION_MINOR < 21)
