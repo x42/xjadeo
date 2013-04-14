@@ -12,20 +12,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * (c) 2006 
+ * (c) 2006
  *  Robin Gareus <robin@gareus.org>
  *  Luis Garrido <luisgarrido@users.sourceforge.net>
- *
- * this is basically the freetype2 rendering example
- *
- * TODO: 
- * - init the library and load font file only once
- * - merge the draw_bitmap() with OSD_renderXXX() 
- * - xjadeo configurable Font size 
- * - proper error handling
- *
  */
 #include "xjadeo.h"
 
@@ -33,7 +24,6 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
-
 
 /* origin is the upper left corner */
 unsigned char ST_image[ST_HEIGHT][ST_WIDTH];
@@ -62,50 +52,79 @@ draw_bitmap( FT_Bitmap*  bitmap,
   }
 }
 
+static char *ff = NULL;
+static int   initialized = 0;
+static FT_Library    library;
+static FT_Face       face;
+
 int render_font (char *fontfile, char *text, int px)
 {
-  FT_Library    library;
-  FT_Face       face;
-
+  static int pxx = 0;
+  static int numxspc = 0;
   FT_GlyphSlot  slot;
   FT_Matrix     matrix;                 /* transformation matrix */
-//FT_UInt       glyph_index;
   FT_Vector     pen;                    /* untransformed origin  */
   FT_Error      error;
-
-  double        angle;
   int           target_height;
   int           n, num_chars;
 
-
-  num_chars     = strlen( text );
-  angle         = ( 0.0 / 360 ) * 3.14159 * 2; 
-  target_height = ST_HEIGHT;
-
-  error = FT_Init_FreeType( &library );              /* initialize library */
-  if ( error ) return(-1);
-
-  error = FT_New_Face( library, fontfile, 0, &face ); /* create face object */
-  if ( error ) return(-1);
-
-  /* use 25 at 72 dpi */
-  error = FT_Set_Char_Size( face, 0, px*64, 0, 72 );  /* set character size */
-  if ( error ) return(-1);
-
-  slot = face->glyph;
-
   /* set up matrix */
-  matrix.xx = (FT_Fixed)( cos( angle ) * 0x10000L );
-  matrix.xy = (FT_Fixed)(-sin( angle ) * 0x10000L );
-  matrix.yx = (FT_Fixed)( sin( angle ) * 0x10000L );
-  matrix.yy = (FT_Fixed)( cos( angle ) * 0x10000L );
+  matrix.xx = (FT_Fixed)(0x10000L);
+  matrix.xy = (FT_Fixed)(0x0L);
+  matrix.yx = (FT_Fixed)(0x0L);
+  matrix.yy = (FT_Fixed)(0x10000L);
+
+  if (!ff || strcmp(fontfile, ff) || pxx != px || !initialized) {
+    pxx = px;
+    free(ff);
+    ff = strdup(fontfile);
+    if (initialized) {
+      FT_Done_Face    ( face );
+      FT_Done_FreeType( library );
+      initialized = 0;
+    }
+
+    error = FT_Init_FreeType( &library );              /* initialize library */
+    if ( error ) return(-1);
+
+    error = FT_New_Face( library, fontfile, 0, &face ); /* create face object */
+    if ( error ) {
+      FT_Done_FreeType( library );
+      return(-1);
+    }
+
+    error = FT_Set_Char_Size( face, 0, px*64, 0, 72 );  /* set character size */
+    if ( error ) {
+      FT_Done_Face    ( face );
+      FT_Done_FreeType( library );
+      return(-1);
+    }
+
+    initialized = 1;
+
+    numxspc = 0;
+    for ( n = 48; n < 57; n++ ) { // 0..9
+      FT_Set_Transform( face, &matrix, &pen );
+      error = FT_Load_Char(face, (char)n, FT_LOAD_RENDER );
+      if ( error ) continue;  /* ignore errors */
+      const int dist =  face->glyph->bitmap.width;
+      if (dist > numxspc) numxspc = dist;
+    }
+
+  }
 
   /* the pen position incartesian space coordinates; */
   pen.x = 1  * 64;
   pen.y = 10 * 64;
 
+  num_chars     = strlen( text );
+  target_height = ST_HEIGHT;
+  slot = face->glyph;
+
   memset(&(ST_image[0][0]),0,ST_WIDTH*ST_HEIGHT);
   ST_rightend=0;
+
+  int x0 = -1;
 
   for ( n = 0; n < num_chars; n++ )
   {
@@ -116,27 +135,39 @@ int render_font (char *fontfile, char *text, int px)
     error = FT_Load_Char( face, text[n], FT_LOAD_RENDER );
     if ( error ) continue;  /* ignore errors */
 
+    if (x0 < 0) x0 = slot->bitmap_left;
+
     /* now, draw to our target surface (convert position) */
     draw_bitmap( &slot->bitmap,
-                 slot->bitmap_left,
+                 x0 + slot->bitmap_left,
                  target_height - slot->bitmap_top );
 
-    if ((slot->bitmap_left + slot->bitmap.width) > ST_WIDTH) 
-	    break;
+    if (text[n] >= 48 && text[n] <= 57) {
+      x0 += numxspc;
+      x0 += numxspc/3.0;
+    } else {
+      x0 += slot->bitmap.width;
+      x0 += slot->bitmap_left;
+    }
 
-    if ((slot->bitmap_left + slot->bitmap.width) > ST_rightend) 
-	    ST_rightend=(slot->bitmap_left + slot->bitmap.width);
-
-    /* increment pen position */
-    pen.x += slot->advance.x;
-    pen.y += slot->advance.y;
+    if (x0 > ST_WIDTH) {
+      break;
+    }
+    ST_rightend=x0;
   }
 
-  FT_Done_Face    ( face );
-  FT_Done_FreeType( library );
-  ST_rightend++;
+  ST_rightend+=3;
 
   return 0;
+}
+
+void free_freetype () {
+  free(ff);
+  if (initialized) {
+    FT_Done_Face    ( face );
+    FT_Done_FreeType( library );
+  }
+  initialized = 0;
 }
 
 #else  /* No freetype */
@@ -144,6 +175,7 @@ int render_font (char *fontfile, char *text, int px)
 unsigned char ST_image[1][1];
 int ST_rightend = 0;
 int render_font (char *fontfile, char *text, int px) {return -1;};
+void free_freetype ();
 
 #endif /* HAVE_FT*/
 
