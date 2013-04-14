@@ -33,6 +33,8 @@ Makefile.in
 /src/qt-gui/qjadeo
 /contrib/tsmm/xjtsmm
 /contrib/cli-remote/jadeo-rcli
+/src/xjadeo/xjadeo.exe
+/src/xjadeo/xjinfo.exe
 
 # QT
 /src/qt-gui/moc_*
