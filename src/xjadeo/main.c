@@ -667,6 +667,7 @@ void clean_up (int status) {
   else
 #endif
   close_jack();
+  free_freetype();
 
   if (smpte_offset) free(smpte_offset);
   if (load_rc) free(load_rc);

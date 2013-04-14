@@ -185,4 +185,5 @@ int readconfig (char *fn);
 
 /* freetype - On screen display */
 int render_font (char *fontfile, char *text, int px);
+void free_freetype ();
 

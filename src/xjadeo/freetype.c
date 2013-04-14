@@ -31,20 +31,20 @@ int ST_rightend=0;
 
 
 void
-draw_bitmap( FT_Bitmap*  bitmap,
-             FT_Int      x,
-             FT_Int      y)
+draw_bitmap(FT_Bitmap*  bitmap,
+    FT_Int x,
+    FT_Int y)
 {
-  FT_Int  i, j, p, q;
-  FT_Int  x_max = x + bitmap->width;
-  FT_Int  y_max = y + bitmap->rows;
+  FT_Int i, j, p, q;
+  FT_Int x_max = x + bitmap->width;
+  FT_Int y_max = y + bitmap->rows;
 
 
-  for ( i = x, p = 0; i < x_max; i++, p++ )
+  for (i = x, p = 0; i < x_max; i++, p++)
   {
-    for ( j = y, q = 0; j < y_max; j++, q++ )
+    for (j = y, q = 0; j < y_max; j++, q++)
     {
-      if ( i >= ST_WIDTH || j >= ST_HEIGHT || i<0 || j<0)
+      if (i >= ST_WIDTH || j >= ST_HEIGHT || i < 0 || j < 0)
         continue;
 
       ST_image[j][i] |= bitmap->buffer[q * bitmap->width + p];
@@ -60,7 +60,6 @@ static FT_Face       face;
 int render_font (char *fontfile, char *text, int px)
 {
   static int pxx = 0;
-  static int numxspc = 0;
   FT_GlyphSlot  slot;
   FT_Matrix     matrix;                 /* transformation matrix */
   FT_Vector     pen;                    /* untransformed origin  */
@@ -79,84 +78,66 @@ int render_font (char *fontfile, char *text, int px)
     free(ff);
     ff = strdup(fontfile);
     if (initialized) {
-      FT_Done_Face    ( face );
-      FT_Done_FreeType( library );
+      FT_Done_Face    (face);
+      FT_Done_FreeType(library);
       initialized = 0;
     }
 
-    error = FT_Init_FreeType( &library );              /* initialize library */
-    if ( error ) return(-1);
+    error = FT_Init_FreeType(&library);              /* initialize library */
+    if (error) return(-1);
 
-    error = FT_New_Face( library, fontfile, 0, &face ); /* create face object */
-    if ( error ) {
-      FT_Done_FreeType( library );
+    error = FT_New_Face(library, fontfile, 0, &face); /* create face object */
+    if (error) {
+      FT_Done_FreeType(library);
       return(-1);
     }
 
-    error = FT_Set_Char_Size( face, 0, px*64, 0, 72 );  /* set character size */
-    if ( error ) {
-      FT_Done_Face    ( face );
-      FT_Done_FreeType( library );
+    error = FT_Set_Char_Size(face, 0, px * 64, 0, 72);  /* set character size */
+    if (error) {
+      FT_Done_Face    (face);
+      FT_Done_FreeType(library);
       return(-1);
     }
 
     initialized = 1;
-
-    numxspc = 0;
-    for ( n = 48; n < 57; n++ ) { // 0..9
-      FT_Set_Transform( face, &matrix, &pen );
-      error = FT_Load_Char(face, (char)n, FT_LOAD_RENDER );
-      if ( error ) continue;  /* ignore errors */
-      const int dist =  face->glyph->bitmap.width;
-      if (dist > numxspc) numxspc = dist;
-    }
-
   }
 
   /* the pen position incartesian space coordinates; */
   pen.x = 1  * 64;
   pen.y = 10 * 64;
 
-  num_chars     = strlen( text );
+  num_chars     = strlen(text);
   target_height = ST_HEIGHT;
   slot = face->glyph;
 
   memset(&(ST_image[0][0]),0,ST_WIDTH*ST_HEIGHT);
   ST_rightend=0;
 
-  int x0 = -1;
-
-  for ( n = 0; n < num_chars; n++ )
+  for (n = 0; n < num_chars; n++)
   {
     /* set transformation */
-    FT_Set_Transform( face, &matrix, &pen );
+    FT_Set_Transform(face, &matrix, &pen);
 
     /* load glyph image into the slot (erase previous one) */
-    error = FT_Load_Char( face, text[n], FT_LOAD_RENDER );
-    if ( error ) continue;  /* ignore errors */
-
-    if (x0 < 0) x0 = slot->bitmap_left;
+    error = FT_Load_Char(face, text[n], FT_LOAD_RENDER);
+    if (error) continue;  /* ignore errors */
 
     /* now, draw to our target surface (convert position) */
-    draw_bitmap( &slot->bitmap,
-                 x0 + slot->bitmap_left,
-                 target_height - slot->bitmap_top );
+    draw_bitmap(&slot->bitmap,
+	slot->bitmap_left,
+	target_height - slot->bitmap_top);
 
-    if (text[n] >= 48 && text[n] <= 57) {
-      x0 += numxspc;
-      x0 += numxspc/3.0;
-    } else {
-      x0 += slot->bitmap.width;
-      x0 += slot->bitmap_left;
-    }
-
-    if (x0 > ST_WIDTH) {
+    if ((slot->bitmap_left + slot->bitmap.width) > ST_WIDTH)
       break;
-    }
-    ST_rightend=x0;
+
+    /* increment pen position */
+    pen.x += slot->advance.x;
+    pen.y += slot->advance.y;
+
+    ST_rightend=pen.x/64;
   }
 
-  ST_rightend+=3;
+  ST_rightend+=1;
 
   return 0;
 }
@@ -164,8 +145,8 @@ int render_font (char *fontfile, char *text, int px)
 void free_freetype () {
   free(ff);
   if (initialized) {
-    FT_Done_Face    ( face );
-    FT_Done_FreeType( library );
+    FT_Done_Face    (face);
+    FT_Done_FreeType(library);
   }
   initialized = 0;
 }
@@ -174,8 +155,8 @@ void free_freetype () {
 
 unsigned char ST_image[1][1];
 int ST_rightend = 0;
-int render_font (char *fontfile, char *text, int px) {return -1;};
-void free_freetype ();
+int render_font (char *fontfile, char *text, int px) {return -1;}
+void free_freetype () { ; }
 
 #endif /* HAVE_FT*/
 
