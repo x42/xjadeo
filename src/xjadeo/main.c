@@ -233,6 +233,7 @@ static struct option const long_options[] =
   {"midiclk", no_argument, 0, 'C'},
   {"no-midiclk", no_argument, 0, 'c'},
   {"ltc", no_argument, 0, 'l'},
+  {"ttf-font", required_argument, 0, 'T'},
 #ifdef JACK_SESSION
   {"uuid", required_argument, 0, 'U'},
   {"rc", required_argument, 0, 'r'},
@@ -267,6 +268,7 @@ decode_switches (int argc, char **argv)
 			   "K"	/* anyframe */
 			   "o:"	/* offset */
 			   "t"	/* try-codec */
+			   "T:"	/* ttf-font */
 			   "f:"	/* fps */
 			   "F:"	/* file FPS */
 			   "x:"	/* video-mode */
@@ -445,6 +447,9 @@ decode_switches (int argc, char **argv)
 	case 'a':
 	  start_ontop=1;
 	  break;
+	case 'T':
+	  strcpy(OSD_fontfile, optarg);
+	  break;
 	case 'h':
 	  usage (0);
 	default:
@@ -538,6 +543,8 @@ jack video monitor\n", program_name);
 "  -t, --try-codec           checks if the video-file can be played by jadeo.\n"
 "                            exits with code 1 if the file is not supported.\n"
 "			     no window is opened in this mode.\n"
+"  -T <file>,                \n"
+"      --ttf-file <file>     path to .ttf font for on-screen-display\n"
 #ifdef HAVE_IPCMSG
 "  -W, --ipc                 set-up IPC message queues for xjremote\n"
 #endif
