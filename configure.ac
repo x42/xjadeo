@@ -35,6 +35,7 @@ AC_ARG_ENABLE(osc, AC_HELP_STRING([--disable-osc],[disable OSC remote support]))
 AC_ARG_ENABLE(midi, AC_HELP_STRING([--disable-midi],[Do not build any of the MIDI drivers]))
 AC_ARG_ENABLE(ltc, AC_HELP_STRING([--disable-ltc],[disable LTC sync support]))
 AC_ARG_ENABLE(portmidi, AC_HELP_STRING([--disable-portmidi],[disable portmidi support]))
+AC_ARG_ENABLE(alsamidi, AC_HELP_STRING([--disable-alsamidi],[disable alsamidi support]))
 
 AC_ARG_WITH(fontfile, AS_HELP_STRING([--with-fontfile=file.ttf], [specify a path to a truetype font file to be used as default OSD font.]), fontfile="$withval", fontfile="")
 
@@ -248,7 +249,7 @@ dnl ppc-portmidi : cc -dynamiclib pm_mac/*.o porttime/*.o -flat_namespace -undef
 		AC_CHECK_HEADERS(jack/midiport.h, [FOUND_H_JACKMIDI=yes])
 	fi
 
-	if test "x$ALSAMIDI" != "xno"; then
+	if test "x$enable_alsamidi" != "xno"; then
 		AC_CHECK_HEADERS(alsa/asoundlib.h, [FOUND_H_ALSAMIDI=yes])
 		AC_CHECK_HEADERS(pthread.h, [FOUND_H_PTHREAD=yes])
 		AC_CHECK_LIB([asound], [snd_rawmidi_open], [FOUND_L_ALSAMIDI=yes])
