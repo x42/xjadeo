@@ -28,6 +28,7 @@
 /* origin is the upper left corner */
 unsigned char ST_image[ST_HEIGHT][ST_WIDTH];
 int ST_rightend=0;
+int ST_height=0;
 
 
 void
@@ -112,6 +113,7 @@ int render_font (char *fontfile, char *text, int px)
 
   memset(&(ST_image[0][0]),0,ST_WIDTH*ST_HEIGHT);
   ST_rightend=0;
+  ST_height = 0;
 
   for (n = 0; n < num_chars; n++)
   {
@@ -127,6 +129,11 @@ int render_font (char *fontfile, char *text, int px)
 	slot->bitmap_left,
 	target_height - slot->bitmap_top);
 
+    const int height = slot->bitmap_top + (slot->bitmap_top - slot->bitmap.rows)/2.0;
+    if (height > ST_height) {
+      ST_height = height;
+      if (ST_height > ST_HEIGHT) ST_height = ST_HEIGHT;
+    }
     if ((slot->bitmap_left + slot->bitmap.width) > ST_WIDTH)
       break;
 
@@ -155,6 +162,7 @@ void free_freetype () {
 
 unsigned char ST_image[1][1];
 int ST_rightend = 0;
+int ST_height = 0;
 int render_font (char *fontfile, char *text, int px) {return -1;}
 void free_freetype () { ; }
 

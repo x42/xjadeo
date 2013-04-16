@@ -95,6 +95,7 @@ inline void stride_memcpy(void * dst, const void * src, int width, int height, i
 
 extern unsigned char ST_image[][ST_WIDTH];
 extern int ST_rightend;
+extern int ST_height;
 
 #define ST_BG ((OSD_mode&OSD_BOX)?0:1)
 
@@ -430,7 +431,7 @@ void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int yperc) {
 	if (xpos == OSD_LEFT) xalign=ST_PADDING; // left
 	else if (xpos == OSD_RIGHT) xalign=movie_width-ST_PADDING-ST_rightend; // right
 	else xalign=(movie_width-ST_rightend)/2; // center
-	const int fh = MIN(ST_HEIGHT, fontsize*4/3);
+	const int fh = MIN(ST_HEIGHT, ST_height);
 	const int fo = ST_HEIGHT - fh;
 	yalign= (movie_height - fh) * yperc /100.0;
 
