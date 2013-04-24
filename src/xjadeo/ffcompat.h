@@ -32,28 +32,29 @@
 #endif
 
 
-#if LIBAVCODEC_VERSION_INT <= AV_VERSION_INT(53, 7, 0)
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 123, 0)
 static inline int
 avcodec_open2(AVCodecContext *avctx, AVCodec *codec, void **options __attribute__((unused)))                                                     
 {
   return avcodec_open(avctx, codec);
 }
-#endif /* AVCODEC < 53.7.0 */
+#endif
 
-
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(53, 5, 0)
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(52, 111, 0)
 static inline int
 avformat_find_stream_info(AVFormatContext *ic, void **options)
 {
   return av_find_stream_info(ic);
 }
+#endif
 
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(53, 5, 0)
 static inline void
 avformat_close_input(AVFormatContext **s)
 {
   av_close_input_file(*s);                                                                                                                       
 }
 
-#endif /* AVFORMAT < 53.5.0 */
+#endif
 
 
