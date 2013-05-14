@@ -22,7 +22,7 @@ AC_ARG_ENABLE(xv,    AC_HELP_STRING([--disable-xv],  [Disable Xvideo extension ]
 AC_ARG_ENABLE(imlib2, AC_HELP_STRING([--disable-imlib2], [Disable use of imlib2 for display]))
 AC_ARG_ENABLE(sdl, AC_HELP_STRING([--disable-sdl], [Disable use of SDL display]))
 AC_ARG_ENABLE(ft,    AC_HELP_STRING([--disable-ft],  [Disable freetype On-Screen.Display support]))
-AC_ARG_ENABLE(qtgui, AC_HELP_STRING([--disable-qtgui],[Do not build the Qt GUI controller]))
+AC_ARG_ENABLE(qtgui, AC_HELP_STRING([--enable-qtgui],[Build the Qt GUI controller]))
 AC_ARG_ENABLE(contrib,  AC_HELP_STRING([--enable-contrib],  [Compile and install code in contrib folder]))
 AC_ARG_ENABLE(lash, AC_HELP_STRING([--enable-lash],[enable LASH support (deprecated)]))
 AC_ARG_ENABLE(timescale, AC_HELP_STRING([--disable-timescale],[disable time-mapping/loop-playback support]))
@@ -488,7 +488,7 @@ dnl ----------------------------------------------
 dnl Qt GUI stuff
 dnl ----------------------------------------------
 
-if test "x$enable_qtgui" != "xno"; then
+if test "$enable_qtgui" = "yes"; then
 
  if test "x$qt4prefix" = "x"; then
    qt4prefix=$($PKG_CONFIG --variable=prefix QtGui)
@@ -512,15 +512,18 @@ if test "x$enable_qtgui" != "xno"; then
  AC_SUBST(ac_lrelease)
 
  ac_qtgui_dir="qt-gui"
+ XJINFO_BIN="xjinfo"
 
  AC_CONFIG_FILES(src/qt-gui/Makefile src/qt-gui/qjadeo.pro)
 
 else
  ac_qtgui_dir=""
+ XJINFO_BIN=""
 
 fi
 
 AC_SUBST(ac_qtgui_dir)
+AC_SUBST(XJINFO_BIN)
 
 dnl ---------- End of Qt GUI stuff ---------------
 
