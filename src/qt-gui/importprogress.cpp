@@ -81,7 +81,7 @@ void ImportProgress::readFromStderr()
   encoder.setReadChannel(QProcess::StandardError);
   while(encoder.canReadLine()) {
     QString msg = encoder.readLine();
-    qDebug(msg.toAscii().data());
+    //qDebug(msg.toAscii().data());
   }
 }
 
@@ -97,7 +97,7 @@ void ImportProgress::readFromStdout()
     importProgressBar->setValue( indx );
 }
 
-void ImportProgress::encodeFinished(int exitCode, QProcess::ExitStatus exitStatus)
+void ImportProgress::encodeFinished(int /*exitCode*/, QProcess::ExitStatus /*exitStatus*/)
 {
   if (encoder.exitStatus() != 0) {
     QMessageBox::QMessageBox::warning(this, 
