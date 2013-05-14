@@ -1,11 +1,212 @@
+2013-05-14 (unreleased)  Robin Gareus <robin@gareus.org>
+* fix 32/64bit issue in xjinfo, allow to hardedn qjadeo
+* deprecated qjadeo GUI and xjinfo (use ffprobe instead)
+  explicit --enable-qt-gui is requred to build either.
+* prepare moving repo & issue-tracker to github.
+
+2013-04-07 (0.7.0)  Robin Gareus <robin@gareus.org>
+* fixes for clang/llvm compiler
+* SMPTE on-screen-display ignore offset
+* use libltc; deprecate libltcsmpte support
+* reset aspect-ratio when opening a new file
+* add /jadeo/cmd OSC command - full remote control
+* fix OSC concurrency problems.
+* graceful jack shutdown handling
+* reverse scroll-wheel zoom direction
+
+2012-05-14 (0.6.4)  Robin Gareus <robin@gareus.org>
+* pixel and display aspect ratio corrections done during rendering
+
+2012-04-15 (0.6.3)  Robin Gareus <robin@gareus.org>
+* update to new ffmpeg API
+* fixed some compiler warnings.
+
+2011-09-26 (0.6.2)  Robin Gareus <robin@gareus.org>
+* updated French translation Raphael Doursenaud)
+* fixed issue with remote-ctrl closing filedes on fork.
+
+2011-07-13 (0.6.1)  Robin Gareus <robin@gareus.org>
+* added qjadeo translations - thanks to Alexandre Prokoudine
+* JACK-Session support.
+* LTC+JACK - new jack latency API
+
+2011-07-03 (0.6.0)  Robin Gareus <robin@gareus.org>
+* Changes since 0.6.0-rc7:
+  - fixed LTC parsing for other than 25fps
+  - splash screen update (fixed duration)
+  - added greek translation by Michales Michaloudes.
+  - ffmpeg compat
+  - build system updates (require libX, git version detection..)
+  - version 0.6.0
+* Changes since 0.4.X:
+  - rewritten/updated manual
+  - win32 support
+  - qjadeo QT3 -> QT4
+  - added LTC sync source
+  - disabled LASH (by default)
+    soon to be removed in favor of JACK-Session
+  - various autoconf updates
+  - interaction overrides and remote-control features
+    for ardour integration
+
+2010-11-21 (0.6.0~rc7)  Robin Gareus <robin@gareus.org>
+* release candidate v0.6 ... see git changelog
+
+2010-11-12 (0.6.0~rc6)  Robin Gareus <robin@gareus.org>
+* release candidate v0.6 ... see git changelog
+
+2010-11-12 (0.6.0~rc5)  Robin Gareus <robin@gareus.org>
+* release candidate v0.6 ... see git changelog
+
+2010-11-11 (0.6.0~rc4)  Robin Gareus <robin@gareus.org>
+* release candidate v0.6 ... see git changelog
+
+2010-11-10 (0.6.0~rc3)  Robin Gareus <robin@gareus.org>
+* release candidate v0.6 ... see git changelog
+
+2010-11-10 (0.6.0~rc2)  Robin Gareus <robin@gareus.org>
+* release candidate v0.6 ... see git changelog
+
+2010-10-03 (0.6.0~rc1)  Robin Gareus <robin@gareus.org>
+* release candidate v0.6
+  detailed changelog will be included here with 0.6.0
+
+2010-10-01 (0.5.99)  Robin Gareus <robin@gareus.org>
+* discard 0.5-branch (xj-five) opengl/vblank/shmem experiments
+
+2010-08-03 (0.4.13)  Robin Gareus <robin@gareus.org>
+* made portmidi optional - Thanks to Alex Stone.
+* added 'mididriver' config-file option
+* qjadeo - MTC menu: ALSA/JACK
+* qjadeo - added OSD box toggle
+* fixed remote-ctrl frame notification
+* use ffmpeg fps ratio calculation functions
+* fixed some spelling errors & text clarifications
+
+2010-07-25 (0.4.12)  Robin Gareus <robin@gareus.org>
+* allow to select midi-driver on runtime (JACK-MIDI, ALSA-sequencer,
+  portmidi, ALSA-raw-midi).
+* fixed rounding error for non-integer framerates in the
+  remote-ctrl SMPTE-text parser.
+  (xjadeo+JACK or MTC is not affected; it's only relevant
+  when useing 'seek <integer>' instead of 'seek SMPTE'
+* fixed unresponsive "Preferences" Alert message (OSX)
+* added JACK-Midi to menu (OSX)
+
+2010-07-15 (0.4.11)  Robin Gareus <robin@gareus.org>
+* new defaults (update-fps = filefps, MTC-quater-frame: on)
+* added System-V IPC remote ctrl mode (for OSX)
+* add xjremote to OSX bundle
+* many small remote-ctl extensions for ardour3 integration
+* added JACK-MIDI for MTC
+
+2010-05-23 (0.4.10)  Robin Gareus <robin@gareus.org>
+* implemented file drop-frame timecode detection
+
+2010-02-08 (0.4.9)  Robin Gareus <robin@gareus.org>
+* re-implemented start-time parsing
+* re-added contrib folder to dist
+
+2010-02-05 (0.4.8)  Robin Gareus <robin@gareus.org>
+* fixed parsing video-start offset for m2v files
+
+2009-04-04 (0.4.7)  Robin Gareus <robin@gareus.org>
+* added basic OSC control support
+* cleaned up configure.ac - ffmpeg-header include files
+* framecropping (for sahra's installation)
+
+2009-02-02 (0.4.6)  Robin Gareus <robin@gareus.org>
+* updated URLs in doc
+* minor fixes for ffmpeg API changes
+
+2008-07-28 (0.4.5)  Robin Gareus <robin@gareus.org>
+* xjadeo now leaves XV-colorkey untouched.
+* changed include paths for ffmpeg.
+* fixed a compiler warnings for gcc-4.3.1
+
+2008-04-01 (0.4.4)  Robin Gareus <robin@gareus.org>
+* updates for ffmpeg-svn compat (ffmpeg-svn 12642,12665)
+
+2008-03-20 (0.4.3)  Robin Gareus <robin@gareus.org>
+* fixed backwards compat ffmpeg  w/o swscale
+* fixed segfault using remote-mode w/o video-file (swscale)
+
+2007-09-12 (0.4.2)  Robin Gareus <robin@gareus.org>
+* added -s --fullscreen command line option
+* removed SDL video mode
+* obsoleted imlib1
+* fixed automake variable substitution
+* added ffmpeg swscale support
+
+2007-05-07 (0.4.1)  Robin Gareus <robin@gareus.org>
+* default black-YUV frame
+* minor updates in the manual.
+* preparing for 0.5 development branch.
+* fixed contrib configure bug.
+
+2007-02-23 (0.4.0)  Robin Gareus <robin@gareus.org>
+* added call to jack_activate
+* fixed segfault when movie is smaller than splashscreen (neg. x-offset)
+* disabled splash-screen when it's larger than current movie anyway.
+* added POSIX sys includes
+* added -lavutil -lmp3lame to auto-detected ffmpeg configuration.
+* disabled PPC duration workaround (only ffmpeg-0.4.9 - LIBAVFORMAT_BUILD 4616)
+* merged-in French qjadeo translation - thanks to R. Doursenaud
+* fixed av_q2d for LIBAVFORMAT_BUILD <= 4623
+
+2006-12-02 (0.4.0~rc3)  Robin Gareus <robin@gareus.org>
+* fixed fontfile=<file> config option
+* fixed build --enable-contrib --enable-midi=off
+
+2006-12-01 (0.4.0~rc2)  Robin Gareus <robin@gareus.org>
+* fixed version to comply with RPM '-' -> '.' -> 0.4.0.rc2
+* added contrib/tsmm - time stamp movie maker
+* added autogen.sh to debian/rules
+
+2006-11-30 (0.4.0~rc1)  Robin Gareus <robin@gareus.org>
+* bump version to 0.4.0-rc1
+
+2006-11-30 (0.3.29-3)  Robin Gareus <robin@gareus.org>
+* qjadeo - round update fps
+* xjadeo remote commands
+  - 'window size' -> 'window resize'
+  - 'window fixaspect' -> RMB
+
+2006-11-30 (0.3.29-2)  Robin Gareus <robin@gareus.org>
+* debian control imlib2-dev -> libimlib2-dev
+* xjadeo new remote command
+  - 'window mouse [on|off|toggle]'
+
+2006-11-29 (0.3.29-1)  Robin Gareus <robin@gareus.org>
+* updated xjinfo + dtd
+  - rational values
+  - added sample aspect ratio
+  - updated information fields  (title,author,..)
+  - xml-version 0.2
+
+2006-11-28 (0.3.29)  Robin Gareus <robin@gareus.org>
+* qjadeo disable frame notification on disconnect,
+  terminate xjadeo when disconnecting.
+* xjadeo remote commands: 'notify off' alias for 'notify disable'
+  'exit' - print warning that xjadeo is not xjremote
+* fixed contrib build
+* added xml-preamble and DOCTYPE to xjinfo
+
+2006-11-27 (0.3.28)  Robin Gareus <robin@gareus.org>
+* fixed typos
+* begin to clean up source tree for 0.4
+* removed pts/dts calc for ffmpeg_seek LIBAVFORMAT_BUILD < 4617
+* new seek code only for AVFORMAT_BUILD > 2629
+* missing manual page xjinfo.1
+
 2006-11-27  x42  <robin@gareus.org>
  *** CHANGELOG STYLE CHANGE ***
- git log and debian/changelog have replaced this file.
- 
+ git log is the preferred method.
+
 2006-11-25  x42  <robin@gareus.org>
  - manual and xjadeorc typo
  - xjadeo usage() and cosmetic code changes
- - preliminary jack_position_t->audio_frames_per_video_frame 
+ - preliminary jack_position_t->audio_frames_per_video_frame
    support.
 
 2006-11-24  x42  <robin@gareus.org>
@@ -32,7 +233,7 @@
  - xjinfo version '-V'
 
 2006-11-21  x42  <robin@gareus.org>
- - xjinfo 
+ - xjinfo
  - fixed BINDIR, SYSCFGFIR '/' suffix
  - qtjadeo file-info via xjinfo
  - version via svnversion
@@ -69,7 +270,7 @@
  - alsa-midi: parse quarter frames (-C)
  - added midi options to cfgfile
  - removed command 'midi autoconnect'  and added 'midi reconnect'
- - crudly convert '%20' to whitespaces when receiving drag data. 
+ - crudly convert '%20' to whitespaces when receiving drag data.
  - added '-P' --noping option to xjremote.
 
 2006-11-14  rgareus  <robin@gareus.org>
@@ -77,19 +278,19 @@
  - added debian files to SVN.
 
 2006-11-14  rgareus  <robin@gareus.org>
- - qjadeo 
+ - qjadeo
    - sync-menu radio buttons
    - position slider (sync off mode)
    - query xjadeo settings (OSD, sync) on startup
    - renamed fullscreen -> maximize
  - xjadeo: get osdcfg, get syncsource remote commands
  - Xv letterbox (-b, --leterbox, "window letterbox [on|off]")
- - use file-fps as delay when (0 >= delay ) 
+ - use file-fps as delay when (0 >= delay )
  * version v0.3.21
 
 2006-11-13  rgareus  <robin@gareus.org>
  - fixed drag/drop accept area.
- - catch signals + clean up 
+ - catch signals + clean up
 
 2006-11-13  rgareus  <robin@gareus.org>
  - `ffmpeg-config` and other configure.ac updates.
@@ -117,7 +318,7 @@
  - icon
  - fixed qt BINDIR define (again)
  - prepared remote stdio replacement: mqueues
-   prereq. for proper lash + gui 
+   prereq. for proper lash + gui
 
 2006-11-09  rgareus  <robin@gareus.org>
  - display_x11 cleanup part one.
@@ -126,9 +327,9 @@
  - re-indented sources (!)
 
 2006-11-09  rgareus  <robin@gareus.org>
- - on LASH resume -> ignore '-R' remote-mode 
+ - on LASH resume -> ignore '-R' remote-mode
  - imlib2 - RGB24+RGBA32
- - dropped gdk/gtk 
+ - dropped gdk/gtk
  - revamped configure.ac
  - fixed continuous seeking (was in debug mode)
 
@@ -154,10 +355,10 @@
  - made -V a little more verbose. and -q a little more quiet :D
 
 2006-10-28  rgareus  <robin@gareus.org>
- - changed audioframe -> videoframe conversion back to floor() 
+ - changed audioframe -> videoframe conversion back to floor()
  - updated framerate detection.
  - re-indented seek code. and changed -K, -k behaviour (no continuous seeks)
- - fixed ffmpeg packet allocation 
+ - fixed ffmpeg packet allocation
  - XV-videomode only:
    - added always on top feature. ( '-a' ; press 'a' on widow ; no remote command for that yet)
    - added support to hide [mouse] cursor  (press 'm' )
@@ -166,7 +367,7 @@
  - added simple Extended Window Manager Hints(EWMH) fullscreen support for XV videomode.
 
 2006-08-12  rgareus  <robin@gareus.org>
- - av_q2d - fix to compile with older 
+ - av_q2d - fix to compile with older
  ffmpeg before LIBAVCODEC_BUILD 4753
 
 2006-06-25  rgareus  <robin@gareus.org>
@@ -179,7 +380,7 @@
  - added jadio to contrib folder.
 
 2006-06-12  rgareus  <robin@gareus.org>
- - smpte support for non-integer fps 
+ - smpte support for non-integer fps
  - '-F <float>' allow to override fps info of file
  - '-K' -> 'old' seek to any frame mode
  - messed up avseek - added support for multi-packet frames.
@@ -190,13 +391,13 @@
    possible endless (until EOF) frame seek issue...
 
 2006-06-06  rgareus  <robin@gareus.org>
- - when seeking to non key frames, 
+ - when seeking to non key frames,
    the video can be decoded starting from the prev keyframe.
  - removed LIBAVCODEC < 4622 backwards seek compat.
  - new valid seekmodes (remote ctrl) are 'key', 'any' and 'continuous' (default).
- - OSD Frame is now the displayed frame, while the SMPTE still corresponds to jack time.  
- - XV,SDL (YUV): added support for video image strides other than XV pitches. 
-   eg. if video width is not a multiple of 8 -  prev. versions of xjadeo either crash, or display wrong colors... 
+ - OSD Frame is now the displayed frame, while the SMPTE still corresponds to jack time.
+ - XV,SDL (YUV): added support for video image strides other than XV pitches.
+   eg. if video width is not a multiple of 8 -  prev. versions of xjadeo either crash, or display wrong colors...
  * version v0.3.13
 
 2006-05-30  rgareus  <robin@gareus.org>
@@ -215,9 +416,9 @@
 2006-05-20  rgareus  <robin@gareus.org>
  - added docbook xslt and doc/Makefile...
  - work in progres on the manual.
- - changed Audioframe to videoframe, smpte converstion from floor to rint 
-   transport increments in steps of audiobuffer-size so we get 
-   proper results as audiobuffer-size != 1920 (48k->PAL) or 1601 (48k->NTSC) 
+ - changed Audioframe to videoframe, smpte converstion from floor to rint
+   transport increments in steps of audiobuffer-size so we get
+   proper results as audiobuffer-size != 1920 (48k->PAL) or 1601 (48k->NTSC)
 
 2006-04-28  rgareus  <robin@gareus.org>
  - fixed typo: since the 04/23 patches
