@@ -44,8 +44,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #ifndef HAVE_WINDOWS
+#include <inttypes.h>
 #include <sys/errno.h>
+#else
+#define PRId64 "I64d"
 #endif
 
 #include <getopt.h>
@@ -177,7 +181,7 @@ int main(int argc, char *argv[])
 #endif
 
   if (want_mode == 1) { /* duration only */
-    printf("%lld", secs);
+    printf("%"PRId64"", secs);
     return 0;
   }
 
@@ -198,7 +202,7 @@ int main(int argc, char *argv[])
 	hours = mins / 60;
 	mins %= 60;
 
-	printf("%02lld:%02lld:%02lld.%01lld - ", hours, mins, secs, (us * 10) / AV_TIME_BASE);
+	printf("%02"PRId64":%02"PRId64":%02"PRId64".%01"PRId64" - ", hours, mins, secs, (us * 10) / AV_TIME_BASE);
 #if LIBAVFORMAT_BUILD < 4624 
 	printf("fps:%.2f ", (double) codec->frame_rate / (double) codec->frame_rate_base);
 #elif LIBAVFORMAT_BUILD <= 4629
@@ -232,7 +236,7 @@ int main(int argc, char *argv[])
 #endif
       p = avcodec_find_decoder(codec->codec_id);
       if (codec->width) {
-	printf("%lld,", secs);
+	printf("%"PRId64",", secs);
 	printf("%.2f,",1.0/av_q2d(st->time_base));
 #if LIBAVFORMAT_BUILD < 4624 
 	printf("%.2f,", (double) codec->frame_rate / (double) codec->frame_rate_base);
@@ -263,8 +267,8 @@ int main(int argc, char *argv[])
   printf("<av>\n");
   printf("  <xmlversion>0.2</xmlversion>\n");
   printf("  <filename>%s</filename>\n", ic->filename);
-  printf("  <length>%lld</length>\n", secs);
-  printf("  <duration>%lld</duration>\n", ic->duration);
+  printf("  <length>%"PRId64"</length>\n", secs);
+  printf("  <duration>%"PRId64"</duration>\n", ic->duration);
   printf("  <avtimebase>%d</avtimebase>\n", AV_TIME_BASE);
 
   us = ic->duration % AV_TIME_BASE;
@@ -273,12 +277,12 @@ int main(int argc, char *argv[])
   hours = mins / 60;
   mins %= 60;
 
-  printf("  <time>%02lld:%02lld:%02lld.%01lld</time>\n", hours, mins, secs, (us * 10) / AV_TIME_BASE);
+  printf("  <time>%02"PRId64":%02"PRId64":%02"PRId64".%01"PRId64"</time>\n", hours, mins, secs, (us * 10) / AV_TIME_BASE);
   printf("  <bitrate>%d</bitrate>\n", ic->bit_rate);
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(54, 0, 0)
-  printf("  <size>%lld</size>\n", ic->file_size);
+  printf("  <size>%"PRId64"</size>\n", ic->file_size);
 #endif
-  printf("  <startoffset>%lld</startoffset>\n", ic->start_time);
+  printf("  <startoffset>%"PRId64"</startoffset>\n", ic->start_time);
 #if LIBAVFORMAT_BUILD < 3473920
   if (ic->title) printf("  <title>%s</title>\n", ic->title);
 
@@ -341,7 +345,7 @@ int main(int argc, char *argv[])
     if (p) printf("    <codec>%s</codec>\n", p->name);
     else printf("    <codec>unknown</codec>\n");
 
-    printf("    <duration>%lld</duration>\n", st->duration);
+    printf("    <duration>%"PRId64"</duration>\n", st->duration);
     printf("    <timebase>\n      <numerator>%d</numerator>\n", st->time_base.num);
     printf("      <denominator>%d</denominator>\n    </timebase>\n", st->time_base.den);
     printf("    <timerate>%.2f</timerate>\n", 1.0/av_q2d(st->time_base));
