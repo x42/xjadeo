@@ -1,58 +1,45 @@
-###############################################################################
+xjadeo - jack video monitor
+===========================
+
+xjadeo is a simple video player that gets sync from jack.
+Please refer to the documentation in the doc folder for any details,
+or visit http://xjadeo.sf.net/
+
+Basic build instructions
+------------------------
+
+```bash
+  git clone git://github.com/x42/xjadeo.git
+  ./autogen.sh
+  ./configure
+  make
+  sudo make install
+```
 
 
-	xjadeo - jack video monitor
+Build Dependencies
+------------------
 
-  Copyright (C) 2005, 2006  rgareus, luisgarrido
+Development packages for the following software must be available to compile xjadeo:
 
-   Luis Garrido <luisgarrido@users.sourceforge.net>
-   Robin Gareus <robin@gareus.org>
+* ffmpeg (from ffmpeg.org)
+* jack-audio-connection-kit (jackaudio.org)
+* libX11, libxv
 
-  xjadeo is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or
-  (at your option) any later version.
+recommended:
+* freetype2  (for on-screen display)
+* imlib2 (RGB display)
+* SDL (window build)
+* alsa (for alsa midi MTC support)
+* portmidi (alternate midi driver)
+* libltc (for LTC support)
+* liblo for OSC support
 
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+deprecated:
+* QT3 or QT4 (for GUI)
 
 
-###############################################################################
 
-xjadeo is a simple video player that gets sync from jack. 
-
-please refer to the documentation in the doc/ for any details!
-
- Build Instructions for the impatient:
-
- ./autogen.sh
- ./configure
- make 
- make install
-
--------------------------------------------
-BUILD DEPENDANCIES
--------------------------------------------
-
-you need have the devel packages installed on the system to compile xjadeo:
-see docbook in doc/ for detailed version information.
-
- * ffmpeg-devel  -  ffmpeg (>= 0.4.9-6) -  latest svn preferred!
- * jack-audio-connection-kit-devel
- * libX11 
-
-optionally you may want to have
- * freetype2 
- * gtk
- * imlib         - Imlib (>=1.9.13) or Imlib11-dev (>=1.9.13)
- * imlib2 
- * SDL
- * portmidi
- * alsamidi
-
+Copyright (C) 2005 - 2013 GPLv2
+ Luis Garrido <luisgarrido@users.sourceforge.net>
+ Robin Gareus <robin@gareus.org>
