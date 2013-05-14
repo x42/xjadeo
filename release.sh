@@ -8,7 +8,7 @@ SFUSER=x42
 
 make clean
 sh autogen.sh
-./configure --enable-contrib
+./configure --enable-contrib --enable-qtgui
 make -C doc html xjadeo.pdf
 make dist
 
@@ -37,9 +37,9 @@ git tag "v$VERSION" || (echo -n "version tagging failed. - press Enter to contin
 # upload to rg42.org git
 git push origin
 git push --tags
-# upload to sourceforge git
-git push sf
-git push --tags sf
+# upload to github git
+git push github
+git push --tags github
 
 
 #upload files to sourceforge

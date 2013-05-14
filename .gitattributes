@@ -1,0 +1,9 @@
+.gitignore export-ignore
+.gitattributes export-ignore
+debian export-ignore
+
+buildmac.sh export-ignore
+release.sh export-ignore
+x-pbuildstatic.sh export-ignore
+x-static.sh export-ignore
+x-win32.sh export-ignore
