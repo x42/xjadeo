@@ -43,7 +43,7 @@ jack_default_audio_sample_t *j_in;
 jack_nframes_t j_latency = 0;
 jack_client_t *j_client = NULL;
 
-static long int ltc_position = 0;
+static double ltc_position = 0;
 
 
 #ifdef HAVE_LTCSMPTE
@@ -52,7 +52,7 @@ static long int ltc_position = 0;
 
 static SMPTEDecoder *ltc_decoder = NULL;
 
-int myProcess(SMPTEDecoder *d, long int *jt)  {
+int myProcess(SMPTEDecoder *d, double *jt)  {
   SMPTEFrameExt frame;
 #ifdef DEBUG
   int errors;
@@ -72,12 +72,11 @@ int myProcess(SMPTEDecoder *d, long int *jt)  {
 #endif
 
     if (jt) {
-      *jt=(long int) ((stime.hours*60+stime.mins)*60 +stime.secs)*j_samplerate
-					 + (long int)floor((double)stime.frame*(double)j_samplerate/framerate
-					 + frame.startpos
-				);
-		//printf("LTC-debug %li %li %li\n",*jt,frame.startpos, frame.endpos);
-		//TODO: use LTCsmpte's framerate or xjadeo convertor!
+			*jt=(double) (
+					((stime.hours*60+stime.mins)*60 +stime.secs)*j_samplerate
+					+ (long int)floor((double)stime.frame*(double)j_samplerate/framerate + frame.startpos)
+					);
+			//printf("LTC-debug %f %li %li\n",*jt,frame.startpos, frame.endpos);
     }
 
 #ifdef DEBUG
@@ -99,7 +98,7 @@ int myProcess(SMPTEDecoder *d, long int *jt)  {
 
 static LTCDecoder *ltc_decoder = NULL;
 
-int myProcess(LTCDecoder *d, long int *jt)  {
+int myProcess(LTCDecoder *d, double *jt)  {
   LTCFrameExt frame;
   int rv=0;
   while (ltc_decoder_read(d,&frame)) {
@@ -120,9 +119,10 @@ int myProcess(LTCDecoder *d, long int *jt)  {
 #endif
 
     if (jt) {
-	*jt=(long int) ((stime.hours*60+stime.mins)*60 +stime.secs)*j_samplerate
-	      + (long int)floor((double)stime.frame*(double)j_samplerate / framerate
-			      + frame.off_end);
+			*jt = (double) (
+					((stime.hours*60+stime.mins)*60 +stime.secs) * j_samplerate
+					+ floor((double)stime.frame*(double)j_samplerate / framerate + frame.off_end)
+					);
     }
     ++rv;
   }
@@ -241,7 +241,7 @@ int jack_portsetup(void) {
 /* API */
 
 long ltc_poll_frame (void) {
-  return (((double)ltc_position*framerate)/j_samplerate);
+  return (long) floor(ltc_position * framerate / (double)j_samplerate);
 }
 
 void open_ltcjack(char *autoconnect) {
