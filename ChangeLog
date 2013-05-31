@@ -1,8 +1,13 @@
-2013-05-14 (unreleased)  Robin Gareus <robin@gareus.org>
+2013-05-31 (0.7.1)  Robin Gareus <robin@gareus.org>
+* fix OSD font-spacing
+* add -T option to set OSD font
 * fix 32/64bit issue in xjinfo, allow to hardedn qjadeo
 * deprecated qjadeo GUI and xjinfo (use ffprobe instead)
   explicit --enable-qt-gui is requred to build either.
 * prepare moving repo & issue-tracker to github.
+* fix LTC jack-latency compensation
+* fix LTC 32 bit wrap-around (i386 only)
+* various build-system updates
 
 2013-04-07 (0.7.0)  Robin Gareus <robin@gareus.org>
 * fixes for clang/llvm compiler
