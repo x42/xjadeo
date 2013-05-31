@@ -44,6 +44,7 @@ jack_nframes_t j_latency = 0;
 jack_client_t *j_client = NULL;
 
 static double ltc_position = 0;
+static long long int monotonic_fcnt = 0;
 
 
 #ifdef HAVE_LTCSMPTE
@@ -74,7 +75,8 @@ int myProcess(SMPTEDecoder *d, double *jt)  {
     if (jt) {
 			*jt=(double) (
 					((stime.hours*60+stime.mins)*60 +stime.secs)*j_samplerate
-					+ (long int)floor((double)stime.frame*(double)j_samplerate/framerate + frame.startpos)
+					+ ((double)stime.frame*(double)j_samplerate/framerate)
+					+ frame.startpos - monotonic_fcnt
 					);
 			//printf("LTC-debug %f %li %li\n",*jt,frame.startpos, frame.endpos);
     }
@@ -121,7 +123,8 @@ int myProcess(LTCDecoder *d, double *jt)  {
     if (jt) {
 			*jt = (double) (
 					((stime.hours*60+stime.mins)*60 +stime.secs) * j_samplerate
-					+ floor((double)stime.frame*(double)j_samplerate / framerate + frame.off_end)
+					+ ((double)stime.frame*(double)j_samplerate / framerate)
+					+ frame.off_end - monotonic_fcnt
 					);
     }
     ++rv;
@@ -158,11 +161,12 @@ int process (jack_nframes_t nframes, void *arg) {
 	}
 
 #ifdef HAVE_LTCSMPTE
-	SMPTEDecoderWrite(ltc_decoder, sound,nframes, -j_latency);
+	SMPTEDecoderWrite(ltc_decoder, sound,nframes, monotonic_fcnt-j_latency);
 #else // HAVE_LTC
-	ltc_decoder_write(ltc_decoder, sound, nframes, -j_latency);
+	ltc_decoder_write(ltc_decoder, sound, nframes, monotonic_fcnt-j_latency);
 #endif
 	myProcess(ltc_decoder, &ltc_position);
+	monotonic_fcnt += nframes;
 	return 0;
 }
 
