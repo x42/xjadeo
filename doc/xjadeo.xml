@@ -2805,7 +2805,7 @@ make install # (requires root privileges) </screen></para>
 
         <important>
           <para>Also note <application>Xjadeo</application>'s
-          <option>-K</option> option which allows to seek to frames other than
+          <option>-K</option> option which allows one to seek to frames other than
           key-frames and enables <application>Xjadeo</application> to play
           back any file without transcoding it. It comes at the expense of
           increased CPU usage and possibly increased seek latency. The latter
