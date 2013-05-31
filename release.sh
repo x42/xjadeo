@@ -104,8 +104,8 @@ if test "$ok" != 0; then
 	exit
 fi
 
-rsync -Pa $COWBUILDER:/tmp/xjadeo-i386-linux-gnu-${VERSION}.tgz /tmp/ || exit
-rsync -Pa $COWBUILDER:/tmp/xjadeo-x86_64-linux-gnu-${VERSION}.tgz /tmp/ || exit
+rsync -Pa $COWBUILDER:/tmp/xjadeo-i386-linux-gnu-v${VERSION}.tgz /tmp/ || exit
+rsync -Pa $COWBUILDER:/tmp/xjadeo-x86_64-linux-gnu-v${VERSION}.tgz /tmp/ || exit
 
 echo "building osx package on $OSXMACHINE ..."
 ssh $OSXMACHINE << EOF
@@ -130,8 +130,8 @@ cd /home/frs/project/x/xj/xjadeo/xjadeo
 mkdir v${VERSION}
 cd v${VERSION}
 put contrib/nsi/jadeo_installer_v${WINVERS}.exe
-put /tmp/xjadeo-i386-linux-gnu-${VERSION}.tgz
-put /tmp/xjadeo-x86_64-linux-gnu-${VERSION}.tgz
+put /tmp/xjadeo-i386-linux-gnu-v${VERSION}.tgz
+put /tmp/xjadeo-x86_64-linux-gnu-v${VERSION}.tgz
 put /tmp/jadeo-${VERSION}.dmg
 EOF
 
