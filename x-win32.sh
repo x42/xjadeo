@@ -7,7 +7,7 @@ unset CC
 if test -z "$NORECONF"; then
 PKG_CONFIG_PATH=$WINEBASEDIR/lib/pkgconfig/ CFLAGS="-I$WINEBASEDIR/include -I.." LDFLAGS="-L$WINEBASEDIR/lib/ -L$WINEBASEDIR/bin" \
 	./configure --host=i586-mingw32msvc --build=i386-linux --prefix=$WINEBASEDIR \
-	  --disable-xv --disable-imlib2 --disable-lash --disable-mq --disable-ipc --disable-osc \
+	  --disable-xv --disable-imlib2 --disable-lash --disable-mq --disable-ipc --disable-osc --enable-qtgui \
 	  --with-fontfile=./FreeMonoBold.ttf \
 	|| exit
 
@@ -43,7 +43,7 @@ cp -v $WINEBIN/libltcsmpte-0.dll $NSIDIR
 cp -v contrib/Jadeo.app/Contents/Resources/FreeMonoBold.ttf $NSIDIR
 
 
-make -C src/qt-gui || exit
+#make -C src/qt-gui || exit
 cp -v src/qt-gui/release/qjadeo.exe $NSIDIR
 cp -v src/qt-gui/qjadeo_fr.qm $NSIDIR
 cp -v src/qt-gui/qjadeo_ru.qm $NSIDIR
