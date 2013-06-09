@@ -33,6 +33,7 @@
  */
 #include "xjadeo.h"
 #include "ffcompat.h"
+#include "remote.h"
 
 //------------------------------------------------
 // extern Globals (main.c)
@@ -231,7 +232,9 @@ void event_loop(void) {
 		long curFrame = dispFrame;
 		display_frame((int64_t)(offFrame), force_redraw, !splashed || want_nosplash);
 
-		if ((remote_en||mq_en||ipc_queue) && ((remote_mode&1) || ((remote_mode&2)&& curFrame!=dispFrame)) ) {
+		if ((remote_en||mq_en||ipc_queue)
+				&& ( (remote_mode&NTY_FRAMELOOP) || ((remote_mode&NTY_FRAMECHANGE)&& curFrame!=dispFrame))
+				) {
 		/*call 	xapi_pposition ?? -> rv:200
 		 * dispFrame is the currently displayed frame 
 		 * = SMPTE + offset
@@ -276,6 +279,16 @@ void event_loop(void) {
 		clock1.tv_sec=clock2.tv_sec;
 		clock1.tv_usec=clock2.tv_usec;
 	} 
+	if ((remote_en||mq_en||ipc_queue) && (remote_mode&4)) {
+		// send current settings
+		xapi_pfullscreen(NULL);
+		xapi_pontop(NULL);
+		xapi_posd(NULL);
+		xapi_pletterbox(NULL);
+		xapi_pwinpos(NULL);
+		xapi_pwinsize(NULL);
+		xapi_poffset(NULL);
+	}
 }
 
 //--------------------------------------------
