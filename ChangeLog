@@ -1,3 +1,8 @@
+2013-06-09 (0.7.2)  Robin Gareus <robin@gareus.org>
+* rework X11 keyboard events (use xkeymap)
+* allow to forward keyboard events via remote-control
+* request settings-dump on exit (via remote-ctrl)
+
 2013-05-31 (0.7.1)  Robin Gareus <robin@gareus.org>
 * fix OSD font-spacing
 * add -T option to set OSD font

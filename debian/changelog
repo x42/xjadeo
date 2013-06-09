@@ -1,3 +1,11 @@
+xjadeo (0.7.2) unstable; urgency=low
+
+  * rework X11 keyboard events (use xkeymap)
+  * allow to forward keyboard events via remote-control
+  * request settings-dump on exit (via remote-ctrl)
+
+ -- Robin Gareus <robin@gareus.org>  Sun, 09 Jun 2013 23:01:13 +0200
+
 xjadeo (0.7.1) unstable; urgency=low
   * fix OSD font-spacing
   * add -T option to set OSD font
