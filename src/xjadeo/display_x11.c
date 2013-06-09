@@ -806,8 +806,10 @@ void xj_handle_X_events (void) {
 					} else if (key == XK_x ) { // 'x'
 						saveconfig("/tmp/xj.cfg");
 #endif
-					} else if (want_debug) {
-						printf("unassigned key pressed: 0x%x\n", (unsigned int)key);
+					} else {
+						remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (int) key);
+						if (want_debug)
+							printf("unassigned key pressed: 0x%x\n", (unsigned int)key);
 					}
 				}
 				break;
