@@ -553,7 +553,7 @@ void xj_handle_X_events (void) {
 #endif
 				if (event.xclient.data.l[0] == xj_del_atom) {
 				//	fprintf(stdout, "Window destoyed...\n");
-					if ((interaction_override&0x2) == 0) loop_flag=0;
+					if ((interaction_override&OVR_QUIT_WMG) == 0) loop_flag=0;
 #if 0
 				} else if (event.xclient.data.l[0] == xj_a_TakeFocus)  {
 		         		fprintf(stdout, "take X focus!\n");
@@ -603,7 +603,7 @@ void xj_handle_X_events (void) {
 				break;
 			case ButtonRelease:
 				if (event.xbutton.button == 1) {
-					if ((interaction_override&0x8) == 0)
+					if ((interaction_override&OVR_MOUSEBTN) == 0)
 					  xj_resize(ffctv_width, ffctv_height);
 				} else {
 					unsigned int my_Width,my_Height;
@@ -644,10 +644,10 @@ void xj_handle_X_events (void) {
 					key = ((keySym & 0xff00) != 0 ? ((keySym & 0x00ff) + 256) : (keySym));
 				/* HARDCODED KEY BINDINGS */
 					if        (key == 0x11b) { // 'Esc'
-						if ((interaction_override&0x1) == 0) loop_flag=0; 
+						if ((interaction_override&OVR_QUIT_KEY) == 0) loop_flag=0;
 					}
 					else if   (key == 0x71 ) {// 'q'
-						if ((interaction_override&0x1) == 0) loop_flag=0; 
+						if ((interaction_override&OVR_QUIT_KEY) == 0) loop_flag=0;
 					}
 					else if   (key == 0x61 ) //'a' // always-on-top
 						xj_set_ontop(xj_ontop^=1);
@@ -746,21 +746,21 @@ void xj_handle_X_events (void) {
 						my_Height+=step;
 						xj_resize(my_Width, my_Height);
 					} else if (key == 0x2b ) { //'+' // A/V offset
-						if ((interaction_override&0x10) != 0 ) break;
+						if ((interaction_override&OVR_AVOFFSET) != 0 ) break;
 						ts_offset++;
 						force_redraw=1;
 						if (smpte_offset) free(smpte_offset);
 						smpte_offset= calloc(15,sizeof(char));
 						frame_to_smptestring(smpte_offset,ts_offset);
 					} else if (key == 0x2d ) { //'-'  A/V offset
-						if ((interaction_override&0x10) != 0 ) break;
+						if ((interaction_override&OVR_AVOFFSET) != 0 ) break;
 						ts_offset--;
 						force_redraw=1;
 						if (smpte_offset) free(smpte_offset);
 						smpte_offset= calloc(15,sizeof(char));
 						frame_to_smptestring(smpte_offset,ts_offset);
 					} else if (key == 0x7d ) { //'}' // A/V offset
-						if ((interaction_override&0x10) != 0 ) break;
+						if ((interaction_override&OVR_AVOFFSET) != 0 ) break;
 						if (framerate > 0) {
 							ts_offset+= framerate *60;
 						} else {
@@ -771,7 +771,7 @@ void xj_handle_X_events (void) {
 						smpte_offset= calloc(15,sizeof(char));
 						frame_to_smptestring(smpte_offset,ts_offset);
 					} else if (key == 0x7b ) { //'{'  A/V offset
-						if ((interaction_override&0x10) != 0 ) break;
+						if ((interaction_override&OVR_AVOFFSET) != 0 ) break;
 						if (framerate > 0) {
 							ts_offset-= framerate *60;
 						} else {
@@ -794,9 +794,15 @@ void xj_handle_X_events (void) {
 						force_redraw=1;
 #endif
 					} else if (key == 0x108 ) { // BACKSPACE
-						jackt_rewind();
+						if ((interaction_override&OVR_JCONTROL) == 0)
+							jackt_rewind();
+							remote_notify(NTY_KEYBOARD,
+									310, "keypress=backspace");
 					} else if (key == 0x20 ) { // ' ' // SPACE 
-						jackt_toggle();
+						if ((interaction_override&OVR_JCONTROL) == 0)
+							jackt_toggle();
+							remote_notify(NTY_KEYBOARD,
+									310, "keypress=space");
 #if 0 // TEST - save current config -- JACK-SESSION
 					} else if (key == 0x78 ) { // 'x' 
 						saveconfig("/tmp/xj.cfg");

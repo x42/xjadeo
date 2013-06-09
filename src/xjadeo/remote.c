@@ -841,42 +841,42 @@ void xapi_bidir_alloff(void *d) {
 
 void xapi_bidir_loop(void *d) {
 	remote_printf(100,"enabled frame notify.");
-	remote_mode|=1;
+	remote_mode|=NTY_FRAMELOOP;
 }
 
 void xapi_bidir_noloop(void *d) {
 	remote_printf(100,"disabled frame notification.");
-	remote_mode&=~1;
+	remote_mode&=~NTY_FRAMELOOP;
 }
 
 void xapi_bidir_frame(void *d) {
 	remote_printf(100,"enabled frame notify.");
-	remote_mode|=2;
+	remote_mode|=NTY_FRAMECHANGE;
 }
 
 void xapi_bidir_noframe(void *d) {
 	remote_printf(100,"disabled frame notification.");
-	remote_mode&=~2;
+	remote_mode&=~NTY_FRAMECHANGE;
 }
 
 void xapi_bidir_settings(void *d) {
 	remote_printf(100,"enabled settings notify.");
-	remote_mode|=4;
+	remote_mode|=NTY_SETTINGS;
 }
 
 void xapi_bidir_nosettings(void *d) {
 	remote_printf(100,"disabled frame notification.");
-	remote_mode&=~4;
+	remote_mode&=~NTY_SETTINGS;
 }
 
 void xapi_bidir_keyboard(void *d) {
 	remote_printf(100,"enabled keypress notify.");
-	remote_mode|=8;
+	remote_mode|=NTY_KEYBOARD;
 }
 
 void xapi_bidir_nokeyboard(void *d) {
 	remote_printf(100,"disabled frame notification.");
-	remote_mode&=~8;
+	remote_mode&=~NTY_KEYBOARD;
 }
 
 void xapi_ping(void *d) {

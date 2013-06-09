@@ -45,6 +45,32 @@ enum { 	SEEK_ANY, ///< directly seek to givenvideo frame
 /* freetype - On screen display */
 enum { OSD_LEFT=-1, OSD_CENTER=-2, OSD_RIGHT=-3 }; ///< use positive values as percent or pixel.
 
+  /* override bitwise flags:
+   * 0x01 : ignore 'q', ESC  / quite
+   * 0x02 : ignore "window closed by WM" / quit
+   * 0x04 : (osx only) menu-exit / quit
+   * 0x08 : ignore mouse-button 1 -- resize
+   * 0x10 : no A/V offset
+   * 0x20 : don't use jack-session
+   */
+enum {
+	OVR_QUIT_KEY = 0x01,
+	OVR_QUIT_WMG = 0x02,
+	OVR_QUIT_OSX = 0x04,
+	OVR_MOUSEBTN = 0x08,
+	OVR_AVOFFSET = 0x10,
+	OVR_JSESSION = 0x20,
+	OVR_JCONTROL = 0x40
+};
+
+/* async notficy */
+enum {
+	NTY_FRAMELOOP = 0x01,
+	NTY_FRAMECHANGE = 0x02,
+	NTY_SETTINGS = 0x04,
+	NTY_KEYBOARD = 0x08
+};
+
 #define OSD_FRAME (1)
 #define OSD_SMPTE (2)
 
@@ -132,6 +158,7 @@ int remote_read_io(void);
 int remote_read_h(void);
 #endif
 void remote_printf(int val, const char *format, ...);
+void remote_notify(int mode, int rv, const char *format, ...);
 int remote_fd_set(fd_set *fd);
 
 /* xjadeo.c */

@@ -893,7 +893,7 @@ static OSStatus WindowEventHandler(EventHandlerCallRef nextHandler, EventRef eve
     }   
     switch (kind) {
       case kEventWindowClose:
-        if ((interaction_override&0x2) == 0 || ask_close()) {
+        if ((interaction_override&OVR_QUIT_WMG) == 0 || ask_close()) {
           result = CallNextEventHandler(nextHandler, event);
         } 
         break;
@@ -1435,11 +1435,11 @@ void handle_X_events_mac (void) {
 void mac_put_key(UInt32 key, UInt32 charcode) {
   char c;
   switch (key) {
-    case 0x35: if ((interaction_override&0x1) == 0) loop_flag=0; return;  // ESCAPE
+    case 0x35: if ((interaction_override&OVR_QUIT_KEY) == 0) loop_flag=0; return;  // ESCAPE
     default: c= (char) charcode;
   }
   switch (c) {
-    case 'q': if ((interaction_override&0x1) == 0) loop_flag=0; return; 
+    case 'q': if ((interaction_override&OVR_QUIT_KEY) == 0) loop_flag=0; return;
     case 'a': ontop_mac(winLevel==2?0:1); break;
     case 'f': fullscreen_mac(!vo_fs); break;
     case 'l':  
@@ -1475,7 +1475,7 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       force_redraw=1;
     } break;
     case '+': {
-      if ((interaction_override&0x10) != 0 ) break;
+      if ((interaction_override&OVR_AVOFFSET) != 0 ) break;
       ts_offset++;
       force_redraw=1;
       if (smpte_offset) free(smpte_offset);
@@ -1483,7 +1483,7 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       frame_to_smptestring(smpte_offset,ts_offset);
     } break;
     case '-': {
-      if ((interaction_override&0x10) != 0 ) break;
+      if ((interaction_override&OVR_AVOFFSET) != 0 ) break;
       ts_offset--;
       force_redraw=1;
       if (smpte_offset) free(smpte_offset);
@@ -1491,7 +1491,7 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       frame_to_smptestring(smpte_offset,ts_offset);
     } break;
     case '{': {
-      if ((interaction_override&0x10) != 0 ) break;
+      if ((interaction_override&OVR_AVOFFSET) != 0 ) break;
       if (framerate > 0) {
         ts_offset-= framerate *60;
       } else {
@@ -1503,7 +1503,7 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       frame_to_smptestring(smpte_offset,ts_offset);
     } break;
     case '}': {
-      if ((interaction_override&0x10) != 0 ) break;
+      if ((interaction_override&OVR_AVOFFSET) != 0 ) break;
       if (framerate > 0) {
         ts_offset+= framerate *60;
       } else {
@@ -1555,8 +1555,14 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       force_redraw=1;
     } break;
 #endif
-    case 0x8: jackt_rewind(); break;
-    case ' ': jackt_toggle(); break;
+    case 0x8:
+      if ((interaction_override&OVR_JCONTROL) == 0) jackt_rewind();
+      remote_notify(NTY_KEYBOARD, 310, "keypress=backspace");
+      break;
+    case ' ':
+      if ((interaction_override&OVR_JCONTROL) == 0) jackt_toggle();
+      remote_notify(NTY_KEYBOARD, 310, "keypress=space");
+      break;
     default: 
       printf("yet unhandled keyboard event: '%c' 0x%x\n",c,c);
       break;
@@ -1568,7 +1574,7 @@ OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
   switch ( acmd->commandID ) {
     case kHICommandQuit:
     case mQuit:
-      if ((interaction_override&0x4) == 0 || ask_close())
+      if ((interaction_override&OVR_QUIT_OSX) == 0 || ask_close())
         loop_flag=0;
       break;
     case kHICommandAbout:

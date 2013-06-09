@@ -327,13 +327,13 @@ void handle_X_events_sdl (void) {
 			//	printf("SDL render event.\n");
 				break;
 			case SDL_QUIT:
-				if ((interaction_override&0x1) == 0) loop_flag=0; 
+				if ((interaction_override&OVR_QUIT_KEY) == 0) loop_flag=0;
 				break;
 			case SDL_KEYDOWN:
 				if(ev.key.keysym.sym==SDLK_ESCAPE) {
-					if ((interaction_override&0x1) == 0) loop_flag=0; 
+					if ((interaction_override&OVR_QUIT_KEY) == 0) loop_flag=0;
 				} else if(ev.key.keysym.sym==SDLK_q) {
-					if ((interaction_override&0x1) == 0) loop_flag=0; 
+					if ((interaction_override&OVR_QUIT_KEY) == 0) loop_flag=0;
 				} else if(ev.key.keysym.sym==SDLK_s) {
 					OSD_mode^=OSD_SMPTE;
 					force_redraw=1;
@@ -393,21 +393,21 @@ void handle_X_events_sdl (void) {
 					}
 					force_redraw=1;
 				} else if(ev.key.keysym.sym== SDLK_EQUALS && ev.key.keysym.mod&KMOD_SHIFT) { // '+' SDLK_PLUS does not work :/
-						if ((interaction_override&0x10) != 0 ) break;
+						if ((interaction_override&OVR_AVOFFSET) != 0 ) break;
 						ts_offset++;
 						force_redraw=1;
 						if (smpte_offset) free(smpte_offset);
 						smpte_offset= calloc(15,sizeof(char));
 						frame_to_smptestring(smpte_offset,ts_offset);
 				} else if(ev.key.keysym.sym==SDLK_MINUS) {
-						if ((interaction_override&0x10) != 0 ) break;
+						if ((interaction_override&OVR_AVOFFSET) != 0 ) break;
 						ts_offset--;
 						force_redraw=1;
 						if (smpte_offset) free(smpte_offset);
 						smpte_offset= calloc(15,sizeof(char));
 						frame_to_smptestring(smpte_offset,ts_offset);
 				} else if(ev.key.keysym.sym== SDLK_LEFTBRACKET && ev.key.keysym.mod&KMOD_SHIFT) { // '{'
-					if ((interaction_override&0x10) != 0 ) break;
+					if ((interaction_override&OVR_AVOFFSET) != 0 ) break;
 					if (framerate > 0) {
 						ts_offset-= framerate *60;
 					} else {
@@ -418,7 +418,7 @@ void handle_X_events_sdl (void) {
 					smpte_offset= calloc(15,sizeof(char));
 					frame_to_smptestring(smpte_offset,ts_offset);
 				} else if(ev.key.keysym.sym== SDLK_RIGHTBRACKET&& ev.key.keysym.mod&KMOD_SHIFT) { // '}'
-					if ((interaction_override&0x10) != 0 ) break;
+					if ((interaction_override&OVR_AVOFFSET) != 0 ) break;
 					if (framerate > 0) {
 						ts_offset+= framerate *60;
 					} else {
@@ -433,9 +433,11 @@ void handle_X_events_sdl (void) {
 				} else if(ev.key.keysym.sym== SDLK_RIGHTBRACKET) { // ']'
 #endif
 				} else if(ev.key.keysym.sym== SDLK_BACKSPACE) {
-					jackt_rewind();
+					if ((interaction_override&OVR_JCONTROL) == 0) jackt_rewind();
+					remote_notify(NTY_KEYBOARD, 310, "keypress=backspace");
 				} else if(ev.key.keysym.sym== SDLK_SPACE) {
-					jackt_toggle();
+					if ((interaction_override&OVR_JCONTROL) == 0) jackt_toggle();
+					remote_notify(NTY_KEYBOARD, 310, "keypress=space");
 				} else {
 					//printf("SDL key event: %x\n", ev.key.keysym.sym);
 				}

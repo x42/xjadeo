@@ -21,6 +21,7 @@
  */
 
 #include "xjadeo.h"
+#include "remote.h"
 
 #ifdef HAVE_LASH
 
@@ -76,9 +77,6 @@ extern int OSD_fx, OSD_tx, OSD_sx, OSD_fy, OSD_sy, OSD_ty;
 
 // defined in main.c
 extern lash_client_t *lash_client;
-
-void xapi_open(void *d);
-void xapi_close(void *d);
 
 /* config options that need to be applied 
  * in a certain order after all other

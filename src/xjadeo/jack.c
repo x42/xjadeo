@@ -50,7 +50,7 @@ extern int	loop_flag;
 void jack_session_cb(jack_session_event_t *event, void *arg) {
 	char filename[256];
 	char command[256];
-	if (interaction_override&0x20) {
+	if (interaction_override&OVR_JSESSION) {
 		/* DO NOT SAVE SESSION 
 		 * e.g. if xjadeo will be restored by wrapper-program
 		 * f.i. ardour3+videotimeline
