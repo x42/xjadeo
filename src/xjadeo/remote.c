@@ -23,6 +23,7 @@
  * XAPI return values:
  *  1xx: command succeeded 
  *  2xx: query variable succeeded: 
+ *  3xx: async messages (initiated by xjadeo)
  *  4xx: error
  *  8xx: info message (eg. help)
  *
@@ -37,11 +38,15 @@
  *  220: var=<string>
  *  228: var=<smpte-string>
  *
+ *  301: frame changed
+ *  310: key press
+ *
  *  suggestions, TODO:
- *  3xx: command succeeded, but status is negative.
- *    eg. 310 midi not connected, but available
+ *  5xx: command succeeded, but status is negative.
+ *    eg. 510 midi not connected, but available
  *       which is currenlty 199.
  *
+ * grep "void xapi" remote.c | sed 's/ {/;/ '> remote.h
  */
 #include "xjadeo.h"
 
@@ -829,9 +834,9 @@ void xapi_smidisync(void *d) {
 #endif
 }
 
-void xapi_bidir_noframe(void *d) {
+void xapi_bidir_alloff(void *d) {
 	remote_printf(100,"disabled frame notification.");
-	remote_mode&=~3;
+	remote_mode=0;
 }
 
 void xapi_bidir_loop(void *d) {
@@ -839,9 +844,39 @@ void xapi_bidir_loop(void *d) {
 	remote_mode|=1;
 }
 
+void xapi_bidir_noloop(void *d) {
+	remote_printf(100,"disabled frame notification.");
+	remote_mode&=~1;
+}
+
 void xapi_bidir_frame(void *d) {
 	remote_printf(100,"enabled frame notify.");
 	remote_mode|=2;
+}
+
+void xapi_bidir_noframe(void *d) {
+	remote_printf(100,"disabled frame notification.");
+	remote_mode&=~2;
+}
+
+void xapi_bidir_settings(void *d) {
+	remote_printf(100,"enabled settings notify.");
+	remote_mode|=4;
+}
+
+void xapi_bidir_nosettings(void *d) {
+	remote_printf(100,"disabled frame notification.");
+	remote_mode&=~4;
+}
+
+void xapi_bidir_keyboard(void *d) {
+	remote_printf(100,"enabled keypress notify.");
+	remote_mode|=8;
+}
+
+void xapi_bidir_nokeyboard(void *d) {
+	remote_printf(100,"disabled frame notification.");
+	remote_mode&=~8;
 }
 
 void xapi_ping(void *d) {
@@ -950,10 +985,16 @@ Dcommand cmd_get[] = {
 };
 
 Dcommand cmd_notify[] = {
+	{"disable" , ": disable async messages", NULL, xapi_bidir_alloff, 0 },
 	{"frame" , ": enable async frame-update messages", NULL, xapi_bidir_frame, 0 },
+	{"keyboard" , ": enable async keypress messages", NULL, xapi_bidir_keyboard, 0 },
 	{"loop" , ": enable continuous frame position messages", NULL, xapi_bidir_loop, 0 },
-	{"disable" , ": disable async messages", NULL, xapi_bidir_noframe, 0 },
-	{"off" , ": disable async messages", NULL, xapi_bidir_noframe, 0 },
+	{"nosettings" , ": disable async settings dump on shutdown", NULL, xapi_bidir_nosettings, 0 },
+	{"nokeyboard" , ": disable async keypress messages", NULL, xapi_bidir_nokeyboard, 0 },
+	{"noframe" , ": enable async frame-update messages", NULL, xapi_bidir_noframe, 0 },
+	{"noloop" , ": enable continuous frame position messages", NULL, xapi_bidir_noloop, 0 },
+	{"off" , ": disable all async messages", NULL, xapi_bidir_alloff, 0 },
+	{"settings" , ": enable async settings dump on shutdown", NULL, xapi_bidir_settings, 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 
@@ -1337,4 +1378,12 @@ void remote_printf(int rv, const char *format, ...) {
 		msg[LOGLEN -1] =0; 
 		write(REMOTE_TX,msg,strlen(msg));
 	}
+}
+
+void remote_notify(int mode, int rv, const char *format, ...) {
+	if (!(remote_en||mq_en||ipc_queue) || !(remote_mode & mode)) return;
+	va_list args;
+	va_start(args, format);
+	remote_printf(rv, format, args);
+	va_end(args);
 }
