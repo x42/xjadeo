@@ -1557,11 +1557,11 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
 #endif
     case 0x8:
       if ((interaction_override&OVR_JCONTROL) == 0) jackt_rewind();
-      remote_notify(NTY_KEYBOARD, 310, "keypress=backspace");
+      remote_notify(NTY_KEYBOARD, 310, "keypress=%d # backspace", 0xff08);
       break;
     case ' ':
       if ((interaction_override&OVR_JCONTROL) == 0) jackt_toggle();
-      remote_notify(NTY_KEYBOARD, 310, "keypress=space");
+      remote_notify(NTY_KEYBOARD, 310, "keypress=%d # space", 0x0020);
       break;
     default: 
       printf("yet unhandled keyboard event: '%c' 0x%x\n",c,c);

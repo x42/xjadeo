@@ -434,10 +434,10 @@ void handle_X_events_sdl (void) {
 #endif
 				} else if(ev.key.keysym.sym== SDLK_BACKSPACE) {
 					if ((interaction_override&OVR_JCONTROL) == 0) jackt_rewind();
-					remote_notify(NTY_KEYBOARD, 310, "keypress=backspace");
+					remote_notify(NTY_KEYBOARD, 310, "keypress=%d # backspace", 0xff08);
 				} else if(ev.key.keysym.sym== SDLK_SPACE) {
 					if ((interaction_override&OVR_JCONTROL) == 0) jackt_toggle();
-					remote_notify(NTY_KEYBOARD, 310, "keypress=space");
+					remote_notify(NTY_KEYBOARD, 310, "keypress=%d # space", 0x0020);
 				} else {
 					//printf("SDL key event: %x\n", ev.key.keysym.sym);
 				}

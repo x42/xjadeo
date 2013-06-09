@@ -796,12 +796,12 @@ void xj_handle_X_events (void) {
 						if ((interaction_override&OVR_JCONTROL) == 0)
 							jackt_rewind();
 							remote_notify(NTY_KEYBOARD,
-									310, "keypress=backspace");
+									310, "keypress=%d # backspace", (int) key);
 					} else if (key == XK_space ) { // ' ' // SPACE
 						if ((interaction_override&OVR_JCONTROL) == 0)
 							jackt_toggle();
 							remote_notify(NTY_KEYBOARD,
-									310, "keypress=space");
+									310, "keypress=%d # space", (int) key);
 #if 0 // TEST - save current config -- JACK-SESSION
 					} else if (key == XK_x ) { // 'x'
 						saveconfig("/tmp/xj.cfg");
