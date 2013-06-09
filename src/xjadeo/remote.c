@@ -1354,14 +1354,11 @@ void close_ipcmsg_ctrl () {
 // REMOTE + MQ wrapper 
 //--------------------------------------------
 
-void remote_printf(int rv, const char *format, ...) {
-	va_list arglist;
+void remote_printf_argslist(int rv, const char *format, va_list arglist) {
 	char text[LOGLEN];
 	char msg[LOGLEN];
 
-	va_start(arglist, format);
 	vsnprintf(text, MQLEN, format, arglist);
-	va_end(arglist);
 
 	text[LOGLEN -1] =0; 
 #ifdef HAVE_MQ
@@ -1380,10 +1377,17 @@ void remote_printf(int rv, const char *format, ...) {
 	}
 }
 
+void remote_printf(int rv, const char *format, ...) {
+	va_list arglist;
+	va_start(arglist, format);
+	remote_printf_argslist(rv, format, arglist);
+	va_end(arglist);
+}
+
 void remote_notify(int mode, int rv, const char *format, ...) {
 	if (!(remote_en||mq_en||ipc_queue) || !(remote_mode & mode)) return;
-	va_list args;
-	va_start(args, format);
-	remote_printf(rv, format, args);
-	va_end(args);
+	va_list arglist;
+	va_start(arglist, format);
+	remote_printf_argslist(rv, format, arglist);
+	va_end(arglist);
 }
