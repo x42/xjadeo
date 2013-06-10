@@ -458,7 +458,7 @@ void disable_dnd () {
  * X event callback handler
  */
 #define EQCLAMP(var) if((var)<-999) { var=-1000;} if((var)>999) { var=1000;}
-#define EQMOD(PROP,STEP) if(!xj_get_eq(PROP,&value)){value+=(STEP); EQCLAMP(value); xj_set_eq(PROP,value);} force_redraw=1;
+#define EQMOD(PROP,STEP) if(!xj_get_eq(PROP,&value)){value+=(STEP); EQCLAMP(value); xj_set_eq(PROP,value); force_redraw=1;}
 
 // EQ prototypes 
 #ifdef HAVE_LIBXV
@@ -643,10 +643,18 @@ void xj_handle_X_events (void) {
 
 				/* HARDCODED KEY BINDINGS */
 					if        (key == XK_Escape) { // 'Esc'
-						if ((interaction_override&OVR_QUIT_KEY) == 0) loop_flag=0;
+						if ((interaction_override&OVR_QUIT_KEY) == 0) {
+							loop_flag=0;
+						} else {
+							remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
+						}
 					}
 					else if   (key == XK_q ) {// 'q'
-						if ((interaction_override&OVR_QUIT_KEY) == 0) loop_flag=0;
+						if ((interaction_override&OVR_QUIT_KEY) == 0) {
+							loop_flag=0;
+						} else {
+							remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
+						}
 					}
 					else if   (key == XK_a ) //'a' // always-on-top
 						xj_set_ontop(xj_ontop^=1);
@@ -684,32 +692,46 @@ void xj_handle_X_events (void) {
 						force_redraw=1;
 					} else if (key == XK_exclam ) { //'Shift-1' //
 						EQMOD("brightness",-8)
+							else { remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key); }
 					} else if (key == XK_quotedbl || key == XK_at) { //'Shift-2' //
 						EQMOD("brightness",+8)
+							else { remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key); }
 					} else if (key == XK_numbersign || key == XK_section) { //'Shift-3' //
 						EQMOD("contrast",-8)
+							else { remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key); }
 					} else if (key == XK_dollar ) { //'Shift-4' //
 						EQMOD("contrast",+8)
+							else { remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key); }
 					} else if (key == XK_1 ) { //'1' //
 						EQMOD("brightness",-50)
+							else { remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key); }
 					} else if (key == XK_2 ) { //'2' //
 						EQMOD("brightness",+50)
+							else { remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key); }
 					} else if (key == XK_3 ) { //'3' //
 						EQMOD("contrast",-50)
+							else { remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key); }
 					} else if (key == XK_4 ) { //'4' //
 						EQMOD("contrast",+50)
+							else { remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key); }
 					} else if (key == XK_5 ) { //'5' //
 						EQMOD("gamma",-8)
+							else { remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key); }
 					} else if (key == XK_6 ) { //'6' //
 						EQMOD("gamma",+8)
+							else { remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key); }
 					} else if (key == XK_7 ) { //'7' //
 						EQMOD("saturation",-50)
+							else { remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key); }
 					} else if (key == XK_8 ) { //'8' //
 						EQMOD("saturation",+100)
+							else { remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key); }
 					} else if (key == XK_9 ) { //'9' //
 						EQMOD("hue",-5)
+							else { remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key); }
 					} else if (key == XK_0 ) { //'0' //
 						EQMOD("hue",+5)
+							else { remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key); }
 					} else if (key == XK_E ) { //'E' //
 						if (VOutput==1)
 							xj_set_eq("contrast",-500); // xvinfo default:64 (0..255)
@@ -745,21 +767,30 @@ void xj_handle_X_events (void) {
 						my_Height+=step;
 						xj_resize(my_Width, my_Height);
 					} else if (key == XK_plus ) { //'+' // A/V offset
-						if ((interaction_override&OVR_AVOFFSET) != 0 ) break;
+						if ((interaction_override&OVR_AVOFFSET) != 0 ) {
+							remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
+							break;
+						}
 						ts_offset++;
 						force_redraw=1;
 						if (smpte_offset) free(smpte_offset);
 						smpte_offset= calloc(15,sizeof(char));
 						frame_to_smptestring(smpte_offset,ts_offset);
 					} else if (key == XK_minus ) { //'-'  A/V offset
-						if ((interaction_override&OVR_AVOFFSET) != 0 ) break;
+						if ((interaction_override&OVR_AVOFFSET) != 0 ) {
+							remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
+							break;
+						}
 						ts_offset--;
 						force_redraw=1;
 						if (smpte_offset) free(smpte_offset);
 						smpte_offset= calloc(15,sizeof(char));
 						frame_to_smptestring(smpte_offset,ts_offset);
 					} else if (key == XK_braceright ) { //'}' // A/V offset
-						if ((interaction_override&OVR_AVOFFSET) != 0 ) break;
+						if ((interaction_override&OVR_AVOFFSET) != 0 ) {
+							remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
+							break;
+						}
 						if (framerate > 0) {
 							ts_offset+= framerate *60;
 						} else {
@@ -770,7 +801,10 @@ void xj_handle_X_events (void) {
 						smpte_offset= calloc(15,sizeof(char));
 						frame_to_smptestring(smpte_offset,ts_offset);
 					} else if (key == XK_braceleft) { //'{'  A/V offset
-						if ((interaction_override&OVR_AVOFFSET) != 0 ) break;
+						if ((interaction_override&OVR_AVOFFSET) != 0 ) {
+							remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
+							break;
+						}
 						if (framerate > 0) {
 							ts_offset-= framerate *60;
 						} else {
@@ -796,18 +830,18 @@ void xj_handle_X_events (void) {
 						if ((interaction_override&OVR_JCONTROL) == 0)
 							jackt_rewind();
 							remote_notify(NTY_KEYBOARD,
-									310, "keypress=%d # backspace", (int) key);
+									310, "keypress=%d # backspace", (unsigned int) key);
 					} else if (key == XK_space ) { // ' ' // SPACE
 						if ((interaction_override&OVR_JCONTROL) == 0)
 							jackt_toggle();
 							remote_notify(NTY_KEYBOARD,
-									310, "keypress=%d # space", (int) key);
+									310, "keypress=%d # space", (unsigned int) key);
 #if 0 // TEST - save current config -- JACK-SESSION
 					} else if (key == XK_x ) { // 'x'
 						saveconfig("/tmp/xj.cfg");
 #endif
 					} else {
-						remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (int) key);
+						remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
 						if (want_debug)
 							printf("unassigned key pressed: 0x%x\n", (unsigned int)key);
 					}

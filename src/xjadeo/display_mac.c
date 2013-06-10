@@ -1435,7 +1435,10 @@ void handle_X_events_mac (void) {
 void mac_put_key(UInt32 key, UInt32 charcode) {
   char c;
   switch (key) {
-    case 0x35: if ((interaction_override&OVR_QUIT_KEY) == 0) loop_flag=0; return;  // ESCAPE
+    case 0x35: if ((interaction_override&OVR_QUIT_KEY) == 0) {
+                 remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) 0xff1b);
+                 loop_flag=0; return;  // ESCAPE
+               }
     default: c= (char) charcode;
   }
   switch (c) {
@@ -1475,7 +1478,10 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       force_redraw=1;
     } break;
     case '+': {
-      if ((interaction_override&OVR_AVOFFSET) != 0 ) break;
+      if ((interaction_override&OVR_AVOFFSET) != 0 ) {
+        remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) charcode);
+        break;
+      }
       ts_offset++;
       force_redraw=1;
       if (smpte_offset) free(smpte_offset);
@@ -1483,7 +1489,10 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       frame_to_smptestring(smpte_offset,ts_offset);
     } break;
     case '-': {
-      if ((interaction_override&OVR_AVOFFSET) != 0 ) break;
+      if ((interaction_override&OVR_AVOFFSET) != 0 ) {
+        remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) charcode);
+        break;
+      }
       ts_offset--;
       force_redraw=1;
       if (smpte_offset) free(smpte_offset);
@@ -1491,7 +1500,10 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       frame_to_smptestring(smpte_offset,ts_offset);
     } break;
     case '{': {
-      if ((interaction_override&OVR_AVOFFSET) != 0 ) break;
+      if ((interaction_override&OVR_AVOFFSET) != 0 ) {
+        remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) charcode);
+        break;
+      }
       if (framerate > 0) {
         ts_offset-= framerate *60;
       } else {
@@ -1503,7 +1515,10 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       frame_to_smptestring(smpte_offset,ts_offset);
     } break;
     case '}': {
-      if ((interaction_override&OVR_AVOFFSET) != 0 ) break;
+      if ((interaction_override&OVR_AVOFFSET) != 0 ) {
+        remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) charcode);
+        break;
+      }
       if (framerate > 0) {
         ts_offset+= framerate *60;
       } else {
@@ -1557,14 +1572,15 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
 #endif
     case 0x8:
       if ((interaction_override&OVR_JCONTROL) == 0) jackt_rewind();
-      remote_notify(NTY_KEYBOARD, 310, "keypress=%d # backspace", 0xff08);
+      remote_notify(NTY_KEYBOARD, 310, "keypress=%d # backspace", (unsigned int) 0xff08);
       break;
     case ' ':
       if ((interaction_override&OVR_JCONTROL) == 0) jackt_toggle();
-      remote_notify(NTY_KEYBOARD, 310, "keypress=%d # space", 0x0020);
+      remote_notify(NTY_KEYBOARD, 310, "keypress=%d # space", (unsigned int) 0x0020);
       break;
     default: 
-      printf("yet unhandled keyboard event: '%c' 0x%x\n",c,c);
+      remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) charcode);
+      //printf("yet unhandled keyboard event: '%c' 0x%x\n",c,c);
       break;
   }
   checkMyMenu();
