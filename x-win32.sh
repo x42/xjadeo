@@ -39,7 +39,7 @@ cp -v $WINEBIN/swscale-2.dll $NSIDIR
 cp -v $WINEBIN/freetype6.dll $NSIDIR
 cp -v $WINEBIN/SDL.dll $NSIDIR
 cp -v $WINEBIN/zlib1.dll $NSIDIR
-cp -v $WINEBIN/libltcsmpte-0.dll $NSIDIR
+cp -v $WINEBIN/libltc-11.dll $NSIDIR
 cp -v contrib/Jadeo.app/Contents/Resources/FreeMonoBold.ttf $NSIDIR
 
 

@@ -41,7 +41,7 @@ Section "jadeo (required)"
 	File "avutil-51.dll"
 	File "freetype6.dll"
 	File "swscale-2.dll"
-	File "libltcsmpte-0.dll"
+	File "libltc-11.dll"
 	File "zlib1.dll"
 	File "FreeMonoBold.ttf"
   File "xjadeo.nsi"
@@ -110,7 +110,7 @@ Section "Uninstall"
   Delete $INSTDIR\avutil-49.dll
   Delete $INSTDIR\swscale-0.dll
   Delete $INSTDIR\freetype6.dll
-  Delete $INSTDIR\libltcsmpte-0.dll
+  Delete $INSTDIR\libltc-11.dll
   Delete $INSTDIR\zlib1.dll
   Delete $INSTDIR\FreeMonoBold.ttf
   Delete $INSTDIR\xjadeo.nsi
