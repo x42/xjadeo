@@ -5,7 +5,7 @@ bin_PROGRAMS=xjadeo xjremote @XJINFO_BIN@
 
 EXTRA_PROGRAMS = xjinfo
 
-xjadeo_SOURCES=xjadeo.c ../../aclocal.m4 ../../config.h display.c jack.c midi.c freetype.c xjadeo.h display.h display_x11.c smpte.c main.c remote.c configfile.c lash.c mqueue.c icons/osd_bitmaps.h display_mac.c xjosc.c display_sdl.c ltc-jack.c ffcompat.h
+xjadeo_SOURCES=xjadeo.c ../../aclocal.m4 ../../config.h display.c jack.c midi.c freetype.c xjadeo.h display.h display_x11.c smpte.c main.c remote.c configfile.c lash.c mqueue.c icons/osd_bitmaps.h display_mac.c xjosc.c display_sdl.c ltc-jack.c ffcompat.h remote.h
 
 xjadeo_LDADD = @JACK_LIBS@ @MQ_LIBS@ @FFMPEG_LIBS@ @XV_LIBS@ @IMLIB_LIBS@ @MIDI_LIBS@ @FREETYPE_LIBS@ @IMLIB2_LIBS@ @LASH_LIBS@ @Xpm_LIBS@ @LIBLO_LIBS@ @SDL_LIBS@ @LTCSMPTE_LIBS@ @LTC_LIBS@ -lm
 
