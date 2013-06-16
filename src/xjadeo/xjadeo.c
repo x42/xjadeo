@@ -718,6 +718,10 @@ int my_seek_frame (AVPacket *packet, int64_t timestamp) {
 	} 
 #endif 
 
+	if (rv < 0 && (timestamp == 0 || seekflags == SEEK_CONTINUOUS)) {
+		rv = av_seek_frame(pFormatCtx, videoStream, timestamp, 0);
+	}
+
 	my_avprev = timestamp;
 	if (rv < 0) return (0); // seek failed.
 
@@ -776,7 +780,10 @@ read_frame:
 #else // test & check time-base/ framerate re-scaling
 	if ((mtsb*framerate*av_q2d(v_stream->time_base)) >= (timestamp*framerate*av_q2d(v_stream->time_base)))
 #endif
+	{
+		my_avprev = mtsb;
 		return (1); // ok!
+	}
 
 	/* skip to next frame */
 #ifdef FFDEBUG
