@@ -47,6 +47,8 @@ cp -v contrib/Jadeo.app/Contents/Resources/FreeMonoBold.ttf $NSIDIR
 cp -v src/qt-gui/release/qjadeo.exe $NSIDIR
 cp -v src/qt-gui/qjadeo_fr.qm $NSIDIR
 cp -v src/qt-gui/qjadeo_ru.qm $NSIDIR
+cp -v src/qt-gui/qjadeo_el_GR.qm $NSIDIR
+cp -v src/qt-gui/qjadeo_cs.qm $NSIDIR
 QTBIN=/home/rgareus/.wine/drive_c/Qt/2010.04/qt/bin
 cp -v $QTBIN/QtGui4.dll $NSIDIR
 cp -v $QTBIN/QtCore4.dll $NSIDIR
