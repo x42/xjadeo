@@ -1,3 +1,10 @@
+2013-06-16 (0.7.3)  Robin Gareus <robin@gareus.org>
+* propagate unhandled keyboard events to remote ctrl
+* Add Czech translation by Pavel Fric
+* add missing remote.h source
+* fix windows installer
+* tentative seek-to-frame workarounds for OSX m4v.
+
 2013-06-09 (0.7.2)  Robin Gareus <robin@gareus.org>
 * rework X11 keyboard events (use xkeymap)
 * allow to forward keyboard events via remote-control

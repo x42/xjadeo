@@ -1,3 +1,13 @@
+xjadeo (0.7.3) unstable; urgency=low
+
+  * propagate unhandled keyboard events to remote ctrl
+  * Add Czech translation by Pavel Fric
+  * add missing remote.h source
+  * fix windows installer
+  * tentative seek-to-frame workarounds for OSX m4v.
+
+ -- Robin Gareus <robin@gareus.org>  Sun, 16 Jun 2013 18:52:48 +0200
+
 xjadeo (0.7.2) unstable; urgency=low
 
   * rework X11 keyboard events (use xkeymap)
