@@ -312,9 +312,9 @@ void init_moviebuffer(void) {
 
 // Assign appropriate parts of buffer to image planes in pFrameFMT
 	if (pFrameFMT) {
-		avpicture_fill((AVPicture *)pFrameFMT, buffer, render_fmt, pCodecCtx->width, pCodecCtx->height);
+		avpicture_fill((AVPicture *)pFrameFMT, buffer, render_fmt, movie_width, movie_height);
 #ifdef HAVE_SWSCALE
-		pSWSCtx = sws_getContext(pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height, render_fmt, SWS_BICUBIC, NULL, NULL, NULL);
+		pSWSCtx = sws_getContext(pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, movie_width, movie_height, render_fmt, SWS_BICUBIC, NULL, NULL, NULL);
 #endif
 	}
 	render_empty_frame(0);
@@ -472,7 +472,7 @@ int open_movie(char* file_name) {
 	movie_width = pCodecCtx->width / 2; // TODO allow configuration
 	movie_height = pCodecCtx->height;
 #else
-	movie_width = pCodecCtx->width;
+	movie_width = pCodecCtx->width &~1;
 	movie_height = pCodecCtx->height;
 #endif
 
@@ -850,7 +850,23 @@ void display_frame(int64_t timestamp, int force_update, int do_render) {
 			if(frameFinished) {
 				/* Convert the image from its native format to FMT */
 #ifdef HAVE_SWSCALE
-				sws_scale(pSWSCtx, (const uint8_t * const*)pFrame->data, pFrame->linesize, 0, pCodecCtx->height, pFrameFMT->data, pFrameFMT->linesize);
+				int dstStride[8] = {0,0,0,0,0,0,0,0};
+				switch (render_fmt) {
+					case PIX_FMT_RGBA32:
+					case PIX_FMT_BGRA32:
+						dstStride[0] = movie_width*4;
+						break;
+					case PIX_FMT_BGR24:
+						dstStride[0] = movie_width*3;
+						break;
+					case PIX_FMT_UYVY422:
+					case PIX_FMT_YUV420P:
+					default:
+						dstStride[0] = movie_width;
+						dstStride[1] = movie_width/2;
+						dstStride[2] = movie_width/2;
+				}
+				sws_scale(pSWSCtx, (const uint8_t * const*)pFrame->data, pFrame->linesize, 0, pCodecCtx->height, pFrameFMT->data, dstStride);
 #else
 				img_convert((AVPicture *)pFrameFMT, render_fmt, 
 					(AVPicture*)pFrame, pCodecCtx->pix_fmt, pCodecCtx->width, 
