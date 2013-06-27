@@ -1,3 +1,9 @@
+xjadeo (0.7.4) unstable; urgency=low
+
+  * fix for XVideo, YUV - force even number of pixels per line
+
+ -- Robin Gareus <robin@gareus.org>  Sun, 27 Jun 2013 10:02:08 +0200
+
 xjadeo (0.7.3) unstable; urgency=low
 
   * propagate unhandled keyboard events to remote ctrl
