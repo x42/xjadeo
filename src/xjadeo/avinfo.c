@@ -137,9 +137,8 @@ static int decode_switches (int argc, char **argv) {
 	
 int main(int argc, char *argv[])
 {
-  AVFormatContext *ic;
+  AVFormatContext *ic = NULL;
   AVCodec *p;
-  AVInputFormat *file_iformat = NULL;
   int err, ret, i, flags;
   char str[80];
   char *fn = NULL;
@@ -156,9 +155,9 @@ int main(int argc, char *argv[])
   av_log_set_level(AV_LOG_QUIET);
 
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(53, 7, 0)
-  err = av_open_input_file(&ic, fn, file_iformat, 0, NULL);
+  err = av_open_input_file(&ic, fn, NULL, 0, NULL);
 #else
-  err = avformat_open_input(&ic, fn, file_iformat, NULL);
+  err = avformat_open_input(&ic, fn, NULL, NULL);
 #endif
   if (err < 0) {
     fprintf(stderr, "%s: Error while opening file\n", fn);
