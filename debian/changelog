@@ -1,3 +1,10 @@
+xjadeo (0.7.5) unstable; urgency=low
+
+  * fix UYVY422 colorspace (OSX default) stride
+  * xjinfo - fix segfault if invalid file-name is given
+
+ -- Robin Gareus <robin@gareus.org>  Thu, 25 Jul 2013 23:28:38 +0200
+
 xjadeo (0.7.4) unstable; urgency=low
 
   * fix for XVideo, YUV - force even number of pixels per line

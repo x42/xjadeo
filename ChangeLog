@@ -1,3 +1,7 @@
+2013-07-25 (0.7.5)  Robin Gareus <robin@gareus.org>
+* fix UYVY422 colorspace (OSX default) stride
+* xjinfo - fix segfault if invalid file-name is given
+
 2013-06-27 (0.7.4)  Robin Gareus <robin@gareus.org>
 * fix for XVideo, YUV - force even number of pixels per line
 * OSX build w/header-pad for dynamic libs.
