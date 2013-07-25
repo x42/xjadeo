@@ -860,6 +860,8 @@ void display_frame(int64_t timestamp, int force_update, int do_render) {
 						dstStride[0] = movie_width*3;
 						break;
 					case PIX_FMT_UYVY422:
+						dstStride[0] = movie_width*2;
+						break;
 					case PIX_FMT_YUV420P:
 					default:
 						dstStride[0] = movie_width;
