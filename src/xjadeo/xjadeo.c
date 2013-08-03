@@ -468,32 +468,34 @@ int open_movie(char* file_name) {
 	pCodecCtx=&(pFormatCtx->streams[videoStream]->codec);
 #endif
 
+	if (!want_quiet) {
+		fprintf(stderr, "image size: %ix%i px\n", pCodecCtx->width, pCodecCtx->height);
+	}
+
 #ifdef CROPIMG
-	movie_width = pCodecCtx->width / 2; // TODO allow configuration
-	movie_height = pCodecCtx->height;
+	movie_width = (pCodecCtx->width / 2)&~1; // TODO allow configuration
+	movie_height = pCodecCtx->height &~1;
 #else
 	movie_width = pCodecCtx->width &~1;
-	movie_height = pCodecCtx->height;
+	movie_height = pCodecCtx->height &~1;
 #endif
 
-	movie_aspect = 0;
-	if (movie_aspect<=0.0) {
-		if (av_stream->sample_aspect_ratio.num)
-			movie_aspect = av_q2d(av_stream->sample_aspect_ratio);
-		else if (av_stream->codec->sample_aspect_ratio.num)
-			movie_aspect = av_q2d(av_stream->codec->sample_aspect_ratio);
-		else
-			movie_aspect = 0;
-	}
-	if (movie_aspect <= 0.0)
-		movie_aspect = 1.0;
-	movie_aspect *= (float)movie_width / (float)movie_height;
+	float sample_aspect = 1.0;
+
+	if (av_stream->sample_aspect_ratio.num)
+		sample_aspect = av_q2d(av_stream->sample_aspect_ratio);
+	else if (av_stream->codec->sample_aspect_ratio.num)
+		sample_aspect = av_q2d(av_stream->codec->sample_aspect_ratio);
+	else
+		sample_aspect = 1.0;
+
+	movie_aspect = sample_aspect * (float)pCodecCtx->width / (float) pCodecCtx->height;
 
 	ffctv_height = movie_height;
-	ffctv_width = ((int)rint(movie_height * movie_aspect)) & ~1;
-	if (ffctv_width > movie_width) {
+	ffctv_width = ((int)rint(pCodecCtx->height * movie_aspect)) & ~1;
+	if (ffctv_width > pCodecCtx->width) {
 		ffctv_width = movie_width;
-		ffctv_height = ((int)rint(movie_width / movie_aspect)) & ~1;
+		ffctv_height = ((int)rint(pCodecCtx->width / movie_aspect)) & ~1;
 	}
 
 // somewhere around LIBAVFORMAT_BUILD  4630 
@@ -504,7 +506,7 @@ int open_movie(char* file_name) {
 #endif
 
 	if (!want_quiet) {
-		fprintf( stderr, "movie size:  %ix%i px\n", movie_width,movie_height);
+		fprintf(stderr, "display size: %ix%i px\n", movie_width, movie_height);
 	}
 	// Find the decoder for the video stream
 	pCodec=avcodec_find_decoder(pCodecCtx->codec_id);
