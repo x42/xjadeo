@@ -33,7 +33,7 @@ $SUDO apt-get -y install git build-essential yasm \
 	libltc-dev libxpm-dev liblo-dev autoconf automake
 
 cd $SRC
-git clone -b release/1.2 --depth 1 git://source.ffmpeg.org/ffmpeg
+git clone -b release/2.0 --depth 1 git://source.ffmpeg.org/ffmpeg
 git clone -b master git://github.com/x42/xjadeo.git
 
 cd $SRC/xjadeo
