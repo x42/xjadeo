@@ -166,8 +166,9 @@ AC_SUBST(JACK_CFLAGS)
 AC_SUBST(JACK_LIBS)
 if test "x$enable_jacksession" != "xno"; then
   AC_CHECK_HEADERS([jack/session.h] , AC_DEFINE(JACK_SESSION) JACK_SESSION=1)
-	AC_SEARCH_LIBS(jack_port_get_latency_range, jack, AC_DEFINE(NEW_JACK_LATENCY_API) NEW_JACK_LATENCY_API=1 )
 fi
+
+AC_SEARCH_LIBS(jack_port_get_latency_range, jack, AC_DEFINE(NEW_JACK_LATENCY_API) NEW_JACK_LATENCY_API=1 )
 
 MQ_LIBS=""
 if test "x$enable_mq" != "xno"; then
