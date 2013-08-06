@@ -1200,7 +1200,7 @@ void remote_printf_io(int rv, const char *format, ...) {
 	text[LOGLEN -1] =0; // just to be safe :)
 	snprintf(msg, LOGLEN, "@%i %s\n",rv,text);
 	msg[LOGLEN -1] =0; 
- 	write(REMOTE_TX,msg,strlen(msg));
+	(void) write(REMOTE_TX,msg,strlen(msg));
 }
 
 void open_remote_ctrl (void) {
@@ -1373,7 +1373,7 @@ void remote_printf_argslist(int rv, const char *format, va_list arglist) {
 	if (remote_en) {
 		snprintf(msg, LOGLEN, "@%i %s\n",rv,text);
 		msg[LOGLEN -1] =0; 
-		write(REMOTE_TX,msg,strlen(msg));
+		(void) write(REMOTE_TX,msg,strlen(msg));
 	}
 }
 

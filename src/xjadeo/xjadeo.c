@@ -458,7 +458,7 @@ int open_movie(char* file_name) {
 			fprintf(stdout, "original frame rate: %g\n", framerate);
 		fprintf(stdout, "length in seconds: %g\n", duration);
 		fprintf(stdout, "total frames: %ld\n", frames);
-		fprintf(stdout, "file start offset: %lld video-frames\n",file_frame_offset);
+		fprintf(stdout, "file start offset: %" PRId64 " video-frames\n",file_frame_offset);
 	}
 
 	// Get a pointer to the codec context for the video stream

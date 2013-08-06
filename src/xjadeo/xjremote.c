@@ -361,7 +361,7 @@ void *read_thread (void *d) {
 		#if 1
 			char tmp[8+MQLEN];
 			snprintf (tmp,(MQLEN+8),"@%d %s", mymsg->cmd, mymsg->m); // newline is part of data payload.
- 			write(REMOTE_TX,tmp,strlen(tmp));
+			(void) write(REMOTE_TX,tmp,strlen(tmp));
 		#else
 			printf ("@%d %s", mymsg->cmd, mymsg->m); // newline is part of data payload.
 			fflush(stdout);
