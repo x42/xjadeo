@@ -28,6 +28,7 @@
 #include <avutil.h>
 #else
 #include <libavutil/avutil.h>
+#include <libavutil/mathematics.h>
 #endif
 
 #ifndef PIX_FMT_BGRA32
