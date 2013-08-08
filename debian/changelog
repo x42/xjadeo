@@ -1,3 +1,11 @@
+xjadeo (0.7.6) unstable; urgency=low
+
+  * fix DAR, SAR aspect ratio and odd-number of lines
+  * detect jack-latency API independently from jack-sessio
+  * fix some compiler warnings & work-around undocumented libav API change
+
+ -- Robin Gareus <robin@gareus.org>  Thu, 08 Aug 2013 16:51:14 +0200
+
 xjadeo (0.7.5) unstable; urgency=low
 
   * fix UYVY422 colorspace (OSX default) stride

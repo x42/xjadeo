@@ -1,3 +1,8 @@
+2013-08-08 (0.7.6)  Robin Gareus <robin@gareus.org>
+* fix DAR, SAR aspect ratio and odd-number of lines
+* detect jack-latency API independently from jack-sessio
+* fix some compiler warnings & work-around undocumented libav API change
+
 2013-07-25 (0.7.5)  Robin Gareus <robin@gareus.org>
 * fix UYVY422 colorspace (OSX default) stride
 * xjinfo - fix segfault if invalid file-name is given
