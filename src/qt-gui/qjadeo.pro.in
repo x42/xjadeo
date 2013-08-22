@@ -15,6 +15,10 @@ FORMS	= mainwindow.ui prefdialog.ui importdialog.ui importprogress.ui
 
 #QMAKE_CXXFLAGS_WARN_ON += -Wno-non-virtual-dtor
 
+QMAKE_LFLAGS += $(LDFLAGS)
+
+QMAKE_CXXFLAGS += $(CPPFLAGS)
+
 TRANSLATIONS = qjadeo_fr.ts qjadeo_ru.ts qjadeo_cs.ts
 
 DEFINES += QT_NO_DEBUG_OUTPUT
