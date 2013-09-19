@@ -29,6 +29,7 @@
 #else
 #include <libavutil/avutil.h>
 #include <libavutil/mathematics.h>
+#include <libavutil/mem.h>
 #endif
 
 #ifndef PIX_FMT_BGRA32
