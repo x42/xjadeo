@@ -1,3 +1,10 @@
+2014-06-06 (0.7.7)  Robin Gareus <robin@gareus.org>
+* add -J option (don't connect to jackd by default)
+* fix registry key for windows installer
+* updates for libav
+* Fix hardening for qjadeo, passed CPPFLAGS and LDFLAGS to qmake. (from mira)
+* Misspelling patch (also by Jaromír Mikeš)
+
 2013-08-08 (0.7.6)  Robin Gareus <robin@gareus.org>
 * fix DAR, SAR aspect ratio and odd-number of lines
 * detect jack-latency API independently from jack-sessio
