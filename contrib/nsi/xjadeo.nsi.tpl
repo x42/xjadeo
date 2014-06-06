@@ -9,7 +9,7 @@ InstallDir $PROGRAMFILES\xjadeo
 
 ; Registry key to check for directory (so if you install again, it will 
 ; overwrite the old one automatically)
-InstallDirRegKey HKLM "Software\RSSxjadeo" "Install_Dir"
+InstallDirRegKey HKLM "Software\RSS\xjadeo" "Install_Dir"
 
 ;--------------------------------
 
