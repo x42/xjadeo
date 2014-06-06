@@ -49,6 +49,7 @@ int want_unlink  = 0;	/*< --1:unlink mqueues on startup  2: and exit */
 int want_nofork  = 0;	/*< --nofork ; donT launch xjadeo */
 char *qid	 = NULL;  /*< -I <arg> - name of the MQ */
 int want_create  = 0;	/*< unused - only xjadeo create queues */ 
+int no_initial_sync =0; /* --nosyncsource, -J */
 
 int xjr_mute 	 = 1;	/*< 1: mute all but '8xx' messages
 			 *  2: dont display  any replies
@@ -65,6 +66,7 @@ static struct option const long_options[] =
 	{"unlinkonly", no_argument, 0, 'U'},
 	{"id", required_argument, 0, 'I'},
 	{"noping", required_argument, 0, 'P'},
+	{"noinitialsync", no_argument, 0, 'J'},
 	{"version", no_argument, 0, 'V'},
 	{NULL, 0, NULL, 0}
 };
@@ -83,6 +85,7 @@ static int decode_switches (int argc, char **argv) {
 			   "u"	/* unlink */
 			   "U"	/* unlinkonly */
 			   "P"	/* noping */
+			   "J"	/* no jack / no-initial sync */
 			   "V",	/* version */
 			   long_options, (int *) 0)) != EOF)
 	{ switch (c) {
@@ -112,6 +115,9 @@ static int decode_switches (int argc, char **argv) {
 		case 'R':
 		case 'Q':
 		case 'W':
+			break;
+		case 'J':
+			no_initial_sync = 1;
 			break;
 		case 'V':
 			printversion();
@@ -185,17 +191,26 @@ void execjadeo(int flags, char *queuefile) {
 
 	if (xjadeo) {
 		printf("# executing: %s\n",xjadeo);
-		if (flags&1) { 
+		if (flags&1) {
 			close(0);
 			dup2(open("/dev/null", 0), 1);
 			dup2(open("/dev/null", 0), 2);
 		}
-		if (flags&4)
-			execl(xjadeo,"xjadeo", "-q", "-W", queuefile, NULL);
-		else if (flags&2) 
-			execl(xjadeo,"xjadeo", "-R", NULL);
-		else 
-			execl(xjadeo,"xjadeo", "-Q", "-q", NULL);
+		if (no_initial_sync) {
+			if (flags&4)
+				execl(xjadeo,"xjadeo", "-J", "-q", "-W", queuefile, NULL);
+			else if (flags&2)
+				execl(xjadeo,"xjadeo", "-J", "-R", NULL);
+			else
+				execl(xjadeo,"xjadeo", "-J", "-Q", "-q", NULL);
+		} else {
+			if (flags&4)
+				execl(xjadeo,"xjadeo", "-q", "-W", queuefile, NULL);
+			else if (flags&2)
+				execl(xjadeo,"xjadeo", "-R", NULL);
+			else
+				execl(xjadeo,"xjadeo", "-Q", "-q", NULL);
+		}
 	} else {
 		printf("# no xjadeo executable found. try to set the XJADEO env. variable\n");
 	}
