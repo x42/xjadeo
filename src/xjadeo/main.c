@@ -120,6 +120,7 @@ int want_dropframes =0; /* --dropframes -N  -- force using drop-frame timecode *
 int want_autodrop =1;   /* --nodropframes -n (hidden option) -- allow using drop-frame timecode */
 int avoid_lash   =0;	/* --nolash */
 int remote_en =0;	/* --remote, -R */
+int no_initial_sync =0; /* --nosyncsource, -J */
 int osc_port =0;	/* --osc, -O */
 int mq_en =0;		/* --mq, -Q */
 char *ipc_queue = NULL; /* --ipc, -W */
@@ -215,6 +216,7 @@ static struct option const long_options[] =
   {"videomode", required_argument, 0, 'x'},
   {"vo", required_argument, 0, 'x'},
   {"remote", no_argument, 0, 'R'},
+  {"noinitialsync", no_argument, 0, 'J'},
   {"mq", no_argument, 0, 'Q'},
   {"ipc", required_argument, 0, 'W'},
   {"help", no_argument, 0, 'h'},
@@ -293,6 +295,7 @@ decode_switches (int argc, char **argv)
 #endif
 			   "D"	/* debug */
 			   "L"	/* no lash */
+			   "J"	/* no jack / no-initial sync */
 			   "V",	/* version */
 			   long_options, (int *) 0)) != EOF)
   {
@@ -449,6 +452,9 @@ decode_switches (int argc, char **argv)
 	  break;
 	case 'T':
 	  strcpy(OSD_fontfile, optarg);
+	  break;
+	case 'J':
+	  no_initial_sync = 1;
 	  break;
 	case 'h':
 	  usage (0);
@@ -833,7 +839,12 @@ main (int argc, char **argv)
   }
 #endif
 
-  if (atoi(midiid) >= -1 ) {
+  if (no_initial_sync) {
+    if (!(remote_en || mq_en || ipc_queue || osc_port)) {
+      fprintf(stderr, "Warning: There is no Initial sync-source, and no remote-control enbled to\nchange the sync source. Do not use '-J' option (unless you're testing).\n");
+    }
+  }
+  else if (atoi(midiid) >= -1 ) {
     if (!want_quiet) 
       printf("using MTC as sync-source.\n");
     midi_open(midiid);
