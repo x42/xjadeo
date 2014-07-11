@@ -12,7 +12,7 @@ export PKG_CONFIG_PATH=${LIBF}/pkgconfig
 
 if test -z "$NORECONF"; then
 	./configure \
-		--disable-imlib2 --disable-lash --disable-mq --disable-ipc --disable-sdl \
+		--disable-imlib2 --disable-lash --disable-mq --disable-ipc \
 		--disable-qtgui --disable-jacksession --disable-portmidi --disable-alsamidi \
 	  --with-fontfile=/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf \
 	|| exit
@@ -52,6 +52,7 @@ LIBDEPS=" \
  libfreetype.a \
  libltc.a \
  liblo.a \
+ libSDL.a \
  libXpm.a \
  libX11.a \
  libxcb.a \
@@ -59,6 +60,8 @@ LIBDEPS=" \
  libXv.a \
  libXext.a \
  libXdmcp.a \
+ libXrandr.a \
+ libXrender.a \
  "
 
 # resolve paths to static libs on the system

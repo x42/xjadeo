@@ -30,11 +30,14 @@ $SUDO apt-get -y install git build-essential yasm \
 	libxvidcore-dev zlib1g-dev zlib1g-dev \
 	libpng12-dev libjpeg8-dev \
 	libxv-dev libjack-jackd2-dev libx11-dev  libfreetype6-dev \
-	libltc-dev libxpm-dev liblo-dev autoconf automake
+	libltc-dev libxpm-dev liblo-dev autoconf automake \
+	wget libxrandr-dev libglu-dev
+
 
 cd $SRC
 git clone -b release/2.0 --depth 1 git://source.ffmpeg.org/ffmpeg
 git clone -b master git://github.com/x42/xjadeo.git
+wget http://www.libsdl.org/release/SDL-1.2.15.tar.gz
 
 cd $SRC/xjadeo
 VERSION=$(git describe --tags HEAD)
@@ -54,6 +57,17 @@ cd $SRC/ffmpeg
 
 make -j4 || exit 1
 make install || exit 1
+
+tar xzf SDL-1.2.15.tar.gz
+cd $SRC/SDL-1.2.15
+./configure --prefix=/usr \
+	--enable-static --disable-shared \
+	--disable-audio \
+	--disable-video-directfb --disable-x11-shared --disable-input-tslib \
+	--enable-video-x11-xrandr \
+	--disable-joystick --disable-cdrom
+make -j4
+make install
 
 cd $SRC/xjadeo
 autoreconf -i
