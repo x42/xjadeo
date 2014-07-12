@@ -55,12 +55,8 @@ LIBDEPS=" \
  liblo.a \
  libSDL.a \
  libXpm.a \
- libX11.a \
- libxcb.a \
- libXau.a \
  libXv.a \
  libXext.a \
- libXdmcp.a \
  libXrandr.a \
  libXrender.a \
  libdirectfb.a \
@@ -99,7 +95,7 @@ gcc -Wall -O3 \
 	${LIBF}/libavutil.a \
 	\
 	$SLIBS \
-	`pkg-config --libs jack` -lpthread -lm  \
+	`pkg-config --libs jack` -lpthread -lm -lX11 \
 || exit 1
 
 strip $OUTFN
