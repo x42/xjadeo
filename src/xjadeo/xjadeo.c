@@ -344,6 +344,7 @@ int open_movie(char* file_name) {
 
 	fFirstTime = 1;
 	pFrameFMT = NULL;
+	pFormatCtx=NULL;
 	movie_width  = 320;
 	movie_height = 180;
 	movie_aspect = (float)movie_width / (float) movie_height;
@@ -354,15 +355,19 @@ int open_movie(char* file_name) {
 	// recalc offset with new framerate
 	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset);
 
+	if (strlen(file_name) == 0
+			&& (remote_en || mq_en || ipc_queue)) {
+		return -1;
+	}
+
 	/* Open video file */
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(53, 7, 0)
 	if(av_open_input_file(&pFormatCtx, file_name, NULL, 0, NULL)!=0)
 #else
-	pFormatCtx=NULL;
 	if(avformat_open_input(&pFormatCtx, file_name, NULL, NULL)!=0)
 #endif
 	{
-		if (!remote_en && !mq_en && !ipc_queue) //TODO prevent msg only when starting up with no file...
+		if (!remote_en && !mq_en && !ipc_queue)
 			fprintf( stderr, "Cannot open video file %s\n", file_name);
 		pFormatCtx=NULL;
 		return (-1);
