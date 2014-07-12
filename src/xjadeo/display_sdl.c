@@ -300,6 +300,7 @@ void sdl_toggle_fullscreen(int action) {
     sdl_full_screen=1;
   }
 	resized_sdl();
+	force_redraw=1;
 }
 
 void calc_letterbox(int src_w, int src_h, int out_w, int out_h, int *sca_w, int *sca_h) {
@@ -469,8 +470,8 @@ void handle_X_events_sdl (void) {
 				sdl_screen = SDL_SetVideoMode(ev.resize.w, ev.resize.h, 0, MYSDLFLAGS);
 				sdl_rect.w=ev.resize.w;
 				sdl_rect.h=ev.resize.h;
-				force_redraw=1;
 				resized_sdl();
+				force_redraw=1;
 				break;
 			case SDL_MOUSEBUTTONUP:
 				if(ev.button.button == SDL_BUTTON_LEFT) {
