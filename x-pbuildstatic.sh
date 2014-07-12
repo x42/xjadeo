@@ -31,7 +31,8 @@ $SUDO apt-get -y install git build-essential yasm \
 	libpng12-dev libjpeg8-dev \
 	libxv-dev libjack-jackd2-dev libx11-dev  libfreetype6-dev \
 	libltc-dev libxpm-dev liblo-dev autoconf automake \
-	wget libxrandr-dev libglu-dev
+	wget libxrandr-dev libglu-dev libimlib2-dev \
+	libdirectfb-dev libice-dev nasm
 
 
 cd $SRC
@@ -61,11 +62,13 @@ make install || exit 1
 
 cd $SRC/SDL-1.2.15
 ./configure --prefix=/usr \
-	--enable-static --disable-shared \
+	--enable-static --disable-shared --disable-rpath \
+	--enable-nasm \
 	--disable-audio \
-	--disable-video-directfb --disable-x11-shared --disable-input-tslib \
-	--enable-video-x11-xrandr \
-	--disable-joystick --disable-cdrom
+	--disable-x11-shared --disable-input-tslib \
+	--enable-video-directfb --enable-video-x11-xrandr \
+	--disable-joystick --disable-cdrom --disable-loadso \
+	--disable-video-ggi --disable-video-svga --disable-video-aalib
 make -j4
 make install
 
