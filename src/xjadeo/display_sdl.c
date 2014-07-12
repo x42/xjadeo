@@ -91,14 +91,8 @@ int open_window_sdl (void) {
 	sdl_screen = SDL_SetVideoMode(sdl_rect.w, sdl_rect.h, video_bpp,MYSDLFLAGS);
 	SDL_WM_SetCaption("xjadeo", "xjadeo");
 
-// FIXME: on linux the SDL_*_OVERLAY are defined as FOURCC numbers rather than beeing abstract 
-// so we could try other ffmpeg/lqt compatible 420P formats as I420 (0x30323449)
-	sdl_overlay = SDL_CreateYUVOverlay(movie_width, movie_height, 0x30323449, sdl_screen);
-	sdl_pic_format=0x30323449;
-	if(!sdl_overlay || (!sdl_overlay->hw_overlay)) {
-		sdl_overlay = SDL_CreateYUVOverlay(movie_width, movie_height, SDL_YV12_OVERLAY, sdl_screen);
-		sdl_pic_format=SDL_YV12_OVERLAY;
-	}
+	newsrc_sdl();
+
 	if((!sdl_overlay)) 
 		fprintf(stderr, "NO OVERLAY\n");
 	if((!sdl_overlay || SDL_LockYUVOverlay(sdl_overlay)<0)) {
@@ -315,8 +309,15 @@ void calc_letterbox(int src_w, int src_h, int out_w, int out_h, int *sca_w, int 
 }
 
 void newsrc_sdl (void) {
-	if(sdl_overlay) SDL_FreeYUVOverlay(sdl_overlay); 
-	sdl_overlay = SDL_CreateYUVOverlay(movie_width, movie_height, SDL_YV12_OVERLAY, sdl_screen);
+	if(sdl_overlay) SDL_FreeYUVOverlay(sdl_overlay);
+// FIXME: on linux the SDL_*_OVERLAY are defined as FOURCC numbers rather than beeing abstract
+// so we could try other ffmpeg/lqt compatible 420P formats as I420 (0x30323449)
+	sdl_overlay = SDL_CreateYUVOverlay(movie_width, movie_height, 0x30323449, sdl_screen);
+	sdl_pic_format=0x30323449;
+	if(!sdl_overlay || (!sdl_overlay->hw_overlay)) {
+		sdl_overlay = SDL_CreateYUVOverlay(movie_width, movie_height, SDL_YV12_OVERLAY, sdl_screen);
+		sdl_pic_format=SDL_YV12_OVERLAY;
+	}
 }
 
 void handle_X_events_sdl (void) {
