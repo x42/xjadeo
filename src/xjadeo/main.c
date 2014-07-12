@@ -495,6 +495,8 @@ jack video monitor\n", program_name);
   printf ("" /* take a breath */
 "  -I, --ignorefileoffset    set the beginning of the file to SMPTE zero.\n"
 "                            eg. override timestamps of split vob files.\n"
+"  -J, --noinitialsync       do not connect to JACK nor use a sync source\n"
+"                            at start. This only works with remote-control.\n"
 "  -k, --keyframes           seek to keyframes only\n"
 "  -K, --continuous          decode video source continuously. (extra latency\n"
 "                            when seeking to non-key frames.)\n"
