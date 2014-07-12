@@ -211,9 +211,9 @@ const vidout VO[] = {
 #ifdef HAVE_SDL
 		&render_sdl, &open_window_sdl, &close_window_sdl,
 		&handle_X_events_sdl, &newsrc_sdl, &resize_sdl,
-		&getsize_sdl, &position_sdl, &getpos_null,
-		&sdl_toggle_fullscreen, &ontop_null, &mousecursor_sdl,
-		&sdl_get_fullscreen, &getontop_null},
+		&getsize_sdl, &position_sdl, &get_window_pos_sdl,
+		&sdl_toggle_fullscreen, &sdl_set_ontop, &mousecursor_sdl,
+		&sdl_get_fullscreen, &sdl_get_ontop},
 #else
 		NULLOUTPUT},
 #endif

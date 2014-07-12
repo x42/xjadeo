@@ -55,6 +55,10 @@ void resized_sdl ();
 
 	int full_screen_width = 1024;
 	int full_screen_height = 768;
+	int	sdl_ontop = 0;
+	int sdl_full_screen = 0;
+	SDL_Rect sdl_oldsize;
+
 
 void close_window_sdl(void) {
 	if(sdl_overlay) SDL_FreeYUVOverlay(sdl_overlay); 
@@ -118,6 +122,13 @@ int open_window_sdl (void) {
 	SDL_Surface* icon = SDL_LoadBMP(iconName));
 	SDL_WM_SetIcon(icon, NULL);
 	*/
+
+	if (start_ontop) {
+		sdl_set_ontop(1);
+	}
+	if (start_fullscreen) {
+		sdl_toggle_fullscreen(1);
+	}
 
 	return(0);
  
@@ -189,31 +200,49 @@ void getsize_sdl (unsigned int *x, unsigned int *y) {
 	if(y) *y = sdl_rect.h;
 }
 
-void get_window_pos_sdl (unsigned int *x, unsigned int *y) {
+void get_window_pos_sdl (int *rx, int *ry) {
 	SDL_SysWMinfo info;
 	SDL_VERSION(&info.version);
-	if (!( SDL_GetWMInfo(&info) > 0 )) { return; }
+	if ( SDL_GetWMInfo(&info) > 0 ) {
 #ifdef HAVE_WINDOWS
+
+#if 0 // legacy
 	WINDOWINFO w;
 	GetWindowInfo(info.window, &w);
 	*x= w.rcWindow.left;
 	*y= w.rcWindow.top;
-	//*w= w.rcWindow.right - w.rcWindow.left;
-	//*h= w.rcWindow.bottom - w.rcWindow.top;
 	printf("%ld - %ld\n", w.rcWindow.left, w.rcWindow.top);
 #endif
-#if (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2)
-	if ( info.subsystem == SDL_SYSWM_X11 ) {
-		Window	dummy;
-		int xx,xy;
-		info.info.x11.lock_func();
-		XTranslateCoordinates(info.info.x11.display, info.info.x11.wmwindow, info.info.x11.fswindow, 0, 0, &xx, &xy, &dummy);
-		// TODO recurse until dummy!=None
-		info.info.x11.unlock_func();
-		*x= xx;
-		*y= xy;
-	}
+		RECT rect;
+		//GetWindowRect() <> SetWindowPos()
+		if (GetClientRect(info.window, &rect)) {
+			*rx = rect.left;
+			*ry = rect.top;
+			return;
+		}
+#elif (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2)
+		if (info.subsystem == SDL_SYSWM_X11 ) {
+			// NB. with SDL window decorations are not taken into account :(
+			Window	dummy;
+			info.info.x11.lock_func();
+			XTranslateCoordinates(info.info.x11.display, info.info.x11.wmwindow, DefaultRootWindow(info.info.x11.display), 0, 0, rx, ry, &dummy);
+			while (dummy !=None) {
+				int x = 0;
+				int y = 0;
+				XTranslateCoordinates(info.info.x11.display, info.info.x11.wmwindow, dummy, 0, 0, &x, &y, &dummy);
+				if (dummy!=None) {
+					(*rx)-=x; (*ry)-=y;
+				} else {
+					(*rx)+=x; (*ry)+=y;
+				}
+			}
+			info.info.x11.unlock_func();
+			return;
+		}
 #endif
+	}
+	if(rx) *rx=1;
+	if(ry) *ry=1;
 }
 
 void position_sdl(int x, int y) {
@@ -221,7 +250,9 @@ void position_sdl(int x, int y) {
 	SDL_VERSION(&info.version);
 	if ( SDL_GetWMInfo(&info) > 0 ) {
 #ifdef HAVE_WINDOWS
-	SetWindowPos(info.window, NULL, x, y, sdl_rect.w, sdl_rect.h, 0);
+	SetWindowPos(info.window,
+			sdl_ontop ? HWND_TOPMOST : HWND_NOTOPMOST,
+			x, y, sdl_rect.w, sdl_rect.h, 0);
 #endif
 #if (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2)
 	if ( info.subsystem == SDL_SYSWM_X11 ) {
@@ -242,7 +273,65 @@ void position_sdl(int x, int y) {
 		} 
 #endif
 	} 
-} 
+}
+
+#if (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2)
+static void net_wm_set_property(char *atom, int state) {
+	SDL_SysWMinfo info;
+	SDL_VERSION(&info.version);
+	if ( SDL_GetWMInfo(&info) <= 0 ) {
+		return;
+	}
+
+	XEvent xev;
+	int set = _NET_WM_STATE_ADD;
+	Atom type, property;
+
+	if (state == _NET_WM_STATE_TOGGLE) set = _NET_WM_STATE_TOGGLE;
+	else if (!state) set = _NET_WM_STATE_REMOVE;
+
+	type = XInternAtom(info.info.x11.display, "_NET_WM_STATE", True);
+	if (type == None) return;
+	property = XInternAtom(info.info.x11.display, atom, 0);
+	if (property == None) return;
+
+	xev.type = ClientMessage;
+	xev.xclient.type = ClientMessage;
+	xev.xclient.window = info.info.x11.wmwindow;
+	xev.xclient.message_type = type;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = set;
+	xev.xclient.data.l[1] = property;
+	xev.xclient.data.l[2] = 0;
+
+	if (!XSendEvent(info.info.x11.display, DefaultRootWindow(info.info.x11.display), False,
+				SubstructureRedirectMask|SubstructureNotifyMask, &xev))
+	{
+			fprintf(stderr,"error changing X11 property\n");
+	}
+}
+#endif
+
+void sdl_set_ontop (int action) {
+	if (action==2) sdl_ontop^=1;
+	else sdl_ontop=action;
+
+#ifdef HAVE_WINDOWS
+	SDL_SysWMinfo info;
+	SDL_VERSION(&info.version);
+	if ( SDL_GetWMInfo(&info) > 0 ) {
+		SetWindowPos(info.window,
+				sdl_ontop ? HWND_TOPMOST : HWND_NOTOPMOST,
+				0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	}
+#elif (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2)
+	net_wm_set_property("_NET_WM_STATE_ABOVE", action);
+#endif
+}
+
+int sdl_get_ontop () {
+	return sdl_ontop;
+}
 
 void render_sdl (uint8_t *mybuffer) {
 	/* http://www.fourcc.org/indexyuv.htm */
@@ -271,9 +360,6 @@ void render_sdl (uint8_t *mybuffer) {
 	SDL_DisplayYUVOverlay(sdl_overlay, &sdl_dest_rect);
 	SDL_LockYUVOverlay(sdl_overlay);
 }
-
-int sdl_full_screen =0;
-SDL_Rect sdl_oldsize;
 
 int sdl_get_fullscreen () {
 	return (sdl_full_screen);
@@ -350,7 +436,7 @@ void handle_X_events_sdl (void) {
 					OSD_mode^=OSD_SMPTE;
 					force_redraw=1;
 				} else if(ev.key.keysym.sym==SDLK_a) {
-					// TODO always on top
+					sdl_set_ontop(sdl_ontop^=1);
 				} else if(ev.key.keysym.sym==SDLK_f) {
 					sdl_toggle_fullscreen(2);
 				} else if(ev.key.keysym.sym==SDLK_l) {

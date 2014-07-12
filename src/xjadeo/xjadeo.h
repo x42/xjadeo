@@ -13,6 +13,7 @@
 #ifdef HAVE_WINDOWS
 # include <windows.h>
 # include <winsock.h>
+# include <winuser.h>
 
 # define vsnprintf _vsnprintf
 # define snprintf _snprintf

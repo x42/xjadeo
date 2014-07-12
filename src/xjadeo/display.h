@@ -60,9 +60,12 @@ typedef struct {
 #include <SDL/SDL_syswm.h>
 #define SUP_SDL 1
 void position_sdl(int x, int y);
+void get_window_pos_sdl (int *rx, int *ry);
 int sdl_get_fullscreen ();
 void sdl_toggle_fullscreen(int action);
 void mousecursor_sdl(int action);
+void sdl_set_ontop (int action);
+int sdl_get_ontop ();
 
 #else
 #define SUP_SDL 0

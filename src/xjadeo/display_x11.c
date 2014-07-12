@@ -217,7 +217,8 @@ void xj_get_window_pos (int *rx,  int *ry) {
 	Window	dummy;
 	XTranslateCoordinates( xj_dpy, xj_win, xj_rwin, 0, 0, rx, ry, &dummy);
 	while (dummy !=None) {
-		int x, y;
+		int x = 0;
+		int y = 0;
 		XTranslateCoordinates( xj_dpy, xj_win, dummy, 0, 0, &x, &y, &dummy);
 		if (dummy!=None) {
 			(*rx)-=x; (*ry)-=y;
