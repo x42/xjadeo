@@ -38,6 +38,7 @@ cd $SRC
 git clone -b release/2.0 --depth 1 git://source.ffmpeg.org/ffmpeg
 git clone -b master git://github.com/x42/xjadeo.git
 wget http://www.libsdl.org/release/SDL-1.2.15.tar.gz
+tar xzf SDL-1.2.15.tar.gz
 
 cd $SRC/xjadeo
 VERSION=$(git describe --tags HEAD)
@@ -58,7 +59,6 @@ cd $SRC/ffmpeg
 make -j4 || exit 1
 make install || exit 1
 
-tar xzf SDL-1.2.15.tar.gz
 cd $SRC/SDL-1.2.15
 ./configure --prefix=/usr \
 	--enable-static --disable-shared \
