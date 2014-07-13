@@ -1,3 +1,13 @@
+2014-07-13 (0.7.8)  Robin Gareus <robin@gareus.org>
+* document -J option in --help
+* SDL window-position and on-top functionality
+(now SDL is compatible to xv and x11 video backends)
+* built script updates for statically linked binaries:
+ - dynamically link to libX11/libxcb
+ - add statically linked SDL (in case XVideo is n/a)
+ - add fallback to imlib2/x11 output in case no hardware
+   acceleration is available
+
 2014-06-06 (0.7.7)  Robin Gareus <robin@gareus.org>
 * add -J option (don't connect to jackd by default)
 * fix registry key for windows installer

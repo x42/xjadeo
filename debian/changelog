@@ -1,3 +1,10 @@
+xjadeo (0.7.8) unstable; urgency=low
+  * document -J in --help
+  * SDL window-position and on-top functionality
+  * built script updates for statically linked binaries (not relevant for deb)
+
+ -- Robin Gareus <robin@gareus.org>  Sun, 13 Jul 2014 19:16:31 +0200
+
 xjadeo (0.7.7) unstable; urgency=low
   * add -J option (don't connect to jackd by default)
   * fix registry key for windows installer
