@@ -63,7 +63,7 @@ make install || exit 1
 cd $SRC/SDL-1.2.15
 ./configure --prefix=/usr \
 	--enable-static --disable-shared --disable-rpath \
-	--enable-nasm \
+	--disable-assembly \
 	--disable-audio \
 	--disable-x11-shared --disable-input-tslib \
 	--enable-video-directfb --enable-video-x11-xrandr \
