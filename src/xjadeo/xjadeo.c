@@ -590,8 +590,25 @@ void render_empty_frame(int blit) {
 		size_t Ylen  = movie_width * movie_height;
 		memset(buffer,0,Ylen);
 		memset(buffer+Ylen,0x80,Ylen/2);
-	} else
+	} else if (render_fmt == PIX_FMT_RGBA32) {
+		int i;
+		for (i=0; i < movie_width * movie_height * 4; i+=4) {
+			buffer[i]   = 0x00;
+			buffer[i+1] = 0x00;
+			buffer[i+2] = 0x00;
+			buffer[i+3] = 0xff;
+		}
+	} else if (render_fmt == PIX_FMT_BGRA32) {
+		int i;
+		for (i=0; i < movie_width * movie_height * 4; i+=4) {
+			buffer[i]   = 0x00;
+			buffer[i+1] = 0x00;
+			buffer[i+2] = 0x00;
+			buffer[i+3] = 0xff;
+		}
+	} else {
 		memset(buffer,0,avpicture_get_size(render_fmt, movie_width, movie_height));
+	}
 #ifdef DRAW_CROSS
 	int x,y;
 	if (render_fmt == PIX_FMT_UYVY422)
@@ -623,7 +640,7 @@ void render_empty_frame(int blit) {
 		buffer[yoff+1]=255;
 		buffer[yoff+2]=255;
 	}
-	if (render_fmt == PIX_FMT_RGBA32) 
+	if (render_fmt == PIX_FMT_RGBA32 || render_fmt == PIX_FMT_BGRA32)
 	for (x=0,y=0;x< movie_width-1; x++,y= movie_height*x/movie_width) {
 		int yoff=4*(x+movie_width*y);
 		buffer[yoff]=255;
