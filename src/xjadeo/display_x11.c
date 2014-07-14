@@ -608,25 +608,26 @@ void xj_handle_X_events (void) {
 					if ((interaction_override&OVR_MOUSEBTN) == 0)
 					  xj_resize(ffctv_width, ffctv_height);
 				} else {
+					const float asp_src = movie_aspect ? movie_aspect : (float)movie_width/(float)movie_height;
 					unsigned int my_Width,my_Height;
 					xj_get_window_size(&my_Width,&my_Height);
 
 
 					if (event.xbutton.button == 5 && my_Height > 32 && my_Width > 32)  {
 						float step=sqrt((float)my_Height);
-						my_Width-=floor(step*movie_aspect);
+						my_Width-=floor(step*asp_src);
 						my_Height-=step;
 					}
 					if (event.xbutton.button == 4) {
 						float step=sqrt((float)my_Height);
-						my_Width+=floor(step*movie_aspect);
+						my_Width+=floor(step*asp_src);
 						my_Height+=step;
 					}
 
 					// resize to match movie aspect ratio
-					if( movie_aspect < ((float)my_Width/(float)my_Height) )
-						my_Width=floor((float)my_Height * movie_aspect);
-					else	my_Height=floor((float)my_Width / movie_aspect);
+					if( asp_src < ((float)my_Width/(float)my_Height) )
+						my_Width=floor((float)my_Height * asp_src);
+					else	my_Height=floor((float)my_Width / asp_src);
 
 					xj_resize(my_Width, my_Height);
 				}
@@ -746,25 +747,28 @@ void xj_handle_X_events (void) {
 					} else if (key == XK_period ) { //'.' // resize 100%
 						xj_resize(ffctv_width, ffctv_height);
 					} else if (key == XK_comma ) { //',' // resize to aspect ratio
+						const float asp_src = movie_aspect ? movie_aspect : (float)movie_width/(float)movie_height;
 						unsigned int my_Width,my_Height;
 						xj_get_window_size(&my_Width,&my_Height);
-						if( movie_aspect < ((float)my_Width/(float)my_Height) )
-							my_Width=rint((float)my_Height * movie_aspect);
-						else 	my_Height=rint((float)my_Width / movie_aspect);
+						if( asp_src < ((float)my_Width/(float)my_Height) )
+							my_Width=rint((float)my_Height * asp_src);
+						else 	my_Height=rint((float)my_Width / asp_src);
 						xj_resize(my_Width, my_Height);
 					} else if (key == XK_less ) { //'<' // resize *.83
+						const float asp_src = movie_aspect ? movie_aspect : (float)movie_width/(float)movie_height;
 						unsigned int my_Width,my_Height;
 						xj_get_window_size(&my_Width,&my_Height);
 						float step=0.2*my_Height;
-						my_Width-=floor(step*movie_aspect);
+						my_Width-=floor(step*asp_src);
 						my_Height-=step;
 						xj_resize(my_Width, my_Height);
 
 					} else if (key == XK_greater ) { //'>' // resize *1.2
+						const float asp_src = movie_aspect ? movie_aspect : (float)movie_width/(float)movie_height;
 						unsigned int my_Width,my_Height;
 						xj_get_window_size(&my_Width,&my_Height);
 						float step=0.2*my_Height;
-						my_Width+=floor(step*movie_aspect);
+						my_Width+=floor(step*asp_src);
 						my_Height+=step;
 						xj_resize(my_Width, my_Height);
 					} else if (key == XK_plus ) { //'+' // A/V offset
