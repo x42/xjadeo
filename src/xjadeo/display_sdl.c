@@ -394,6 +394,11 @@ void calc_letterbox(int src_w, int src_h, int out_w, int out_h, int *sca_w, int 
 	}
 }
 
+void sdl_letterbox_change(void) {
+	resized_sdl();
+	force_redraw=1;
+}
+
 void newsrc_sdl (void) {
 	if(sdl_overlay) SDL_FreeYUVOverlay(sdl_overlay);
 // FIXME: on linux the SDL_*_OVERLAY are defined as FOURCC numbers rather than beeing abstract
@@ -441,8 +446,7 @@ void handle_X_events_sdl (void) {
 					sdl_toggle_fullscreen(2);
 				} else if(ev.key.keysym.sym==SDLK_l) {
 						want_letterbox=!want_letterbox; 
-						resized_sdl();
-						force_redraw=1;
+						sdl_letterbox_change();
 				} else if(ev.key.keysym.sym==SDLK_m) { 
 					mousecursor_sdl(2);
 				} else if(ev.key.keysym.sym==SDLK_s) {

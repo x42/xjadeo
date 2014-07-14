@@ -53,6 +53,7 @@ void mousepointer_null (int a) { ; }
 void ontop_null (int a) { ; }
 int  getfullscreen_null () { return (0); }
 int  getontop_null () { return(0); }
+void letterbox_change_null () { ; }
 
 /* 
 // experimental SSE2/MMX2 fast_memcopy 
@@ -203,7 +204,7 @@ const vidout VO[] = {
 		&handle_X_events_xv, &newsrc_xv, &resize_xv,
 		&get_window_size_xv, &position_xv, get_window_pos_xv,
 		&xj_set_fullscreen, &xj_set_ontop, &xj_mousepointer,
-		&xj_get_fullscreen, &xj_get_ontop},
+		&xj_get_fullscreen, &xj_get_ontop, &xj_letterbox},
 #else
 		NULLOUTPUT},
 #endif
@@ -213,7 +214,7 @@ const vidout VO[] = {
 		&handle_X_events_sdl, &newsrc_sdl, &resize_sdl,
 		&getsize_sdl, &position_sdl, &get_window_pos_sdl,
 		&sdl_toggle_fullscreen, &sdl_set_ontop, &mousecursor_sdl,
-		&sdl_get_fullscreen, &sdl_get_ontop},
+		&sdl_get_fullscreen, &sdl_get_ontop, &sdl_letterbox_change},
 #else
 		NULLOUTPUT},
 #endif
@@ -223,7 +224,7 @@ const vidout VO[] = {
 		&handle_X_events_imlib, &newsrc_imlib, &resize_imlib,
 		&get_window_size_imlib, &position_imlib, &get_window_pos_imlib,
 		&xj_set_fullscreen, &xj_set_ontop, &xj_mousepointer,
-		&getfullscreen_null, &getontop_null},
+		&getfullscreen_null, &getontop_null &letterbox_change_null},
 #else
 		NULLOUTPUT},
 #endif
@@ -237,7 +238,7 @@ const vidout VO[] = {
 		&handle_X_events_imlib2, &newsrc_imlib2, &resize_imlib2,
 		&get_window_size_imlib2, &position_imlib2, &get_window_pos_imlib2,
 		&xj_set_fullscreen, &xj_set_ontop, &xj_mousepointer,
-		&getfullscreen_null, &getontop_null},
+		&getfullscreen_null, &getontop_null, &xj_letterbox},
 #else
 		NULLOUTPUT},
 #endif
@@ -247,7 +248,7 @@ const vidout VO[] = {
 		&handle_X_events_mac, &newsrc_mac, &resize_mac,
 		&getsize_mac, &position_mac, &getpos_mac,
 		&fullscreen_mac, &ontop_mac, &mousepointer_null,
-		&get_fullscreen_mac, &get_ontop_mac},
+		&get_fullscreen_mac, &get_ontop_mac, &mac_letterbox_change},
 #else
                NULLOUTPUT},
 #endif
@@ -597,30 +598,10 @@ void Xmousepointer (int a) {
 extern int force_redraw; // tell the main event loop that some cfg has changed
 #endif
 
-// TODO : use plugin pointer ...
 void Xletterbox (int action) {
-	if (VOutput !=1 && VOutput !=4 && VOutput !=5 && VOutput!=2) return;
-#if (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2 || defined HAVE_MACOSX || defined HAVE_SDL)
 	if (action==2) want_letterbox=!want_letterbox;
-	else want_letterbox=action?1:0;
-# if (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2)
-	if (VOutput ==1 || VOutput ==4) { //X11/XV
-		xj_letterbox();
-		force_redraw=1;
-	}
-# endif
-# ifdef HAVE_SDL
-	if (VOutput==2) { // SDL
-		force_redraw=1;
-	}
-# endif
-# ifdef HAVE_MACOSX
-	if (VOutput==5) { // OSX
-		force_redraw=1;
-		window_resized_mac();
-	}
-# endif // OSX
-#endif // X11/XV/or OSX
+	else want_letterbox = action?1:0;
+	VO[VOutput].letterbox_change();
 }
 
 void Xfullscreen (int a) {

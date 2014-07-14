@@ -1418,6 +1418,10 @@ void render_mac (uint8_t *mybuffer) {
 //printf("render done.\n");
 }
 
+void mac_letterbox_change (void){
+  force_redraw=1;
+  window_resized_mac();
+}
 
 void handle_X_events_mac (void) {
   EventRef theEvent;
@@ -1447,8 +1451,7 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
     case 'f': fullscreen_mac(!vo_fs); break;
     case 'l':  
       want_letterbox = !want_letterbox;
-      force_redraw=1;
-      window_resized_mac();
+      mac_letterbox_change();
       break;
     case 'o': { //'o' // OSD - offset in frames
       if (OSD_mode&OSD_OFFF) {

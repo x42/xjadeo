@@ -52,6 +52,7 @@ int			xj_mouse = 0;
 
 int     xj_dwidth, xj_dheight; // cache window size for rendering currently only Xv
 int			xj_box[4]; // letterbox site - currently only Xv & imlib2
+extern int 	force_redraw; // tell the main event loop that some cfg has changed
 
 /*******************************************************************************
  * common X11 code 
@@ -261,6 +262,7 @@ void xj_letterbox() {
 		xj_box[0]=(xj_dwidth-xj_box[2])/2;
 		xj_box[1]=(xj_dheight-xj_box[3])/2;
 	}
+	force_redraw=1;
 }
 
 /*
@@ -475,8 +477,7 @@ extern const vidout VO[];
 extern int VOutput;
 extern int OSD_mode; // change via keystroke
 extern long ts_offset; 
-extern char    *smpte_offset;
-extern int 	force_redraw; // tell the main event loop that some cfg has changed
+extern char *smpte_offset;
 extern int 	interaction_override; // disable some options.
 extern double framerate;
 
@@ -681,7 +682,6 @@ void xj_handle_X_events (void) {
 					} else if (key == XK_l ) { //'l' // OSD - letterbox
 						want_letterbox=!want_letterbox;
 						xj_letterbox();
-						force_redraw=1;
 					} else if (key == XK_v ) { //'v' // OSD - current video frame
 						OSD_mode^=OSD_FRAME;
 						force_redraw=1;
