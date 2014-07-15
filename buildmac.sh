@@ -12,8 +12,9 @@ automake --gnu --add-missing --copy
 # BUILD XJADEO
 
 PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH \
-CFLAGS="-arch i386 -arch ppc -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -headerpad_max_install_names" \
-LDFLAGS="$CFLAGS" \
+CFLAGS="-arch i386 -arch ppc -arch x86_64 -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -headerpad_max_install_names" \
+LDFLAGS="-arch i386 -arch ppc -arch x86_64 -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -headerpad_max_install_names" \
+OBJCFLAGS="-arch i386 -arch ppc -arch x86_64 -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -headerpad_max_install_names" \
 ./configure --disable-xv --disable-qtgui --disable-sdl --with-fontfile=../Resources/VeraMono.ttf --disable-dependency-tracking $@ || exit 1
 make clean
 make || exit 1
@@ -75,14 +76,7 @@ deploy_lib () {
     check=`echo $INSTALLED | grep $libname`
     if [ "X$check" = "X" ]; then
         if [ ! -f "$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Frameworks/$libname" ]; then
-            cp -f "$libpath/$libname" "$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Frameworks/$libname.ALL"
-						# strip 64 bit version 
-						lipo "$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Frameworks/$libname.ALL" \
-						  -remove x86_64 -output \
-							"$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Frameworks/$libname" || \
-						cp "$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Frameworks/$libname.ALL" \
-							"$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Frameworks/$libname"
-						rm "$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Frameworks/$libname.ALL"
+            cp -f "$libpath/$libname" "$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Frameworks/$libname"
             install_name_tool \
                 -id @executable_path/../Frameworks/$libname \
                 "$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Frameworks/$libname"
@@ -120,19 +114,6 @@ while [ "X$MORELIBS" != "X" ]; do
     cd $LIBS_PATH && MORELIBS=`otool -arch all -L * | egrep '\/((opt|usr)\/local\/lib|gtk\/inst\/lib)'| awk '{print $1}'` && cd -
 done
 update_executable
-
-##############################################################################
-# stript 64bit versions from frameworks. 
-cd $LIBS_PATH || exit 1
-cd ..
-mv Frameworks fwold
-mkdir Frameworks
-for file in $(ls fwold); do
-  lipo fwold/$file -remove x86_64 -output Frameworks/$file || \
-  cp fwold/$file Frameworks/$file
-done
-rm -rf fwold
-
 
 ##############################################################################
 #roll a DMG

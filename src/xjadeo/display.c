@@ -243,7 +243,7 @@ const vidout VO[] = {
 		NULLOUTPUT},
 #endif
        { PIX_FMT_UYVY422,   SUP_MACOSX,   "Mac OSX - quartz",
-#ifdef HAVE_MACOSX
+#if defined HAVE_MACOSX && (defined __i386 || defined __ppc)
 		&render_mac, &open_window_mac, &close_window_mac,
 		&handle_X_events_mac, &newsrc_mac, &resize_mac,
 		&getsize_mac, &position_mac, &getpos_mac,

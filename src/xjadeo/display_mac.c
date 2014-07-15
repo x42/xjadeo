@@ -23,6 +23,7 @@
  *
  */
 #include "xjadeo.h"
+#if defined HAVE_MACOSX && (defined __i386 || defined __ppc)
 
 void xapi_open(void *d);
 void jackt_stop();
@@ -52,8 +53,6 @@ extern double delay;
 extern double framerate;
 extern int start_fullscreen;
 extern int start_ontop;
-
-int keep_aspect = 0 ; // don't allow resizing window other than in aspect.
 
 #ifdef CROPIMG
   extern int xoffset;
@@ -89,8 +88,6 @@ static inline void * memcpy_pic2(void * dst, const void * src,
 /*******************************************************************************
  * Mac OSX - QuartzCore/QuickTime
  */
-
-#ifdef HAVE_MACOSX
 
 #include <Carbon/Carbon.h>
 #include <QuickTime/QuickTime.h>
