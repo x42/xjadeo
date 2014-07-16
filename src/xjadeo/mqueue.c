@@ -1,7 +1,7 @@
 /*  xj-five - message queues
 
     Copyright (C) 2006 Robin Gareus
-    
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -45,14 +45,13 @@ typedef struct {
 } mqmsg;
 
 /* some static globals */
-mqd_t           mqfd_r = -1;
-mqd_t           mqfd_s = -1;
-size_t		mq_msgsize_r;
-char		*msg_buffer;
-int 		priority_of_msg = 20;
+static mqd_t   mqfd_r = -1;
+static mqd_t   mqfd_s = -1;
+static size_t	mq_msgsize_r;
+static char		*msg_buffer;
+static int 		priority_of_msg = 20;
 
-
-int  mymq_init(char *id) {
+int mymq_init(char *id) {
 	struct	 	mq_attr  mqat;
 	// TODO use session ID in path.
 	// implement session authenticaion? - allow user to specify umask.
@@ -62,7 +61,7 @@ int  mymq_init(char *id) {
 	mqfd_r = mq_open(qname, O_RDONLY | O_CREAT | O_EXCL | O_NONBLOCK, S_IRWXU , NULL);
 	if (mqfd_r == -1) {
 		perror("mq_open failure:");
-		if (errno == EEXIST) 
+		if (errno == EEXIST)
 			fprintf(stderr,"note: use `xjremote -u` to unlink old queues\n");
 		return(1);
 	}
@@ -78,7 +77,7 @@ int  mymq_init(char *id) {
 	mqfd_s = mq_open(qname, O_WRONLY | O_CREAT | O_EXCL | O_NONBLOCK, S_IRWXU , NULL);
 	if (mqfd_s == -1) {
 		perror("mq_open failure:");
-		if (errno == EEXIST) 
+		if (errno == EEXIST)
 			fprintf(stderr,"note: use `xjremote -u` to unlink old queues\n");
 		mq_close(mqfd_r);
 		snprintf(qname,64,"/xjadeo-request%s%s", id?"-":"", id?(char*)id:"");
@@ -88,7 +87,7 @@ int  mymq_init(char *id) {
 
 	while (mq_receive(mqfd_r, msg_buffer, mq_msgsize_r, 0) > 0) ;
 
-#if 0 
+#if 0
 	{	// FLUSH the output Queue
 		mqd_t mqfd_sx = mq_open(qname, O_RDONLY | O_NONBLOCK, S_IRWXU , NULL);
 		while (mq_receive(mqfd_sx, msg_buffer, mq_msgsize_r, 0) > 0) ;

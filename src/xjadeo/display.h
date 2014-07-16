@@ -23,9 +23,6 @@
   extern int OSD_sx, OSD_sy;
   extern int OSD_tx, OSD_ty;
 
-/* fast memcpy - see mplayer's libvo/aclib_template.c */
-inline void * fast_memcpy(void * to, const void * from, size_t len);
-
 /* prototypes in display.c */
 inline void stride_memcpy(void * dst, const void * src, int width, int height, int dstStride, int srcStride);
 void rgb2argb (uint8_t *rgbabuffer, uint8_t *rgbbuffer, int width, int height);

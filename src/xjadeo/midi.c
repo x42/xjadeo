@@ -13,9 +13,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * (c) 2006 
+ * (c) 2006
  *  Robin Gareus <robin@gareus.org>
  *  Luis Garrido <luisgarrido@users.sourceforge.net>
  *
@@ -33,10 +33,6 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-/* TODO: compile all available modes (portmidi, jack-midi, alsa-seq & alsa-raw
- * select on run-time...
- */
-
 #ifdef JACK_SESSION
 #include <jack/session.h>
 extern char *jack_uuid;
@@ -45,18 +41,11 @@ void jack_session_cb( jack_session_event_t *event, void *arg );
 
 #ifdef HAVE_MIDI
 
-/*
- * xjadeo MTC defines and functions
- * midi library independant
- */
-
 extern int want_quiet;
 extern int want_verbose;
 extern int want_debug;
 extern double framerate;
-extern int midi_clkconvert;
 extern int midi_clkadj;
-extern int have_dropframes; 
 extern double	delay;
 
 typedef struct {
@@ -91,7 +80,7 @@ const char MTCTYPE[4][10] = {
 #define SH(ARG) ARG = ( ARG &(~0xf0)) | ((data&0xf)<<4);
 
 /* parse MTC 0x71 message data */
-void parse_timecode( int data) {
+static void parse_timecode( int data) {
 	static int prevtick =0;
 	switch (data>>4) {
 		case 0x0: // #0000 frame LSN
@@ -113,24 +102,24 @@ void parse_timecode( int data) {
 			tc.type = (data>>1)&3;
 			if (full_tc!=0xff) break;
 			if (want_verbose) {
-			  printf("\r\t\t\t\t\t\t\t->- %02i:%02i:%02i.%02i[%s]\r",tc.hour,tc.min,tc.sec,tc.frame,MTCTYPE[tc.type]);
-			  fflush(stdout);
+				printf("\r\t\t\t\t\t\t\t->- %02i:%02i:%02i.%02i[%s]\r",tc.hour,tc.min,tc.sec,tc.frame,MTCTYPE[tc.type]);
+				fflush(stdout);
 			}
 			memcpy(&last_tc,&tc,sizeof(smpte));
 			tc.type=tc.min=tc.frame=tc.sec=tc.hour=tc.tick=0;
-		default: 
+		default:
 			;
 	}
 	if (full_tc!=0xff) { last_tc.tick=0; return; }
-	// count quarterframes 
+	// count quarterframes
 	switch (tc.tick - prevtick) {
-		case 7: 
+		case 7:
 		//	assert(tc.tick==7);
 		case -1: /*reverse direction */
 			last_tc.tick=0-tc.tick; // -7+(7-tc.tick) compensate for latency
 			if (want_verbose) { printf("\r\t\t\t\t\t\t\t-<-\r"); fflush(stdout); }
 			break;
-		case -7: 
+		case -7:
 		//	assert(prevtick==7);
 		case 1: /* transport rolling */
 			last_tc.tick=tc.tick+7; // compensate for latency
@@ -140,39 +129,38 @@ void parse_timecode( int data) {
 	}
 }
 
-/* parse system exclusive MSGs  
+/* parse system exclusive MSGs
  * seek frame - if transport is not rolling */
-int parse_sysex_urtm (int data, int state, int type) {
-
-/*
- *	Structure of a System Exclusive Message
- *
- *	# Start of Exclusive: F0
- *	# Manufacturer ID: 00-7D, 7E=Universal non-realtime, 7F=Universal realtime
- *	# Device number: 00-0F = dev 1 -16, 7F=all
- *	# Model ID: 00-7F
- *	# 0 or more data bytes
- *	# Checksum: 00-7F (all data + checksum = 0 for lowest 7 bits)
- *	# End of Exclusive: F7 
- *
- * eg: 
- * F0 7F 7F 01 01 20 00 03 01 F7
- * F0 7F 7F 06 44 06 01 20 00 03 01 00 F7
- * timecode 00:00:03:01 (@ 25fps) -- Roland MTC
- *
- *  roland MTC sysex real time message - reverse engineered format
- *         01 01 [fps: bit 6..5 hour: bit4..0] [min] [sec] [frame] F7
- *         06 xx 06 xx [fps (bit 6..5) hour: bit4..0)] [min] [sec] [frame] Checksum F7
- *
- *  fps/hour:	(011HHHHH):  30 fps, 29fps - non drop
- *		(010HHHHH :  29 fps (drop)
- *		(001HHHHH):  25 fps
- *		(000HHHHH):  24 fps
- *  min,sec,frame are 6bit values
- */
+static int parse_sysex_urtm (int data, int state, int type) {
+	/*
+	 *	Structure of a System Exclusive Message
+	 *
+	 *	# Start of Exclusive: F0
+	 *	# Manufacturer ID: 00-7D, 7E=Universal non-realtime, 7F=Universal realtime
+	 *	# Device number: 00-0F = dev 1 -16, 7F=all
+	 *	# Model ID: 00-7F
+	 *	# 0 or more data bytes
+	 *	# Checksum: 00-7F (all data + checksum = 0 for lowest 7 bits)
+	 *	# End of Exclusive: F7
+	 *
+	 * eg:
+	 * F0 7F 7F 01 01 20 00 03 01 F7
+	 * F0 7F 7F 06 44 06 01 20 00 03 01 00 F7
+	 * timecode 00:00:03:01 (@ 25fps) -- Roland MTC
+	 *
+	 *  roland MTC sysex real time message - reverse engineered format
+	 *         01 01 [fps: bit 6..5 hour: bit4..0] [min] [sec] [frame] F7
+	 *         06 xx 06 xx [fps (bit 6..5) hour: bit4..0)] [min] [sec] [frame] Checksum F7
+	 *
+	 *  fps/hour:	(011HHHHH):  30 fps, 29fps - non drop
+	 *		(010HHHHH :  29 fps (drop)
+	 *		(001HHHHH):  25 fps
+	 *		(000HHHHH):  24 fps
+	 *  min,sec,frame are 6bit values
+	 */
 
 	int rv=type;
-	if (type<0) return (-1); 
+	if (type<0) return (-1);
 	if (state<2 && data !=0x7f) return(-1);
 	if (state<3 && type>0) return (-1);
 
@@ -198,25 +186,25 @@ int parse_sysex_urtm (int data, int state, int type) {
 	if (state>7 && type ==1 ) {
 		if (want_verbose) {
 			if (want_debug)
-			printf("\r\t\t\t\t\t\t\t~-~ %02i:%02i:%02i.%02i[%s]\r",tc.hour,tc.min,tc.sec,tc.frame,MTCTYPE[tc.type]);
+				printf("\r\t\t\t\t\t\t\t~-~ %02i:%02i:%02i.%02i[%s]\r",tc.hour,tc.min,tc.sec,tc.frame,MTCTYPE[tc.type]);
 			else
-			printf("\r\t\t\t\t\t\t\t-~- %02i:%02i:%02i.%02i[%s]\r",last_tc.hour,last_tc.min,last_tc.sec,last_tc.frame,MTCTYPE[last_tc.type]);
+				printf("\r\t\t\t\t\t\t\t-~- %02i:%02i:%02i.%02i[%s]\r",last_tc.hour,last_tc.min,last_tc.sec,last_tc.frame,MTCTYPE[last_tc.type]);
 			fflush(stdout);
 		}
 		return (-1);
 	}
 
 	// type==2 && state6,7,8,9
-	if (state==6 && type ==2 ) { last_tc.hour=(data&0x1f); /*last_tc.type=(data>>5)&3*/; } // hour 
+	if (state==6 && type ==2 ) { last_tc.hour=(data&0x1f); /*last_tc.type=(data>>5)&3*/; } // hour
 	if (state==7 && type ==2 ) { last_tc.min=(data&0x7f); } // min
 	if (state==8 && type ==2 ) { last_tc.sec=(data&0x7f); } // sec
 	if (state==9 && type ==2 ) { last_tc.frame=(data&0x7f); } // frame
 	if (state>9 && type ==2 ) {
 		if (want_verbose) {
 			if (want_debug)
-			printf("\r\t\t\t\t\t\t\t-V- %02i:%02i:%02i.%02i[%s]\r",tc.hour,tc.min,tc.sec,tc.frame,MTCTYPE[tc.type]);
+				printf("\r\t\t\t\t\t\t\t-V- %02i:%02i:%02i.%02i[%s]\r",tc.hour,tc.min,tc.sec,tc.frame,MTCTYPE[tc.type]);
 			else
-			printf("\r\t\t\t\t\t\t\t-v- %02i:%02i:%02i.%02i[%s]\r",last_tc.hour,last_tc.min,last_tc.sec,last_tc.frame,MTCTYPE[last_tc.type]);
+				printf("\r\t\t\t\t\t\t\t-v- %02i:%02i:%02i.%02i[%s]\r",last_tc.hour,last_tc.min,last_tc.sec,last_tc.frame,MTCTYPE[last_tc.type]);
 			fflush(stdout);
 		}
 		return (-1);
@@ -225,7 +213,7 @@ int parse_sysex_urtm (int data, int state, int type) {
 	return (rv);
 }
 
-long convert_smpte_to_frame (smpte now) {
+static long convert_smpte_to_frame (smpte now) {
 	return(smpte_to_frame(
 		now.type,
 		now.frame,
@@ -237,7 +225,7 @@ long convert_smpte_to_frame (smpte now) {
 
 
 /************************************************
- * portmidi 
+ * portmidi
  */
 
 #ifdef HAVE_PORTMIDI
@@ -256,12 +244,11 @@ PmStream * pm_midi = NULL;
 /* if INPUT_BUFFER_SIZE is 0, PortMidi uses a default value */
 #define INPUT_BUFFER_SIZE 0
 
-
-int pm_midi_detectdevices (int print) {
+static int pm_midi_detectdevices (int print) {
 	int midiid=-1;
 	int i;
 
-   // id = Pm_GetDefaultInputDeviceID(); <- use this as default ??
+	// id = Pm_GetDefaultInputDeviceID(); <- use this as default ??
 
 	/* list device information */
 	for (i = 0; i < Pm_CountDevices(); i++) {
@@ -282,7 +269,7 @@ int pm_midi_detectdevices (int print) {
 	return (midiid);
 }
 
-int pm_midi_check (int midiid) {
+static int pm_midi_check (int midiid) {
 	if (midiid < 0 || midiid >=Pm_CountDevices()) {
 		fprintf(stderr,"Error: invalid midi device id.\n");
 		return(-1);
@@ -290,19 +277,16 @@ int pm_midi_check (int midiid) {
 	return(0);
 }
 
-
-int active = FALSE;
-
-int sysex_state = -1;
-int sysex_type = 0; 
+static int active = FALSE;
+static int sysex_state = -1;
+static int sysex_type = 0;
 
 /* shared queues */
 PmQueue *midi_to_main;
 PmQueue *main_to_midi;
 
 /* timer interrupt for processing midi data */
-void process_midi(PtTimestamp timestamp, void *userData)
-{
+static void process_midi(PtTimestamp timestamp, void *userData) {
 	PmError result;
 	PmEvent buffer; /* just one message at a time */
 	smpte msg;
@@ -310,15 +294,15 @@ void process_midi(PtTimestamp timestamp, void *userData)
 	if (!active) return;
 
 	/* check for messages */
-	do { 
-		result = Pm_Dequeue(main_to_midi, &msg); 
+	do {
+		result = Pm_Dequeue(main_to_midi, &msg);
 		if (result) {
-			if (msg.frame == 0xaffe) {  
+			if (msg.frame == 0xaffe) {
 				// stop thread
 				Pm_Enqueue(midi_to_main, &msg);
 				active= FALSE;
 				return;
-			} else if (msg.frame == 0x4711) {  
+			} else if (msg.frame == 0x4711) {
 				// transport stopped - reset ticks.
 				full_tc=last_tc.tick=0;
 				Pm_Enqueue(midi_to_main, &msg);
@@ -328,7 +312,7 @@ void process_midi(PtTimestamp timestamp, void *userData)
 			}
 		}
 	} while (result);
-     
+
 	/* see if there is any midi input to process */
 	do {
 		result = Pm_Poll(pm_midi);
@@ -363,8 +347,7 @@ void process_midi(PtTimestamp timestamp, void *userData)
 	} while (result);
 }
 
-
-void pm_midi_open(char *midiid) {
+static void pm_midi_open(char *midiid) {
 	int midi_input;
 	if (pm_midi) return;
 
@@ -400,18 +383,18 @@ void pm_midi_open(char *midiid) {
 	/* flush the buffer after setting filter, just in case anything got through */
 	while (Pm_Poll(pm_midi)) { Pm_Read(pm_midi, buffer, 1); }
 
-	active = TRUE; 
+	active = TRUE;
 }
 
-void pm_midi_close(void) {
+static void pm_midi_close(void) {
 	smpte cmd;
 
 	if (!want_quiet) printf("closing midi...");
 	if(!pm_midi) return;
 
-	cmd.frame=0xaffe; // shutdown CMD 
-	Pm_Enqueue(main_to_midi, &cmd); 
-	while (Pm_Dequeue(midi_to_main, &cmd)==0) ; // spin 
+	cmd.frame=0xaffe; // shutdown CMD
+	Pm_Enqueue(main_to_midi, &cmd);
+	while (Pm_Dequeue(midi_to_main, &cmd)==0) ; // spin
 
 	Pt_Stop(); /* stop the timer */
 	Pm_QueueDestroy(midi_to_main);
@@ -419,20 +402,19 @@ void pm_midi_close(void) {
 
 	Pm_Close(pm_midi);
 	pm_midi=NULL;
-  //have_dropframes = 0; // reset MTC state
 }
 
-int pm_midi_connected(void) {
+static int pm_midi_connected(void) {
 	if (pm_midi) return (1);
 	return (0);
 }
 
-long pm_midi_poll_frame (void) {
+static long pm_midi_poll_frame (void) {
 	int spin;
 	long frame;
 	static long lastframe = -1 ;
 	static int stopcnt = 0;
-    	smpte now;
+	smpte now;
 	if (!pm_midi) return (0);
 
 	now.frame=0; // CMD request
@@ -447,7 +429,7 @@ long pm_midi_poll_frame (void) {
 		double dly = delay>0?delay:(1.0/framerate);
 		//add time that has passed sice last full MTC frame..
 		smpte cmd;
-		cmd.frame=0x4711; // reset-full_tc CMD 
+		cmd.frame=0x4711; // reset-full_tc CMD
 		double diff= now.tick/4.0; // in smpte frames.
 		// check if transport is stuck...
 		if (lastframe != frame) {
@@ -457,9 +439,9 @@ long pm_midi_poll_frame (void) {
 			// we expect a full midi MTC every (2.0*framerate/delay) polls
 
 			Pm_Enqueue(main_to_midi, &cmd); // request data
-			while (Pm_Dequeue(midi_to_main, &cmd)==0) ; // spin 
+			while (Pm_Dequeue(midi_to_main, &cmd)==0) ; // spin
 			diff=0.0;
-			if (want_verbose) 
+			if (want_verbose)
 				printf("\r\t\t\t\t\t\t        -?-\r");
 		}
 		frame += (long) rint(diff);
@@ -471,10 +453,10 @@ long pm_midi_poll_frame (void) {
 }
 #endif /* HAVE_PORTMIDI */
 
-#ifdef  HAVE_JACKMIDI /* endif HAVE_PORTMIDI */
+#ifdef HAVE_JACKMIDI
 
 /************************************************
- * jack-midi 
+ * jack-midi
  *
  * TODO: also use LASH here!
  */
@@ -484,93 +466,92 @@ long pm_midi_poll_frame (void) {
 #include <jack/midiport.h>
 
 jack_client_t *jack_midi_client = NULL;
-jack_port_t   *jack_midi_port; 
+jack_port_t   *jack_midi_port;
 
 #define JACK_MIDI_QUEUE_SIZE (1024)
 typedef struct my_midi_event {
-  jack_nframes_t time;
-  size_t size;
-  jack_midi_data_t buffer[16];
+	jack_nframes_t time;
+	size_t size;
+	jack_midi_data_t buffer[16];
 } my_midi_event_t;
 
-my_midi_event_t event_queue[JACK_MIDI_QUEUE_SIZE];
-int queued_events_start = 0;
-int queued_events_end = 0;
-int queued_cycle_id = 0;
+static my_midi_event_t event_queue[JACK_MIDI_QUEUE_SIZE];
+static int queued_events_start = 0;
+static int queued_events_end = 0;
+static int queued_cycle_id = 0;
 
-void dequeue_jmidi_events(jack_nframes_t until) {
+static void dequeue_jmidi_events(jack_nframes_t until) {
 	int ci = queued_cycle_id;
 	int new=0; // always process data from prev. jack cycles.
 	while (queued_events_start != queued_events_end) {
 		if (queued_events_start == ci ) new=1;
-		if (new && event_queue[queued_events_start].time > until) { 
+		if (new && event_queue[queued_events_start].time > until) {
 			break;
-    }
+		}
 
-    my_midi_event_t *ev = &event_queue[queued_events_start];
+		my_midi_event_t *ev = &event_queue[queued_events_start];
 
-    if (ev->size==2 && ev->buffer[0] == 0xf1) {
-      parse_timecode(ev->buffer[1]);
-    } else if (ev->size >9 && ev->buffer[0] == 0xf0) {
-      int i;
-      int sysex_type = 0;
-      for (i=1; i<ev->size; ++i) {
-        sysex_type = parse_sysex_urtm(ev->buffer[i],i-1,sysex_type);
-      }
-    }
+		if (ev->size==2 && ev->buffer[0] == 0xf1) {
+			parse_timecode(ev->buffer[1]);
+		} else if (ev->size >9 && ev->buffer[0] == 0xf0) {
+			int i;
+			int sysex_type = 0;
+			for (i=1; i<ev->size; ++i) {
+				sysex_type = parse_sysex_urtm(ev->buffer[i],i-1,sysex_type);
+			}
+		}
 		queued_events_start = (queued_events_start +1 ) % JACK_MIDI_QUEUE_SIZE;
 	}
 }
 
 static int jack_midi_process(jack_nframes_t nframes, void *arg) {
-  void *jack_buf = jack_port_get_buffer(jack_midi_port, nframes);
-  int nevents = jack_midi_get_event_count(jack_buf);
-  int n;
+	void *jack_buf = jack_port_get_buffer(jack_midi_port, nframes);
+	int nevents = jack_midi_get_event_count(jack_buf);
+	int n;
 	queued_cycle_id = queued_events_end;
 
-  for (n=0; n<nevents; n++) {
+	for (n=0; n<nevents; n++) {
 		jack_midi_event_t ev;
-    jack_midi_event_get(&ev, jack_buf, n);
+		jack_midi_event_get(&ev, jack_buf, n);
 
-    if (ev.size <1 || ev.size > 15) {
-      continue;
-    } else {
+		if (ev.size <1 || ev.size > 15) {
+			continue;
+		} else {
 			event_queue[queued_events_end].time = ev.time;
 			event_queue[queued_events_end].size = ev.size;
 			memcpy (event_queue[queued_events_end].buffer, ev.buffer, ev.size);
 			queued_events_end = (queued_events_end +1 ) % JACK_MIDI_QUEUE_SIZE;
 		}
-  }
-  return 0;
+	}
+	return 0;
 }
 
-void jack_midi_shutdown(void *arg)
-{
+static void jack_midi_shutdown(void *arg) {
 	jack_midi_client=NULL;
 	fprintf (stderr, "jack server shutdown\n");
 }
 
 
-void jm_midi_close(void) {
+static void jm_midi_close(void) {
 	if (jack_midi_client) {
 		jack_deactivate (jack_midi_client);
 		jack_client_close (jack_midi_client);
-  }
-  jack_midi_client = NULL;
+	}
+	jack_midi_client = NULL;
 }
 
-void jm_midi_open(char *midiid) {
-  if (midi_connected()) {
+static void jm_midi_open(char *midiid) {
+	if (midi_connected()) {
 		fprintf (stderr, "xjadeo is already connected to jack-midi.\n");
 		return;
-  }
+	}
 
 	int i = 0;
-  char jackmidiid[16];
+	char jackmidiid[16];
 	do {
 		snprintf(jackmidiid,16,"xjadeo-%i",i);
 #ifdef JACK_SESSION
-		if (jack_uuid) 
+		if (jack_uuid)
 			jack_midi_client = jack_client_open (jackmidiid, JackUseExactName|JackSessionID, NULL, jack_uuid);
 		else
 #endif
@@ -579,32 +560,32 @@ void jm_midi_open(char *midiid) {
 
 	if (!jack_midi_client) {
 		fprintf(stderr, "could not connect to jack server.\n");
-    return;
-  }
+		return;
+	}
 
 #ifdef JACK_SESSION
-		jack_set_session_callback (jack_midi_client, jack_session_cb, NULL);
+	jack_set_session_callback (jack_midi_client, jack_session_cb, NULL);
 #endif
 #ifndef HAVE_WINDOWS
-  jack_on_shutdown (jack_midi_client, jack_midi_shutdown, 0);
+	jack_on_shutdown (jack_midi_client, jack_midi_shutdown, 0);
 #endif
-  jack_set_process_callback(jack_midi_client, jack_midi_process, NULL);
-  jack_midi_port = jack_port_register(jack_midi_client, "MTC in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput , 0);
+	jack_set_process_callback(jack_midi_client, jack_midi_process, NULL);
+	jack_midi_port = jack_port_register(jack_midi_client, "MTC in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput , 0);
 
-  if (jack_midi_port == NULL) {
-    fprintf(stderr, "can't register jack-midi-port\n");
-    midi_close(); 
-    return;
-  }
+	if (jack_midi_port == NULL) {
+		fprintf(stderr, "can't register jack-midi-port\n");
+		midi_close();
+		return;
+	}
 
 	// init smpte
 	tc.type=tc.min=tc.frame=tc.sec=tc.hour=0;
 	last_tc.type=last_tc.min=last_tc.frame=last_tc.sec=last_tc.hour=0;
 
-  if (jack_activate(jack_midi_client)) {
-    fprintf(stderr, "can't activate jack-midi-client\n");
-    midi_close(); 
-  }
+	if (jack_activate(jack_midi_client)) {
+		fprintf(stderr, "can't activate jack-midi-client\n");
+		midi_close();
+	}
 
 	if (midiid && strlen(midiid)>0) {
 		const char **found_ports = jack_get_ports(jack_midi_client, NULL, JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput);
@@ -625,13 +606,12 @@ void jm_midi_open(char *midiid) {
 
 }
 
-int jm_midi_connected(void) {
+static int jm_midi_connected(void) {
 	if (jack_midi_client) return (1);
 	return (0);
 }
 
-
-long jm_midi_poll_frame (void) {
+static long jm_midi_poll_frame (void) {
 	long frame =0 ;
 	static long lastframe = -1 ;
 	static int stopcnt = 0;
@@ -650,12 +630,12 @@ long jm_midi_poll_frame (void) {
 		} else if (stopcnt++ > (int) ceil(4.0*framerate/dly)) {
 			// we expect a full midi MTC every (2.0*framerate/delay) polls
 			full_tc=last_tc.tick=0;
-			if (want_verbose) 
+			if (want_verbose)
 				printf("\r\t\t\t\t\t\t        -?-\r");
 		}
 		diff= last_tc.tick/4.0;
 
-		if (want_verbose) 
+		if (want_verbose)
 			// subtract 7 quarter frames latency when running..
 			printf("\r\t\t\t\t\t\t  |+%g/8\r",diff<0?rint(4.0*(1.75-diff)):diff<2.0?0:rint(4.0*(diff-1.75)));
 		frame += (long) rint(diff);
@@ -666,7 +646,7 @@ long jm_midi_poll_frame (void) {
 #endif  /* HAVE_JACKMIDI */
 
 /************************************************
- * alsamidi 
+ * alsamidi
  */
 
 #ifdef ALSA_RAW_MIDI /* old alsa raw midi  */
@@ -674,10 +654,10 @@ long jm_midi_poll_frame (void) {
 #include <alsa/asoundlib.h>
 
 static snd_rawmidi_t *amidi= NULL;
-int ar_sysex_state = -1;
-int ar_sysex_type = 0; 
+static int ar_sysex_state = -1;
+static int ar_sysex_type = 0;
 
-void amidi_open(char *port_name) {
+static void amidi_open(char *port_name) {
 	int err=0;
 
 	if (amidi) return;
@@ -689,22 +669,22 @@ void amidi_open(char *port_name) {
 	// init smpte
 	tc.type=tc.min=tc.frame=tc.sec=tc.hour=0;
 	last_tc.type=last_tc.min=last_tc.frame=last_tc.sec=last_tc.hour=0;
-        ar_sysex_state = -1;
+	ar_sysex_state = -1;
 
 	snd_rawmidi_nonblock(amidi, 1);
-//	snd_rawmidi_read(amidi, NULL, 0); 
+	//	snd_rawmidi_read(amidi, NULL, 0);
 }
 
-void ar_midi_close(void) {
+static void ar_midi_close(void) {
 	if (!want_quiet) printf("closing alsa midi...");
 	if(!amidi) return;
 	snd_rawmidi_close(amidi);
 	amidi=NULL;
 }
 
- // TODO increase buffer size ( avg: 15Hz * 8 msgs )
- // better: standalone thread
-void amidi_event(void) {
+// TODO increase buffer size ( avg: 15Hz * 8 msgs )
+// better: standalone thread
+static void amidi_event(void) {
 	int i,rv;
 	int npfds = 0;
 	struct pollfd *pfds;
@@ -732,8 +712,8 @@ void amidi_event(void) {
 		 * message is incomplete and there is no more sysex data */
 		if (data & 0x80 && data != MIDI_EOX && data != MIDI_SOX) {ar_sysex_state=-1;}
 
-		// sysex- universal  real time message f0 7f ... f7 
-	    	if (data == 0xf7) { ar_sysex_state=-1;}
+		// sysex- universal  real time message f0 7f ... f7
+		if (data == 0xf7) { ar_sysex_state=-1;}
 		else if (ar_sysex_state < 0 && data == 0xf0) { ar_sysex_state=0; ar_sysex_type=0; }
 		else if (ar_sysex_state>=0) {
 			ar_sysex_type = parse_sysex_urtm (data,ar_sysex_state,ar_sysex_type);
@@ -741,16 +721,15 @@ void amidi_event(void) {
 		}
 #endif
 	}
-
 }
 
-long ar_midi_poll_frame (void) {
+static long ar_midi_poll_frame (void) {
 	if (!amidi) return (0);
 	amidi_event(); // process midi buffers - get most recent timecode
 	return(convert_smpte_to_frame(last_tc));
 }
 
-void ar_midi_open(char *midiid) {
+static void ar_midi_open(char *midiid) {
 	char devicestring[32];
 	if (atoi(midiid)<0) {
 		if (!want_quiet)
@@ -761,18 +740,13 @@ void ar_midi_open(char *midiid) {
 	} else {
 		snprintf(devicestring,31,"%s",midiid);
 	}
-	if (want_verbose) 
+	if (want_verbose)
 		printf("amidi device: '%s'\n",devicestring);
 
-	amidi_open(devicestring); 
+	amidi_open(devicestring);
 }
 
-int ar_midi_detectdevices (int print) { 
-	if (print) printf("use 'amidi -l' to list Midi ports\n");
-	return(0);
-}
-
-int ar_midi_connected(void) {
+static int ar_midi_connected(void) {
 	if (amidi) return (1);
 	return (0);
 }
@@ -782,7 +756,7 @@ int ar_midi_connected(void) {
 #ifdef ALSA_SEQ_MIDI /* alsa sequcer */
 
 /************************************************
- * alsa seq midi interface 
+ * alsa seq midi interface
  */
 	
 #include <alsa/asoundlib.h>
@@ -793,24 +767,21 @@ int ar_midi_connected(void) {
 #include <unistd.h>
 
 
-pthread_t aseq_thread;
-pthread_attr_t aseq_pth_attr;
-pthread_mutex_t aseq_lock;
+static pthread_t aseq_thread;
+static pthread_mutex_t aseq_lock;
 
-snd_seq_t *seq= NULL;
-int as_sysex_state = -1;
-int as_sysex_type = 0; 
-int aseq_stop=0; // only modify in main thread. 
+static snd_seq_t *seq= NULL;
+static int as_sysex_type = 0;
+static int aseq_stop=0; // only modify in main thread.
 
-void aseq_close(void) {
+static void aseq_close(void) {
 	if(!seq) return;
 	if (!want_quiet) printf("closing alsa midi...");
 	snd_seq_close(seq);
 	seq=NULL;
-  //have_dropframes = 0; // reset MTC state
 }
 
-void aseq_open(char *port_name) {
+static void aseq_open(char *port_name) {
 	int err=0;
 	snd_seq_addr_t port;
 	char seq_name[32];
@@ -832,9 +803,9 @@ void aseq_open(char *port_name) {
 	}
 
 
-	if ((err = snd_seq_create_simple_port(seq, "MTC in", 
-			SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE, 
-			SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION)) < 0) {
+	if ((err = snd_seq_create_simple_port(seq, "MTC in",
+					SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
+					SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION)) < 0) {
 		fprintf(stderr,"cannot create port: %s\n", snd_strerror(err));
 		aseq_close();
 		return;
@@ -859,10 +830,10 @@ void aseq_open(char *port_name) {
 
 }
 
-void process_seq_event(const snd_seq_event_t *ev) {
+static void process_seq_event(const snd_seq_event_t *ev) {
 	if (ev->type == SND_SEQ_EVENT_QFRAME) parse_timecode(ev->data.control.value);
 	else if (ev->type == SND_SEQ_EVENT_SYSEX) {
-		unsigned int i; 
+		unsigned int i;
 		as_sysex_type = 0;
 		for (i = 1; i < ev->data.ext.len; ++i) {
 			as_sysex_type = parse_sysex_urtm(((unsigned char*)ev->data.ext.ptr)[i],i-1,as_sysex_type);
@@ -870,27 +841,7 @@ void process_seq_event(const snd_seq_event_t *ev) {
 	}
 }
 
-void aseq_event(void) {
-	int err;
-	int npfds = 0;
-	struct pollfd *pfds;
-
-	npfds = snd_seq_poll_descriptors_count(seq, POLLIN);
-	pfds = alloca(sizeof(*pfds) * npfds);
-
-	snd_seq_poll_descriptors(seq, pfds, npfds, POLLIN);
-	if (poll(pfds, npfds, 0) <= 0) return;
-
-	do {
-		snd_seq_event_t *event;
-		err = snd_seq_event_input(seq, &event);
-		if (err < 0) break;
-		if (event) process_seq_event(event);
-	} while (err > 0);
-
-}
-
-long as_midi_poll_frame (void) {
+static long as_midi_poll_frame (void) {
 	long frame =0 ;
 	static long lastframe = -1 ;
 	static int stopcnt = 0;
@@ -913,12 +864,12 @@ long as_midi_poll_frame (void) {
 			pthread_mutex_lock(&aseq_lock);
 			full_tc=last_tc.tick=0;
 			pthread_mutex_unlock(&aseq_lock);
-			if (want_verbose) 
+			if (want_verbose)
 				printf("\r\t\t\t\t\t\t        -?-\r");
 		}
 		diff= last_tc.tick/4.0;
 
-		if (want_verbose) 
+		if (want_verbose)
 			// subtract 7 quarter frames latency when running..
 			printf("\r\t\t\t\t\t\t  |+%g/8\r",diff<0?rint(4.0*(1.75-diff)):diff<2.0?0:rint(4.0*(diff-1.75)));
 		frame += (long) rint(diff);
@@ -926,7 +877,7 @@ long as_midi_poll_frame (void) {
 	return(frame);
 }
 
-void as_midi_close(void) {
+static void as_midi_close(void) {
 	if(!seq) return;
 	aseq_stop =1;
 	pthread_join(aseq_thread,NULL);
@@ -934,7 +885,7 @@ void as_midi_close(void) {
 	aseq_close();
 }
 
-void *aseq_run(void *arg) {
+static void *aseq_run(void *arg) {
 	int err;
 	int npfds = 0;
 	struct pollfd *pfds;
@@ -961,13 +912,12 @@ void *aseq_run(void *arg) {
 	return (NULL);
 }
 
-
 /* list devices...
  * borrowed from aseqdump.c
  * Copyright (c) 2005 Clemens Ladisch <clemens@ladisch.de>
  * GPL
  */
-void as_midi_detectdevices (int print) { 
+static void as_midi_detectdevices (int print) {
 	if (print) {
 		snd_seq_client_info_t *cinfo;
 		snd_seq_port_info_t *pinfo;
@@ -987,25 +937,25 @@ void as_midi_detectdevices (int print) {
 			while (snd_seq_query_next_port(seq, pinfo) >= 0) {
 				/* we need both READ and SUBS_READ */
 				if ((snd_seq_port_info_get_capability(pinfo)
-				     & (SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ))
-				    != (SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ))
+							& (SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ))
+						!= (SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ))
 					continue;
 				printf(" %3d:%-3d  %-32.32s %s\n",
-				       snd_seq_port_info_get_client(pinfo),
-				       snd_seq_port_info_get_port(pinfo),
-				       snd_seq_client_info_get_name(cinfo),
-				       snd_seq_port_info_get_name(pinfo));
+						snd_seq_port_info_get_client(pinfo),
+						snd_seq_port_info_get_port(pinfo),
+						snd_seq_client_info_get_name(cinfo),
+						snd_seq_port_info_get_name(pinfo));
 			}
 		}
 	}
 }
 
-void as_midi_open(char *midiid) {
+static void as_midi_open(char *midiid) {
 	if (atoi(midiid)<0) {
-		aseq_open(NULL); 
-    		if (want_verbose) as_midi_detectdevices(1);
+		aseq_open(NULL);
+		if (want_verbose) as_midi_detectdevices(1);
 	} else {
-		aseq_open(midiid); 
+		aseq_open(midiid);
 	}
 
 	if (!seq) return;
@@ -1018,56 +968,56 @@ void as_midi_open(char *midiid) {
 	}
 }
 
-int as_midi_connected(void) {
+static int as_midi_connected(void) {
 	if (seq) return (1);
 	return (0);
 }
 
 #endif /*  alsa seq midi  */
 
-int  null_midi_connected(void) { return 0;}
-void null_midi_open(char *midiid) {;}
-void null_midi_close(void) {;}
-long null_midi_poll_frame (void) { return 0L;}
+static int  null_midi_connected(void) { return 0;}
+static void null_midi_open(char *midiid) {;}
+static void null_midi_close(void) {;}
+static long null_midi_poll_frame (void) { return 0L;}
 
 #define NULLMIDI 0, &null_midi_open, &null_midi_close, &null_midi_connected, &null_midi_poll_frame
 
 typedef struct {
 	const char *name;
-	int supported; // 1: format compiled in -- 0: not supported 
+	int supported; // 1: format compiled in -- 0: not supported
 	void (*midi_open)(char *);
 	void (*midi_close)(void);
 	int (*midi_connected)(void);
-  long (*midi_poll_frame) (void);
+	long (*midi_poll_frame) (void);
 }midiapi;
 
 const midiapi MA[] = {
-	{ "JACK-MIDI", 
-#ifdef  HAVE_JACKMIDI 
+	{ "JACK-MIDI",
+#ifdef  HAVE_JACKMIDI
 		1, &jm_midi_open, &jm_midi_close, &jm_midi_connected, &jm_midi_poll_frame
 #else
-		NULLMIDI
+			NULLMIDI
 #endif
 	},
 	{ "ALSA-Sequencer",
 #ifdef ALSA_SEQ_MIDI /* alsa sequcer */
 		1, &as_midi_open, &as_midi_close, &as_midi_connected, &as_midi_poll_frame
 #else
-		NULLMIDI
+			NULLMIDI
 #endif
 	},
-	{ "PORTMIDI", 
+	{ "PORTMIDI",
 #ifdef HAVE_PORTMIDI
 		1, &pm_midi_open, &pm_midi_close, &pm_midi_connected, &pm_midi_poll_frame
 #else
-		NULLMIDI
+			NULLMIDI
 #endif
 	},
 	{ "ALSA-RAW-MIDI",
 #ifdef ALSA_RAW_MIDI
 		1, &ar_midi_open, &ar_midi_close, &ar_midi_connected, &ar_midi_poll_frame
 #else
-		NULLMIDI
+			NULLMIDI
 #endif
 	},
 	{NULL, NULLMIDI}  // the end.
@@ -1099,7 +1049,6 @@ int  midi_connected(void) { return (MA[current_midi_driver].midi_connected());}
 void midi_open(char *midiid) {MA[current_midi_driver].midi_open(midiid);}
 void midi_close(void) {MA[current_midi_driver].midi_close();}
 long midi_poll_frame (void) { return (MA[current_midi_driver].midi_poll_frame());}
-
 
 #else /* HAVE_MIDI */
 

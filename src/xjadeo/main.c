@@ -12,13 +12,13 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * Credits:
  *
- * xjadeo:  (c) 2006 - 2012
- *  Luis Garrido <luisgarrido@users.sourceforge.net>
+ * xjadeo:  (c) 2006 - 2014
  *  Robin Gareus <robin@gareus.org>
+ *  Luis Garrido <luisgarrido@users.sourceforge.net>
  *
  * XLib code:
  * http://www.ac3.edu.au/SGI_Developer/books/XLib_PG/sgi_html/index.html
@@ -28,7 +28,6 @@
  *
  * ffmpeg code:
  * http://www.inb.uni-luebeck.de/~boehme/using_libavcodec.html
- *
  */
 
 #define EXIT_FAILURE 1
@@ -36,10 +35,10 @@
 #include "xjadeo.h"
 
 #ifdef OLD_FFMPEG
-#include <avcodec.h> // needed for PIX_FMT 
+#include <avcodec.h> // needed for PIX_FMT
 #include <avformat.h>
 #else
-#include <libavcodec/avcodec.h> // needed for PIX_FMT 
+#include <libavcodec/avcodec.h> // needed for PIX_FMT
 #include <libavformat/avformat.h>
 #endif
 
@@ -56,19 +55,18 @@
 
 // Display loop
 
-/* int loop_flag: main xjadeo event loop 
+/* int loop_flag: main xjadeo event loop
  * if loop_flag is set to 0, xjadeo will exit
  */
-int       loop_flag = 1; 
+int loop_flag = 1;
 
 /* int loop_run: video update enable
- * if set to 0 no smpte will be polled and 
+ * if set to 0 no smpte will be polled and
  * no video frame updates are performed.
  */
-int 	  loop_run = 1; 
+int loop_run = 1;
 
-      
-// Video Decoder 
+// Video Decoder
 
 int               movie_width  = 320;
 int               movie_height = 180;
@@ -125,10 +123,10 @@ int osc_port =0;	/* --osc, -O */
 int mq_en =0;		/* --mq, -Q */
 char *ipc_queue = NULL; /* --ipc, -W */
 int remote_mode =0;	/* 0: undirectional ; >0: bidir
-			 * bitwise enable async-messages 
-			 *  so far only: 
-			 *   (1) notify timecode 
-			 *   (2) notify changed timecode 
+			 * bitwise enable async-messages
+			 *  so far only:
+			 *   (1) notify timecode
+			 *   (2) notify changed timecode
 			 */
 
 int try_codec =0;	/* --try-codec */
@@ -136,19 +134,19 @@ int try_codec =0;	/* --try-codec */
 int seekflags = SEEK_ANY; /* -k ,K */
 
 #ifdef HAVE_MIDI
-char midiid[128] = "-2";/* --midi # -1: autodetect -2: jack-transport, -3: none/userFrame */
-int midi_clkconvert =0;	/* --midifps [0:MTC|1:VIDEO|2:RESAMPLE] */
+char midiid[128] = "-2";  /* --midi # -1: autodetect -2: jack-transport, -3: none/userFrame */
+int midi_clkconvert =0;	  /* --midifps [0:MTC|1:VIDEO|2:RESAMPLE] */
 char *midi_driver = NULL; /* --mididriver */
 #endif
 
 int have_dropframes =0; /* detected from MTC;  TODO: force to zero if jack or user TC */
 int jack_clkconvert =1; /* --jackfps  - NOT YET IMPLEMENTED
-                          [0:audio_frames_per_video_frame
-                           1:video-file] */
+			 * [0:audio_frames_per_video_frame
+			 * 1:video-file] */
 int use_jack = 1;
 #if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
 int use_ltc = 0;        /* -l , --ltc */
-#endif 
+#endif
 char *load_rc = NULL;
 char *load_movie = NULL;
 #ifdef JACK_SESSION
@@ -158,13 +156,10 @@ int js_winx = -1;
 int js_winy = -1;
 int js_winw = -1;
 int js_winh = -1;
-#endif 
+#endif
 
 #ifdef HAVE_LASH
 lash_client_t *lash_client;
-#endif
-
-#ifdef HAVE_MACOSX
 #endif
 
 int     midi_clkadj =1;	/* --midiclk  */
@@ -188,8 +183,7 @@ int OSD_sy = 98; // percent
 int OSD_ty = 50; // percent
 
 /* The name the program was run with, stripped of any leading path. */
-char *program_name;
-
+static char *program_name;
 
 // prototypes .
 
@@ -198,51 +192,51 @@ static void printversion (void);
 
 static struct option const long_options[] =
 {
-  {"quiet", no_argument, 0, 'q'},
-  {"silent", no_argument, 0, 'q'},
-  {"verbose", no_argument, 0, 'v'},
-  {"avverbose", no_argument, 0, 'A'},
-  {"genpts", no_argument, 0, 'P'},
-  {"ignorefileoffset", no_argument, 0, 'I'},
-  {"nofileoffset", no_argument, 0, 'I'},
-  {"nosplash", no_argument, 0, 'S'},
-  {"keyframes", no_argument, 0, 'k'},
-  {"continuous", required_argument, 0, 'K'},
-  {"offset", no_argument, 0, 'o'},
-  {"fps", required_argument, 0, 'f'},
-  {"filefps", required_argument, 0, 'F'},
-  {"videomode", required_argument, 0, 'x'},
-  {"vo", required_argument, 0, 'x'},
-  {"remote", no_argument, 0, 'R'},
-  {"noinitialsync", no_argument, 0, 'J'},
-  {"mq", no_argument, 0, 'Q'},
-  {"ipc", required_argument, 0, 'W'},
-  {"help", no_argument, 0, 'h'},
-  {"version", no_argument, 0, 'V'},
-  {"try-codec", no_argument, 0, 't'},
-  {"info", no_argument, 0, 'i'},
-  {"ontop", no_argument, 0, 'a'},
-  {"fullscreen", no_argument, 0, 's'},
-  {"nolash", required_argument, 0, 'L'},
-  {"dropframes", no_argument, 0, 'N'},
-  {"nodropframes", no_argument, 0, 'n'},
-  {"letterbox", no_argument, 0, 'b'},
-  {"midi", required_argument, 0, 'm'},
-  {"midifps", required_argument, 0, 'M'},
-  {"midi-driver", required_argument, 0, 'd'},
-  {"midiclk", no_argument, 0, 'C'},
-  {"no-midiclk", no_argument, 0, 'c'},
-  {"ltc", no_argument, 0, 'l'},
-  {"ttf-font", required_argument, 0, 'T'},
+	{"quiet", no_argument, 0, 'q'},
+	{"silent", no_argument, 0, 'q'},
+	{"verbose", no_argument, 0, 'v'},
+	{"avverbose", no_argument, 0, 'A'},
+	{"genpts", no_argument, 0, 'P'},
+	{"ignorefileoffset", no_argument, 0, 'I'},
+	{"nofileoffset", no_argument, 0, 'I'},
+	{"nosplash", no_argument, 0, 'S'},
+	{"keyframes", no_argument, 0, 'k'},
+	{"continuous", required_argument, 0, 'K'},
+	{"offset", no_argument, 0, 'o'},
+	{"fps", required_argument, 0, 'f'},
+	{"filefps", required_argument, 0, 'F'},
+	{"videomode", required_argument, 0, 'x'},
+	{"vo", required_argument, 0, 'x'},
+	{"remote", no_argument, 0, 'R'},
+	{"noinitialsync", no_argument, 0, 'J'},
+	{"mq", no_argument, 0, 'Q'},
+	{"ipc", required_argument, 0, 'W'},
+	{"help", no_argument, 0, 'h'},
+	{"version", no_argument, 0, 'V'},
+	{"try-codec", no_argument, 0, 't'},
+	{"info", no_argument, 0, 'i'},
+	{"ontop", no_argument, 0, 'a'},
+	{"fullscreen", no_argument, 0, 's'},
+	{"nolash", required_argument, 0, 'L'},
+	{"dropframes", no_argument, 0, 'N'},
+	{"nodropframes", no_argument, 0, 'n'},
+	{"letterbox", no_argument, 0, 'b'},
+	{"midi", required_argument, 0, 'm'},
+	{"midifps", required_argument, 0, 'M'},
+	{"midi-driver", required_argument, 0, 'd'},
+	{"midiclk", no_argument, 0, 'C'},
+	{"no-midiclk", no_argument, 0, 'c'},
+	{"ltc", no_argument, 0, 'l'},
+	{"ttf-font", required_argument, 0, 'T'},
 #ifdef JACK_SESSION
-  {"uuid", required_argument, 0, 'U'},
-  {"rc", required_argument, 0, 'r'},
+	{"uuid", required_argument, 0, 'U'},
+	{"rc", required_argument, 0, 'r'},
 #endif
 #ifdef HAVE_LIBLO
-  {"osc", required_argument, 0, 'O'},
+	{"osc", required_argument, 0, 'O'},
 #endif
-  {"debug", no_argument, 0, 'D'},
-  {NULL, 0, NULL, 0}
+	{"debug", no_argument, 0, 'D'},
+	{NULL, 0, NULL, 0}
 };
 
 
@@ -252,215 +246,215 @@ static struct option const long_options[] =
 static int
 decode_switches (int argc, char **argv)
 {
-  int c;
-  while ((c = getopt_long (argc, argv, 
-			   "q"	/* quiet or silent */
-			   "v"	/* verbose */
-			   "A"	/* avverbose */
-			   "P"	/* genpts */
-			   "I"	/* ignorefileoffset */
-			   "h"	/* help */
-			   "S"	/* nosplash */
-			   "R"	/* stdio remote control */
-			   "Q"	/* POSIX rt-message queues */
-			   "W:"	/* IPC message queues */
-			   "k"	/* keyframes */
-			   "K"	/* anyframe */
-			   "o:"	/* offset */
-			   "t"	/* try-codec */
-			   "T:"	/* ttf-font */
-			   "f:"	/* fps */
-			   "F:"	/* file FPS */
-			   "x:"	/* video-mode */
-			   "a"	/* always on top */
-			   "s"	/* start in full-screen mode */
-			   "i:"	/* info - OSD-mode */
-			   "b"	/* letterbox */
-			   "m:"	/* midi interface */
-			   "M:"	/* midi clk convert */
-			   "d:"	/* midi driver */
-			   "C"	/* --midiclk */
-			   "c"	/* --no-midiclk */
-			   "l"	/* --ltc */
+	int c;
+	while ((c = getopt_long (argc, argv,
+		"q"	/* quiet or silent */
+		"v"	/* verbose */
+		"A"	/* avverbose */
+		"P"	/* genpts */
+		"I"	/* ignorefileoffset */
+		"h"	/* help */
+		"S"	/* nosplash */
+		"R"	/* stdio remote control */
+		"Q"	/* POSIX rt-message queues */
+		"W:"	/* IPC message queues */
+		"k"	/* keyframes */
+		"K"	/* anyframe */
+		"o:"	/* offset */
+		"t"	/* try-codec */
+		"T:"	/* ttf-font */
+		"f:"	/* fps */
+		"F:"	/* file FPS */
+		"x:"	/* video-mode */
+		"a"	/* always on top */
+		"s"	/* start in full-screen mode */
+		"i:"	/* info - OSD-mode */
+		"b"	/* letterbox */
+		"m:"	/* midi interface */
+		"M:"	/* midi clk convert */
+		"d:"	/* midi driver */
+		"C"	/* --midiclk */
+		"c"	/* --no-midiclk */
+		"l"	/* --ltc */
 #ifdef JACK_SESSION
-			   "r:"	/* --rc */
-			   "U:"	/* --uuid */
+		"r:"	/* --rc */
+		"U:"	/* --uuid */
 #endif
-			   "N"	/* --dropframes */
-			   "n"	/* --nodropframes */
+		"N"	/* --dropframes */
+		"n"	/* --nodropframes */
 #ifdef HAVE_LIBLO
-			   "O:"	/* --osc  */
+		"O:"	/* --osc  */
 #endif
-			   "D"	/* debug */
-			   "L"	/* no lash */
-			   "J"	/* no jack / no-initial sync */
-			   "V",	/* version */
-			   long_options, (int *) 0)) != EOF)
-  {
-    switch (c) {
-	case 'q':		/* --quiet, --silent */
-	  want_quiet = 1;
-	  want_verbose = 0;
-	  want_avverbose = 0;
-	  break;
-	case 'D':		/* --debug */
-	  want_debug = 1;
-	  break;
-	case 'A':		/* --avverbose */
-	  want_avverbose = !remote_en;
-	  break;
-	case 'v':		/* --verbose */
-	  want_verbose = !remote_en;
-	  break;
-	case 'S':		/* --nosplash */
-	  want_nosplash = 1;
-	  break;
-	case 'I':		/* --ignorefileoffset */
-	  want_ignstart++;
-	  break;
-	case 'P':		/* --avverbose */
-	  want_genpts = 1;
-	  break;
-	case 'R':		/* --remote */
-	  remote_en = 1;
-	  want_quiet = 1;
-	  want_verbose = 0;
-	  want_avverbose = 0;
-	  break;
-	case 'Q':		/* --mq */
-	  mq_en = 1;
-	  break;
-	case 'W':		/* --ipc */
-	  if (ipc_queue) free(ipc_queue);
-	  ipc_queue = strdup(optarg);
-	  break;
-	case 'O':		/* --avverbose */
-	  osc_port=atoi(optarg);
-	  break;
-	case 'n':		/* --nodropframes */
-	  want_autodrop = 0;
-	  break;
-	case 'N':		/* --dropframes */
-	  want_dropframes = 1;
-	  break;
-	case 'L':		/* --nolash */
-	  avoid_lash = 1;
-	  break;
-	case 'b':		/* --letterbox */
-	  want_letterbox = 1;
-	  break;
-	case 't':		/* --try */
-	  try_codec = 1;
-	  break;
-	case 'i':		/* --info */
-	  OSD_mode=atoi(optarg)&3;
-	  if (!want_quiet) printf("On screen display: [%s%s%s] \n",
-		(!OSD_mode)?"off": 
-		(OSD_mode&OSD_FRAME)?"frames":"",
-		(OSD_mode&(OSD_FRAME|OSD_SMPTE))==(OSD_FRAME|OSD_SMPTE)?" ":"",
-		(OSD_mode&OSD_SMPTE)?"SMPTE":""
-		);
-	  break;
-	case 'o':		/* --offset */
-	  // we don't know the file's framerate yet!
-	  smpte_offset=strdup(optarg); 
-	  //ts_offset=smptestring_to_frame(optarg,0);
-	  //printf("set time offset to %li frames\n",ts_offset);
-	  break;
-	case 'k':		/* --keyframes */
-	  seekflags=SEEK_KEY;
-	  printf("seeking to keyframes only\n");
-	  break;
-	case 'K':		/* --anyframe */
-	  seekflags=SEEK_CONTINUOUS;
-	  if (!want_quiet)
+		"D"	/* debug */
+		"L"	/* no lash */
+		"J"	/* no jack / no-initial sync */
+		"V",	/* version */
+			long_options, (int *) 0)) != EOF)
+	{
+		switch (c) {
+			case 'q':		/* --quiet, --silent */
+				want_quiet = 1;
+				want_verbose = 0;
+				want_avverbose = 0;
+				break;
+			case 'D':		/* --debug */
+				want_debug = 1;
+				break;
+			case 'A':		/* --avverbose */
+				want_avverbose = !remote_en;
+				break;
+			case 'v':		/* --verbose */
+				want_verbose = !remote_en;
+				break;
+			case 'S':		/* --nosplash */
+				want_nosplash = 1;
+				break;
+			case 'I':		/* --ignorefileoffset */
+				want_ignstart++;
+				break;
+			case 'P':		/* --avverbose */
+				want_genpts = 1;
+				break;
+			case 'R':		/* --remote */
+				remote_en = 1;
+				want_quiet = 1;
+				want_verbose = 0;
+				want_avverbose = 0;
+				break;
+			case 'Q':		/* --mq */
+				mq_en = 1;
+				break;
+			case 'W':		/* --ipc */
+				if (ipc_queue) free(ipc_queue);
+				ipc_queue = strdup(optarg);
+				break;
+			case 'O':		/* --avverbose */
+				osc_port=atoi(optarg);
+				break;
+			case 'n':		/* --nodropframes */
+				want_autodrop = 0;
+				break;
+			case 'N':		/* --dropframes */
+				want_dropframes = 1;
+				break;
+			case 'L':		/* --nolash */
+				avoid_lash = 1;
+				break;
+			case 'b':		/* --letterbox */
+				want_letterbox = 1;
+				break;
+			case 't':		/* --try */
+				try_codec = 1;
+				break;
+			case 'i':		/* --info */
+				OSD_mode=atoi(optarg)&3;
+				if (!want_quiet) printf("On screen display: [%s%s%s] \n",
+						(!OSD_mode)?"off":
+						(OSD_mode&OSD_FRAME)?"frames":"",
+						(OSD_mode&(OSD_FRAME|OSD_SMPTE))==(OSD_FRAME|OSD_SMPTE)?" ":"",
+						(OSD_mode&OSD_SMPTE)?"SMPTE":""
+						);
+				break;
+			case 'o':		/* --offset */
+				// we don't know the file's framerate yet!
+				smpte_offset=strdup(optarg);
+				//ts_offset=smptestring_to_frame(optarg,0);
+				//printf("set time offset to %li frames\n",ts_offset);
+				break;
+			case 'k':		/* --keyframes */
+				seekflags=SEEK_KEY;
+				printf("seeking to keyframes only\n");
+				break;
+			case 'K':		/* --anyframe */
+				seekflags=SEEK_CONTINUOUS;
+				if (!want_quiet)
 #if LIBAVFORMAT_BUILD < 4617
-	  printf("libavformat (ffmpeg) does not support continuous seeking...\n uprade your ffmpeg library and recompile xjadeo!\n");
+					printf("libavformat (ffmpeg) does not support continuous seeking...\n uprade your ffmpeg library and recompile xjadeo!\n");
 #else
-	  printf("enabled continuous seeking..\n");
+				printf("enabled continuous seeking..\n");
 #endif
-	  break;
-	case 'F':		/* --filefps */
-	  if(atof(optarg)>0)
-	    filefps = atof(optarg); // TODO: use av_parse_video_frame_rate()
-	  break;
-	case 'f':		/* --fps */
-	  if(atof(optarg)>0)
-	    delay = 1.0 / atof(optarg);
-	  else delay = -1; // use file-framerate
-	  break;
-	case 'x':		/* --vo --videomode */
-          videomode = atoi(optarg);
-	  if (videomode == 0) videomode = parsevidoutname(optarg);
-	  break;
+				break;
+			case 'F':		/* --filefps */
+				if(atof(optarg)>0)
+					filefps = atof(optarg); // TODO: use av_parse_video_frame_rate()
+				break;
+			case 'f':		/* --fps */
+				if(atof(optarg)>0)
+					delay = 1.0 / atof(optarg);
+				else delay = -1; // use file-framerate
+				break;
+			case 'x':		/* --vo --videomode */
+				videomode = atoi(optarg);
+				if (videomode == 0) videomode = parsevidoutname(optarg);
+				break;
 #ifdef HAVE_MIDI
-	case 'm':		/* --midi */
-	  strncpy(midiid,optarg,sizeof(midiid));
-	  midiid[(sizeof(midiid)-1)]=0;
-	  break;
-	case 'd':		/* --midi-driver */
-	  if (midi_driver) free(midi_driver);
-          midi_driver = strdup(optarg);
-	  break;
-	case 'M':		/* --midifps */
-          midi_clkconvert = atoi(optarg);
-	  break;
-	case 'C':		/* --midiclk */
-          midi_clkadj = 1;
-	  break;
-	case 'c':		/* --no-midiclk */
-          midi_clkadj = 0;
-	  break;
+			case 'm':		/* --midi */
+				strncpy(midiid,optarg,sizeof(midiid));
+				midiid[(sizeof(midiid)-1)]=0;
+				break;
+			case 'd':		/* --midi-driver */
+				if (midi_driver) free(midi_driver);
+				midi_driver = strdup(optarg);
+				break;
+			case 'M':		/* --midifps */
+				midi_clkconvert = atoi(optarg);
+				break;
+			case 'C':		/* --midiclk */
+				midi_clkadj = 1;
+				break;
+			case 'c':		/* --no-midiclk */
+				midi_clkadj = 0;
+				break;
 #else
-	case 'm':		/* --midi */
-	case 'd':		/* --midi-driver */
-	case 'M':		/* --midifps */
-	case 'C':		/* --midiclk */
-	case 'c':		/* --no-midiclk */
-	  printf("This version of xjadeo is compiled without MIDI support\n");
-	  break;
+			case 'm':		/* --midi */
+			case 'd':		/* --midi-driver */
+			case 'M':		/* --midifps */
+			case 'C':		/* --midiclk */
+			case 'c':		/* --no-midiclk */
+				printf("This version of xjadeo is compiled without MIDI support\n");
+				break;
 #endif
 #if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
-	case 'l':		/* --ltc */
-          use_ltc = 1;
-	  break;
+			case 'l':		/* --ltc */
+				use_ltc = 1;
+				break;
 #else
-	case 'l':		/* --ltc */
-	  printf("This version of xjadeo is compiled without LTC support\n");
-	  break;
+			case 'l':		/* --ltc */
+				printf("This version of xjadeo is compiled without LTC support\n");
+				break;
 #endif
-	case 'U':		/* --uuid */
+			case 'U':		/* --uuid */
 #ifdef JACK_SESSION
-          if (jack_uuid) free(jack_uuid);
-          jack_uuid = strdup(optarg);
+				if (jack_uuid) free(jack_uuid);
+				jack_uuid = strdup(optarg);
 #endif
-	  break;
-	case 'r':		/* --rc */
-          if (load_rc) free(load_rc);
-          load_rc = strdup(optarg);
-	  break;
-	case 'V':
-	  printversion();
-	  exit(0);
-	case 's':
-	  start_fullscreen=1;
-	  break;
-	case 'a':
-	  start_ontop=1;
-	  break;
-	case 'T':
-	  strcpy(OSD_fontfile, optarg);
-	  break;
-	case 'J':
-	  no_initial_sync = 1;
-	  break;
-	case 'h':
-	  usage (0);
-	default:
-	  usage (EXIT_FAILURE);
-    }
-  }
-  return optind;
+				break;
+			case 'r':		/* --rc */
+				if (load_rc) free(load_rc);
+				load_rc = strdup(optarg);
+				break;
+			case 'V':
+				printversion();
+				exit(0);
+			case 's':
+				start_fullscreen=1;
+				break;
+			case 'a':
+				start_ontop=1;
+				break;
+			case 'T':
+				strcpy(OSD_fontfile, optarg);
+				break;
+			case 'J':
+				no_initial_sync = 1;
+				break;
+			case 'h':
+				usage (0);
+			default:
+				usage (EXIT_FAILURE);
+		}
+	}
+	return optind;
 }
 
 static void
@@ -514,24 +508,24 @@ jack video monitor\n", program_name);
 "                            * alsa-seq: specify id to connect to. (-1: none)\n"
 "                              eg. -m ardour or -m 80 \n"
 "                            * portmidi: numeric-id; -1: autodetect\n"
-"                            value > -1 specifies a (input) midi port to use\n" 	  
-"                            use '-v -m -1' to list midi-ports.\n" 	  
+"                            value > -1 specifies a (input) midi port to use\n"
+"                            use '-v -m -1' to list midi-ports.\n"
 "                            * alsa-raw: specify device-name \n"
 "                              eg. -m hw:1,0 or -m 1 \n"
 "  -M <int>,                 how to 'convert' MTC SMPTE to framenumber:\n"
-"      --midifps <int>       0: use framerate of MTC clock (default)\n" 
-"                            2: use video file FPS\n" 
-"                            3: \"resample\": videoFPS / MTC \n" 
+"      --midifps <int>       0: use framerate of MTC clock (default)\n"
+"                            2: use video file FPS\n"
+"                            3: \"resample\": videoFPS / MTC \n"
 /* - undocumented /hidden/ options
-"  -n , --nodropframes       parse MTC as announced, but do not use frame-drop\n" 
+"  -n , --nodropframes       parse MTC as announced, but do not use frame-drop\n"
 "                            algorithm for OSD - useful for debugging\n"
-"  -N , --dropframes         force the SMPTE converter to use the drop-frames\n" 
+"  -N , --dropframes         force the SMPTE converter to use the drop-frames\n"
 "                            algorithm. (Frame dropping is only useful in \n"
 "                            combination with a 29fps MIDI time source.\n"
 "                            MTC in 29.97-frame-drop format is automatically\n"
 "                            detected and it is illegal to use this algorithm\n"
 "                            for other framerates.) DO NOT USE THIS OPTION,\n"
-"                            unless you really know what you are doing.\n" 
+"                            unless you really know what you are doing.\n"
 */
 "  -o <int>, --offset <int>  add/subtract <int> video-frames to/from timecode\n"
 #ifdef HAVE_LIBLO
@@ -563,324 +557,327 @@ jack video monitor\n", program_name);
 }
 
 static void printversion (void) {
-  printf ("xjadeo ");
-  printf ("version %s ", VERSION);
+	printf ("xjadeo ");
+	printf ("version %s ", VERSION);
 #ifdef SUBVERSION
-  if (strlen(SUBVERSION)>0 && strcmp(SUBVERSION, "exported")) {
-    printf ("scm-%s ", SUBVERSION);
-  }
+	if (strlen(SUBVERSION)>0 && strcmp(SUBVERSION, "exported")) {
+		printf ("scm-%s ", SUBVERSION);
+	}
 #endif
-  printf ("[ ");
+	printf ("[ ");
 #ifdef HAVE_LASH
-  printf("LASH ");
-#endif 
+	printf("LASH ");
+#endif
 #if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
-  printf("LTC ");
+	printf("LTC ");
 #endif
 #ifdef JACK_SESSION
-  printf("JACK-SESSION ");
+	printf("JACK-SESSION ");
 #endif
 #ifdef HAVE_MQ
-  printf("POSIX-MQueue ");
+	printf("POSIX-MQueue ");
 #elif defined HAVE_IPCMSG
-  printf("IPC-MSG ");
+	printf("IPC-MSG ");
 #endif
-  printf("]\n compiled with ffmpeg: AVFORMAT=0x%x AVCODEC=0x%x\n", 
-      LIBAVFORMAT_BUILD, LIBAVCODEC_BUILD);
-  printf(" MTC-MIDI: ");
+#ifdef HAVE_LIBLO
+	printf("OSC ");
+#endif
+	printf("]\n compiled with ffmpeg: AVFORMAT=0x%x AVCODEC=0x%x\n",
+			LIBAVFORMAT_BUILD, LIBAVCODEC_BUILD);
+	printf(" MTC-MIDI: ");
 #ifndef HAVE_MIDI
-  printf("disabled.");
+	printf("disabled.");
 #else /* have Midi */
 # ifdef HAVE_JACKMIDI
-  printf("jack-midi ");
-# endif 
+	printf("jack-midi ");
+# endif
 # ifdef ALSA_SEQ_MIDI
-  printf("alsa-sequencer ");
-# endif 
+	printf("alsa-sequencer ");
+# endif
 # ifdef HAVE_PORTMIDI
-  printf("portmidi ");
-# endif 
+	printf("portmidi ");
+# endif
 # ifdef ALSA_RAW_MIDI
-  printf("alsa-raw ");
-# endif 
+	printf("alsa-raw ");
+# endif
 # if (defined ALSA_RAW_MIDI || defined HAVE_PORTMIDI || defined ALSA_SEQ_MIDI || defined HAVE_JACKMIDI)
-  printf("(first listed is default)");
+	printf("(first listed is default)");
 # else
-  printf("no midi-driver available.");
+	printf("no midi-driver available.");
 # endif
 #endif /* HAVE_MIDI */
-  printf("\n displays: "
+	printf("\n displays: "
 #if HAVE_LIBXV
-		"Xv "
-#endif 
+			"Xv "
+#endif
 #ifdef HAVE_SDL
-		"SDL "
-#endif 
+			"SDL "
+#endif
 #if HAVE_IMLIB
-		"X11/imlib "
-#endif 
+			"X11/imlib "
+#endif
 #if HAVE_IMLIB2
-		"X11/imlib2"
+			"X11/imlib2"
 # ifdef IMLIB2RGBA
-		"(RGBA32) "
-# else 
-		"(RGB24) "
-# endif 
-#endif 
+			"(RGBA32) "
+# else
+			"(RGB24) "
+# endif
+#endif
 #ifdef HAVE_MACOSX
-		"OSX/quartz "
-#endif 
-		"\n"
-  );
+			"OSX/quartz "
+#endif
+#ifdef HAVE_MACOSX
+			"openGL "
+#endif
+			"\n"
+			);
 }
 
-void stat_osd_fontfile(void) {
+static void stat_osd_fontfile(void) {
 #ifdef HAVE_FT
-  struct stat s;
+	struct stat s;
 
-  if (stat(OSD_fontfile, &s)==0 ) {
-    if (want_verbose) fprintf(stdout,"OSD font file: %s\n",OSD_fontfile);
-      return;
-  }
-  if (!want_quiet)
-    fprintf(stderr,"no TTF font found. OSD will not be available until you set one.\n");
+	if (stat(OSD_fontfile, &s)==0 ) {
+		if (want_verbose) fprintf(stdout,"OSD font file: %s\n",OSD_fontfile);
+		return;
+	}
+	if (!want_quiet)
+		fprintf(stderr,"no TTF font found. OSD will not be available until you set one.\n");
 #endif
 }
-
 
 
 //--------------------------------------------
 // Main
 //--------------------------------------------
 
-void clean_up (int status) {
-
-  if(remote_en) close_remote_ctrl();
+static void clean_up (int status) {
+	if(remote_en) close_remote_ctrl();
 #ifdef HAVE_MQ
-  if(mq_en) close_mq_ctrl();
+	if(mq_en) close_mq_ctrl();
 #elif defined HAVE_IPCMSG
-  if(ipc_queue) {
-    close_ipcmsg_ctrl();
-    free(ipc_queue);
-  }
+	if(ipc_queue) {
+		close_ipcmsg_ctrl();
+		free(ipc_queue);
+	}
 #endif
-  shutdown_osc();
+	shutdown_osc();
 
-  close_window();
-  
-  close_movie();
+	close_window();
+
+	close_movie();
 
 #ifdef HAVE_MIDI
-  if (midi_driver) free(midi_driver);
-  if (midi_connected()) midi_close(); 
-  else
+	if (midi_driver) free(midi_driver);
+	if (midi_connected()) midi_close();
+	else
 #endif
 #if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
-  if (ltcjack_connected()) close_ltcjack(); 
-  else
+		if (ltcjack_connected()) close_ltcjack();
+		else
 #endif
-  close_jack();
-  free_freetype();
+			close_jack();
+	free_freetype();
 
-  if (smpte_offset) free(smpte_offset);
-  if (load_rc) free(load_rc);
-  if (load_movie) free(load_movie);
-  
-  if (!want_quiet)
-    fprintf(stdout, "\nBye!\n");
-  exit(status);
+	if (smpte_offset) free(smpte_offset);
+	if (load_rc) free(load_rc);
+	if (load_movie) free(load_movie);
+
+	if (!want_quiet)
+		fprintf(stdout, "\nBye!\n");
+	exit(status);
 }
 
 void catchsig (int sig) {
 #ifndef HAVE_WINDOWS
-  signal(SIGHUP, catchsig); /* reset signal */
-  signal(SIGINT, catchsig);
-//signal(SIGHUP, SIG_IGN); /* reset signal */
-//signal(SIGINT, SIG_IGN);
+	signal(SIGHUP, catchsig); /* reset signal */
+	signal(SIGINT, catchsig);
 #endif
-  if (!want_quiet)
-    fprintf(stdout,"\n CAUGHT SIGINT - shutting down.\n");
-  loop_flag=0;
-  clean_up(1);
-  exit(1);
+	if (!want_quiet)
+		fprintf(stdout,"\n CAUGHT SIGINT - shutting down.\n");
+	loop_flag=0;
+	clean_up(1);
+	exit(1);
 }
 
 int
 main (int argc, char **argv)
 {
-  int i;
-  int lashed = 0; // did we get started by lashd ?
-  char*   movie= NULL;
+	int i;
+	int lashed = 0; // did we get started by lashd ?
+	char*   movie= NULL;
 
 #ifdef HAVE_MACOSX // OSX GUI default
-  seekflags = SEEK_CONTINUOUS;
-  no_initial_sync = 1;
+	seekflags = SEEK_CONTINUOUS;
+	no_initial_sync = 1;
 #endif
 
-  program_name = argv[0];
+	program_name = argv[0];
 
-  xjadeorc(); // read config files - default values before parsing cmd line.
+	xjadeorc(); // read config files - default values before parsing cmd line.
 
 #ifdef __APPLE__
-{
-  if ( argc >= 2 && strncmp (argv[1], "-psn", 4) == 0 ) {
-    char **gArgv = (char **) malloc(sizeof (char *) * argc);
-    int i;
-    gArgv[0] = argv[0];
-    for (i=1;i<argc-1;++i) {
-      gArgv[i] = argv[i+1];
-    }
-    --argc;
-    argv=gArgv;
-  }
-}
+	if ( argc >= 2 && strncmp (argv[1], "-psn", 4) == 0 ) {
+		char **gArgv = (char **) malloc(sizeof (char *) * argc);
+		int i;
+		gArgv[0] = argv[0];
+		for (i=1;i<argc-1;++i) {
+			gArgv[i] = argv[i+1];
+		}
+		--argc;
+		argv=gArgv;
+	}
 #endif
 
 #ifdef HAVE_LASH
-  for (i=0;i<argc;i++) if (!strncmp(argv[i],"--lash-id",9)) lashed=1;
-  lash_args_t *lash_args = lash_extract_args(&argc, &argv);
+	for (i=0;i<argc;i++) if (!strncmp(argv[i],"--lash-id",9)) lashed=1;
+	lash_args_t *lash_args = lash_extract_args(&argc, &argv);
 #endif
 
-  i = decode_switches (argc, argv);
+	i = decode_switches (argc, argv);
 
 #ifdef HAVE_LASH
-  if (avoid_lash == 0)  { ///< check if this works as promised
-    lash_client = lash_init (lash_args, PACKAGE_NAME,
-		       0  | LASH_Config_Data_Set  
-		       ,LASH_PROTOCOL (2,0));
-    if (!lash_client) {
-      fprintf(stderr, "could not initialise LASH!\n");
-    } else {
-      lash_setup();
-      if (!want_quiet) printf("Connected to LASH.\n");
-    }
-    //lash_args_destroy(lash_args);
-  }
+	if (avoid_lash == 0)  { ///< check if this works as promised
+		lash_client = lash_init (lash_args, PACKAGE_NAME,
+				0  | LASH_Config_Data_Set
+				,LASH_PROTOCOL (2,0));
+		if (!lash_client) {
+			fprintf(stderr, "could not initialise LASH!\n");
+		} else {
+			lash_setup();
+			if (!want_quiet) printf("Connected to LASH.\n");
+		}
+		//lash_args_destroy(lash_args);
+	}
 #endif
 
-  if (videomode < 0) vidoutmode(videomode); // dump modes and exit.
+	if (videomode < 0) vidoutmode(videomode); // dump modes and exit.
 
-  if ((i+1)== argc) movie = argv[i];
-  else if ((remote_en || mq_en || ipc_queue || osc_port || load_rc) && i==argc) movie = "";
+	if ((i+1)== argc) movie = argv[i];
+	else if ((remote_en || mq_en || ipc_queue || osc_port || load_rc) && i==argc) movie = "";
 #ifndef HAVE_MACOSX
-  else usage (EXIT_FAILURE);
+	else usage (EXIT_FAILURE);
 #else
-  else movie = "";
+	else movie = "";
 #endif
 
-  if (load_rc) {
-    if (testfile(load_rc)) readconfig(load_rc);
-    if (load_movie) movie = load_movie;
-  }
+	if (load_rc) {
+		if (testfile(load_rc)) readconfig(load_rc);
+		if (load_movie) movie = load_movie;
+	}
 
-  if (want_verbose) printf ("xjadeo %s\n", VERSION);
+	if (want_verbose) printf ("xjadeo %s\n", VERSION);
 
-  if (lashed==1 && remote_en) {
-    printf("xjadeo remote-ctrl is unavailable when resuming a LASH session\n");
-    remote_en=0;
-  }
+	if (lashed==1 && remote_en) {
+		printf("xjadeo remote-ctrl is unavailable when resuming a LASH session\n");
+		remote_en=0;
+	}
 
-  stat_osd_fontfile();
-    
-  /* do the work */
-  avinit();
+	stat_osd_fontfile();
 
-  // format needs to be set before calling init_moviebuffer
-  render_fmt = vidoutmode(videomode);
+	/* do the work */
+	avinit();
 
-  // only try to seek to frame 1 and decode it.
-  if (try_codec) do_try_this_file_and_exit (movie);
+	// format needs to be set before calling init_moviebuffer
+	render_fmt = vidoutmode(videomode);
+
+	// only try to seek to frame 1 and decode it.
+	if (try_codec) do_try_this_file_and_exit (movie);
 #ifndef HAVE_WINDOWS
-  signal (SIGHUP, catchsig);
-  signal (SIGINT, catchsig);
+	signal (SIGHUP, catchsig);
+	signal (SIGINT, catchsig);
 #endif
 
-  if (osc_port > 0) initialize_osc(osc_port);
+	if (osc_port > 0) initialize_osc(osc_port);
 
-  open_movie(movie);
-  
-  open_window();
+	open_movie(movie);
 
- // try fallbacks if window open failed in autodetect mode
-  if (videomode==0 && getvidmode() ==0) { // re-use cmd-option variable as counter.
-    if (want_verbose) printf("trying video driver fallbacks.\n");
-    while (getvidmode() ==0) { // check if window is open.
-      videomode++;
-      int tv=try_next_vidoutmode(videomode);
-      if (tv<0) break; // no videomode found!
-      if (want_verbose) printf("trying videomode: %i: %s\n",videomode,vidoutname(videomode));
-      if (tv==0) continue; // this mode is not available
-      render_fmt = vidoutmode(videomode);
-      open_window(); 
-    }
-  }
+	open_window();
 
-  if (getvidmode() ==0) {
-	fprintf(stderr,"Could not open display.\n");
-  	if(!remote_en) {  // && !mq_en && !ipc_queue) { /* TODO: allow windowless startup with MQ ?! */
+	// try fallbacks if window open failed in autodetect mode
+	if (videomode==0 && getvidmode() ==0) { // re-use cmd-option variable as counter.
+		if (want_verbose) printf("trying video driver fallbacks.\n");
+		while (getvidmode() ==0) { // check if window is open.
+			videomode++;
+			int tv=try_next_vidoutmode(videomode);
+			if (tv<0) break; // no videomode found!
+			if (want_verbose) printf("trying videomode: %i: %s\n",videomode,vidoutname(videomode));
+			if (tv==0) continue; // this mode is not available
+			render_fmt = vidoutmode(videomode);
+			open_window();
+		}
+	}
+
+	if (getvidmode() == 0) {
+		fprintf(stderr,"Could not open display.\n");
+		if(!remote_en) { // && !mq_en && !ipc_queue) /* TODO: allow windowless startup with MQ ?! */
 #ifdef HAVE_MIDI
-                if (midi_driver) free(midi_driver);
-                if (midi_connected()) midi_close(); 
-                else
+			if (midi_driver) free(midi_driver);
+			if (midi_connected()) midi_close();
+			else
 #endif
 #if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
-                if (ltcjack_connected()) close_ltcjack(); 
-                else
+				if (ltcjack_connected()) close_ltcjack();
+				else
 #endif
-		close_jack();
-		exit(1);
+					close_jack();
+			exit(1);
+		}
 	}
-  }
 
-  init_moviebuffer();
+	init_moviebuffer();
 
+	/* setup sync source */
 #ifdef HAVE_MIDI
-  midi_choose_driver(midi_driver);
+	midi_choose_driver(midi_driver);
 
 #ifdef JACK_SESSION
-  if (jack_uuid && !strcmp(midi_driver_name(), "JACK-MIDI")) {
-    // don't auto-connect jack-midi on session restore.
-    if (atoi(midiid) == 0) midiid[0]='\0';
-  }
+	if (jack_uuid && !strcmp(midi_driver_name(), "JACK-MIDI")) {
+		// don't auto-connect jack-midi on session restore.
+		if (atoi(midiid) == 0) midiid[0]='\0';
+	}
 #endif
 
-  if (no_initial_sync) {
-    if (!(remote_en || mq_en || ipc_queue || osc_port)) {
-      fprintf(stderr, "Warning: There is no Initial sync-source, and no remote-control enbled to\nchange the sync source. Do not use '-J' option (unless you're testing).\n");
-    }
-  }
-  else if (atoi(midiid) >= -1 ) {
-    if (!want_quiet) 
-      printf("using MTC as sync-source.\n");
-    midi_open(midiid);
-  } else 
+	if (no_initial_sync) {
+		if (!(remote_en || mq_en || ipc_queue || osc_port)) {
+			fprintf(stderr,
+					"Warning: There is no Initial sync-source, and no remote-control enbled to\n"
+					"change the sync source. Do not use '-J' option (unless you're testing).\n");
+		}
+	}
+	else if (atoi(midiid) >= -1 ) {
+		if (!want_quiet)
+			printf("using MTC as sync-source.\n");
+		midi_open(midiid);
+	} else
 #endif
+
 #if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
-  if (use_ltc) {
-    open_ltcjack(NULL);
-  } else
+	if (use_ltc) {
+		open_ltcjack(NULL);
+	} else
 #endif
-  {
-    if (!want_quiet) 
-      printf("using JACK-transport as sync source.\n");
-    if (use_jack)
-      open_jack();
-  }
+	{
+		if (!want_quiet)
+			printf("using JACK-transport as sync source.\n");
+		if (use_jack)
+			open_jack();
+	}
 
 #ifdef HAVE_MQ
-  if(mq_en) open_mq_ctrl();
+	if(mq_en) open_mq_ctrl();
 #elif defined HAVE_IPCMSG
-  if(ipc_queue) open_ipcmsg_ctrl(ipc_queue);
+	if(ipc_queue) open_ipcmsg_ctrl(ipc_queue);
 #endif
-  if(remote_en) open_remote_ctrl();
+	if(remote_en) open_remote_ctrl();
 
-  display_frame(0LL,1,1);
-  splash(buffer); 
+	display_frame(0LL,1,1);
+	splash(buffer);
 
-  event_loop();
-  
-  clean_up(0);
-  return (0);
+	/* MAIN LOOP */
+	event_loop();
+
+	clean_up(0);
+	return (0);
 }
-
-/* vi:set ts=8 sts=2 sw=2: */

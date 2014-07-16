@@ -12,9 +12,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * (c) 2006 
+ * (c) 2006
  *  Robin Gareus <robin@gareus.org>
  *  Luis Garrido <luisgarrido@users.sourceforge.net>
  *
@@ -61,16 +61,16 @@ extern double		duration;
 extern long		frames;
 
 // On screen display
-extern char		OSD_fontfile[1024]; 
+extern char		OSD_fontfile[1024];
 extern char		OSD_text[128];
 extern int		OSD_mode;
 
 extern int OSD_fx, OSD_tx, OSD_sx, OSD_fy, OSD_sy, OSD_ty;
 
 #if (HAVE_LIBXV || HAVE_IMLIB || HAVE_IMLIB2)
- extern int xj_ontop;
- extern int xj_fullscreen;
-#else 
+extern int xj_ontop;
+extern int xj_fullscreen;
+#else
 # define xj_ontop (0)
 # define xj_fullscreen (0)
 #endif
@@ -78,7 +78,7 @@ extern int OSD_fx, OSD_tx, OSD_sx, OSD_fy, OSD_sy, OSD_ty;
 // defined in main.c
 extern lash_client_t *lash_client;
 
-/* config options that need to be applied 
+/* config options that need to be applied
  * in a certain order after all other
  * cfg has been LASHed-in */
 typedef struct {
@@ -87,18 +87,56 @@ typedef struct {
 	unsigned int winsize_x, winsize_y;
 } jdo_config;
 
-long int lash_config_get_value_long (const lash_config_t * config) {
+static long int lash_config_get_value_long (const lash_config_t * config) {
 	const void *data = lash_config_get_value(config);
 	return(*((long*) data));
 }
 
+static void lcs_str(char *key, char *value) {
+#ifdef HAVE_LASH
+	lash_config_t *lc = lash_config_new_with_key(key);
+	lash_config_set_value_string (lc, value);
+	lash_send_config(lash_client, lc);
+	//printf("DEBUG - LASH config str: %s -> %i\n",key,value);
+#endif
+}
+
+static void lcs_long(char *key, long int value) {
+#ifdef HAVE_LASH
+	lash_config_t *lc;
+	lc = lash_config_new_with_key(key);
+	lash_config_set_value (lc, (void*) &value, sizeof(long int));
+	lash_send_config(lash_client, lc);
+	//printf("DEBUG - LASH config long %ld -> %i\n",key,value);
+#endif
+}
+
+static void lcs_int(char *key, int value) {
+#ifdef HAVE_LASH
+	lash_config_t *lc;
+	lc = lash_config_new_with_key(key);
+	lash_config_set_value_int (lc, value);
+	lash_send_config(lash_client, lc);
+	//printf("DEBUG - LASH config int: %i -> %i\n",key,value);
+#endif
+}
+
+static void lcs_dbl(char *key, double value) {
+#ifdef HAVE_LASH
+	lash_config_t *lc;
+	lc = lash_config_new_with_key(key);
+	lash_config_set_value_double (lc, value);
+	lash_send_config(lash_client, lc);
+	//printf("DEBUG - LASH config dbl %g -> %i\n",key,value);
+#endif
+}
 /*************************
  * private LASH functions
  */
-void handle_event(lash_event_t* ev) {
+static void handle_event(lash_event_t* ev) {
 	int type = lash_event_get_type(ev);
 	const char*	str = lash_event_get_string(ev);
-	
+
 	if (type == LASH_Restore_Data_Set) {
 		// FIXME - send this AFTER recv. config
 		if (!want_quiet)
@@ -109,23 +147,23 @@ void handle_event(lash_event_t* ev) {
 			printf("LASH saving data set\n");
 		unsigned int w,h;
 		int x,y;
-		Xgetpos(&x,&y); 
+		Xgetpos(&x,&y);
 		lcs_int("window_position",x<<16|y);
-		Xgetsize(&w,&h); 
+		Xgetsize(&w,&h);
 		lcs_int("window_size",w<<16|h);
 		lcs_int("x11_ontop",xj_ontop);
-		lcs_int("x11_fullscreen",xj_fullscreen); 
-		lcs_int("want_letterbox",want_letterbox); 
-		lcs_int("want_genpts",want_genpts); 
-		lcs_int("want_ignstart",want_ignstart); 
-		lcs_int("want_dropframes",want_dropframes); 
-		lcs_int("want_autodrop",want_autodrop); 
+		lcs_int("x11_fullscreen",xj_fullscreen);
+		lcs_int("want_letterbox",want_letterbox);
+		lcs_int("want_genpts",want_genpts);
+		lcs_int("want_ignstart",want_ignstart);
+		lcs_int("want_dropframes",want_dropframes);
+		lcs_int("want_autodrop",want_autodrop);
 #ifdef HAVE_MIDI
 		if (midi_connected())  lcs_int("syncsource",2);
 		else
 #endif
-		if (jack_connected())  lcs_int("syncsource",1);
-		else lcs_int("syncsource",0);
+			if (jack_connected())  lcs_int("syncsource",1);
+			else lcs_int("syncsource",0);
 
 		lcs_str("current_file",current_file?current_file:"");
 		lcs_int("seekflags",seekflags);
@@ -135,10 +173,10 @@ void handle_event(lash_event_t* ev) {
 		lcs_dbl("update_fps",delay);
 		lcs_dbl("file_fps",filefps);
 		lcs_int("OSD_mode",OSD_mode);
-	//	lcs_int("OSD_sx",OSD_sx);
+		//lcs_int("OSD_sx",OSD_sx);
 		lcs_int("OSD_sy",OSD_sy);
 		lcs_int("OSD_mode",OSD_mode);
-	//	lcs_int("OSD_fx",OSD_fx);
+		//lcs_int("OSD_fx",OSD_fx);
 		lcs_int("OSD_fy",OSD_fy);
 		lcs_int("OSD_mode",OSD_mode);
 		lcs_int("OSD_mode",OSD_mode);
@@ -148,20 +186,20 @@ void handle_event(lash_event_t* ev) {
 		lcs_int("OSD_mode",OSD_mode);
 		lcs_int("OSD_tx",OSD_tx);
 		lcs_int("OSD_ty",OSD_ty);
-	#ifdef HAVE_MIDI
+#ifdef HAVE_MIDI
 		lcs_int("MIDI_clkconvert",midi_clkconvert);
 		lcs_int("MIDI_clkadj",midi_clkadj);
 		lcs_str("MIDI_ID",(strlen(midiid)>0 && midi_connected())?midiid:"-2");
-	#endif
+#endif
 		lash_send_event(lash_client, lash_event_new_with_type(LASH_Save_Data_Set));
 	} else if (type == LASH_Quit) {
 		loop_flag=0;
-	} else 
+	} else
 		if (want_debug)
 			printf ("WARNING: unhandled LASH Event t:%i s:'%s'\n",type,str);
 }
 
-void handle_config(lash_config_t* conf, jdo_config* jcfg) {
+static void handle_config(lash_config_t* conf, jdo_config* jcfg) {
 	const char*    key      = NULL;
 	key      = lash_config_get_key(conf);
 
@@ -170,7 +208,7 @@ void handle_config(lash_config_t* conf, jdo_config* jcfg) {
 		//printf("LASH config: open movie: %s\n",mfile);
 		if (strlen(mfile))
 			xapi_open((char *) lash_config_get_value_string (conf));
-		else 
+		else
 			xapi_close(NULL);
 	} else if (!strcmp(key,"seekflags")) {
 		seekflags =  lash_config_get_value_int(conf);
@@ -185,22 +223,20 @@ void handle_config(lash_config_t* conf, jdo_config* jcfg) {
 		if (smpte_offset) free(smpte_offset); smpte_offset=NULL;
 		if (strlen(moff))
 			smpte_offset=strdup(moff);
-//	} else if (!strcmp(key,"framerate")) {
-//		framerate =  lash_config_get_value_double(conf); 
 	} else if (!strcmp(key,"file_fps")) {
 		filefps =  lash_config_get_value_double(conf);
 		override_fps(filefps);
 
-// remote_en needs to be set on startup! - TODO
-// or we'd need to call remote_open here...
-//	} else if (!strcmp(key,"remote_en")) {
-//#if HAVE_MQ
-//		remote_en=1;
-//#endif
-//	notify frame??  No.
-//		remote_mode = lash_config_get_value_int(conf);
-//
-			/* OSD -settings */
+		// remote_en needs to be set on startup! - TODO
+		// or we'd need to call remote_open here...
+		//	} else if (!strcmp(key,"remote_en")) {
+		//#if HAVE_MQ
+		//		remote_en=1;
+		//#endif
+		//	notify frame??  No.
+		//		remote_mode = lash_config_get_value_int(conf);
+		//
+		/* OSD -settings */
 	} else if (!strcmp(key,"OSD_text")) {
 		strncpy(OSD_text,lash_config_get_value_string (conf),127);
 		OSD_text[127]=0;
@@ -215,18 +251,18 @@ void handle_config(lash_config_t* conf, jdo_config* jcfg) {
 	} else if (!strcmp(key,"OSD_fy")) { OSD_fy = lash_config_get_value_int(conf);
 	} else if (!strcmp(key,"OSD_ty")) { OSD_ty = lash_config_get_value_int(conf);
 	} else if (!strcmp(key,"OSD_sy")) { OSD_sy = lash_config_get_value_int(conf);
-			/* jack/midi/offline */
+		/* jack/midi/offline */
 	} else if (!strcmp(key,"syncsource")) {
 		switch(lash_config_get_value_int(conf)) {
-			case 1: 
+			case 1:
 				if (want_verbose)
 					printf("LASH: setting sync source to JACK\n");
-	#ifdef HAVE_MIDI
+#ifdef HAVE_MIDI
 				midi_close();
-	#endif
+#endif
 				open_jack();
 				break;
-			case 2: 
+			case 2:
 				if (want_verbose)
 					printf("LASH: setting sync source to midi\n");
 				close_jack();
@@ -236,29 +272,29 @@ void handle_config(lash_config_t* conf, jdo_config* jcfg) {
 				if (want_verbose)
 					printf("LASH: setting no sync source. (manual seek)\n");
 				close_jack();
-	#ifdef HAVE_MIDI
+#ifdef HAVE_MIDI
 				midi_close();
-	#endif
+#endif
 		}
-			/* MIDI */
+		/* MIDI */
 	} else if (!strcmp(key,"MIDI_clkadj")) {
-	#ifdef HAVE_MIDI
+#ifdef HAVE_MIDI
 		midi_clkadj = lash_config_get_value_int(conf);
-	#endif
+#endif
 	} else if (!strcmp(key,"MIDI_clkconvert")) {
-	#ifdef HAVE_MIDI
+#ifdef HAVE_MIDI
 		midi_clkconvert = lash_config_get_value_int(conf);
-	#endif
+#endif
 	} else if (!strcmp(key,"MIDI_ID")) {
-	#ifdef HAVE_MIDI
+#ifdef HAVE_MIDI
 		// TODO: check if we got the same midi library (alsa,portmidi) as the Lash session.
 		// can we use LASH to remember MIDI connections ?!?
 		strncpy(midiid,lash_config_get_value_string (conf),32);
 		midiid[31]=0;
-		if (strlen(midiid) > 0) 
+		if (strlen(midiid) > 0)
 			if (atoi(midiid)>-2) midi_open(midiid);
-	#endif
-			/* Window Settings  */
+#endif
+		/* Window Settings  */
 	} else if (!strcmp(key,"want_letterbox")) {
 		want_letterbox= lash_config_get_value_long(conf);
 	} else if (!strcmp(key,"want_genpts")) {
@@ -272,15 +308,15 @@ void handle_config(lash_config_t* conf, jdo_config* jcfg) {
 	} else if (!strcmp(key,"window_size")) {
 		if (want_debug )
 			printf("LASH config: window size %ix%i\n",
-				(lash_config_get_value_int(conf)>>16)&0xffff,
-				lash_config_get_value_int(conf)&0xffff);
+					(lash_config_get_value_int(conf)>>16)&0xffff,
+					lash_config_get_value_int(conf)&0xffff);
 		jcfg->winsize_x=(lash_config_get_value_int(conf)>>16)&0xffff,
-		jcfg->winsize_y=lash_config_get_value_int(conf)&0xffff;
+			jcfg->winsize_y=lash_config_get_value_int(conf)&0xffff;
 		jcfg->apply=1;
 		//Xresize((lash_config_get_value_int(conf)>>16)&0xffff,lash_config_get_value_int(conf)&0xffff);
 	} else if (!strcmp(key,"window_position")) {
 		jcfg->winpos_x=(lash_config_get_value_int(conf)>>16)&0xffff,
-		jcfg->winpos_y=lash_config_get_value_int(conf)&0xffff;
+			jcfg->winpos_y=lash_config_get_value_int(conf)&0xffff;
 		jcfg->apply=1;
 		//Xposition((lash_config_get_value_int(conf)>>16)&0xffff,lash_config_get_value_int(conf)&0xffff);
 	} else if (!strcmp(key,"x11_ontop")) {
@@ -305,19 +341,19 @@ void lash_setup() {
 	event = lash_event_new_with_type(LASH_Client_Name);
 	lash_event_set_string(event, "Xjadeo");
 	lash_send_event(lash_client, event);
-/*
-	lc = lash_config_new_with_key("current_file");
-	lash_config_set_value_string (lc, current_file);
-	lash_send_config(lash_client, lc);
+	/*
+		 lc = lash_config_new_with_key("current_file");
+		 lash_config_set_value_string (lc, current_file);
+		 lash_send_config(lash_client, lc);
 
-	lc = lash_config_new_with_key("ts_offset");
-	lash_config_set_value_int (lc, ts_offset);
-	lash_send_config(lash_client, lc);
+		 lc = lash_config_new_with_key("ts_offset");
+		 lash_config_set_value_int (lc, ts_offset);
+		 lash_send_config(lash_client, lc);
 
-	lc = lash_config_new_with_key("fps");
-	lash_config_set_value_double (lc, filefps);
-	lash_send_config(lash_client, lc);
-*/
+		 lc = lash_config_new_with_key("fps");
+		 lash_config_set_value_double (lc, filefps);
+		 lash_send_config(lash_client, lc);
+		 */
 }
 #endif
 
@@ -342,50 +378,11 @@ void lash_process() {
 		if (jcfg.winpos_x > 0 && jcfg.winpos_y > 0)
 			Xposition(jcfg.winpos_x,jcfg.winpos_y);
 		if (jcfg.winsize_x < 2 || jcfg.winsize_y < 2)
-			Xgetsize(&jcfg.winsize_x,&jcfg.winsize_y); 
+			Xgetsize(&jcfg.winsize_x,&jcfg.winsize_y);
 		if (want_debug)
 			printf("LASH apply window size: %i %i\n",jcfg.winsize_x,jcfg.winsize_y);
 		Xresize(jcfg.winsize_x,jcfg.winsize_y);
 	}
-	
-#endif
-}
 
-void lcs_str(char *key, char *value) {
-#ifdef HAVE_LASH
-	lash_config_t *lc = lash_config_new_with_key(key);
-	lash_config_set_value_string (lc, value);
-	lash_send_config(lash_client, lc);
-	//printf("DEBUG - LASH config str: %s -> %i\n",key,value);
 #endif
 }
-
-void lcs_long(char *key, long int value) {
-#ifdef HAVE_LASH
-	lash_config_t *lc;
-	lc = lash_config_new_with_key(key);
-	lash_config_set_value (lc, (void*) &value, sizeof(long int));
-	lash_send_config(lash_client, lc);
-	//printf("DEBUG - LASH config long %ld -> %i\n",key,value);
-#endif
-}
-void lcs_int(char *key, int value) {
-#ifdef HAVE_LASH
-	lash_config_t *lc;
-	lc = lash_config_new_with_key(key);
-	lash_config_set_value_int (lc, value);
-	lash_send_config(lash_client, lc);
-	//printf("DEBUG - LASH config int: %i -> %i\n",key,value);
-#endif
-}
-
-void lcs_dbl(char *key, double value) {
-#ifdef HAVE_LASH
-	lash_config_t *lc;
-	lc = lash_config_new_with_key(key);
-	lash_config_set_value_double (lc, value);
-	lash_send_config(lash_client, lc);
-	//printf("DEBUG - LASH config dbl %g -> %i\n",key,value);
-#endif
-}
-

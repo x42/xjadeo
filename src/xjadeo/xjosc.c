@@ -1,10 +1,10 @@
-/* 
+/*
    xjadeo - OSC remote control
 
    Copyright (C) 2007,2009 Robin Gareus
 
    This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License version 2 
+   it under the terms of the GNU General Public License version 2
    as published by the Free Software Foundation;
 
    This program is distributed in the hope that it will be useful,
@@ -14,7 +14,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software Foundation,
-   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
 
@@ -54,59 +54,63 @@ extern int    wraparound;
 #endif
 
 #ifdef CROPIMG
-  extern int xoffset;
+extern int xoffset;
 #endif
 
 extern double	delay;
 extern double	framerate;
 
-int oscb_seek (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+// OSD
+extern char OSD_fontfile[1024];
+extern int OSD_mode;
+
+static int oscb_seek (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   if (want_verbose) fprintf(stderr, "OSC: %s <- i:%i\n", path, argv[0]->i);
   userFrame=argv[0]->i;
   return(0);
 }
 
-int oscb_fps (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+static int oscb_fps (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   if (want_verbose) fprintf(stderr, "OSC: %s <- f:%f\n", path, argv[0]->f);
   if (argv[0]->f>0) delay= 1.0 / argv[0]->f;
   else delay = -1; // use file-framerate
   return(0);
 }
 
-int oscb_framerate (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+static int oscb_framerate (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   if (want_verbose) fprintf(stderr, "OSC: %s <- f:%f\n", path, argv[0]->f);
   filefps=argv[0]->f;
   override_fps(filefps);
   return(0);
 }
 
-int oscb_offset (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+static int oscb_offset (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   if (want_verbose) fprintf(stderr, "OSC: %s <- i:%i\n", path, argv[0]->i);
   ts_offset = argv[0]->i;
   return(0);
 }
 
-int oscb_offsetsmpte (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+static int oscb_offsetsmpte (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   if (want_verbose) fprintf(stderr, "OSC: %s <- s:%s\n", path, &argv[0]->s);
   ts_offset = smptestring_to_frame((char*)&argv[0]->s);
   return(0);
 }
 
-int oscb_jackconnect (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+static int oscb_jackconnect (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   open_jack();
   return(0);
 }
 
-int oscb_jackdisconnect (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+static int oscb_jackdisconnect (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   close_jack();
   return(0);
 }
 
 #ifdef HAVE_MIDI
-int oscb_midiconnect (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+static int oscb_midiconnect (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   char *mp;
-  if (&argv[0]->s && strlen(&argv[0]->s)>0) mp=&argv[0]->s; 
-  else mp="-1"; 
+  if (&argv[0]->s && strlen(&argv[0]->s)>0) mp=&argv[0]->s;
+  else mp="-1";
   midi_open(mp);
   if (midi_connected()) {
     strncpy(midiid,mp,32);
@@ -115,18 +119,18 @@ int oscb_midiconnect (const char *path, const char *types, lo_arg **argv, int ar
   return(0);
 }
 
-int oscb_mididisconnect (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+static int oscb_mididisconnect (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   midi_close();
   return(0);
 }
 
-int oscb_midiquarterframes (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+static int oscb_midiquarterframes (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   if (want_verbose) fprintf(stderr, "OSC: %s <- i:%i\n", path, argv[0]->i);
   midi_clkadj = argv[0]->i?1:0;
   return(0);
 }
 
-int oscb_midiclkconvert (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+static int oscb_midiclkconvert (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   if (want_verbose) fprintf(stderr, "OSC: %s <- i:%i\n", path, argv[0]->i);
   midi_clkconvert = argv[0]->i;
   return(0);
@@ -134,14 +138,14 @@ int oscb_midiclkconvert (const char *path, const char *types, lo_arg **argv, int
 #endif
 
 #ifdef TIMEMAP
-int oscb_timescale (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+static int oscb_timescale (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   if (want_verbose) fprintf(stderr, "OSC: %s <- f:%f\n", path, argv[0]->f);
   timescale=argv[0]->f;
   force_redraw=1;
   return(0);
 }
 
-int oscb_timescale2 (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+static int oscb_timescale2 (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   if (want_verbose) fprintf(stderr, "OSC: %s <- f:%f i:%i\n", path, argv[0]->f, argv[1]->i);
   timescale=argv[0]->f;
   timeoffset=argv[1]->i;
@@ -149,35 +153,35 @@ int oscb_timescale2 (const char *path, const char *types, lo_arg **argv, int arg
   return(0);
 }
 
-int oscb_loop (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+static int oscb_loop (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   if (want_verbose) fprintf(stderr, "OSC: %s <- i:%i\n", path, argv[0]->i);
   wraparound = argv[0]->i?1:0;
   return(0);
 }
 
-int oscb_reverse (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+static int oscb_reverse (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   if (want_verbose) fprintf(stderr, "OSC: %s\n", path);
-  timescale *= -1.0; 
-  if (timescale<0) 
+  timescale *= -1.0;
+  if (timescale<0)
     timeoffset = (-2.0*timescale) * dispFrame; // TODO: check file-offset and ts_offset. -> also in remote.c
-  else 
+  else
     timeoffset = 0; // TODO - applt diff dispFrame <> transport src
   return(0);
 }
 #endif
 
 #ifdef CROPIMG
-int oscb_pan (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+static int oscb_pan (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   if (want_verbose) fprintf(stderr, "OSC: %s <- i:%i\n", path, argv[0]->i);
   xoffset=argv[0]->i;
   if (xoffset<0) xoffset=0;
-  if (xoffset>movie_width) xoffset=movie_width; 
+  if (xoffset>movie_width) xoffset=movie_width;
   force_redraw=1;
   return(0);
 }
 #endif
 
-int oscb_load (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+static int oscb_load (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   if (1 || want_verbose) fprintf(stderr, "OSC: %s <- s:%s\n", path, &argv[0]->s);
   open_movie(&argv[0]->s);
   init_moviebuffer();
@@ -186,19 +190,15 @@ int oscb_load (const char *path, const char *types, lo_arg **argv, int argc, lo_
   return(0);
 }
 
-// OSD
-extern char OSD_fontfile[1024]; 
-extern int OSD_mode;
-
-int oscb_osdfont (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+static int oscb_osdfont (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   if (1 || want_verbose) fprintf(stderr, "OSC: %s <- s:%s\n", path, &argv[0]->s);
   snprintf(OSD_fontfile,1024,"%s",(char*) &argv[0]->s);
   return(0);
 }
 
-int oscb_osdframe (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+static int oscb_osdframe (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   if (want_verbose) fprintf(stderr, "OSC: %s <- i:%i\n", path, argv[0]->i);
-  if (argv[0]->i) 
+  if (argv[0]->i)
     OSD_mode|=OSD_FRAME;
   else
     OSD_mode&=~OSD_FRAME;
@@ -206,9 +206,9 @@ int oscb_osdframe (const char *path, const char *types, lo_arg **argv, int argc,
   return(0);
 }
 
-int oscb_osdsmtpe (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+static int oscb_osdsmtpe (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   if (want_verbose) fprintf(stderr, "OSC: %s <- i:%i\n", path, argv[0]->i);
-  if (argv[0]->i) 
+  if (argv[0]->i)
     OSD_mode|=OSD_SMPTE;
   else
     OSD_mode&=~OSD_SMPTE;
@@ -216,9 +216,9 @@ int oscb_osdsmtpe (const char *path, const char *types, lo_arg **argv, int argc,
   return(0);
 }
 
-int oscb_osdbox (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+static int oscb_osdbox (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   if (want_verbose) fprintf(stderr, "OSC: %s <- i:%i\n", path, argv[0]->i);
-  if (argv[0]->i) 
+  if (argv[0]->i)
     OSD_mode|=OSD_BOX;
   else
     OSD_mode&=~OSD_BOX;
@@ -226,16 +226,15 @@ int oscb_osdbox (const char *path, const char *types, lo_arg **argv, int argc, l
   return(0);
 }
 
-int oscb_remotecmd (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+static int oscb_remotecmd (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   if (want_verbose) fprintf(stderr, "OSC: %s <- s:%s\n", path, &argv[0]->s);
   exec_remote_cmd (&argv[0]->s);
   return(0);
 }
 
 // X11 options
-
-/*
-int oscb_fullscreen (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+#if 0
+static int oscb_fullscreen (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   if (want_verbose) fprintf(stderr, "OSC: %s <- i:%i\n", path, argv[0]->i);
   int action=_NET_WM_STATE_TOGGLE;
   if (!strcmp(d,"on") || atoi(d)==1) action=_NET_WM_STATE_ADD;
@@ -245,7 +244,7 @@ int oscb_fullscreen (const char *path, const char *types, lo_arg **argv, int arg
   return(0);
 }
 
-int oscb_mousepointer (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+static int oscb_mousepointer (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   if (want_verbose) fprintf(stderr, "OSC: %s <- i:%i\n", path, argv[0]->i);
   int action=2;
   if (!strcmp(d,"on") || atoi(d)==1) action=1;
@@ -254,11 +253,11 @@ int oscb_mousepointer (const char *path, const char *types, lo_arg **argv, int a
   remote_printf(100,"ok.");
   return(0);
 }
-*/
+#endif
 
 // general
 
-int oscb_quit (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+static int oscb_quit (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
   fprintf(stderr, "OSC 'quit' command recv.\n");
   loop_flag=0;
   return(0);
@@ -270,7 +269,7 @@ static void oscb_error(int num, const char *m, const char *path) {
 
 //////////////////////////////////////////////////////////////////////////////
 
-lo_server osc_server = NULL;
+static lo_server osc_server = NULL;
 
 int initialize_osc(int osc_port) {
   char tmp[8];
@@ -279,7 +278,7 @@ int initialize_osc(int osc_port) {
   snprintf(tmp, sizeof(tmp), "%d", port);
   fprintf(stderr, "OSC trying port:%i\n",port);
   osc_server = lo_server_new (tmp, oscb_error);
-//fprintf (stderr,"OSC port %i is in use.\n", port);
+  //fprintf (stderr,"OSC port %i is in use.\n", port);
 
   if (!osc_server) {
     if(!want_quiet) fprintf(stderr, "OSC start failed.");

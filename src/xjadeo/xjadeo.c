@@ -12,12 +12,12 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  */
 /* Credits:
- * 
- * xjadeo: 
+ *
+ * xjadeo:
  *  Luis Garrido <luisgarrido@users.sourceforge.net>
  *  Robin Gareus <robin@gareus.org>
  *
@@ -52,7 +52,7 @@ extern AVCodecContext    *pCodecCtx;
 extern AVFrame           *pFrame;
 extern AVFrame           *pFrameFMT;
 extern uint8_t           *buffer;
-struct SwsContext *pSWSCtx; 
+struct SwsContext *pSWSCtx;
 
 // needs to be set before calling movie_open
 extern int	render_fmt;
@@ -62,7 +62,7 @@ extern double	duration;
 extern double	framerate;
 extern long	frames;
 extern int64_t	file_frame_offset;
-extern int have_dropframes; 
+extern int have_dropframes;
 
 /* Option flags and variables */
 extern char    *current_file;
@@ -91,7 +91,7 @@ extern int  use_ltc;
 
 #ifdef TIMEMAP
 long		timeoffset = 0;
-double		timescale = 1.0;
+double	timescale = 1.0;
 int 		wraparound = 0;
 #endif
 
@@ -103,7 +103,7 @@ extern int	OSD_mode;
 const AVRational c1_Q = { 1, 1 };
 double 		tpf = 1.0; /* pts/dts increments per video-frame - cached value */
 
-static int      fFirstTime=1;
+static int fFirstTime=1;
 
 #ifdef JACK_SESSION
 extern int jack_session_restore;
@@ -113,7 +113,7 @@ extern int js_winw;
 extern int js_winh;
 #endif
 
-void js_apply() {
+static void js_apply() {
 #ifdef JACK_SESSION
 	if (jack_session_restore) {
 		jack_session_restore = 0;
@@ -127,8 +127,8 @@ void js_apply() {
 //--------------------------------------------
 // main event loop
 //--------------------------------------------
-//
-int select_sleep (int usec) {
+
+static int select_sleep (int usec) {
 	int remote_activity = 0;
 	fd_set fd;
 	int max_fd=0;
@@ -152,7 +152,7 @@ int select_sleep (int usec) {
 	remote_activity |= process_osc();
 #endif
 	if (remote_activity) {
-	  tv.tv_sec = 0; tv.tv_usec = 1;
+		tv.tv_sec = 0; tv.tv_usec = 1;
 	}
 #if 0 /* pselect sleep */
 	struct timespec	ts;
@@ -187,7 +187,7 @@ void event_loop(void) {
 
 		if (loop_run==0) {  // CHECK: && !force_redraw ?!
 			/* video offline - (eg. window minimized)
-			 * do not update frame 
+			 * do not update frame
 			 */
 			select_sleep(2e5L);
 			handle_X_events();
@@ -201,11 +201,11 @@ void event_loop(void) {
 		else
 #endif
 #if (defined HAVE_LTCSMPTE || defined HAVE_LTC)
-		if (ltcjack_connected()) newFrame = ltc_poll_frame();
-		else
+			if (ltcjack_connected()) newFrame = ltc_poll_frame();
+			else
 #endif
 
-		newFrame = jack_poll_frame();
+				newFrame = jack_poll_frame();
 
 		if (newFrame <0 ) newFrame=userFrame;
 
@@ -224,7 +224,7 @@ void event_loop(void) {
 		// TODO: calc newFrames/frames instead of while-loop
 		while (newFrame > frames && wraparound && frames!=0)
 			newFrame-=frames;
-		while (newFrame < 0 && wraparound && frames!=0) 
+		while (newFrame < 0 && wraparound && frames!=0)
 			newFrame+=frames;
 #endif
 
@@ -234,11 +234,12 @@ void event_loop(void) {
 
 		if ((remote_en||mq_en||ipc_queue)
 				&& ( (remote_mode&NTY_FRAMELOOP) || ((remote_mode&NTY_FRAMECHANGE)&& curFrame!=dispFrame))
-				) {
-		/*call 	xapi_pposition ?? -> rv:200
-		 * dispFrame is the currently displayed frame 
-		 * = SMPTE + offset
-		 */
+			 )
+		{
+			/*call xapi_pposition ?? -> rv:200
+			 * dispFrame is the currently displayed frame
+			 * = SMPTE + offset
+			 */
 			remote_printf(301,"position=%li",dispFrame);
 		}
 		force_redraw=0;
@@ -246,20 +247,20 @@ void event_loop(void) {
 
 		if (splashed) {
 			if (splashed == -1) {
-				splashed =  4.5/dly;	
+				splashed =  4.5/dly;
 			}
 			splash(buffer);
 		}
 
 		if(want_verbose) {
-		#if 0
+#if 0
 			fprintf(stdout, "frame: smpte:%li    \r", newFrame);
-		#else
+#else
 			char tempsmpte[15];
 			frame_to_smptestring(tempsmpte,newFrame);
 			fprintf(stdout, "smpte: %s f:%li\r", tempsmpte,newFrame);
-		#endif
-			fflush(stdout); 
+#endif
+			fflush(stdout);
 		}
 
 		handle_X_events();
@@ -278,7 +279,7 @@ void event_loop(void) {
 		}
 		clock1.tv_sec=clock2.tv_sec;
 		clock1.tv_usec=clock2.tv_usec;
-	} 
+	}
 	if ((remote_en||mq_en||ipc_queue) && (remote_mode&4)) {
 		// send current settings
 		xapi_pfullscreen(NULL);
@@ -295,7 +296,7 @@ void event_loop(void) {
 // Manage video file
 //--------------------------------------------
 
-void render_empty_frame(int blit);
+static void render_empty_frame(int blit);
 
 void init_moviebuffer(void) {
 	int     numBytes;
@@ -310,7 +311,7 @@ void init_moviebuffer(void) {
 #endif
 	buffer=(uint8_t *) calloc(1,numBytes);
 
-// Assign appropriate parts of buffer to image planes in pFrameFMT
+	// Assign appropriate parts of buffer to image planes in pFrameFMT
 	if (pFrameFMT) {
 		avpicture_fill((AVPicture *)pFrameFMT, buffer, render_fmt, movie_width, movie_height);
 #ifdef HAVE_SWSCALE
@@ -408,37 +409,36 @@ int open_movie(char* file_name) {
 
 	av_stream = pFormatCtx->streams[videoStream];
 
-// At LIBAVFORMAT_BUILD==4624 r_frame_rate becomes an AVRational. Before it was an int.
+	// At LIBAVFORMAT_BUILD==4624 r_frame_rate becomes an AVRational. Before it was an int.
 	if (filefps >0 ) framerate=filefps;
 #if LIBAVFORMAT_BUILD <= 4616
 	else framerate = (double) av_stream->codec.frame_rate / (double) av_stream->codec.frame_rate_base;
 #elif LIBAVFORMAT_BUILD <= 4623 // I'm not sure that this is correct:
 	else framerate = (double) av_stream->r_frame_rate / (double) av_stream->r_frame_rate_base;
 #else
-	else if(av_stream->r_frame_rate.den && av_stream->r_frame_rate.num) {
-		framerate = av_q2d(av_stream->r_frame_rate);
-		if ((framerate < 4 || framerate > 100 ) && (av_stream->time_base.num && av_stream->time_base.den))
-			framerate = 1.0/av_q2d(av_stream->time_base);
-	}
-	else framerate = 1.0/av_q2d(av_stream->time_base);
+			else if(av_stream->r_frame_rate.den && av_stream->r_frame_rate.num) {
+				framerate = av_q2d(av_stream->r_frame_rate);
+				if ((framerate < 4 || framerate > 100 ) && (av_stream->time_base.num && av_stream->time_base.den))
+					framerate = 1.0/av_q2d(av_stream->time_base);
+			}
+			else framerate = 1.0/av_q2d(av_stream->time_base);
 #endif
 
 	// detect drop frame timecode
 	if (fabs(framerate - 30000.0/1001.0) < 0.01) {
 		have_dropframes=1;
-	  if(!want_quiet)
-		  fprintf(stdout, "enabled drop-frame-timecode (use -n to override).\n");
+		if(!want_quiet)
+			fprintf(stdout, "enabled drop-frame-timecode (use -n to override).\n");
 	}
 
 #if defined(__BIG_ENDIAN__) && (__ppc__) && LIBAVFORMAT_BUILD <= 4616
-// this cast is weird, but it works.. the bytes seem to be in 'correct' order, but the two
-// 4byte-words are swapped. ?!
-// I wonder how this behaves on a 64bit arch 
-// - maybe it's bug in ffmpeg or all video files I tried had a bad header :D
+	// this cast is weird, but it works.. the bytes seem to be in 'correct' order, but the two
+	// 4byte-words are swapped. ?!
+	// I wonder how this behaves on a 64bit arch
+	// - maybe it's bug in ffmpeg or all video files I tried had a bad header :D
 	int64_t dur = (int64_t) (pFormatCtx->duration);
 	duration = ( ((double) (((dur&0xffffffff)<<32)|((dur>>32)&0xffffffff))) / (double) AV_TIME_BASE );
 #else
-//	duration = (double) (((double) (pFormatCtx->duration - pFormatCtx->start_time))/ (double) AV_TIME_BASE);
 	duration = (double) (((double) (pFormatCtx->duration))/ (double) AV_TIME_BASE);
 #endif
 	frames = (long) (framerate * duration);
@@ -457,9 +457,9 @@ int open_movie(char* file_name) {
 	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset);
 
 	if (!want_quiet) {
-		if (filefps >0 ) 
+		if (filefps >0 )
 			fprintf(stdout, "overridden frame rate: %g\n", framerate);
-		else 
+		else
 			fprintf(stdout, "original frame rate: %g\n", framerate);
 		fprintf(stdout, "length in seconds: %g\n", duration);
 		fprintf(stdout, "total frames: %ld\n", frames);
@@ -503,11 +503,10 @@ int open_movie(char* file_name) {
 		ffctv_height = ((int)rint(pCodecCtx->width / movie_aspect)) & ~1;
 	}
 
-// somewhere around LIBAVFORMAT_BUILD  4630 
+	// somewhere around LIBAVFORMAT_BUILD  4630
 #ifdef AVFMT_FLAG_GENPTS
 	if (want_genpts)
 		pFormatCtx->flags|=AVFMT_FLAG_GENPTS;
-	//pFormatCtx->flags|=AVFMT_FLAG_IGNIDX;
 #endif
 
 	if (!want_quiet) {
@@ -557,12 +556,11 @@ int open_movie(char* file_name) {
 	return( 0 );
 }
 
-
 void override_fps (double fps) {
 	if (fps <= 0) return;
 
 	framerate =  fps;
-	frames = (long) (framerate * duration); 
+	frames = (long) (framerate * duration);
 #if LIBAVFORMAT_BUILD <= 4623  // check if correct;
 	tpf = (double) framerate / (double) pCodecCtx->frame_rate * (double) pCodecCtx->frame_rate_base;
 #elif LIBAVFORMAT_BUILD <= 4629 // check if correct;
@@ -574,16 +572,16 @@ void override_fps (double fps) {
 	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset);
 }
 
-int64_t my_avprev = 0; // last recent seeked timestamp
+static int64_t my_avprev = 0; // last recent seeked timestamp
 
-void render_empty_frame(int blit) {
+static void render_empty_frame(int blit) {
 	if (!buffer) return;
 	// clear image (black / or YUV green)
 	if (render_fmt == PIX_FMT_UYVY422) {
 		int i;
 		for (i=0;i<movie_width*movie_height*2;i+=2) {
-		 buffer[i]=0x80;
-		 buffer[i+1]=0x00;
+			buffer[i]=0x80;
+			buffer[i+1]=0x00;
 		}
 	}
 	else if (render_fmt == PIX_FMT_YUV420P) {
@@ -612,53 +610,53 @@ void render_empty_frame(int blit) {
 #ifdef DRAW_CROSS
 	int x,y;
 	if (render_fmt == PIX_FMT_UYVY422)
-	for (x=0,y=0;x< movie_width-1; x++,y= movie_height*x/movie_width) {
-		 int off=(2*x+2*movie_width*y);
-		 buffer[off]=127; buffer[off+1]=127; 
+		for (x=0,y=0;x< movie_width-1; x++,y= movie_height*x/movie_width) {
+			int off=(2*x+2*movie_width*y);
+			buffer[off]=127; buffer[off+1]=127;
 
-		 off=(2*x+2*movie_width*(movie_height-y-1));
-		 buffer[off]=127; buffer[off+1]=127;
-	}
-	if (render_fmt == PIX_FMT_YUV420P) 
-	for (x=0,y=0;x< movie_width-1; x++,y= movie_height*x/movie_width) {
-		 int yoff=(x+movie_width*y);
-		 //int uvoff=((x/2)+movie_width/2*(y/2));
-		 buffer[yoff]=127; buffer[yoff+1]=127; 
+			off=(2*x+2*movie_width*(movie_height-y-1));
+			buffer[off]=127; buffer[off+1]=127;
+		}
+	if (render_fmt == PIX_FMT_YUV420P)
+		for (x=0,y=0;x< movie_width-1; x++,y= movie_height*x/movie_width) {
+			int yoff=(x+movie_width*y);
+			//int uvoff=((x/2)+movie_width/2*(y/2));
+			buffer[yoff]=127; buffer[yoff+1]=127;
 
-		 yoff=(x+movie_width*(movie_height-y-1));
-		 //uvoff=((x/2)+movie_width/2*((movie_height-y-1)/2));
-		 buffer[yoff]=127; buffer[yoff+1]=127;
-	}
-	if (render_fmt == PIX_FMT_RGB24) 
-	for (x=0,y=0;x< movie_width-1; x++,y= movie_height*x/movie_width) {
-		int yoff=3*(x+movie_width*y);
-		buffer[yoff]=255;
-		buffer[yoff+1]=255;
-		buffer[yoff+2]=255;
-		yoff=3*(x+movie_width*(movie_height-y-1));
-		buffer[yoff]=255;
-		buffer[yoff+1]=255;
-		buffer[yoff+2]=255;
-	}
+			yoff=(x+movie_width*(movie_height-y-1));
+			//uvoff=((x/2)+movie_width/2*((movie_height-y-1)/2));
+			buffer[yoff]=127; buffer[yoff+1]=127;
+		}
+	if (render_fmt == PIX_FMT_RGB24)
+		for (x=0,y=0;x< movie_width-1; x++,y= movie_height*x/movie_width) {
+			int yoff=3*(x+movie_width*y);
+			buffer[yoff]=255;
+			buffer[yoff+1]=255;
+			buffer[yoff+2]=255;
+			yoff=3*(x+movie_width*(movie_height-y-1));
+			buffer[yoff]=255;
+			buffer[yoff+1]=255;
+			buffer[yoff+2]=255;
+		}
 	if (render_fmt == PIX_FMT_RGBA32 || render_fmt == PIX_FMT_BGRA32)
-	for (x=0,y=0;x< movie_width-1; x++,y= movie_height*x/movie_width) {
-		int yoff=4*(x+movie_width*y);
-		buffer[yoff]=255;
-		buffer[yoff+1]=255;
-		buffer[yoff+2]=255;
-		buffer[yoff+3]=255;
-		yoff=4*(x+movie_width*(movie_height-y-1));
-		buffer[yoff]=255;
-		buffer[yoff+1]=255;
-		buffer[yoff+2]=255;
-		buffer[yoff+3]=255;
-	}
+		for (x=0,y=0;x< movie_width-1; x++,y= movie_height*x/movie_width) {
+			int yoff=4*(x+movie_width*y);
+			buffer[yoff]=255;
+			buffer[yoff+1]=255;
+			buffer[yoff+2]=255;
+			buffer[yoff+3]=255;
+			yoff=4*(x+movie_width*(movie_height-y-1));
+			buffer[yoff]=255;
+			buffer[yoff+1]=255;
+			buffer[yoff+2]=255;
+			buffer[yoff+3]=255;
+		}
 #endif
 	if (blit)
-		render_buffer(buffer); 
+		render_buffer(buffer);
 }
 
-void reset_video_head(AVPacket *packet) {
+static void reset_video_head(AVPacket *packet) {
 	int             frameFinished=0;
 #if LIBAVFORMAT_BUILD < 4617
 	av_seek_frame(pFormatCtx, videoStream, 0);
@@ -669,9 +667,9 @@ void reset_video_head(AVPacket *packet) {
 
 	while (!frameFinished) {
 		av_read_frame(pFormatCtx, packet);
-		if(packet->stream_index==videoStream) 
+		if(packet->stream_index==videoStream)
 #if LIBAVCODEC_VERSION_MAJOR < 52 || ( LIBAVCODEC_VERSION_MAJOR == 52 && LIBAVCODEC_VERSION_MINOR < 21)
-		avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet->data, packet->size);
+			avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet->data, packet->size);
 #else
 		avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, packet);
 #endif
@@ -683,23 +681,23 @@ void reset_video_head(AVPacket *packet) {
 // TODO: set this high (>1000) if transport stopped and to a low value (<100) if transport is running.
 #define MAX_CONT_FRAMES (500)
 
-int my_seek_frame (AVPacket *packet, int64_t timestamp) {
+static int my_seek_frame (AVPacket *packet, int64_t timestamp) {
 	AVStream *v_stream;
 	int rv=1;
 	int nolivelock = 0;
 	int64_t mtsb = 0;
 	static int ffdebug = 0;
 
-	if (videoStream < 0) return (0); 
+	if (videoStream < 0) return (0);
 	v_stream = pFormatCtx->streams[videoStream];
-	
+
 	if (want_ignstart==1) {
 		timestamp+= file_frame_offset;
 	}
 
-	// TODO: assert  0 < timestamp + ts_offset - (..->start_time)   < length   
-	
-#if LIBAVFORMAT_BUILD > 4629 // verify this version 
+	// TODO: assert  0 < timestamp + ts_offset - (..->start_time)   < length
+
+#if LIBAVFORMAT_BUILD > 4629 // verify this version
 # ifdef FFDEBUG
 	printf("\nDEBUG: want frame=%li  ", (long int) timestamp);
 # endif
@@ -707,9 +705,9 @@ int my_seek_frame (AVPacket *packet, int64_t timestamp) {
 	if (filefps > 0) {
 		timestamp*=tpf;
 	} else {
-	// does not work with -F <double>, but it's more accurate when rounding ratios
-		timestamp=av_rescale_q(timestamp,c1_Q,v_stream->time_base); 
-		timestamp=av_rescale_q(timestamp,c1_Q,v_stream->r_frame_rate); //< timestamp/=framerate; 
+		// does not work with -F <double>, but it's more accurate when rounding ratios
+		timestamp=av_rescale_q(timestamp,c1_Q,v_stream->time_base);
+		timestamp=av_rescale_q(timestamp,c1_Q,v_stream->r_frame_rate); //< timestamp/=framerate;
 	}
 
 # ifdef FFDEBUG
@@ -718,29 +716,29 @@ int my_seek_frame (AVPacket *packet, int64_t timestamp) {
 #endif
 
 #if LIBAVFORMAT_BUILD < 4617
-	rv= av_seek_frame(pFormatCtx, videoStream, timestamp / framerate * 1000000LL); 
+	rv= av_seek_frame(pFormatCtx, videoStream, timestamp / framerate * 1000000LL);
 #else
-	if (seekflags==SEEK_ANY) { 
+	if (seekflags==SEEK_ANY) {
 		rv= av_seek_frame(pFormatCtx, videoStream, timestamp, AVSEEK_FLAG_ANY | AVSEEK_FLAG_BACKWARD) ;
 		avcodec_flush_buffers(pCodecCtx);
-	} else if (seekflags==SEEK_KEY) { 
+	} else if (seekflags==SEEK_KEY) {
 		rv= av_seek_frame(pFormatCtx, videoStream, timestamp, AVSEEK_FLAG_BACKWARD) ;
 		avcodec_flush_buffers(pCodecCtx);
-	} else /* SEEK_CONTINUOUS */ if (my_avprev >= timestamp || ((my_avprev + 32*tpf) < timestamp) ) { 
-		// NOTE: only seek if last-frame is less then 32 frames behind 
+	} else /* SEEK_CONTINUOUS */ if (my_avprev >= timestamp || ((my_avprev + 32*tpf) < timestamp) ) {
+		// NOTE: only seek if last-frame is less then 32 frames behind
 		// else read continuously until we get there :D
 		// FIXME 32: use keyframes interval of video file or cmd-line-arg as threshold.
 		// TODO: do we know if there is a keyframe inbetween now (my_avprev)
 		// and the frame to seek to?? - if so rather seek to that frame than read until then.
-		// and if no keyframe in between my_avprev and ts - prevent backwards seeks even if 
+		// and if no keyframe in between my_avprev and ts - prevent backwards seeks even if
 		// timestamp-my_avprev > threshold! - Oh well.
 
 		// seek to keyframe *BEFORE* this frame
 		//printf("SEEK: %d\n",timestamp);
 		rv= av_seek_frame(pFormatCtx, videoStream, timestamp, AVSEEK_FLAG_BACKWARD) ;
 		avcodec_flush_buffers(pCodecCtx);
-	} 
-#endif 
+	}
+#endif
 
 	if (rv < 0 && (timestamp == 0 || seekflags == SEEK_CONTINUOUS)) {
 		rv = av_seek_frame(pFormatCtx, videoStream, timestamp, 0);
@@ -762,7 +760,6 @@ read_frame:
 	}
 #endif
 	if(packet->stream_index!=videoStream) {
-//		fprintf(stderr, "Not a video frame\n");
 		if (packet->data)
 			av_free_packet(packet);
 		goto read_frame;
@@ -777,18 +774,18 @@ read_frame:
 
 #ifdef FFDEBUG
 	printf("\nDEBUG: got pts=%li dts:%li frame: p:%g d:%g    ##\n",
-		(long int) packet->pts , (long int) packet->dts,
-		packet->pts*framerate*av_q2d(v_stream->time_base),
-		packet->dts*framerate*av_q2d(v_stream->time_base));
+			(long int) packet->pts , (long int) packet->dts,
+			packet->pts*framerate*av_q2d(v_stream->time_base),
+			packet->dts*framerate*av_q2d(v_stream->time_base));
 #endif
-	mtsb = packet->pts;  
+	mtsb = packet->pts;
 
-	if (mtsb == AV_NOPTS_VALUE) { 
+	if (mtsb == AV_NOPTS_VALUE) {
 		mtsb = packet->dts;
 		if (ffdebug==0) { ffdebug=1; if (!want_quiet) fprintf(stderr,"WARNING: video file does not report pts information.\n         resorting to ffmpeg decompression timestamps.\n         consider to transcode the file or use the --genpts option.\n"); }
 	}
 
-	if (mtsb == AV_NOPTS_VALUE) { 
+	if (mtsb == AV_NOPTS_VALUE) {
 		if (ffdebug<2) { ffdebug=2; if (!want_quiet) fprintf(stderr,"ERROR: neither the video file nor the ffmpeg decoder were able to\n       provide a video frame timestamp."); }
 		av_free_packet(packet);
 		return (0);
@@ -815,7 +812,7 @@ read_frame:
 #endif
 	//my_avprev= mtsb;
 
-	int frameFinished; 
+	int frameFinished;
 #if LIBAVCODEC_VERSION_MAJOR < 52 || ( LIBAVCODEC_VERSION_MAJOR == 52 && LIBAVCODEC_VERSION_MINOR < 21)
 	avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet->data, packet->size);
 #else
@@ -829,7 +826,7 @@ read_frame:
 	}
 
 	if (nolivelock < MAX_CONT_FRAMES) goto read_frame;
-	
+
 	reset_video_head(packet);
 
 	return (0); // seek failed.
@@ -850,7 +847,7 @@ void display_frame(int64_t timestamp, int force_update, int do_render) {
 		fprintf(stdout, "\t\t\t\tdisplay:%07li  \r", (long int) timestamp);
 
 	dispFrame = timestamp;
-	if (OSD_mode&OSD_FRAME) 
+	if (OSD_mode&OSD_FRAME)
 		snprintf(OSD_frame,48,"Frame: %li", dispFrame);
 	if (OSD_mode&OSD_SMPTE) frame_to_smptestring(OSD_smpte,dispFrame - ts_offset);
 
@@ -862,14 +859,14 @@ void display_frame(int64_t timestamp, int force_update, int do_render) {
 	if (pFrameFMT && my_seek_frame(&packet, timestamp)) {
 		/* Decode video frame */
 		while (1) {
-			frameFinished=0;	
-			if(packet.stream_index==videoStream) 
+			frameFinished=0;
+			if(packet.stream_index==videoStream)
 #if LIBAVCODEC_VERSION_MAJOR < 52 || ( LIBAVCODEC_VERSION_MAJOR == 52 && LIBAVCODEC_VERSION_MINOR < 21)
 				avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet.data, packet.size);
 #else
-				avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
+			avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
 #endif
-	  
+
 			/* Did we get a video frame? */
 			if(frameFinished) {
 				/* Convert the image from its native format to FMT */
@@ -894,18 +891,18 @@ void display_frame(int64_t timestamp, int force_update, int do_render) {
 				}
 				sws_scale(pSWSCtx, (const uint8_t * const*)pFrame->data, pFrame->linesize, 0, pCodecCtx->height, pFrameFMT->data, dstStride);
 #else
-				img_convert((AVPicture *)pFrameFMT, render_fmt, 
-					(AVPicture*)pFrame, pCodecCtx->pix_fmt, pCodecCtx->width, 
-					pCodecCtx->height);
+				img_convert((AVPicture *)pFrameFMT, render_fmt,
+						(AVPicture*)pFrame, pCodecCtx->pix_fmt, pCodecCtx->width,
+						pCodecCtx->height);
 #endif
-				if (do_render) 
+				if (do_render)
 					render_buffer(buffer); // in pFrameFMT
 				av_free_packet(&packet); /* XXX */
 				break;
-			} else  { 
-			//	fprintf( stderr, "Frame not finished\n");
+			} else  {
+				//	fprintf( stderr, "Frame not finished\n");
 				if(packet.data) av_free_packet(&packet);
-				if(av_read_frame(pFormatCtx, &packet)<0) { 
+				if(av_read_frame(pFormatCtx, &packet)<0) {
 					fprintf( stderr, "read error!\n");
 					reset_video_head(&packet);
 					render_empty_frame(1);
@@ -932,10 +929,10 @@ int close_movie() {
 	if (!pFrameFMT) return(-1);
 	// Free the software scaler
 #ifdef HAVE_SWSCALE
-	sws_freeContext(pSWSCtx); 
+	sws_freeContext(pSWSCtx);
 #endif
 
-	// Free the formatted image 
+	// Free the formatted image
 	if(buffer) free(buffer);
 	buffer=NULL;
 	if (pFrameFMT)

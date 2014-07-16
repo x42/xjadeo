@@ -46,95 +46,95 @@ jack_client_t *j_client = NULL;
 static double ltc_position = 0;
 static long long int monotonic_fcnt = 0;
 
-
 #ifdef HAVE_LTCSMPTE
 #warning using deprecated libltcsmpte - get https://github.com/x42/libltc
 #include <ltcsmpte/ltcsmpte.h>
 
 static SMPTEDecoder *ltc_decoder = NULL;
 
-int myProcess(SMPTEDecoder *d, double *jt)  {
-  SMPTEFrameExt frame;
+static int myProcess(SMPTEDecoder *d, double *jt)  {
+	SMPTEFrameExt frame;
 #ifdef DEBUG
-  int errors;
+	int errors;
 #endif
-  int i=0; /* marker - if queue is flushed - don't read the last */
-  int rv=0;
+	int i=0; /* marker - if queue is flushed - don't read the last */
+	int rv=0;
 #if 0 /* process only last LTC (0: all in decoder queue) */
-  while (SMPTEDecoderRead(d,&frame)) {i++;}
+	while (SMPTEDecoderRead(d,&frame)) {i++;}
 #endif
-  while (i || SMPTEDecoderRead(d,&frame)) {
-    SMPTETime stime;
-    i=0;
+	while (i || SMPTEDecoderRead(d,&frame)) {
+		SMPTETime stime;
+		i=0;
 
-    SMPTEFrameToTime(&frame.base,&stime);
+		SMPTEFrameToTime(&frame.base,&stime);
 #ifdef DEBUG
-    SMPTEDecoderErrors(d,&errors);
+		SMPTEDecoderErrors(d,&errors);
 #endif
 
-    if (jt) {
+		if (jt) {
 			*jt=(double) (
 					((stime.hours*60+stime.mins)*60 +stime.secs)*j_samplerate
 					+ ((double)stime.frame*(double)j_samplerate/framerate)
 					+ frame.startpos - monotonic_fcnt
 					);
 			//printf("LTC-debug %f %li %li\n",*jt,frame.startpos, frame.endpos);
-    }
+		}
 
 #ifdef DEBUG
-    int ms;
-    SMPTEDecoderFrameToMillisecs(d,&frame,&ms);
-    printf("LTC: %02d:%02d:%02d:%02d %8d %d \n",
-      stime.hours,stime.mins,
-      stime.secs,stime.frame,
-      ms,
-      errors);		
+		int ms;
+		SMPTEDecoderFrameToMillisecs(d,&frame,&ms);
+		printf("LTC: %02d:%02d:%02d:%02d %8d %d \n",
+				stime.hours,stime.mins,
+				stime.secs,stime.frame,
+				ms,
+				errors);
 #endif
-    ++rv;
-  }
-  return rv;
+		++rv;
+	}
+	return rv;
 }
 
-#else // HAVE_LTC
+#else // HAVE_LTC -- new libltc
+
 #include <ltc.h>
 
 static LTCDecoder *ltc_decoder = NULL;
 
-int myProcess(LTCDecoder *d, double *jt)  {
-  LTCFrameExt frame;
-  int rv=0;
-  while (ltc_decoder_read(d,&frame)) {
-    SMPTETimecode stime;
-    ltc_frame_to_time(&stime, &frame.ltc, 0);
+static int myProcess(LTCDecoder *d, double *jt)  {
+	LTCFrameExt frame;
+	int rv=0;
+	while (ltc_decoder_read(d,&frame)) {
+		SMPTETimecode stime;
+		ltc_frame_to_time(&stime, &frame.ltc, 0);
 
 #ifdef DEBUG
-    printf( "%02d:%02d:%02d%c%02d | %8lld %8lld%s \n",
-        stime.hours,
-        stime.mins,
-        stime.secs,
-        (frame.ltc.dfbit) ? '.' : ':',
-        stime.frame,
-        frame.off_start,
-        frame.off_end,
-        frame.reverse ? " R" : "  "
-        );
+		printf( "%02d:%02d:%02d%c%02d | %8lld %8lld%s \n",
+				stime.hours,
+				stime.mins,
+				stime.secs,
+				(frame.ltc.dfbit) ? '.' : ':',
+				stime.frame,
+				frame.off_start,
+				frame.off_end,
+				frame.reverse ? " R" : "  "
+				);
 #endif
 
-    if (jt) {
+		if (jt) {
 			*jt = (double) (
 					((stime.hours*60+stime.mins)*60 +stime.secs) * j_samplerate
 					+ ((double)stime.frame*(double)j_samplerate / framerate)
 					+ frame.off_end - monotonic_fcnt
 					);
-    }
-    ++rv;
-  }
-  return rv;
+		}
+		++rv;
+	}
+	return rv;
 }
 #endif
 
 #ifdef NEW_JACK_LATENCY_API
-int jack_latency_cb(void *arg) {
+static int jack_latency_cb(void *arg) {
 	jack_latency_range_t jlty;
 	jack_port_get_latency_range(j_input_port, JackCaptureLatency, &jlty);
 	j_latency = jlty.max;
@@ -145,7 +145,7 @@ int jack_latency_cb(void *arg) {
 /**
  * jack audio process callback
  */
-int process (jack_nframes_t nframes, void *arg) {
+static int process (jack_nframes_t nframes, void *arg) {
 	unsigned char sound[8192];
 	size_t i;
 	j_in = jack_port_get_buffer (j_input_port, nframes);
@@ -174,15 +174,15 @@ int process (jack_nframes_t nframes, void *arg) {
  * JACK calls this shutdown_callback if the server ever shuts down or
  * decides to disconnect the client.
  */
-void ltcjack_shutdown (void *arg) {
-  fprintf(stderr,"recv. shutdown request from jackd.\n");
-  close_ltcjack();
+static void ltcjack_shutdown (void *arg) {
+	fprintf(stderr,"recv. shutdown request from jackd.\n");
+	close_ltcjack();
 }
 
 /**
  * open a client connection to the JACK server
  */
-int init_jack(const char *client_name) {
+static int init_jack(const char *client_name) {
 	jack_status_t status;
 	jack_options_t options = JackNullOption;
 #ifdef JACK_SESSION
@@ -218,7 +218,7 @@ int init_jack(const char *client_name) {
 	return 0;
 }
 
-int jack_portsetup(void) {
+static int jack_portsetup(void) {
 #ifdef HAVE_LTCSMPTE
 	FrameRate *fps;
 	fps = FR_create(1, 1, FRF_NONE);
@@ -245,50 +245,50 @@ int jack_portsetup(void) {
 /* API */
 
 long ltc_poll_frame (void) {
-  return (long) floor(ltc_position * framerate / (double)j_samplerate);
+	return (long) floor(ltc_position * framerate / (double)j_samplerate);
 }
 
 void open_ltcjack(char *autoconnect) {
-  char * client_name = "xjadeo-ltc";
-  if (init_jack(client_name)) {
-    close_ltcjack();
-    return;
-  }
-  if (jack_portsetup()) {
-    close_ltcjack();
-    return;
-  }
-// TODO: autoconnect jack port ?!
-  if (jack_activate (j_client)) {
-    close_ltcjack();
-    return;
-  }
+	char * client_name = "xjadeo-ltc";
+	if (init_jack(client_name)) {
+		close_ltcjack();
+		return;
+	}
+	if (jack_portsetup()) {
+		close_ltcjack();
+		return;
+	}
+	// TODO: autoconnect jack port ?!
+	if (jack_activate (j_client)) {
+		close_ltcjack();
+		return;
+	}
 }
 
 int ltcjack_connected(void) {
-  if (j_client) return 1;
-  return 0;
+	if (j_client) return 1;
+	return 0;
 }
 
 void close_ltcjack(void) {
-  if (j_client) {
-	  jack_deactivate(j_client);
-	  jack_client_close (j_client);
-  }
-  if (ltc_decoder) {
+	if (j_client) {
+		jack_deactivate(j_client);
+		jack_client_close (j_client);
+	}
+	if (ltc_decoder) {
 #ifdef HAVE_LTCSMPTE
-    SMPTEFreeDecoder(ltc_decoder);
+		SMPTEFreeDecoder(ltc_decoder);
 #else
-    ltc_decoder_free(ltc_decoder);
+		ltc_decoder_free(ltc_decoder);
 #endif
-  }
-  j_client=NULL;
-  ltc_decoder=NULL;
-  return;
+	}
+	j_client=NULL;
+	ltc_decoder=NULL;
+	return;
 }
 
 const char *ltc_jack_client_name() {
-  return jack_get_client_name(j_client);
+	return jack_get_client_name(j_client);
 }
 
 #else

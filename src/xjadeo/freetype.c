@@ -30,9 +30,7 @@ unsigned char ST_image[ST_HEIGHT][ST_WIDTH];
 int ST_rightend=0;
 int ST_height=0;
 
-
-void
-draw_bitmap(FT_Bitmap*  bitmap,
+static void draw_bitmap(FT_Bitmap*  bitmap,
     FT_Int x,
     FT_Int y)
 {
@@ -46,7 +44,7 @@ draw_bitmap(FT_Bitmap*  bitmap,
     for (j = y, q = 0; j < y_max; j++, q++)
     {
       if (i >= ST_WIDTH || j >= ST_HEIGHT || i < 0 || j < 0)
-        continue;
+	continue;
 
       ST_image[j][i] |= bitmap->buffer[q * bitmap->width + p];
     }
@@ -167,5 +165,3 @@ int render_font (char *fontfile, char *text, int px) {return -1;}
 void free_freetype () { ; }
 
 #endif /* HAVE_FT*/
-
-/* vi:set ts=8 sts=2 sw=2: */

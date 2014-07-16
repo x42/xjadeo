@@ -35,6 +35,7 @@ Makefile.in
 /contrib/cli-remote/jadeo-rcli
 /src/xjadeo/xjadeo.exe
 /src/xjadeo/xjinfo.exe
+/src/xjadeo/xjremote.exe
 
 # QT
 /src/qt-gui/moc_*
@@ -50,6 +51,7 @@ Makefile.in
 /contrib/nsi/*.exe
 /contrib/nsi/xjadeo.nsi
 /contrib/nsi/*.ttf
+/contrib/nsi/*.ico
 
 # OSX
 /contrib/Jadeo.app/

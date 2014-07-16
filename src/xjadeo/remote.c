@@ -12,29 +12,29 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * (c) 2006 
+ * (c) 2006
  *  Robin Gareus <robin@gareus.org>
  *  Luis Garrido <luisgarrido@users.sourceforge.net>
  *
  *
  *
  * XAPI return values:
- *  1xx: command succeeded 
- *  2xx: query variable succeeded: 
+ *  1xx: command succeeded
+ *  2xx: query variable succeeded:
  *  3xx: async messages (initiated by xjadeo)
  *  4xx: error
  *  8xx: info message (eg. help)
  *
- * more detailed: 
+ * more detailed:
  *  100: <text>
- *  101: var=<int> // long int 
+ *  101: var=<int> // long int
  *  124: vmode=<int> : <string> (list of avail video modes)
  *
  *  201: var=<int>  // long int
  *  202: var=<double>
- *  210: var=<int>x<int> 
+ *  210: var=<int>x<int>
  *  220: var=<string>
  *  228: var=<smpte-string>
  *
@@ -51,10 +51,10 @@
 #include "xjadeo.h"
 
 #ifdef OLD_FFMPEG
-#include <avcodec.h> // needed for PIX_FMT 
+#include <avcodec.h> // needed for PIX_FMT
 #include <avformat.h>
 #else
-#include <libavcodec/avcodec.h> // needed for PIX_FMT 
+#include <libavcodec/avcodec.h> // needed for PIX_FMT
 #include <libavformat/avformat.h>
 #endif
 
@@ -126,7 +126,7 @@ extern int 		seekflags;
 extern int    interaction_override;
 
 // On screen display
-extern char OSD_fontfile[1024]; 
+extern char OSD_fontfile[1024];
 extern char OSD_text[128];
 extern int OSD_mode;
 
@@ -135,13 +135,10 @@ extern int OSD_fx, OSD_tx, OSD_sx, OSD_fy, OSD_sy, OSD_ty;
 extern jack_client_t *jack_client;
 extern char jackid[16];
 
-
-// TODO: someday we can implement 'mkfifo' or open / pipe
 #define REMOTE_RX (fileno(stdin))
 #define REMOTE_TX (fileno(stdout))
 
 #define REMOTEBUFSIZ 4096
-int remote_read(void);
 void remote_printf(int val, const char *format, ...);
 
 //--------------------------------------------
@@ -155,7 +152,7 @@ void xapi_printversion(void *d) {
 void xapi_open(void *d) {
 	char *fn= (char*)d;
 	//printf("open file: '%s'\n",fn);
-	if ( open_movie(fn)) 
+	if ( open_movie(fn))
 		remote_printf(403, "failed to open file '%s'",fn);
 	else	remote_printf(129, "opened file: '%s'",fn);
 	init_moviebuffer();
@@ -179,7 +176,7 @@ void xapi_close_window(void *d) {
 }
 
 void xapi_set_videomode(void *d) {
-	int vmode; 
+	int vmode;
 	if (getvidmode() !=0) {
 		remote_printf(413, "cannot change videomode while window is open.");
 		return;
@@ -195,7 +192,7 @@ void xapi_set_videomode(void *d) {
 
 	open_window(); // required here; else VOutout callback fn will fail.
 
-	if (pFrameFMT && current_file) { 
+	if (pFrameFMT && current_file) {
 		// reinit buffer with new format
 		char *fn=strdup(current_file);
 		open_movie(fn);
@@ -225,9 +222,9 @@ void xapi_lvideomodes(void *d) {
 	int i=0;
 	remote_printf(100,"list video modes.");
 	while (vidoutsupported(++i)>=0) {
-		if (vidoutsupported(i)) 
+		if (vidoutsupported(i))
 			remote_printf(124,"vmode=%i : %s",i,vidoutname(i));
-		else  
+		else
 			remote_printf(800,"n/a=%i : %s",i,vidoutname(i));
 	}
 }
@@ -249,19 +246,19 @@ void xapi_sletterbox(void *d) {
 
 void xapi_pwinpos(void *d) {
 	int x,y;
-	Xgetpos(&x,&y); 
+	Xgetpos(&x,&y);
 	remote_printf(210,"windowpos=%ix%i",x,y);
 }
 
 void xapi_pwinsize(void *d) {
 	unsigned int x,y;
-	Xgetsize(&x,&y); 
+	Xgetsize(&x,&y);
 	remote_printf(210,"windowsize=%ux%u",x,y);
 }
 
 void xapi_saspect (void *d) {
 	unsigned int my_Width,my_Height;
-	Xgetsize(&my_Width,&my_Height); 
+	Xgetsize(&my_Width,&my_Height);
 	// resize to match movie aspect ratio
 	// dup code in display_x11.c (!)
 	if( movie_aspect < ((float)my_Width/(float)my_Height) )
@@ -279,7 +276,7 @@ void xapi_swinsize(void *d) {
 
 	h=ffctv_height;
 	w=ffctv_width;
-	
+
 	if ((tmp=strchr(size,'x')) && ++tmp) {
 		w=atoi(size);
 		h=atoi(tmp);
@@ -336,22 +333,21 @@ void xapi_mousepointer(void *d) {
 }
 
 void xapi_poverride(void *d) {
-		remote_printf(201,"override=%i", interaction_override);
+	remote_printf(201,"override=%i", interaction_override);
 }
 
 void xapi_soverride(void *d) {
-  interaction_override=atoi(d);
+	interaction_override=atoi(d);
 	//remote_printf(100,"ok.");
 	xapi_poverride(NULL);
 }
-
 
 void xapi_swinpos(void *d) {
 	int x,y;
 	char *t0= (char*)d;
 	char *t1;
 	x=0;y=0;
-	
+
 	if ((t1=strchr(t0,'x')) && ++t1) {
 		x=atoi(t0);
 		y=atoi(t1);
@@ -373,9 +369,9 @@ void xapi_quit(void *d) {
 }
 
 void xapi_pfilename(void *d) {
-	if (current_file) 
+	if (current_file)
 		remote_printf(220, "filename=%s", current_file);
-	else 
+	else
 		remote_printf(410, "no open video file");
 }
 
@@ -431,7 +427,7 @@ void xapi_sseekmode (void *d) {
 		seekflags=SEEK_ANY;
 	else if (!strcmp(mode,"continuous") || atoi(mode)==1)
 		seekflags=SEEK_CONTINUOUS;
-	else { 
+	else {
 		remote_printf(422,"invalid argument (1-3 or 'continuous', 'any', 'key')");
 		return;
 	}
@@ -447,18 +443,18 @@ void xapi_pmheight(void *d) {
 }
 
 void xapi_soffset(void *d) {
-  	//long int new = atol((char*)d);
+	//long int new = atol((char*)d);
 	ts_offset = smptestring_to_frame((char*)d);
 	remote_printf(101,"offset=%li",(long int) ts_offset);
 }
 
 void xapi_stimescale(void *d) {
 #ifdef TIMEMAP
-        char *t1;
-  	timescale = atof((char*)d);
+	char *t1;
+	timescale = atof((char*)d);
 	if ((t1=strchr((char*)d,' ')) && ++t1) {
-  	  timeoffset = atol(t1);
-        }
+		timeoffset = atol(t1);
+	}
 	xapi_ptimescale(NULL);
 	force_redraw=1;
 #else
@@ -476,10 +472,10 @@ void xapi_sloop(void *d) {
 
 void xapi_sreverse(void *d) {
 #ifdef TIMEMAP
-  	timescale *= -1.0; 
-	if (timescale<0) 
+	timescale *= -1.0;
+	if (timescale<0)
 		timeoffset = (-2.0*timescale) *dispFrame; // TODO: check file-offset and ts_offset.
-	else 
+	else
 		timeoffset = 0; // TODO - applt diff dispFrame <> transport src
 #endif
 }
@@ -495,7 +491,7 @@ void xapi_psmpte(void *d) {
 }
 
 void xapi_seek(void *d) {
-  	//long int new = atol((char*)d);
+	//long int new = atol((char*)d);
 	userFrame= smptestring_to_frame((char*)d);
 	remote_printf(101,"defaultseek=%li",userFrame);
 }
@@ -515,25 +511,25 @@ void xapi_sfps(void *d) {
 void xapi_sframerate(void *d) {
 	char *off= (char*)d;
 	if (!(atof(off)>0)) {
-		remote_printf(423,"invalid argument (range >0)"); 
+		remote_printf(423,"invalid argument (range >0)");
 		return;
 	}
-        filefps= atof(off);
+	filefps= atof(off);
 	override_fps(filefps);
 	remote_printf(202, "framerate=%g", framerate);
 }
 
 void xapi_jack_status(void *d) {
-	if (jack_client) 
+	if (jack_client)
 		remote_printf(220,"jackclient=%s",jackid);
-	else 
+	else
 		remote_printf(100,"not connected to jack server");
 }
 
 void xapi_ltc_status(void *d) {
 	if (ltcjack_connected())
 		remote_printf(220,"jackclient=%s",ltc_jack_client_name());
-	else 
+	else
 		remote_printf(100,"no open LTC JACK source");
 }
 
@@ -543,10 +539,10 @@ void xapi_open_ltc(void *d) {
 	midi_close();
 #endif
 	close_jack();
-	open_ltcjack((char *) d); // TODO: autoconnect 
+	open_ltcjack((char *) d); // TODO: autoconnect
 	if (ltcjack_connected())
 		remote_printf(100,"opened LTC jack port.");
-	else 
+	else
 		remote_printf(405,"failed to connect to jack server");
 #else
 	remote_printf(499,"LTC-jack is not available.");
@@ -570,9 +566,9 @@ void xapi_open_jack(void *d) {
 	close_ltcjack();
 #endif
 	open_jack();
-	if (jack_client) 
+	if (jack_client)
 		remote_printf(100,"connected to jack server.");
-	else 
+	else
 		remote_printf(405,"failed to connect to jack server");
 }
 
@@ -591,7 +587,7 @@ void xapi_osd_smpte(void *d) {
 		OSD_mode|=OSD_SMPTE;
 		OSD_sy=y;
 		remote_printf(100,"rendering smpte on position y:%i%%",y);
-	} else 
+	} else
 		remote_printf(422,"invalid argument (range -1..100)");
 	force_redraw=1;
 	//display_frame((int64_t)(dispFrame),1); // update OSD
@@ -606,7 +602,7 @@ void xapi_osd_frame(void *d) {
 		OSD_mode|=OSD_FRAME;
 		OSD_fy=y;
 		remote_printf(100,"rendering frame on position y:%i%%",y);
-	} else 
+	} else
 		remote_printf(422,"invalid argument (range -1..100)");
 	force_redraw=1;
 	//display_frame((int64_t)(dispFrame),1); // update OSD
@@ -673,8 +669,8 @@ void xapi_osd_mode(void *d) {
 void xapi_posd(void *d) {
 #ifdef HAVE_FT
 	remote_printf(201,"osdmode=%i", (OSD_mode&OSD_FRAME?1:0)|(OSD_mode&OSD_SMPTE?2:0)|(OSD_mode&OSD_TEXT?4:0)|(OSD_mode&OSD_BOX?8:0));
-	remote_printf(220,"osdfont=%s", OSD_fontfile); 
-	remote_printf(220,"osdtext=%s", OSD_text); 
+	remote_printf(220,"osdfont=%s", OSD_fontfile);
+	remote_printf(220,"osdtext=%s", OSD_text);
 #else
 	remote_printf(490,"this feature is not compiled");
 #endif
@@ -697,7 +693,7 @@ void xapi_psync(void *d) {
 void xapi_osd_pos(void *d) {
 	char *t0= (char*)d;
 	char *t1;
-	
+
 	if ((t1=strchr(t0,' ')) && ++t1) {
 		OSD_tx=atoi(t0);
 		OSD_ty=atoi(t1);
@@ -716,7 +712,7 @@ void xapi_osd_pos(void *d) {
 
 void xapi_midi_status(void *d) {
 #ifdef HAVE_MIDI
-	// FIXME: we shall return "200,midiid=XXX" 
+	// FIXME: we shall return "200,midiid=XXX"
 	// and "100 not connected" ?? as in jack connected
 	// BUT: // midiid can be <int> (portmidi) or string (alsa midi)
 	if (midi_connected())
@@ -731,7 +727,7 @@ void xapi_midi_status(void *d) {
 void xapi_smididriver(void *d) {
 #ifdef HAVE_MIDI
 	char *mp = NULL;
-	if (d && strlen(d)>0) mp=d; 
+	if (d && strlen(d)>0) mp=d;
 	if (midi_choose_driver(mp)>0) {
 		remote_printf(100,"ok.");
 	} else {
@@ -745,7 +741,7 @@ void xapi_smididriver(void *d) {
 void xapi_open_midi(void *d) {
 #ifdef HAVE_MIDI
 	char *mp;
-	if (d && strlen(d)>0) mp=d; 
+	if (d && strlen(d)>0) mp=d;
 	else mp="-1"; // midiid ?
 
 	if (midi_connected())
@@ -798,7 +794,7 @@ void xapi_pmidilibrary (void *d) {
 #endif
 }
 
-	
+
 void xapi_pmidiclk(void *d) {
 #ifdef HAVE_MIDI
 	remote_printf(201,"midiclk=%i", midi_clkadj);
@@ -809,14 +805,14 @@ void xapi_pmidiclk(void *d) {
 
 void xapi_smidiclk(void *d) {
 #ifdef HAVE_MIDI
-        midi_clkadj = atoi((char*)d)?1:0;
+	midi_clkadj = atoi((char*)d)?1:0;
 	remote_printf(101,"midiclk=%i", midi_clkadj);
 #else
 	remote_printf(499,"midi not available.");
 #endif
 }
 
-	
+
 void xapi_pmidisync(void *d) {
 #ifdef HAVE_MIDI
 	remote_printf(201,"midisync=%i", midi_clkconvert);
@@ -827,7 +823,7 @@ void xapi_pmidisync(void *d) {
 
 void xapi_smidisync(void *d) {
 #ifdef HAVE_MIDI
-        midi_clkconvert = atoi((char*)d);
+	midi_clkconvert = atoi((char*)d);
 	remote_printf(101,"midisync=%i", midi_clkconvert);
 #else
 	remote_printf(499,"midi not available.");
@@ -887,10 +883,10 @@ void xapi_null(void *d) {
 	remote_printf(402,"command not implemented.");
 }
 
-void api_help(void *d);
+static void api_help(void *d);
 
 //--------------------------------------------
-// cmd interpreter 
+// cmd interpreter
 //--------------------------------------------
 typedef void myfunction (void *);
 
@@ -1028,7 +1024,7 @@ Dcommand cmd_set[] = {
 };
 
 Dcommand cmd_root[] = {
-	// note: keep 'seek' on top of the list - if an external app wants seek a lot, xjadeo will 
+	// note: keep 'seek' on top of the list - if an external app wants seek a lot, xjadeo will
 	// not spend time comparing command strings - OTOH I/O takes much longer than this anyway :X
 	{"seek ", "<int>: seek to this frame - if jack and midi are offline", NULL, xapi_seek , 0 },
 	{"load ", "<filename>: replace current video file.", NULL , xapi_open, 0 },
@@ -1057,7 +1053,7 @@ Dcommand cmd_root[] = {
 //  - query OSD status (qjadeo - reconnect)
 //  - query midi settings  (xapi_midi_status)
 
-void api_help_recursive(Dcommand *r, const char *prefix) {
+static void api_help_recursive(Dcommand *r, const char *prefix) {
 	int i=0;
 	while (r[i].name) {
 		if (r[i].children) {
@@ -1074,50 +1070,50 @@ void api_help_recursive(Dcommand *r, const char *prefix) {
 	}
 }
 
-void api_help(void *d) {
+static void api_help(void *d) {
 	remote_printf(100, "print help");
 	remote_printf(800, "+ xjadeo remote control commands:");
 	api_help_recursive(cmd_root,"");
 }
 
-void exec_remote_cmd_recursive (Dcommand *leave, char *cmd) {
+static void exec_remote_cmd_recursive (Dcommand *leave, char *cmd) {
 	int i=0;
 	while (*cmd==' ') ++cmd;
 //	fprintf(stderr,"DEBUG: %s\n",cmd);
 
 	while (leave[i].name) {
-		if (strncmp(cmd,leave[i].name,strlen(leave[i].name))==0) break; 
+		if (strncmp(cmd,leave[i].name,strlen(leave[i].name))==0) break;
 		i++;
 	}
 	if (!leave[i].name) {
 		remote_printf(400,"unknown command.");
 		return; // no cmd found
 	}
-	if (leave[i].children) 
+	if (leave[i].children)
 		exec_remote_cmd_recursive(leave[i].children,cmd+strlen(leave[i].name));
 	else if (leave[i].func) {
 		char *arg= cmd+strlen(leave[i].name);
 		strtok(arg, "\r\n");
 		leave[i].func(arg);
-	} else 
+	} else
 		remote_printf(401,"command not implemented.");
 }
 
 #ifdef HAVE_LASH
 # if !(defined HAVE_MQ || defined HAVE_IPCMSG)
-#warning 
-#warning 
+#warning
+#warning
 #warning LASH support - but no POSIX message queues!
-#warning 
-#warning This xjadeo will not be able to (re)connect 
+#warning
+#warning This xjadeo will not be able to (re)connect
 #warning to a GUI when launched by lashd!
-#warning 
-#warning 
+#warning
+#warning
 # endif
 #endif
 
 //--------------------------------------------
-// remote control - STDIO 
+// remote control - STDIO
 //--------------------------------------------
 
 
@@ -1139,8 +1135,8 @@ int remote_read_io(void) {
 
 	while ((end = strchr(start, '\n'))) {
 		*(end) = '\0';
-		//if (strlen(start) > 0) 
-			exec_remote_cmd_recursive(cmd_root,start);
+		//if (strlen(start) > 0)
+		exec_remote_cmd_recursive(cmd_root,start);
 		inbuf->offset-=((++end)-start);
 		if (inbuf->offset) memmove(inbuf->buf,end,inbuf->offset);
 	}
@@ -1168,11 +1164,11 @@ int remote_read_h(void) {
 			while (*start && (end = strchr(start, '\n'))) {
 				*(end) = '\0';
 				strtok(start, "\r");
-				//if (strlen(start) > 0) 
-					exec_remote_cmd_recursive(cmd_root,start);
+				//if (strlen(start) > 0)
+				exec_remote_cmd_recursive(cmd_root,start);
 				start=end+1;
 			}
-		  rv=0;
+			rv=0;
 		}
 	} while (bytesAvail>0);
 	return rv;
@@ -1188,7 +1184,7 @@ int remote_read_h(void) {
 # define LOGLEN 1023
 #endif
 
-void remote_printf_io(int rv, const char *format, ...) {
+static void remote_printf_io(int rv, const char *format, ...) {
 	va_list arglist;
 	char text[LOGLEN];
 	char msg[LOGLEN];
@@ -1199,7 +1195,7 @@ void remote_printf_io(int rv, const char *format, ...) {
 
 	text[LOGLEN -1] =0; // just to be safe :)
 	snprintf(msg, LOGLEN, "@%i %s\n",rv,text);
-	msg[LOGLEN -1] =0; 
+	msg[LOGLEN -1] =0;
 	(void) write(REMOTE_TX,msg,strlen(msg));
 }
 
@@ -1218,7 +1214,6 @@ int remote_fd_set(fd_set *fd) {
 	return( REMOTE_RX+1);
 }
 
-
 //--------------------------------------------
 // POSIX message queeue
 //--------------------------------------------
@@ -1230,9 +1225,8 @@ void mymq_reply(int rv, char *str);
 void mymq_close(void);
 int mymq_init(char *id);
 
-
 /* MQ replacement for remote_printf() */
-void remote_printf_mq(int rv, const char *format, ...) {
+static void remote_printf_mq(int rv, const char *format, ...) {
 	va_list arglist;
 	char text[MQLEN];
 
@@ -1250,7 +1244,7 @@ int remote_read_mq(void) {
 	char *t;
 	int rv = -1;
 
-	while ((rx=mymq_read(data)) > 0 ) { 
+	while ((rx=mymq_read(data)) > 0 ) {
 		if ((t =  strchr(data, '\n'))) *t='\0';
 		//if (strlen(data) < 1) continue;
 		exec_remote_cmd_recursive(cmd_root,data);
@@ -1291,8 +1285,8 @@ int msqrx = 0;
 int myipc_reply(int id, char *msg){
 	struct msgbuf1 txbuf;
 	txbuf.mtype=1;
-  snprintf(txbuf.mtext, BUFSIZ, "@%i %s\n", id, msg); // XXX
-  if (msgsnd(msqtx, (const void*) &txbuf, strlen(txbuf.mtext), IPC_NOWAIT) == -1) {
+	snprintf(txbuf.mtext, BUFSIZ, "@%i %s\n", id, msg); // XXX
+	if (msgsnd(msqtx, (const void*) &txbuf, strlen(txbuf.mtext), IPC_NOWAIT) == -1) {
 		fprintf(stderr, "msgsnd failed., Error = %d: %s\n", errno, strerror(errno));
 		return -1;
 	}
@@ -1319,8 +1313,8 @@ int remote_read_ipc () {
 	s=rxbuf.mtext; // TODO remember end of long messages..
 	while (s && *s && (t = strchr(s, '\n'))) {
 		*t='\0';
-	  if (strlen(s) < 1) continue;
-	  exec_remote_cmd_recursive(cmd_root,s);
+		if (strlen(s) < 1) continue;
+		exec_remote_cmd_recursive(cmd_root,s);
 		s=t+1;
 	}
 	remote_read_ipc(); // read all queued messages..
@@ -1329,8 +1323,8 @@ int remote_read_ipc () {
 
 int open_ipcmsg_ctrl (const char *queuename) {
 
-  key_t key_tx = ftok (queuename, 'a');
-  key_t key_rx = ftok (queuename, 'b');
+	key_t key_tx = ftok (queuename, 'a');
+	key_t key_rx = ftok (queuename, 'b');
 
 	msqrx = msgget(key_rx, IPC_CREAT| S_IRUSR | S_IWUSR);
 	msqtx = msgget(key_tx, IPC_CREAT| S_IRUSR | S_IWUSR);
@@ -1351,28 +1345,28 @@ void close_ipcmsg_ctrl () {
 #endif
 
 //--------------------------------------------
-// REMOTE + MQ wrapper 
+// REMOTE + MQ wrapper
 //--------------------------------------------
 
-void remote_printf_argslist(int rv, const char *format, va_list arglist) {
+static void remote_printf_argslist(int rv, const char *format, va_list arglist) {
 	char text[LOGLEN];
 	char msg[LOGLEN];
 
 	vsnprintf(text, MQLEN, format, arglist);
 
-	text[LOGLEN -1] =0; 
+	text[LOGLEN -1] =0;
 #ifdef HAVE_MQ
-		/* remote_printf_mq(...) */
+	/* remote_printf_mq(...) */
 	mymq_reply(rv,text);
 #elif HAVE_IPCMSG
-		/* remote_printf_ipc(...) */
+	/* remote_printf_ipc(...) */
 	if (ipc_queue) myipc_reply(rv,text);
 #endif
 
-		/* remote_printf_io(...) */
+	/* remote_printf_io(...) */
 	if (remote_en) {
 		snprintf(msg, LOGLEN, "@%i %s\n",rv,text);
-		msg[LOGLEN -1] =0; 
+		msg[LOGLEN -1] =0;
 		(void) write(REMOTE_TX,msg,strlen(msg));
 	}
 }
