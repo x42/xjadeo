@@ -133,6 +133,8 @@ int remote_mode =0;	/* 0: undirectional ; >0: bidir
 
 int try_codec =0;	/* --try-codec */
 
+int seekflags = SEEK_ANY; /* -k ,K */
+
 #ifdef HAVE_MIDI
 char midiid[128] = "-2";/* --midi # -1: autodetect -2: jack-transport, -3: none/userFrame */
 int midi_clkconvert =0;	/* --midifps [0:MTC|1:VIDEO|2:RESAMPLE] */
@@ -163,10 +165,6 @@ lash_client_t *lash_client;
 #endif
 
 #ifdef HAVE_MACOSX
-// mac GUI defaults
-int seekflags    = SEEK_CONTINUOUS; 
-#else
-int seekflags    = SEEK_ANY; 
 #endif
 
 int     midi_clkadj =1;	/* --midiclk  */
@@ -713,6 +711,11 @@ main (int argc, char **argv)
   int i;
   int lashed = 0; // did we get started by lashd ?
   char*   movie= NULL;
+
+#ifdef HAVE_MACOSX // OSX GUI default
+  seekflags = SEEK_CONTINUOUS;
+  no_initial_sync = 1;
+#endif
 
   program_name = argv[0];
 
