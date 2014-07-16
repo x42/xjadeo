@@ -297,6 +297,7 @@ void gl_set_fullscreen (int action) {
 		printf("GR %d %d %d %d: %dx%d\n", fs_rect.top, fs_rect.left, fs_rect.bottom, fs_rect.right,
 				fs_rect.bottom - fs_rect.top, fs_rect.right - fs_rect.left);
 #endif
+		ChangeDisplaySettings(NULL, CDS_FULLSCREEN);
 		winFlags = WS_SYSMENU | WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE;
 		SetWindowLongPtr(_gl_hwnd, GWL_STYLE, winFlags);
 		SetWindowPos (_gl_hwnd,
@@ -317,6 +318,7 @@ void gl_set_fullscreen (int action) {
 				fs_rect.left, fs_rect.top,
 				fs_rect.right - fs_rect.left, fs_rect.bottom - fs_rect.top,
 				SWP_ASYNCWINDOWPOS);
+		ChangeDisplaySettings(NULL, CDS_RESET);
 	}
 	ShowWindow (_gl_hwnd, SW_SHOW);
 }

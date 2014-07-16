@@ -634,16 +634,18 @@ static void printversion (void) {
 			);
 }
 
-static void stat_osd_fontfile(void) {
+static int stat_osd_fontfile(void) {
 #ifdef HAVE_FT
 	struct stat s;
-
-	if (stat(OSD_fontfile, &s)==0 ) {
-		if (want_verbose) fprintf(stdout,"OSD font file: %s\n",OSD_fontfile);
-		return;
+	if (stat(OSD_fontfile, &s) ==0) {
+		if (want_verbose)
+			fprintf(stdout,"OSD font file: %s\n",OSD_fontfile);
+		return 0;
+	} else {
+		return 1;
 	}
-	if (!want_quiet)
-		fprintf(stderr,"no TTF font found. OSD will not be available until you set one.\n");
+#else
+	return 0;
 #endif
 }
 
@@ -774,7 +776,30 @@ main (int argc, char **argv)
 		remote_en=0;
 	}
 
-	stat_osd_fontfile();
+	if (stat_osd_fontfile()) {
+		printf("OLD WIN FF: %s\n", OSD_fontfile);
+#ifdef HAVE_WINDOWS
+		HKEY key;
+		DWORD size = PATH_MAX;
+		char path[PATH_MAX+1];
+		if ( (ERROR_SUCCESS == RegOpenKeyExA (HKEY_LOCAL_MACHINE, "Software\\RSSxjadeo", 0, KEY_READ, &key))                                    
+				&&  (ERROR_SUCCESS == RegQueryValueExA (key, "Install_Dir", 0, NULL, (LPBYTE)path, &size))
+			 )
+		{
+			strcpy(OSD_fontfile, path);
+			strcat(OSD_fontfile, "\\" FONT_FILE);
+		} else {
+			GetModuleFileNameW(NULL, (LPWCH)path, MAX_PATH);
+			char *tmp;
+			if ((tmp = strrchr(path, '\\'))) *tmp = 0;
+			strcpy(OSD_fontfile, path);
+			strcat(OSD_fontfile, "\\" FONT_FILE);
+		}
+		if (stat_osd_fontfile())
+#endif
+		if (!want_quiet)
+			fprintf(stderr,"no TTF font found. OSD will not be available until you set one.\n");
+	}
 
 	/* do the work */
 	avinit();

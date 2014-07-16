@@ -8,7 +8,7 @@ if test -z "$NORECONF"; then
 PKG_CONFIG_PATH=$WINEBASEDIR/lib/pkgconfig/ CFLAGS="-I$WINEBASEDIR/include -I.." LDFLAGS="-L$WINEBASEDIR/lib/ -L$WINEBASEDIR/bin" \
 	./configure --host=i686-w64-mingw32 --build=i386-linux --prefix=$WINEBASEDIR \
 	  --disable-xv --disable-imlib2 --disable-lash --disable-mq --disable-ipc --disable-osc --enable-qtgui \
-	  --with-fontfile=./FreeMonoBold.ttf \
+	  --with-fontfile=FreeMonoBold.ttf \
 	|| exit
 
 # TODO FONTFILE 
