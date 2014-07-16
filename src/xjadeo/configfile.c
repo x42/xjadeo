@@ -326,22 +326,38 @@ int readconfig (char *fn) {
          return 0;
 }
 
+#ifdef HAVE_WINDOWS
+#define PATHSEP "\\"
+#else
+#define PATHSEP "/"
+#endif
+
 void xjadeorc (void) {
-        char *home;
-        char filename[PATH_MAX];
-  if ((strlen(SYSCFGDIR) + strlen(XJADEORC) + 2) < PATH_MAX) {
-    sprintf(filename, "%s/%s", SYSCFGDIR, XJADEORC);
-    if (testfile(filename)) readconfig(filename);
-  }
-  home = getenv("HOME");
-  if (home && (strlen(home) + strlen(XJADEORC) + 2) < PATH_MAX) {
-    sprintf(filename, "%s/.%s", home, XJADEORC);
-    if (testfile(filename)) readconfig(filename);
-  }
-  if (strlen(XJADEORC) + 2 < PATH_MAX) {
-    sprintf(filename, "./%s", XJADEORC);
-    if (testfile(filename)) readconfig(filename);
-  }
+	char *home;
+	char *xdg;
+	char filename[PATH_MAX];
+	if ((strlen(SYSCFGDIR) + strlen(XJADEORC) + 2) < PATH_MAX) {
+		sprintf(filename, "%s" PATHSEP "%s", SYSCFGDIR, XJADEORC);
+		if (testfile(filename)) readconfig(filename);
+	}
+	home = getenv("HOME");
+	if (home && (strlen(home) + strlen(XJADEORC) + 2) < PATH_MAX) {
+		sprintf(filename, "%s" PATHSEP ".%s", home, XJADEORC);
+		if (testfile(filename)) readconfig(filename);
+	}
+	xdg = getenv("XDG_CONFIG_HOME");
+	if (xdg && (strlen(xdg) + strlen(XJADEORC) + 8) < PATH_MAX) {
+		sprintf(filename, "%s" PATHSEP "xjadeo" PATHSEP "%s", xdg, XJADEORC);
+		if (testfile(filename)) readconfig(filename);
+	}
+	if (!xdg && home && (strlen(home) + strlen(XJADEORC) + 16) < PATH_MAX) {
+		sprintf(filename, "%s" PATHSEP ".config" PATHSEP "xjadeo" PATHSEP "%s", xdg, XJADEORC);
+		if (testfile(filename)) readconfig(filename);
+	}
+	if (strlen(XJADEORC) < PATH_MAX) {
+		sprintf(filename, "%s", XJADEORC);
+		if (testfile(filename)) readconfig(filename);
+	}
 }
 
 #define BOOL(VAR) ((VAR)?"yes":"no")
