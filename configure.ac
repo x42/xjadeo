@@ -58,6 +58,12 @@ case $target_os in
 		AC_DEFINE([HAVE_MACOSX], [], [use macintosh native display])
 		HAVE_MACOSX=1
 		LDFLAGS="$LDFLAGS -lz -lbz2 -framework Carbon -framework Quicktime"
+		GL_LIBS="-framework Cocoa -framework OpenGL"
+		AC_DEFINE(HAVE_GL)
+		HAVE_GL=1
+		AM_CONDITIONAL([TARGET_OSX], true)
+		AM_CONDITIONAL([TARGET_LINUX], false)
+		AM_CONDITIONAL([TARGET_WIN32], false)
 dnl 2006/11/13 : 32 bit RGBA is known not to work on OSX ffmpeg+imlib2
 dnl IMLIB2RGBA 
   	;;
@@ -65,6 +71,9 @@ dnl IMLIB2RGBA
 		AC_MSG_NOTICE([TARGET: LINUX])
 		PM_OS="linux";
 		AC_DEFINE([IMLIB2RGBA], [], [use native RGB32 ffmpeg -> imlib.])
+		AM_CONDITIONAL([TARGET_OSX], false)
+		AM_CONDITIONAL([TARGET_LINUX], true)
+		AM_CONDITIONAL([TARGET_WIN32], false)
 	;;
   *mingw32*|*win*)
 		AC_MSG_NOTICE([TARGET: WINDOWS])
@@ -73,20 +82,28 @@ dnl IMLIB2RGBA
 		HAVE_WINDOWS=1
 		IMLIB_LIBS="-lws2_32" # LDFLAGS are before object files. -pragmatically re-used IMLIB_LIBS
 		LIBSUF=.dll
+		GL_LIBS="-lopengl32 -lglu32 -lgdi32"
+		AC_DEFINE(HAVE_GL)
+		HAVE_GL=1
+		AM_CONDITIONAL([TARGET_OSX], false)
+		AM_CONDITIONAL([TARGET_LINUX], false)
+		AM_CONDITIONAL([TARGET_WIN32], true)
   	;;
   *)	
 		AC_MSG_WARN([*** unknown target OS ***])
   ;;
 esac
 
+AC_SUBST(DISPLAY_OPENGL)
 AC_SUBST(VERSION)
 ISODATE=`date +%Y-%m-%d`
 AC_SUBST(ISODATE)
 
 dnl Checks for programs.
 AC_PROG_INSTALL
-#AC_PROG_CC
+AC_PROG_CC
 AM_PROG_CC_C_O
+AC_PROG_OBJC
 
 # TODO: check for xsltproc, xmllint and 
 # automatically build documentation...
@@ -120,6 +137,7 @@ AH_TEMPLATE([HAVE_LTC], [Define as 1 if you have libltc - http://github.com/x42/
 AH_TEMPLATE([HAVE_LASH], [Define as 1 if you have lash])
 AH_TEMPLATE([HAVE_XPM], [Define as 1 if you have libXpm])
 AH_TEMPLATE([HAVE_SDL], [Define as 1 if  you have the SDL toolkit])
+AH_TEMPLATE([HAVE_GL], [Define as 1 if  you have the openGL])
 AH_TEMPLATE([HAVE_MQ], [Define as 1 if you have POSIX message queues (libc, librt)])
 AH_TEMPLATE([HAVE_IPCMSG], [Define as 1 if you have IPC  message queues (system-V)])
 AH_TEMPLATE([HAVE_LIBLO], [Define as 1 if you have the loblo OSC library])
@@ -216,6 +234,12 @@ AS_IF([test "x$enable_sdl" != "xno"], [
 ])
 AC_SUBST(SDL_LIBS)
 AC_SUBST(SDL_CFLAGS) 
+
+AS_IF([test "x$enable_gl" != "xno" -a -z "$HAVE_WINDOWS"], [
+	PKG_CHECK_MODULES(GL, glu gl, [ AC_DEFINE(HAVE_GL) HAVE_GL=1 ], [ NULL=1])
+])
+AC_SUBST(GL_LIBS)
+AC_SUBST(GL_CFLAGS)
 
 
 dnl ----------------------------------------------
@@ -596,6 +620,7 @@ if test "x$enable_contrib" = "xyes"; then
 	fi
 fi
 
+if test -n "$HAVE_GL"; then RPT_OPENGL="yes"; else RPT_OPENGL="not avail."; fi
 if test -n "$HAVE_LIBXV"; then RPT_LIBXV="yes"; else RPT_LIBXV="not avail."; fi
 if test -n "$HAVE_IMLIB2"; then RPT_IMLIB2="yes"; else RPT_IMLIB2="not avail."; fi
 if test -n "$HAVE_MACOSX"; then RPT_MACOSX="yes"; else RPT_MACOSX="not avail."; fi
@@ -605,6 +630,7 @@ if test -n "$HAVE_LIBLO"; then RPT_LIBLO="yes"; else RPT_LIBLO="not avail."; fi
 if test -n "$HAVE_QT4"; then RPT_QT4="yes"; else RPT_QT4="no"; fi
 if test -n "$HAVE_MACOSX"; then RPT_QT4="${RPT_QT4} (OSX-built-in)"; fi
 if test -n "$JACK_SESSION"; then RPT_JACKSESSION="yes"; else RPT_JACKSESSION="not avail."; fi
+if test -n "$NEW_JACK_LATENCY_API"; then RPT_JACK_LATENCY="yes"; else RPT_JACK_LATENCY="not avail."; fi
 
 if test -n "$HAVE_LTC"; then RPT_LTC="yes";
 elif test -n "$HAVE_LTCSMPTE"; then RPT_LTC="yes, libltcsmpte -- deprecated, use https://github.com/x42/libltc";
@@ -622,9 +648,10 @@ AC_MSG_NOTICE([
  System wide config: $sysconfdir/xjadeorc
 
  Video Displays
+   - openGL:         $RPT_OPENGL
    - libxv:          $RPT_LIBXV
    - libx11/imlib2:  $RPT_IMLIB2
-   - mac/osx:        $RPT_MACOSX
+   - mac/quartz:     $RPT_MACOSX
    - SDL:            $RPT_SDL
 
  Sync:
@@ -633,6 +660,7 @@ AC_MSG_NOTICE([
    - MIDI:           $MIDIREPORT
 
  JACK-session:       $RPT_JACKSESSION
+ JACK-latency-api:   $RPT_JACK_LATENCY
  ffmpeg-scaling:     $FFSWREPORT
  remote control:     $RCTLREPORT
  OSC remote control: $RPT_LIBLO

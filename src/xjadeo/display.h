@@ -216,3 +216,27 @@ int  get_fullscreen_mac();
 int  get_ontop_mac();
 void window_resized_mac();
 void mac_letterbox_change();
+
+
+#ifdef HAVE_GL
+# define SUP_OPENGL 1
+void gl_render (uint8_t *mybuffer);
+int  gl_open_window ();
+void gl_close_window();
+void gl_handle_events ();
+void gl_newsrc ();
+
+void gl_resize (unsigned int x, unsigned int y);
+void gl_get_window_size (unsigned int *w, unsigned int *h);
+void gl_position (int x, int y);
+void gl_get_window_pos (int *x,  int *y);
+
+void gl_set_ontop (int action);
+void gl_set_fullscreen (int action);
+void gl_mousepointer (int action);
+int  gl_get_ontop ();
+int  gl_get_fullscreen ();
+void gl_letterbox_change ();
+#else
+# define SUP_OPENGL 0
+#endif

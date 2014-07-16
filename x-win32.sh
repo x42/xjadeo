@@ -6,7 +6,7 @@ NSISEXE=/home/rgareus/.wine/drive_c/Program\ Files/NSIS/makensis.exe
 unset CC
 if test -z "$NORECONF"; then
 PKG_CONFIG_PATH=$WINEBASEDIR/lib/pkgconfig/ CFLAGS="-I$WINEBASEDIR/include -I.." LDFLAGS="-L$WINEBASEDIR/lib/ -L$WINEBASEDIR/bin" \
-	./configure --host=i586-mingw32msvc --build=i386-linux --prefix=$WINEBASEDIR \
+	./configure --host=i686-w64-mingw32 --build=i386-linux --prefix=$WINEBASEDIR \
 	  --disable-xv --disable-imlib2 --disable-lash --disable-mq --disable-ipc --disable-osc --enable-qtgui \
 	  --with-fontfile=./FreeMonoBold.ttf \
 	|| exit
@@ -21,6 +21,7 @@ make -C src/xjadeo xjadeo.exe || exit
 cp -v src/xjadeo/xjadeo.exe $NSIDIR
 make -C src/xjadeo xjinfo.exe || exit
 cp -v src/xjadeo/xjinfo.exe $NSIDIR
+cp -v src/xjadeo/icons/xjadeo-color.ico $NSIDIR/xjadeo.ico
 
 WINEBIN=$WINEBASEDIR/bin/
 #cp -v src/xjadeo/xjadeo.exe $WINEBIN

@@ -252,6 +252,19 @@ const vidout VO[] = {
 #else
                NULLOUTPUT},
 #endif
+	 { PIX_FMT_BGRA32,   SUP_OPENGL,   "OpenGL",
+#ifdef HAVE_GL
+		 &gl_render, &gl_open_window, & gl_close_window,
+		 &gl_handle_events, &gl_newsrc,
+		 &gl_resize, &gl_get_window_size,
+		 &gl_position, &gl_get_window_pos,
+		 &gl_set_fullscreen, &gl_set_ontop,
+		 &gl_mousepointer,
+		 &gl_get_fullscreen, &gl_get_ontop,
+		 &gl_letterbox_change},
+#else
+               NULLOUTPUT},
+#endif
 	{-1,-1,NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL} // the end.
 };
 

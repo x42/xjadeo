@@ -5,11 +5,31 @@ bin_PROGRAMS=xjadeo xjremote @XJINFO_BIN@
 
 EXTRA_PROGRAMS = xjinfo
 
-xjadeo_SOURCES=xjadeo.c ../../aclocal.m4 ../../config.h display.c jack.c midi.c freetype.c xjadeo.h display.h display_x11.c smpte.c main.c remote.c configfile.c lash.c mqueue.c icons/osd_bitmaps.h display_mac.c xjosc.c display_sdl.c ltc-jack.c ffcompat.h remote.h
+xjadeo_SOURCES=xjadeo.c ../../aclocal.m4 ../../config.h \
+							 main.c xjadeo.h ffcompat.h \
+							 remote.c remote.h mqueue.c xjosc.c \
+							 configfile.c lash.c \
+							 jack.c ltc-jack.c \
+							 midi.c freetype.c smpte.c \
+							 icons/osd_bitmaps.h icons/xjadeo-color-ico.h \
+							 display.c display.h \
+							 display_mac.c display_x11.c display_sdl.c \
+							 display_gl_common.h
 
-xjadeo_LDADD = @JACK_LIBS@ @MQ_LIBS@ @FFMPEG_LIBS@ @XV_LIBS@ @IMLIB_LIBS@ @MIDI_LIBS@ @FREETYPE_LIBS@ @IMLIB2_LIBS@ @LASH_LIBS@ @Xpm_LIBS@ @LIBLO_LIBS@ @SDL_LIBS@ @LTCSMPTE_LIBS@ @LTC_LIBS@ -lm
+if TARGET_LINUX
+xjadeo_SOURCES+=display_glx.c
+endif
+if TARGET_WIN32
+xjadeo_SOURCES+=display_gl_win.c
+endif
+if TARGET_OSX
+xjadeo_SOURCES+=display_gl_osx.m
+endif
 
-xjadeo_CFLAGS = -Wall -g -O3 @JACK_CFLAGS@ @FFMPEG_CFLAGS@ @XV_CFLAGS@ @IMLIB_CFLAGS@ @MIDI_CFLAGS@ @FREETYPE_CFLAGS@ @IMLIB2_CFLAGS@ @LASH_CFLAGS@ @LIBLO_CFLAGS@ @SDL_CFLAGS@ @LTCSMPTE_CFLAGS@ @LTC_CFLAGS@ "-DSUBVERSION=\"$(REV)\""
+xjadeo_LDADD = @JACK_LIBS@ @MQ_LIBS@ @FFMPEG_LIBS@ @XV_LIBS@ @IMLIB_LIBS@ @MIDI_LIBS@ @FREETYPE_LIBS@ @IMLIB2_LIBS@ @LASH_LIBS@ @Xpm_LIBS@ @LIBLO_LIBS@ @SDL_LIBS@ @LTCSMPTE_LIBS@ @LTC_LIBS@ @GL_LIBS@ -lm
+
+xjadeo_CFLAGS = -Wall -g -O3 @JACK_CFLAGS@ @FFMPEG_CFLAGS@ @XV_CFLAGS@ @IMLIB_CFLAGS@ @MIDI_CFLAGS@ @FREETYPE_CFLAGS@ @IMLIB2_CFLAGS@ @LASH_CFLAGS@ @LIBLO_CFLAGS@ @SDL_CFLAGS@ @LTCSMPTE_CFLAGS@ @LTC_CFLAGS@ @GL_CFLAGS@ "-DSUBVERSION=\"$(REV)\""
+xjadeo_OBJCFLAGS = -Wall -g -O3 @JACK_CFLAGS@ @FFMPEG_CFLAGS@ @XV_CFLAGS@ @IMLIB_CFLAGS@ @MIDI_CFLAGS@ @FREETYPE_CFLAGS@ @IMLIB2_CFLAGS@ @LASH_CFLAGS@ @LIBLO_CFLAGS@ @SDL_CFLAGS@ @LTCSMPTE_CFLAGS@ @LTC_CFLAGS@ @GL_CFLAGS@ "-DSUBVERSION=\"$(REV)\""
 
 
 xjremote_SOURCES = xjremote.c
