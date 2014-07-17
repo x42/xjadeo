@@ -823,7 +823,13 @@ main (int argc, char **argv)
 
 	if (osc_port > 0) initialize_osc(osc_port);
 
-	open_movie(movie);
+	if (open_movie(movie)) {
+#ifndef PLATFORM_OSX
+		if (!(remote_en || mq_en || ipc_queue || osc_port)) {
+			exit(1);
+		}
+#endif
+	}
 
 	open_window();
 
