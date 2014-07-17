@@ -352,7 +352,7 @@ static void OSD_bitmap(int rfmt, uint8_t *mybuffer, int yperc, int xoff, int w, 
 	if (xalign < 0 ) xalign=0;
 	if (yalign < 0 ) yalign=0;
 
-	SET_RFMT(rfmt,_render,rv,render)
+	SET_RFMT(rfmt,_render,rv,render); // TODO once per window, and rather make _render fn's inline, include LOOP in fn pointer.
 
 	for (x=0; x<w && (x+xalign) < movie_width ;x++) {
 		for (y=0; y<h && (y+yalign) < movie_height;y++) {
@@ -384,7 +384,7 @@ static void OSD_bar(int rfmt, uint8_t *mybuffer, int yperc, double min,double ma
 	int pb_val = (int) (PB_W*(val-min)/(max-min));
 	int pb_not = (int) (PB_W*(tara-min)/(max-min));
 
-	SET_RFMT(rfmt,_render,rv,overlay)
+	SET_RFMT(rfmt,_render,rv,overlay); // TODO once per window instance, inline _render.
 
 	for (x=0; x<pb_val && (x+xalign) < movie_width ;x++) {
 		for (y=3; y<PB_H && (y+yalign) < movie_height;y++) {

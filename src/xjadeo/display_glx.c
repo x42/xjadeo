@@ -326,9 +326,6 @@ void gl_render (uint8_t *mybuffer) {
 	xjglExpose();
 }
 
-void gl_newsrc () {
-}
-
 void gl_resize (unsigned int x, unsigned int y) {
 	XResizeWindow(_gl_display, _gl_win, x, y);
 	XFlush(_gl_display);

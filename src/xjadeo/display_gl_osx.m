@@ -520,9 +520,6 @@ void gl_render (uint8_t *mybuffer) {
 	xjglExpose();
 }
 
-void gl_newsrc () {
-}
-
 void gl_resize (unsigned int x, unsigned int y) {
 	[osx_window setContentSize:NSMakeSize(x, y) ];
 	[osx_glview reshape];

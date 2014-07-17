@@ -892,6 +892,7 @@ void display_frame(int64_t timestamp, int force_update, int do_render) {
 			if(frameFinished) {
 				/* Convert the image from its native format to FMT */
 #ifdef HAVE_SWSCALE
+				// TODO: this can be done once per Video output.
 				int dstStride[8] = {0,0,0,0,0,0,0,0};
 				switch (render_fmt) {
 					case PIX_FMT_RGBA32:
@@ -921,10 +922,10 @@ void display_frame(int64_t timestamp, int force_update, int do_render) {
 				av_free_packet(&packet); /* XXX */
 				break;
 			} else  {
-				//	fprintf( stderr, "Frame not finished\n");
+				//fprintf( stderr, "Frame not finished\n");
 				if(packet.data) av_free_packet(&packet);
 				if(av_read_frame(pFormatCtx, &packet)<0) {
-					fprintf( stderr, "read error!\n");
+					//fprintf( stderr, "read error!\n");
 					reset_video_head(&packet);
 					render_empty_frame(1);
 					break;

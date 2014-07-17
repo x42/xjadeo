@@ -333,9 +333,6 @@ void gl_render (uint8_t *mybuffer) {
 	xjglExpose();
 }
 
-void gl_newsrc () {
-}
-
 void gl_resize (unsigned int x, unsigned int y) {
 	if (_gl_fullscreen) { return; }
 	RECT wr = { 0, 0, (long)x, (long)y };

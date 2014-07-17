@@ -103,6 +103,8 @@ static int gl_reallocate_texture(int width, int height) {
 			width, height, 0,
 			GL_BGRA, GL_UNSIGNED_BYTE, NULL);
 
+	//TODO use glBindBuffer() // glBindBufferARB()
+
 	glTexEnvi (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -119,6 +121,9 @@ static void gl_init () {
 	glEnable (GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable (GL_TEXTURE_RECTANGLE_ARB);
+}
+
+void gl_newsrc () {
 }
 
 static void opengl_draw (int width, int height, unsigned char* surf_data) {
