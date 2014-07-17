@@ -187,6 +187,7 @@ static char *program_name;
 
 // prototypes .
 
+int init_weak_jack();
 static void usage (int status);
 static void printversion (void);
 
@@ -734,13 +735,17 @@ main (int argc, char **argv)
 		argv=gArgv;
 	}
 #endif
-
 #ifdef HAVE_LASH
 	for (i=0;i<argc;i++) if (!strncmp(argv[i],"--lash-id",9)) lashed=1;
 	lash_args_t *lash_args = lash_extract_args(&argc, &argv);
 #endif
 
 	i = decode_switches (argc, argv);
+
+	if (init_weak_jack()) {
+		if (!want_quiet)
+			fprintf(stderr, "Failed load JACK shared library.\n");
+	}
 
 #ifdef HAVE_LASH
 	if (avoid_lash == 0)  { ///< check if this works as promised

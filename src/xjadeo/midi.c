@@ -33,8 +33,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#include "weak_libjack.h"
+
 #ifdef JACK_SESSION
-#include <jack/session.h>
 extern char *jack_uuid;
 void jack_session_cb( jack_session_event_t *event, void *arg );
 #endif
@@ -458,12 +459,7 @@ static long pm_midi_poll_frame (void) {
 /************************************************
  * jack-midi
  *
- * TODO: also use LASH here!
  */
-
-#include <jack/jack.h>
-#include <jack/transport.h>
-#include <jack/midiport.h>
 
 jack_client_t *jack_midi_client = NULL;
 jack_port_t   *jack_midi_port;
@@ -505,14 +501,14 @@ static void dequeue_jmidi_events(jack_nframes_t until) {
 }
 
 static int jack_midi_process(jack_nframes_t nframes, void *arg) {
-	void *jack_buf = jack_port_get_buffer(jack_midi_port, nframes);
-	int nevents = jack_midi_get_event_count(jack_buf);
+	void *jack_buf = WJACK_port_get_buffer(jack_midi_port, nframes);
+	int nevents = WJACK_midi_get_event_count(jack_buf);
 	int n;
 	queued_cycle_id = queued_events_end;
 
 	for (n=0; n<nevents; n++) {
 		jack_midi_event_t ev;
-		jack_midi_event_get(&ev, jack_buf, n);
+		WJACK_midi_event_get(&ev, jack_buf, n);
 
 		if (ev.size <1 || ev.size > 15) {
 			continue;
@@ -534,8 +530,8 @@ static void jack_midi_shutdown(void *arg) {
 
 static void jm_midi_close(void) {
 	if (jack_midi_client) {
-		jack_deactivate (jack_midi_client);
-		jack_client_close (jack_midi_client);
+		WJACK_deactivate (jack_midi_client);
+		WJACK_client_close (jack_midi_client);
 	}
 	jack_midi_client = NULL;
 }
@@ -552,10 +548,10 @@ static void jm_midi_open(char *midiid) {
 		snprintf(jackmidiid,16,"xjadeo-%i",i);
 #ifdef JACK_SESSION
 		if (jack_uuid)
-			jack_midi_client = jack_client_open (jackmidiid, JackUseExactName|JackSessionID, NULL, jack_uuid);
+			jack_midi_client = WJACK_client_open2 (jackmidiid, JackUseExactName|JackSessionID, NULL, jack_uuid);
 		else
 #endif
-			jack_midi_client = jack_client_open (jackmidiid, JackUseExactName, NULL);
+			jack_midi_client = WJACK_client_open1 (jackmidiid, JackUseExactName, NULL);
 	} while (jack_midi_client == NULL && i++<16);
 
 	if (!jack_midi_client) {
@@ -564,13 +560,13 @@ static void jm_midi_open(char *midiid) {
 	}
 
 #ifdef JACK_SESSION
-	jack_set_session_callback (jack_midi_client, jack_session_cb, NULL);
+	WJACK_set_session_callback (jack_midi_client, jack_session_cb, NULL);
 #endif
 #ifndef HAVE_WINDOWS
-	jack_on_shutdown (jack_midi_client, jack_midi_shutdown, 0);
+	WJACK_on_shutdown (jack_midi_client, jack_midi_shutdown, 0);
 #endif
-	jack_set_process_callback(jack_midi_client, jack_midi_process, NULL);
-	jack_midi_port = jack_port_register(jack_midi_client, "MTC in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput , 0);
+	WJACK_set_process_callback(jack_midi_client, jack_midi_process, NULL);
+	jack_midi_port = WJACK_port_register(jack_midi_client, "MTC in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput , 0);
 
 	if (jack_midi_port == NULL) {
 		fprintf(stderr, "can't register jack-midi-port\n");
@@ -582,21 +578,21 @@ static void jm_midi_open(char *midiid) {
 	tc.type=tc.min=tc.frame=tc.sec=tc.hour=0;
 	last_tc.type=last_tc.min=last_tc.frame=last_tc.sec=last_tc.hour=0;
 
-	if (jack_activate(jack_midi_client)) {
+	if (WJACK_activate(jack_midi_client)) {
 		fprintf(stderr, "can't activate jack-midi-client\n");
 		midi_close();
 	}
 
 	if (midiid && strlen(midiid)>0) {
-		const char **found_ports = jack_get_ports(jack_midi_client, NULL, JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput);
+		const char **found_ports = WJACK_get_ports(jack_midi_client, NULL, JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput);
 		if (found_ports) {
 			int j;
 			for (j = 0; found_ports[j]; ++j) {
 				if (!strncasecmp(found_ports[j], midiid, strlen(midiid))) {
 					if (want_verbose) {
-						printf("JACK-connect '%s' -> '%s'\n", found_ports[j], jack_port_name(jack_midi_port));
+						printf("JACK-connect '%s' -> '%s'\n", found_ports[j], WJACK_port_name(jack_midi_port));
 					}
-					if (jack_connect(jack_midi_client, found_ports[j], jack_port_name(jack_midi_port))) {
+					if (WJACK_connect(jack_midi_client, found_ports[j], WJACK_port_name(jack_midi_port))) {
 						if (!want_quiet) fprintf(stderr,"can not auto-connect jack-midi port.\n");
 					}
 				}
@@ -616,7 +612,7 @@ static long jm_midi_poll_frame (void) {
 	static long lastframe = -1 ;
 	static int stopcnt = 0;
 
-	dequeue_jmidi_events(jack_frames_since_cycle_start(jack_midi_client));
+	dequeue_jmidi_events(WJACK_frames_since_cycle_start(jack_midi_client));
 	frame = convert_smpte_to_frame(last_tc);
 
 	if(midi_clkadj && (full_tc==0xff)) {

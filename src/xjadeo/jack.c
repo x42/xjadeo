@@ -24,8 +24,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include <jack/jack.h>
-#include <jack/transport.h>
+#include "weak_libjack.h"
 
 #include "xjadeo.h"
 
@@ -52,8 +51,8 @@ void jack_session_cb(jack_session_event_t *event, void *arg) {
 		 * e.g. if xjadeo will be restored by wrapper-program
 		 * f.i. ardour3+videotimeline
 		 */
-		jack_session_reply(jack_client, event);
-		jack_session_event_free(event);
+		WJACK_session_reply(jack_client, event);
+		WJACK_session_event_free(event);
 		return;
 	}
 
@@ -63,10 +62,10 @@ void jack_session_cb(jack_session_event_t *event, void *arg) {
 	saveconfig(filename);
 
 	event->command_line = strdup(command);
-	jack_session_reply( jack_client, event );
+	WJACK_session_reply( jack_client, event );
 	if(event->type == JackSessionSaveAndQuit)
 		loop_flag=0;
-	jack_session_event_free(event);
+	WJACK_session_event_free(event);
 }
 #endif
 
@@ -92,21 +91,21 @@ void open_jack(void ) {
 		snprintf(jackid,16,"xjadeo-%i",i);
 #ifdef JACK_SESSION
 		if (jack_uuid)
-			jack_client = jack_client_open (jackid, JackUseExactName|JackSessionID, NULL, jack_uuid);
+			jack_client = WJACK_client_open2 (jackid, JackUseExactName|JackSessionID, NULL, jack_uuid);
 		else
 #endif
-			jack_client = jack_client_open (jackid, JackUseExactName, NULL);
+			jack_client = WJACK_client_open1 (jackid, JackUseExactName, NULL);
 	} while (jack_client == 0 && i++<16);
 
 	if (!jack_client) {
 		fprintf(stderr, "could not connect to jack server.\n");
 	} else {
 #ifdef JACK_SESSION
-		jack_set_session_callback (jack_client, jack_session_cb, NULL);
+		WJACK_set_session_callback (jack_client, jack_session_cb, NULL);
 #endif
 #ifndef HAVE_WINDOWS
-		jack_on_shutdown (jack_client, jack_shutdown, 0);
-		jack_activate(jack_client);
+		WJACK_on_shutdown (jack_client, jack_shutdown, 0);
+		WJACK_activate(jack_client);
 #endif
 		if (!want_quiet)
 			fprintf(stdout, "connected as jack client '%s'\n",jackid);
@@ -118,25 +117,25 @@ void open_jack(void ) {
 
 void jackt_rewind() {
 	if (jack_client) {
-		jack_transport_locate (jack_client,0);
+		WJACK_transport_locate (jack_client,0);
 	}
 }
 
 void jackt_start() {
 	if (jack_client) {
-		jack_transport_start (jack_client);
+		WJACK_transport_start (jack_client);
 	}
 }
 
 void jackt_stop() {
 	if (jack_client) {
-		jack_transport_stop (jack_client);
+		WJACK_transport_stop (jack_client);
 	}
 }
 
 void jackt_toggle() {
 	if (jack_client) {
-		switch (jack_transport_query(jack_client, NULL)) {
+		switch (WJACK_transport_query(jack_client, NULL)) {
 			case JackTransportRolling:	
 				jackt_stop();
 				break;
@@ -153,8 +152,8 @@ void close_jack(void) {
 	if (jack_client) {
 		jack_client_t *b = jack_client;
 		jack_client=NULL;
-		jack_deactivate (b);
-		jack_client_close (b);
+		WJACK_deactivate (b);
+		WJACK_client_close (b);
 	}
 	jack_client=NULL;
 }
@@ -164,7 +163,7 @@ long jack_poll_frame (void) {
 	long frame = 0;
 
 	if (!jack_client) return (-1);
-	jack_transport_query(jack_client, &jack_position);
+	WJACK_transport_query(jack_client, &jack_position);
 
 #ifdef JACK_DEBUG
 	fprintf(stdout, "jack position: %lu %lu/ \n", (long unsigned) jack_position.frame, (long unsigned) jack_position.frame_rate);

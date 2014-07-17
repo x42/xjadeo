@@ -22,9 +22,9 @@
 #endif
 
 #include <stdio.h>
+#include "weak_libjack.h"
 
 #ifdef JACK_SESSION
-#include <jack/session.h>
 extern char *jack_uuid;
 void jack_session_cb( jack_session_event_t *event, void *arg );
 #endif
@@ -33,7 +33,6 @@ void jack_session_cb( jack_session_event_t *event, void *arg );
 extern double framerate;
 
 #include <math.h>
-#include <jack/jack.h>
 
 void close_ltcjack(void);
 
@@ -136,7 +135,7 @@ static int myProcess(LTCDecoder *d, double *jt)  {
 #ifdef NEW_JACK_LATENCY_API
 static int jack_latency_cb(void *arg) {
 	jack_latency_range_t jlty;
-	jack_port_get_latency_range(j_input_port, JackCaptureLatency, &jlty);
+	WJACK_port_get_latency_range(j_input_port, JackCaptureLatency, &jlty);
 	j_latency = jlty.max;
 	return 0;
 }
@@ -148,10 +147,10 @@ static int jack_latency_cb(void *arg) {
 static int process (jack_nframes_t nframes, void *arg) {
 	unsigned char sound[8192];
 	size_t i;
-	j_in = jack_port_get_buffer (j_input_port, nframes);
+	j_in = WJACK_port_get_buffer (j_input_port, nframes);
 
 #ifndef NEW_JACK_LATENCY_API
-	j_latency = jack_port_get_total_latency(j_client,j_input_port);
+	j_latency = WJACK_port_get_total_latency(j_client,j_input_port);
 #endif
 	if (nframes > 8192) return 0;
 
@@ -187,10 +186,10 @@ static int init_jack(const char *client_name) {
 	jack_options_t options = JackNullOption;
 #ifdef JACK_SESSION
 	if (jack_uuid)
-		j_client = jack_client_open (client_name, options|JackSessionID, &status, jack_uuid);
+		j_client = WJACK_client_open2 (client_name, options|JackSessionID, &status, jack_uuid);
 	else
 #endif
-		j_client = jack_client_open (client_name, options, &status);
+		j_client = WJACK_client_open1 (client_name, options, &status);
 	if (j_client == NULL) {
 		fprintf (stderr, "jack_client_open() failed, status = 0x%2.0x\n", status);
 		if (status & JackServerFailed) {
@@ -203,18 +202,18 @@ static int init_jack(const char *client_name) {
 		fprintf (stderr, "JACK server started\n");
 	}
 	if (status & JackNameNotUnique) {
-		client_name = jack_get_client_name(j_client);
+		client_name = WJACK_get_client_name(j_client);
 		fprintf (stderr, "unique name `%s' assigned\n", client_name);
 	}
 
-	jack_set_process_callback (j_client, process, 0);
+	WJACK_set_process_callback (j_client, process, 0);
 #ifdef JACK_SESSION
-	jack_set_session_callback (j_client, jack_session_cb, NULL);
+	WJACK_set_session_callback (j_client, jack_session_cb, NULL);
 #endif
 #ifndef HAVE_WINDOWS
-	jack_on_shutdown (j_client, ltcjack_shutdown, 0);
+	WJACK_on_shutdown (j_client, ltcjack_shutdown, 0);
 #endif
-	j_samplerate=jack_get_sample_rate (j_client);
+	j_samplerate=WJACK_get_sample_rate (j_client);
 	return 0;
 }
 
@@ -231,12 +230,12 @@ static int jack_portsetup(void) {
 	if (!ltc_decoder)
 		return -1;
 
-	if ((j_input_port = jack_port_register (j_client, "ltc-input", JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0)) == 0) {
+	if ((j_input_port = WJACK_port_register (j_client, "ltc-input", JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0)) == 0) {
 		fprintf (stderr, "cannot register input port \"ltc-input\"!\n");
 		return -1;
 	}
 #ifdef NEW_JACK_LATENCY_API
-	jack_set_graph_order_callback (j_client, jack_latency_cb, NULL);
+	WJACK_set_graph_order_callback (j_client, jack_latency_cb, NULL);
 	jack_latency_cb(NULL);
 #endif
 	return 0;
@@ -259,7 +258,7 @@ void open_ltcjack(char *autoconnect) {
 		return;
 	}
 	// TODO: autoconnect jack port ?!
-	if (jack_activate (j_client)) {
+	if (WJACK_activate (j_client)) {
 		close_ltcjack();
 		return;
 	}
@@ -272,8 +271,8 @@ int ltcjack_connected(void) {
 
 void close_ltcjack(void) {
 	if (j_client) {
-		jack_deactivate(j_client);
-		jack_client_close (j_client);
+		WJACK_deactivate(j_client);
+		WJACK_client_close (j_client);
 	}
 	if (ltc_decoder) {
 #ifdef HAVE_LTCSMPTE
@@ -288,7 +287,7 @@ void close_ltcjack(void) {
 }
 
 const char *ltc_jack_client_name() {
-	return jack_get_client_name(j_client);
+	return WJACK_get_client_name(j_client);
 }
 
 #else

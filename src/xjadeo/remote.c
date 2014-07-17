@@ -58,9 +58,6 @@
 #include <libavformat/avformat.h>
 #endif
 
-#include <jack/jack.h>
-#include <jack/transport.h>
-
 #include <time.h>
 #include <getopt.h>
 
@@ -132,7 +129,6 @@ extern int OSD_mode;
 
 extern int OSD_fx, OSD_tx, OSD_sx, OSD_fy, OSD_sy, OSD_ty;
 
-extern jack_client_t *jack_client;
 extern char jackid[16];
 
 #define REMOTE_RX (fileno(stdin))
@@ -520,7 +516,7 @@ void xapi_sframerate(void *d) {
 }
 
 void xapi_jack_status(void *d) {
-	if (jack_client)
+	if (jack_connected())
 		remote_printf(220,"jackclient=%s",jackid);
 	else
 		remote_printf(100,"not connected to jack server");
@@ -566,7 +562,7 @@ void xapi_open_jack(void *d) {
 	close_ltcjack();
 #endif
 	open_jack();
-	if (jack_client)
+	if (jack_connected())
 		remote_printf(100,"connected to jack server.");
 	else
 		remote_printf(405,"failed to connect to jack server");
