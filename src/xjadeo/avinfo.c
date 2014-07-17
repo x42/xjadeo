@@ -45,7 +45,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef HAVE_WINDOWS
+#ifndef PLATFORM_WINDOWS
 #include <inttypes.h>
 #include <sys/errno.h>
 #else

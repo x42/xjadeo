@@ -9,7 +9,7 @@
 # include <config.h>
 #endif
 
-#ifdef HAVE_WINDOWS
+#ifdef PLATFORM_WINDOWS
 # include <windows.h>
 # include <winsock.h>
 # include <winuser.h>
@@ -153,7 +153,7 @@ int  open_ipcmsg_ctrl (const char *);
 int  remote_read_mq(void);
 int  remote_read_ipc(void);
 int  remote_read_io(void);
-#ifdef HAVE_WINDOWS
+#ifdef PLATFORM_WINDOWS
 int remote_read_h(void);
 #endif
 void remote_printf(int val, const char *format, ...);

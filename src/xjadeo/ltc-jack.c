@@ -210,7 +210,7 @@ static int init_jack(const char *client_name) {
 #ifdef JACK_SESSION
 	WJACK_set_session_callback (j_client, jack_session_cb, NULL);
 #endif
-#ifndef HAVE_WINDOWS
+#ifndef PLATFORM_WINDOWS
 	WJACK_on_shutdown (j_client, ltcjack_shutdown, 0);
 #endif
 	j_samplerate=WJACK_get_sample_rate (j_client);

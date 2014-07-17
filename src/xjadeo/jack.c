@@ -103,7 +103,7 @@ void open_jack(void ) {
 #ifdef JACK_SESSION
 		WJACK_set_session_callback (jack_client, jack_session_cb, NULL);
 #endif
-#ifndef HAVE_WINDOWS
+#ifndef PLATFORM_WINDOWS
 		WJACK_on_shutdown (jack_client, jack_shutdown, 0);
 		WJACK_activate(jack_client);
 #endif

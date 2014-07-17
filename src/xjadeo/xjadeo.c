@@ -159,7 +159,7 @@ static int select_sleep (int usec) {
 	ts.tv_sec = (usec / 1000000L);
 	ts.tv_nsec = (usec % 1000000L)*1000;
 	if (pselect(max_fd, &fd, NULL, NULL, &ts,NULL)) remote_read_io();
-#elif defined HAVE_WINDOWS
+#elif defined PLATFORM_WINDOWS
 	if (!remote_en || remote_read_h()) {
 		Sleep((usec+ 999) /1000);
 	}

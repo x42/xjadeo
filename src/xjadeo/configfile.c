@@ -327,7 +327,7 @@ int readconfig (char *fn) {
 	return 0;
 }
 
-#ifdef HAVE_WINDOWS
+#ifdef PLATFORM_WINDOWS
 #define PATHSEP "\\"
 #else
 #define PATHSEP "/"

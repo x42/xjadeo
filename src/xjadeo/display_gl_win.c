@@ -18,7 +18,7 @@
  */
 
 #include "display_gl_common.h"
-#if (defined HAVE_GL && defined HAVE_WINDOWS)
+#if (defined HAVE_GL && defined PLATFORM_WINDOWS)
 
 #include "icons/xjadeo-color-ico.h"
 

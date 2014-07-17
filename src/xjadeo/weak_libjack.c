@@ -11,7 +11,7 @@ int init_weak_jack() {
 #include <stdio.h>
 #include <string.h>
 
-#ifdef HAVE_WINDOWS
+#ifdef PLATFORM_WINDOWS
 #include <windows.h>
 #else
 #include <dlfcn.h>
@@ -21,7 +21,7 @@ extern int want_quiet;
 extern int want_debug;
 
 static void* lib_open(const char* const so) {
-#ifdef HAVE_WINDOWS
+#ifdef PLATFORM_WINDOWS
 	return (void*) LoadLibraryA(so);
 #else
 	return dlopen(so, RTLD_NOW|RTLD_LOCAL);
@@ -29,7 +29,7 @@ static void* lib_open(const char* const so) {
 }
 
 static void* lib_symbol(void* const lib, const char* const sym) {
-#ifdef HAVE_WINDOWS
+#ifdef PLATFORM_WINDOWS
 	return (void*) GetProcAddress((HMODULE)lib, sym);
 #else
 	return dlsym(lib, sym);
@@ -81,9 +81,9 @@ int init_weak_jack() {
 	void* lib;
 	memset(&_j, 0, sizeof(_j));
 
-#ifdef HAVE_MACOSX
+#ifdef PLATFORM_OSX
 	lib = lib_open("libjack.dylib");
-#elif (defined HAVE_WINDOWS)
+#elif (defined PLATFORM_WINDOWS)
 	lib = lib_open("libjack.dll");
 #else
 	lib = lib_open("libjack.so.0");

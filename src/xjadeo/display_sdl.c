@@ -204,7 +204,7 @@ void get_window_pos_sdl (int *rx, int *ry) {
 	SDL_SysWMinfo info;
 	SDL_VERSION(&info.version);
 	if ( SDL_GetWMInfo(&info) > 0 ) {
-#ifdef HAVE_WINDOWS
+#ifdef PLATFORM_WINDOWS
 
 #if 0 // legacy
 	WINDOWINFO w;
@@ -249,7 +249,7 @@ void position_sdl(int x, int y) {
 	SDL_SysWMinfo info;
 	SDL_VERSION(&info.version);
 	if ( SDL_GetWMInfo(&info) > 0 ) {
-#ifdef HAVE_WINDOWS
+#ifdef PLATFORM_WINDOWS
 	SetWindowPos(info.window,
 			sdl_ontop ? HWND_TOPMOST : HWND_NOTOPMOST,
 			x, y, sdl_rect.w, sdl_rect.h, 0);
@@ -316,7 +316,7 @@ void sdl_set_ontop (int action) {
 	if (action==2) sdl_ontop^=1;
 	else sdl_ontop=action;
 
-#ifdef HAVE_WINDOWS
+#ifdef PLATFORM_WINDOWS
 	SDL_SysWMinfo info;
 	SDL_VERSION(&info.version);
 	if ( SDL_GetWMInfo(&info) > 0 ) {

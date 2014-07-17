@@ -190,7 +190,7 @@ void position_imlib2 (int x, int y);
  * Max Osx - quartz
  */
 
-#if defined HAVE_MACOSX && (defined __i386 || defined __ppc)
+#if defined PLATFORM_OSX && (defined __i386 || defined __ppc)
 
 # define SUP_MACOSX 1
 #else

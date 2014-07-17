@@ -23,7 +23,7 @@
  *
  */
 #include "xjadeo.h"
-#if defined HAVE_MACOSX && (defined __i386 || defined __ppc)
+#if defined PLATFORM_OSX && (defined __i386 || defined __ppc)
 
 void xapi_open(void *d);
 void jackt_stop();

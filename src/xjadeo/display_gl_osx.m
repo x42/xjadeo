@@ -18,7 +18,7 @@
  */
 
 #include "display_gl_common.h"
-#if (defined HAVE_GL && defined HAVE_MACOSX)
+#if (defined HAVE_GL && defined PLATFORM_OSX)
 
 void xapi_open(void *d);
 

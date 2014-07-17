@@ -1144,7 +1144,7 @@ void exec_remote_cmd (char *cmd) {
 	exec_remote_cmd_recursive(cmd_root, cmd);
 }
 
-#ifdef HAVE_WINDOWS
+#ifdef PLATFORM_WINDOWS
 int remote_read_h(void) {
 	int rv=-1;
 	char buf[BUFSIZ];

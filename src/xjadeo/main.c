@@ -628,10 +628,10 @@ static void printversion (void) {
 			"(RGB24) "
 # endif
 #endif
-#ifdef HAVE_MACOSX
+#ifdef PLATFORM_OSX
 			"OSX/quartz "
 #endif
-#ifdef HAVE_MACOSX
+#ifdef PLATFORM_OSX
 			"openGL "
 #endif
 			"\n"
@@ -696,7 +696,7 @@ static void clean_up (int status) {
 }
 
 void catchsig (int sig) {
-#ifndef HAVE_WINDOWS
+#ifndef PLATFORM_WINDOWS
 	signal(SIGHUP, catchsig); /* reset signal */
 	signal(SIGINT, catchsig);
 #endif
@@ -714,7 +714,7 @@ main (int argc, char **argv)
 	int lashed = 0; // did we get started by lashd ?
 	char*   movie= NULL;
 
-#ifdef HAVE_MACOSX // OSX GUI default
+#ifdef PLATFORM_OSX // OSX GUI default
 	seekflags = SEEK_CONTINUOUS;
 	no_initial_sync = 1;
 #endif
@@ -766,7 +766,7 @@ main (int argc, char **argv)
 
 	if ((i+1)== argc) movie = argv[i];
 	else if ((remote_en || mq_en || ipc_queue || osc_port || load_rc) && i==argc) movie = "";
-#ifndef HAVE_MACOSX
+#ifndef PLATFORM_OSX
 	else usage (EXIT_FAILURE);
 #else
 	else movie = "";
@@ -785,7 +785,7 @@ main (int argc, char **argv)
 	}
 
 	if (stat_osd_fontfile()) {
-#ifdef HAVE_WINDOWS
+#ifdef PLATFORM_WINDOWS
 		HKEY key;
 		DWORD size = PATH_MAX;
 		char path[PATH_MAX+1];
@@ -816,7 +816,7 @@ main (int argc, char **argv)
 
 	// only try to seek to frame 1 and decode it.
 	if (try_codec) do_try_this_file_and_exit (movie);
-#ifndef HAVE_WINDOWS
+#ifndef PLATFORM_WINDOWS
 	signal (SIGHUP, catchsig);
 	signal (SIGINT, catchsig);
 #endif

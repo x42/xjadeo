@@ -562,7 +562,7 @@ static void jm_midi_open(char *midiid) {
 #ifdef JACK_SESSION
 	WJACK_set_session_callback (jack_midi_client, jack_session_cb, NULL);
 #endif
-#ifndef HAVE_WINDOWS
+#ifndef PLATFORM_WINDOWS
 	WJACK_on_shutdown (jack_midi_client, jack_midi_shutdown, 0);
 #endif
 	WJACK_set_process_callback(jack_midi_client, jack_midi_process, NULL);

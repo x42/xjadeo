@@ -161,7 +161,7 @@ int testexec (char *filename) {
 	if (!filename) return (0);
 	int result= stat(filename, &s);
 	if (result != 0) return 0; /* stat() failed */
-#ifdef HAVE_WINDOWS
+#ifdef PLATFORM_WINDOWS
 	return(1); 
 #else
 	if (!S_ISREG(s.st_mode) && !S_ISLNK(s.st_mode)) return 0; /* is not a regular file */
@@ -215,7 +215,7 @@ void execjadeo(int flags, char *queuefile) {
 		printf("# no xjadeo executable found. try to set the XJADEO env. variable\n");
 	}
 }
-#ifdef HAVE_WINDOWS
+#ifdef PLATFORM_WINDOWS
 #else
 void forkjadeo (void) {
 	// TODO create remote-mqID and set pass it to xjadeo.
@@ -241,7 +241,7 @@ void forkjadeo (void) {
 #include <sys/types.h>
 #include <unistd.h>
 
-#ifdef HAVE_WINDOWS
+#ifdef PLATFORM_WINDOWS
 #include <windows.h>
 #else
 #include <sys/resource.h>
@@ -250,7 +250,7 @@ void forkjadeo (void) {
 #define REMOTE_RX fileno(stdin) 
 
 int xjselect (int sec) {
-#ifdef HAVE_WINDOWS
+#ifdef PLATFORM_WINDOWS
 	DWORD bytesAvail = 0;
 	HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
 	PeekNamedPipe(h, 0, 0, 0, &bytesAvail, 0);

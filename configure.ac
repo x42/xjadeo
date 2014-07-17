@@ -55,8 +55,8 @@ case $target_os in
   *darwin*)
 		AC_MSG_NOTICE([TARGET: OSX])
 		PM_OS=mac
-		AC_DEFINE([HAVE_MACOSX], [], [use macintosh native display])
-		HAVE_MACOSX=1
+		AC_DEFINE([PLATFORM_OSX], [], [use macintosh native display])
+		PLATFORM_OSX=1
 		LDFLAGS="$LDFLAGS -lz -lbz2 -framework Carbon -framework Quicktime"
 		GL_LIBS="-framework Cocoa -framework OpenGL"
 		AC_DEFINE(HAVE_GL)
@@ -79,8 +79,8 @@ dnl IMLIB2RGBA
   *mingw32*|*win*)
 		AC_MSG_NOTICE([TARGET: WINDOWS])
 		PM_OS=win
-		AC_DEFINE([HAVE_WINDOWS], [], [windows SDL version])
-		HAVE_WINDOWS=1
+		AC_DEFINE([PLATFORM_WINDOWS], [], [windows SDL version])
+		PLATFORM_WINDOWS=1
 		IMLIB_LIBS="-lws2_32" # LDFLAGS are before object files. -pragmatically re-used IMLIB_LIBS
 		LIBSUF=.dll
 		EXESUF=.exe
@@ -210,7 +210,7 @@ dnl	AC_CHECK_HEADERS([X11/extensions/Xvlib.h X11/extensions/XShm.h], , [AC_MSG_E
 fi
 
 dnl remove this if IFF you want to build an X11 version for OSX
-AS_IF([test -z "$HAVE_MACOSX$HAVE_WINDOWS"], [
+AS_IF([test -z "$PLATFORM_OSX$PLATFORM_WINDOWS"], [
 	AC_CHECK_HEADERS([X11/Xlib.h], , [AC_MSG_ERROR(*** X11: You need to install the X11 development package. ***)])
 	AC_CHECK_LIB([X11], [XOpenDisplay], [XV_LIBS="$XV_LIBS -lXext"], AC_MSG_ERROR([*** X11: You need to install the X11 development package: libx11-dev ***]))
 	PKG_CHECK_MODULES(Xpm, xpm, [ AC_DEFINE(HAVE_XPM) HAVE_XPM=1 ], [AC_MSG_ERROR(*** X11: You need to install the libxpm development package. ***)])
@@ -233,7 +233,7 @@ AS_IF([test "x$enable_sdl" != "xno"], [
 AC_SUBST(SDL_LIBS)
 AC_SUBST(SDL_CFLAGS) 
 
-AS_IF([test "x$enable_gl" != "xno" -a -z "$HAVE_WINDOWS"], [
+AS_IF([test "x$enable_gl" != "xno" -a -z "$PLATFORM_WINDOWS"], [
 	PKG_CHECK_MODULES(GL, glu gl, [ AC_DEFINE(HAVE_GL) HAVE_GL=1 ], [ NULL=1])
 ])
 AC_SUBST(GL_LIBS)
@@ -527,7 +527,7 @@ if test "$enable_qtgui" = "yes"; then
  
  HAVE_QT4=1
  
- if test -n "$HAVE_WINDOWS"; then
+ if test -n "$PLATFORM_WINDOWS"; then
    ac_qmake_args="-spec win32-x-g++ -config release"
  fi
  AC_SUBST(ac_qmake)
@@ -621,12 +621,12 @@ fi
 if test -n "$HAVE_GL"; then RPT_OPENGL="yes"; else RPT_OPENGL="not avail."; fi
 if test -n "$HAVE_LIBXV"; then RPT_LIBXV="yes"; else RPT_LIBXV="not avail."; fi
 if test -n "$HAVE_IMLIB2"; then RPT_IMLIB2="yes"; else RPT_IMLIB2="not avail."; fi
-if test -n "$HAVE_MACOSX"; then RPT_MACOSX="yes"; else RPT_MACOSX="not avail."; fi
+if test -n "$PLATFORM_OSX"; then RPT_MACOSX="yes"; else RPT_MACOSX="not avail."; fi
 if test -n "$HAVE_SDL"; then RPT_SDL="yes"; else RPT_SDL="not avail."; fi
 if test -n "$HAVE_LASH"; then RPT_LASH="yes"; else RPT_LASH="not avail."; fi
 if test -n "$HAVE_LIBLO"; then RPT_LIBLO="yes"; else RPT_LIBLO="not avail."; fi
 if test -n "$HAVE_QT4"; then RPT_QT4="yes"; else RPT_QT4="no"; fi
-if test -n "$HAVE_MACOSX"; then RPT_QT4="${RPT_QT4} (OSX-built-in)"; fi
+if test -n "$PLATFORM_OSX"; then RPT_QT4="${RPT_QT4} (OSX-built-in)"; fi
 if test -n "$JACK_SESSION"; then RPT_JACKSESSION="yes"; else RPT_JACKSESSION="not avail."; fi
 if test -n "$NEW_JACK_LATENCY_API"; then RPT_JACK_LATENCY="yes"; else RPT_JACK_LATENCY="not avail."; fi
 
