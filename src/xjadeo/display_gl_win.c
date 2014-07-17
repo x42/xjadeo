@@ -46,6 +46,51 @@ static void gl_swap_buffers() {
 	SwapBuffers(_gl_hdc);
 }
 
+#if 0
+static int check_wgl_extention(const char *ext) {
+	if (!ext || strchr(ext, ' ') || *ext == '\0') {
+		return 0;
+	}
+	const char *exts = (const char*) glGetString(GL_EXTENSIONS);
+	if (!exts) {
+		return 0;
+	}
+
+	const char *start = exts;
+	while (1) {
+		const char *tmp = strstr(start, ext);
+		if (!tmp) break;
+		const char *end = tmp + strlen(ext);
+		if (tmp == start || *(tmp - 1) == ' ')
+			if (*end == ' ' || *end == '\0') return 1;
+		start = end;
+	}
+	return 0;
+}
+
+static void *win_glGetProcAddress(const char* proc) {
+	void * func = NULL;
+	static int initialized = 0;
+	static HMODULE handle;
+	static void * (*wgl_getProcAddress)(const char *proc);
+
+	if (!initialized) {
+		initialized = 1;
+		handle = GetModuleHandle("OPENGL32.DLL");
+		wgl_getProcAddress =
+			(void* (*)(const char*))
+			GetProcAddress(handle, "wglGetProcAddress");
+	}
+
+	if (wgl_getProcAddress) {
+		func = wgl_getProcAddress(proc);
+	}
+	if (!func) {
+		func = GetProcAddress(NULL, proc);
+	}
+	return func;
+}
+#endif
 
 static LRESULT
 handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
@@ -175,10 +220,18 @@ int gl_open_window () {
 	if (!_gl_hwnd) {
 		fprintf(stderr, "cannot open window\n");
 		MessageBox(NULL, TEXT("Error creating main window."), TEXT("Error"), MB_ICONERROR | MB_OK);
+		UnregisterClass(_gl_wc.lpszClassName, NULL);
+		DestroyIcon(xjadeo_icon);
 		return 1;
 	}
 
 	_gl_hdc = GetDC(_gl_hwnd);
+	if (!_gl_hdc) {
+		DestroyWindow(_gl_hwnd);
+		UnregisterClass(_gl_wc.lpszClassName, NULL);
+		DestroyIcon(xjadeo_icon);
+		return 1;
+	}
 
 	PIXELFORMATDESCRIPTOR pfd;
 	ZeroMemory(&pfd, sizeof(pfd));
@@ -191,9 +244,26 @@ int gl_open_window () {
 	pfd.iLayerType = PFD_MAIN_PLANE;
 
 	int format = ChoosePixelFormat(_gl_hdc, &pfd);
+	if (format == 0) {
+		fprintf(stderr, "Pixel Format is not supported.\n");
+		ReleaseDC(_gl_hwnd, _gl_hdc);
+		DestroyWindow(_gl_hwnd);
+		UnregisterClass(_gl_wc.lpszClassName, NULL);
+		DestroyIcon(xjadeo_icon);
+		return -1;
+	}
 	SetPixelFormat(_gl_hdc, format, &pfd);
 
 	_gl_hglrc = wglCreateContext(_gl_hdc);
+	if (!_gl_hglrc) {
+		fprintf(stderr, "Cannot create openGL context.\n");
+		ReleaseDC(_gl_hwnd, _gl_hdc);
+		DestroyWindow(_gl_hwnd);
+		UnregisterClass(_gl_wc.lpszClassName, NULL);
+		DestroyIcon(xjadeo_icon);
+		return -1;
+	}
+
 	wglMakeCurrent(_gl_hdc, _gl_hglrc);
 
 	if (start_fullscreen) { gl_set_fullscreen(1); }
@@ -210,11 +280,28 @@ int gl_open_window () {
 			ANDmaskCursor, XORmaskCursor);
 
 	gl_init();
-	gl_reallocate_texture(movie_width, movie_height);
+
+	if (gl_reallocate_texture(movie_width, movie_height)) {
+		gl_close_window ();
+		return 1;
+	}
+
+#if 0 // check for VBlank sync
+	if (check_wgl_extention("WGL_EXT_swap_control")) {
+		printf("WGL: have WGL_EXT_swap_control\n");
+		BOOL (*wglSwapIntervalEXT)(int interval) =
+			(BOOL (*)(int))
+			win_glGetProcAddress("wglSwapIntervalEXT");
+		if (wglSwapIntervalEXT) {
+			wglSwapIntervalEXT(1);
+			if (want_verbose)
+				printf("WGL: use Vblank \n");
+		}
+	}
+#endif
 
 	//ShowWindow(_gl_hwnd, SW_HIDE);
 	//ShowWindow(_gl_hwnd, SW_SHOW);
-
 	ShowWindow(_gl_hwnd, WS_VISIBLE);
 	ShowWindow(_gl_hwnd, SW_RESTORE);
 	UpdateWindow(_gl_hwnd);
@@ -227,8 +314,8 @@ void gl_close_window() {
 	ReleaseDC(_gl_hwnd, _gl_hdc);
 	DestroyWindow(_gl_hwnd);
 	DestroyCursor(hCurs_none);
-	DestroyIcon(xjadeo_icon);
 	UnregisterClass(_gl_wc.lpszClassName, NULL);
+	DestroyIcon(xjadeo_icon);
 }
 
 void gl_handle_events () {
