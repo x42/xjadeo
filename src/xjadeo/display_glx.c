@@ -62,6 +62,44 @@ static void glx_netwm(const char *atom, const int onoff) {
 	}
 }
 
+#ifdef HAVE_XPM
+#include <X11/xpm.h>
+#include "icons/xjadeo-color.xpm"
+#else
+#include "icons/xjadeo.bitmap"
+#include "icons/xjadeo_mask.xbm"
+#endif
+
+static void setup_window_hints_and_icon(Display* dpy, Window win, Window parent, const int maxsize) {
+	XTextProperty	x_wname, x_iname;
+	XSizeHints	hints;
+	XWMHints	wmhints;
+	char *w_name ="xjadeo";
+	char *i_name ="xjadeo";
+
+	/* default settings which allow arbitraray resizing of the window */
+	hints.flags = PSize | PMaxSize | PMinSize;
+	hints.min_width = 32;
+	hints.min_height = 18;
+	hints.max_width = maxsize;
+	hints.max_height = maxsize;
+
+	wmhints.input = True;
+#ifdef HAVE_XPM
+	XpmCreatePixmapFromData(dpy, parent, xjadeo_color_xpm, &wmhints.icon_pixmap, &wmhints.icon_mask, NULL);
+#else
+	wmhints.icon_pixmap = XCreateBitmapFromData(dpy, parent, (char *)xjadeo_bits , xjadeo_width, xjadeo_height);
+	wmhints.icon_mask  = XCreateBitmapFromData(dpy, parent, (char *)xjadeo_mask_bits , xjadeo_mask_width, xjadeo_mask_height);
+#endif
+	wmhints.flags = InputHint | IconPixmapHint | IconMaskHint;
+
+	XStringListToTextProperty(&w_name, 1 ,&x_wname);
+	XStringListToTextProperty(&i_name, 1 ,&x_iname);
+
+	XSetWMProperties(dpy, win, &x_wname, &x_iname, NULL, 0, &hints, &wmhints, NULL);
+}
+
+
 int gl_open_window () {
 	_gl_display = XOpenDisplay(0);
 	if (!_gl_display) {
@@ -114,6 +152,8 @@ int gl_open_window () {
 
 	Atom wmDelete = XInternAtom(_gl_display, "WM_DELETE_WINDOW", True);
 	XSetWMProtocols(_gl_display, _gl_win, &wmDelete, 1);
+
+	setup_window_hints_and_icon(_gl_display, _gl_win, xParent, 4096 /*TODO query max texture size*/);
 
 	_gl_ctx = glXCreateContext(_gl_display, vi, 0, GL_TRUE);
 
