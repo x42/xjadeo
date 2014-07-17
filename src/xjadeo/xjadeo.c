@@ -175,14 +175,16 @@ static int select_sleep (const long usec) {
 }
 
 void event_loop(void) {
-	static int	splashed = -1;
 	double  elapsed_time;
 	int64_t clock1, clock2;
-	long		newFrame, offFrame;
+	long    newFrame, offFrame;
 	float   nominal_delay;
+	int64_t splash_timeout;
+	int     splashed = 0;
 
 	if (want_verbose) printf("\nentering video update loop @%.2f fps.\n",delay>0?(1.0/delay):framerate);
 	clock1 = xj_get_monotonic_time();
+	splash_timeout = clock1 + 2000000; // 2 sec;
 
 	while(loop_flag) { /* MAIN LOOP */
 
@@ -230,7 +232,7 @@ void event_loop(void) {
 
 		offFrame = newFrame + ts_offset;
 		long curFrame = dispFrame;
-		display_frame((int64_t)(offFrame), force_redraw, !splashed || want_nosplash);
+		display_frame((int64_t)(offFrame), force_redraw, splashed || want_nosplash);
 
 		if ((remote_en||mq_en||ipc_queue)
 				&& ( (remote_mode&NTY_FRAMELOOP) || ((remote_mode&NTY_FRAMECHANGE)&& curFrame!=dispFrame))
@@ -245,11 +247,13 @@ void event_loop(void) {
 		force_redraw=0;
 		nominal_delay = delay > 0 ? delay : (1.0/framerate);
 
-		if (splashed) {
-			if (splashed == -1) {
-				splashed =  4.5 / nominal_delay;
+		if (!splashed) {
+			if (splash_timeout > clock1) {
+				splash(buffer);
+			} else {
+				splashed = 1;
+				force_redraw = 1;
 			}
-			splash(buffer);
 		}
 
 		if(want_verbose) {
@@ -280,21 +284,23 @@ void event_loop(void) {
 			if (microsecdelay > pollinterval && delay <= 0) microsecdelay = pollinterval;
 #endif
 			if (!select_sleep(microsecdelay)) {
-				if (splashed) {
-					if(!--splashed) force_redraw=1;
-				}
+				; // remote event occured
 			}
-			if (curFrame!=dispFrame) {
+			if (curFrame != dispFrame) {
 				clock1 = clock2;
 			}
 		}
 		else {
 			clock1 = clock2;
+			if (!splashed) {
+				force_redraw = 1;
+			}
 #if 0 // debug timing
 			printf("@@ %7.1f ms [%ld]\n", (nominal_delay - elapsed_time) / 1e3, offFrame);
 #endif
 		}
 	}
+
 	if ((remote_en||mq_en||ipc_queue) && (remote_mode&4)) {
 		// send current settings
 		xapi_pfullscreen(NULL);
