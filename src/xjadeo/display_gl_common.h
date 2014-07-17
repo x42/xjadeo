@@ -61,10 +61,11 @@ static int        _gl_ontop = 0;
 static int        _gl_fullscreen = 0;
 static int        _gl_mousepointer = 0;
 
-static float      _gl_quad_x = 1.0;
-static float      _gl_quad_y = 1.0;
-static int        _gl_reexpose = 0;
-unsigned int      _gl_texture_id = 0;
+static float        _gl_quad_x = 1.0;
+static float        _gl_quad_y = 1.0;
+static int          _gl_reexpose = 0;
+static unsigned int _gl_texture_id = 0;
+static int          _gl_vblank_sync = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 static void gl_make_current();
@@ -88,7 +89,7 @@ static void gl_reshape(int width, int height) {
 	gl_letterbox_change();
 }
 
-static void gl_reallocate_texture(int width, int height) {
+static int gl_reallocate_texture(int width, int height) {
 	glDeleteTextures (1, &_gl_texture_id);
 	glViewport (0, 0, _gl_width, _gl_height);
 	glMatrixMode (GL_PROJECTION);
@@ -102,6 +103,7 @@ static void gl_reallocate_texture(int width, int height) {
 	glTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA,
 			width, height, 0,
 			GL_BGRA, GL_UNSIGNED_BYTE, NULL);
+
 	glTexEnvi (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -109,6 +111,7 @@ static void gl_reallocate_texture(int width, int height) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 #endif
+	return 0;
 }
 
 static void gl_init () {
@@ -158,6 +161,9 @@ static void xjglExpose() {
 	opengl_draw (movie_width, movie_height, buffer);
 	glFlush();
 	gl_swap_buffers();
+	if (_gl_vblank_sync) {
+		glFinish();
+	}
 }
 
 static void xjglButton(int btn) {

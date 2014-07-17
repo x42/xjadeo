@@ -99,6 +99,27 @@ static void setup_window_hints_and_icon(Display* dpy, Window win, Window parent,
 	XSetWMProperties(dpy, win, &x_wname, &x_iname, NULL, 0, &hints, &wmhints, NULL);
 }
 
+static int check_glx_extention(const char *ext) {
+	if (!ext || strchr(ext, ' ') || *ext == '\0') {
+		return 0;
+	}
+	const char *exts = glXQueryExtensionsString(_gl_display, _gl_screen);
+	if (!exts) {
+		return 0;
+	}
+
+	const char *start = exts;
+	while (1) {
+		const char *tmp = strstr(start, ext);
+		if (!tmp) break;
+		const char *end = tmp + strlen(ext);
+		if (tmp == start || *(tmp - 1) == ' ')
+			if (*end == ' ' || *end == '\0') return 1;
+		start = end;
+	}
+	return 0;
+}
+
 
 int gl_open_window () {
 	_gl_display = XOpenDisplay(0);
@@ -119,6 +140,12 @@ int gl_open_window () {
 	};
 
 	XVisualInfo* vi = glXChooseVisual(_gl_display, _gl_screen, attrList);
+
+	if (!vi) {
+		fprintf(stderr, "GLX visual is not supported\n");
+		XCloseDisplay(_gl_display);
+		return 1;
+	}
 
 	int glxMajor, glxMinor;
 	glXQueryVersion(_gl_display, &glxMajor, &glxMinor);
@@ -148,6 +175,11 @@ int gl_open_window () {
 		0, 0, _gl_width, _gl_height, 0, vi->depth, InputOutput, vi->visual,
 		CWBorderPixel | CWColormap | CWEventMask, &attr);
 
+	if (!_gl_win) {
+		XCloseDisplay(_gl_display);
+		return 1;
+	}
+
 	XStoreName(_gl_display, _gl_win, "xjadeo");
 
 	Atom wmDelete = XInternAtom(_gl_display, "WM_DELETE_WINDOW", True);
@@ -156,6 +188,12 @@ int gl_open_window () {
 	setup_window_hints_and_icon(_gl_display, _gl_win, xParent, 4096 /*TODO query max texture size*/);
 
 	_gl_ctx = glXCreateContext(_gl_display, vi, 0, GL_TRUE);
+
+	if (!_gl_ctx) {
+		XDestroyWindow(_gl_display, _gl_win);
+		XCloseDisplay(_gl_display);
+		return 1;
+	}
 
 	XMapRaised(_gl_display, _gl_win);
 
@@ -173,8 +211,50 @@ int gl_open_window () {
 	if (start_ontop) { gl_set_ontop(1); }
 
 	glXMakeCurrent(_gl_display, _gl_win, _gl_ctx);
+
 	gl_init();
-	gl_reallocate_texture(movie_width, movie_height);
+	if (gl_reallocate_texture(movie_width, movie_height)) {
+		gl_close_window ();
+		return 1;
+	}
+
+#if 1 // check for VBlank sync
+	/* https://www.opengl.org/wiki/Swap_Interval ; -1 for adaptive */
+
+	int (*glXSwapIntervalSGI)(int interval) = (int (*)(int))
+		glXGetProcAddress((const GLubyte *)"glXSwapIntervalSGI");
+	GLint (*glXSwapIntervalMESA) (unsigned interval) = (GLint (*)(unsigned))
+		glXGetProcAddress((const GLubyte *)"glXSwapIntervalMESA");
+	int (*glXSwapIntervalEXT)(Display *dpy, GLXDrawable drw, int interval) =
+		(int (*)(Display*, GLXDrawable, int))
+		glXGetProcAddress((const GLubyte *)"glXSwapIntervalEXT");
+
+	int vblank = -1;
+	if (glXSwapIntervalSGI && check_glx_extention("GLX_SGI_swap_control")) {
+		vblank = glXSwapIntervalSGI(1);
+		if (want_verbose)
+			printf("GLX: use SGI Vblank\n");
+	}
+	else if (glXSwapIntervalMESA && check_glx_extention("GLX_MESA_swap_control")) {
+		vblank = glXSwapIntervalMESA(1);
+		if (want_verbose)
+			printf("GLX: use MESA Vblank\n");
+	}
+	else if (glXSwapIntervalEXT && check_glx_extention("GLX_EXT_swap_control")) {
+		GLXDrawable drawable = glXGetCurrentDrawable();
+		if (drawable) {
+			vblank = glXSwapIntervalEXT(_gl_display, drawable, 1);
+			if (want_verbose)
+				printf("GLX: use EXT Vblank\n");
+		}
+	} else {
+		if (!want_quiet) {
+			fprintf(stderr, "openGL VBlank not synced\n");
+		}
+	}
+	// https://www.opengl.org/wiki/Swap_Interval#GPU_vs_CPU_synchronization
+	//_gl_vblank_sync = (vblank == 0) ? 1 : 0;
+#endif
 	return 0;
 }
 
