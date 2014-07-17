@@ -83,20 +83,20 @@ uint8_t           *buffer = NULL;
 int               render_fmt = PIX_FMT_YUV420P; ///< needs to be set before calling movie_open
 
 /* Video File Info */
-double	duration = 1;
-double	framerate = 1;
-long	frames = 1;
+double  duration = 1;
+double  framerate = 1;
+long  frames = 1;
 int64_t file_frame_offset = 0;
 
 /* Option flags and variables */
-char	*current_file = NULL;
-char    *smpte_offset = NULL;
-long 	ts_offset = 0;
-long 	userFrame = 0; // seek to this frame if jack and midi are N/A
-long 	dispFrame = 0; // global strorage... = (SMPTE+offset) with boundaries to [0..movie_file_frames]
-int 	force_redraw = 0;
+char *current_file = NULL;
+char *smpte_offset = NULL;
+long  ts_offset = 0;
+long  userFrame = 0; // seek to this frame if jack and midi are N/A
+long  dispFrame = 0; // global strorage... = (SMPTE+offset) with boundaries to [0..movie_file_frames]
+int   force_redraw = 0;
 
-int 	interaction_override = 0; // disable some options.
+int   interaction_override = 0; // disable some options.
 /* 1 (bit 0) : ignore 'q' and 'ESC' quit key
  * 2 (bit 1) : igore window-manager close button
  * 4 (bit 2) : ignore OSX-Menu QUIT
@@ -162,10 +162,10 @@ int js_winh = -1;
 lash_client_t *lash_client;
 #endif
 
-int     midi_clkadj =1;	/* --midiclk  */
-double 	filefps = -1.0; // if > 0 override autodetected video file frame rate
-int	videomode = 0; // --vo <int>  - default: autodetect
-double 	delay = -1; // use file's FPS
+int    midi_clkadj =1;	/* --midiclk  */
+double filefps = -1.0; // if > 0 override autodetected video file frame rate
+int    videomode = 0; // --vo <int>  - default: autodetect
+double delay = -1; // use file's FPS
 
 
 // On screen display
@@ -484,7 +484,7 @@ jack video monitor\n", program_name);
 "  -f <val>, --fps <val>     display update freq. - default -1 use file's fps\n"
 "  -i <int>, --info <int>    render OnScreenDisplay info: 0:off, %i:frame,\n"
 "                            %i:smpte, %i:both. (use remote ctrl for more opts.)\n"
-"",	OSD_FRAME,OSD_SMPTE,OSD_FRAME|OSD_SMPTE); // :)
+"", OSD_FRAME,OSD_SMPTE,OSD_FRAME|OSD_SMPTE); // :)
   printf ("" /* take a breath */
 "  -I, --ignorefileoffset    set the beginning of the file to SMPTE zero.\n"
 "                            eg. override timestamps of split vob files.\n"
@@ -543,7 +543,7 @@ jack video monitor\n", program_name);
 "                            requires x11 or xv videomode.\n"
 "  -t, --try-codec           checks if the video-file can be played by jadeo.\n"
 "                            exits with code 1 if the file is not supported.\n"
-"			     no window is opened in this mode.\n"
+"                            no window is opened in this mode.\n"
 "  -T <file>,                \n"
 "      --ttf-file <file>     path to .ttf font for on-screen-display\n"
 #ifdef HAVE_IPCMSG

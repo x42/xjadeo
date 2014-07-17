@@ -39,8 +39,8 @@
 //------------------------------------------------
 // extern Globals (main.c)
 //------------------------------------------------
-extern int	loop_flag;
-extern int 	loop_run;
+extern int loop_flag;
+extern int loop_run;
 
 extern int               movie_width;
 extern int               movie_height;
@@ -56,53 +56,53 @@ extern uint8_t           *buffer;
 struct SwsContext *pSWSCtx;
 
 // needs to be set before calling movie_open
-extern int	render_fmt;
+extern int render_fmt;
 
 /* Video File Info */
-extern double	duration;
-extern double	framerate;
-extern long	frames;
-extern int64_t	file_frame_offset;
+extern double  duration;
+extern double  framerate;
+extern long    frames;
+extern int64_t file_frame_offset;
 extern int have_dropframes;
 
 /* Option flags and variables */
 extern char    *current_file;
-extern double 	filefps;
-extern long	ts_offset;
+extern double   filefps;
+extern long     ts_offset;
 extern char    *smpte_offset;
-extern long	userFrame;
-extern long	dispFrame;
-extern int 	force_redraw;
-extern int	want_quiet;
-extern int	want_debug;
-extern int	want_verbose;
-extern int	want_avverbose;
-extern int	want_nosplash;
-extern int	want_genpts;
-extern int	want_ignstart;
-extern int	remote_en;
-extern int	remote_mode;
-extern int	mq_en;
-extern char	*ipc_queue;
-extern double	delay;
-extern int	seekflags;
+extern long     userFrame;
+extern long     dispFrame;
+extern int      force_redraw;
+extern int      want_quiet;
+extern int      want_debug;
+extern int      want_verbose;
+extern int      want_avverbose;
+extern int      want_nosplash;
+extern int      want_genpts;
+extern int      want_ignstart;
+extern int      remote_en;
+extern int      remote_mode;
+extern int      mq_en;
+extern char    *ipc_queue;
+extern double   delay;
+extern int      seekflags;
 #if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
 extern int  use_ltc;
 #endif
 
 #ifdef TIMEMAP
-long		timeoffset = 0;
-double	timescale = 1.0;
-int 		wraparound = 0;
+long   timeoffset = 0;
+double timescale = 1.0;
+int    wraparound = 0;
 #endif
 
 // On screen display
-extern char	OSD_frame[48];
-extern char	OSD_smpte[13];
-extern int	OSD_mode;
+extern char OSD_frame[48];
+extern char OSD_smpte[13];
+extern int  OSD_mode;
 
 const AVRational c1_Q = { 1, 1 };
-double 		tpf = 1.0; /* pts/dts increments per video-frame - cached value */
+double tpf = 1.0; /* pts/dts increments per video-frame - cached value */
 
 static int fFirstTime=1;
 
