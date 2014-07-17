@@ -607,6 +607,9 @@ static void printversion (void) {
 # endif
 #endif /* HAVE_MIDI */
 	printf("\n displays: "
+#if HAVE_GL
+			"openGL "
+#endif
 #if HAVE_LIBXV
 			"Xv "
 #endif
@@ -777,7 +780,6 @@ main (int argc, char **argv)
 	}
 
 	if (stat_osd_fontfile()) {
-		printf("OLD WIN FF: %s\n", OSD_fontfile);
 #ifdef HAVE_WINDOWS
 		HKEY key;
 		DWORD size = PATH_MAX;

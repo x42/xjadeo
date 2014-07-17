@@ -83,6 +83,7 @@ dnl IMLIB2RGBA
 		HAVE_WINDOWS=1
 		IMLIB_LIBS="-lws2_32" # LDFLAGS are before object files. -pragmatically re-used IMLIB_LIBS
 		LIBSUF=.dll
+		EXESUF=.exe
 		GL_LIBS="-lopengl32 -lglu32 -lgdi32"
 		AC_DEFINE(HAVE_GL)
 		HAVE_GL=1
@@ -534,7 +535,7 @@ if test "$enable_qtgui" = "yes"; then
  AC_SUBST(ac_lrelease)
 
  ac_qtgui_dir="qt-gui"
- XJINFO_BIN="xjinfo"
+ XJINFO_BIN="xjinfo$EXESUF"
 
  AC_CONFIG_FILES(src/qt-gui/Makefile src/qt-gui/qjadeo.pro)
 

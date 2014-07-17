@@ -5,7 +5,10 @@
 
 #define XJADEORC "xjadeorc"
 #define MAX_LINE_LEN 256
+
+#ifndef PATH_MAX
 #define PATH_MAX 1024
+#endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
