@@ -322,15 +322,15 @@ int main(int argc, char *argv[])
 #endif
     avcodec_string(str, sizeof(str), codec, 0);
     switch (codec->codec_type) {
-    case CODEC_TYPE_VIDEO:
+    case AVMEDIA_TYPE_VIDEO:
       printf("  <video>%s</video>\n", str);
       printf("  <stream id=\"%d\" type=\"video\">\n", i);
       break;
-    case CODEC_TYPE_AUDIO:
+    case AVMEDIA_TYPE_AUDIO:
       printf("  <audio>%s</audio>\n", str);
       printf("  <stream id=\"%d\" type=\"audio\">\n", i);
       break;
-    case CODEC_TYPE_DATA:
+    case AVMEDIA_TYPE_DATA:
       printf("  <stream id=\"%d\" type=\"data\">\n", i);
       break;
     default:

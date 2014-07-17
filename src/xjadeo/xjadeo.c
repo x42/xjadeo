@@ -412,9 +412,9 @@ int open_movie(char* file_name) {
 	/* Find the first video stream */
 	for(i=0; i<pFormatCtx->nb_streams; i++)
 #if LIBAVFORMAT_BUILD > 4629
-		if(pFormatCtx->streams[i]->codec->codec_type==CODEC_TYPE_VIDEO)
+		if(pFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_VIDEO)
 #else
-		if(pFormatCtx->streams[i]->codec.codec_type==CODEC_TYPE_VIDEO)
+		if(pFormatCtx->streams[i]->codec.codec_type==AVMEDIA_TYPE_VIDEO)
 #endif
 		{
 			videoStream=i;
@@ -552,7 +552,7 @@ int open_movie(char* file_name) {
 		return( -1 );
 	}
 
-	pFrame=avcodec_alloc_frame();
+	pFrame=av_frame_alloc();
 	if(pFrame==NULL) {
 		fprintf( stderr, "Cannot allocate video frame buffer\n");
 		avcodec_close(pCodecCtx);
@@ -562,7 +562,7 @@ int open_movie(char* file_name) {
 		return(-1);
 	}
 
-	pFrameFMT=avcodec_alloc_frame();
+	pFrameFMT=av_frame_alloc();
 	if(pFrameFMT==NULL) {
 		fprintf( stderr, "Cannot allocate display frame buffer\n");
 		av_free(pFrame);
