@@ -81,7 +81,6 @@ dnl IMLIB2RGBA
 		PM_OS=win
 		AC_DEFINE([PLATFORM_WINDOWS], [], [windows SDL version])
 		PLATFORM_WINDOWS=1
-		IMLIB_LIBS="-lws2_32" # LDFLAGS are before object files. -pragmatically re-used IMLIB_LIBS
 		LIBSUF=.dll
 		EXESUF=.exe
 		GL_LIBS="-lopengl32 -lglu32 -lgdi32"

@@ -34,6 +34,7 @@
 #include "xjadeo.h"
 #include "ffcompat.h"
 #include "remote.h"
+#include "gtime.h"
 
 //------------------------------------------------
 // extern Globals (main.c)
@@ -128,17 +129,21 @@ static void js_apply() {
 // main event loop
 //--------------------------------------------
 
-static int select_sleep (int usec) {
+static int select_sleep (const long usec) {
 	int remote_activity = 0;
+#ifndef PLATFORM_WINDOWS
 	fd_set fd;
 	int max_fd=0;
 	struct timeval tv = { 0, 0 };
-	tv.tv_sec = 0; tv.tv_usec = usec;
-
+	if (usec > 500) {
+		tv.tv_sec = usec / 1000000L;
+		tv.tv_usec = (usec % 1000000L);
+	}
 	FD_ZERO(&fd);
 	if (remote_en) {
 		max_fd=remote_fd_set(&fd);
 	}
+#endif
 #if defined HAVE_MQ
 	if (mq_en) {
 		if (!remote_read_mq()) remote_activity=1;
@@ -151,17 +156,14 @@ static int select_sleep (int usec) {
 #ifdef HAVE_LIBLO
 	remote_activity |= process_osc();
 #endif
+#ifndef PLATFORM_WINDOWS
 	if (remote_activity) {
 		tv.tv_sec = 0; tv.tv_usec = 1;
 	}
-#if 0 /* pselect sleep */
-	struct timespec	ts;
-	ts.tv_sec = (usec / 1000000L);
-	ts.tv_nsec = (usec % 1000000L)*1000;
-	if (pselect(max_fd, &fd, NULL, NULL, &ts,NULL)) remote_read_io();
-#elif defined PLATFORM_WINDOWS
-	if (!remote_en || remote_read_h()) {
-		Sleep((usec+ 999) /1000);
+#endif
+#ifdef PLATFORM_WINDOWS
+	if (!remote_en || remote_read_h() && usec > 1000) {
+		Sleep((usec + 999) / 1000); // XXX not nearly good enough.
 	}
 #else
 	if (select(max_fd, &fd, NULL, NULL, &tv)) {
@@ -173,19 +175,18 @@ static int select_sleep (int usec) {
 }
 
 void event_loop(void) {
-	double 		elapsed_time;
-	struct timeval	clock1, clock2;
-	long		newFrame, offFrame;
-	long		nanos;
-	double 		dly;
 	static int	splashed = -1;
+	double  elapsed_time;
+	int64_t clock1, clock2;
+	long		newFrame, offFrame;
+	float   nominal_delay;
 
 	if (want_verbose) printf("\nentering video update loop @%.2f fps.\n",delay>0?(1.0/delay):framerate);
-	gettimeofday(&clock1, NULL);
+	clock1 = xj_get_monotonic_time();
 
 	while(loop_flag) { /* MAIN LOOP */
 
-		if (loop_run==0) {  // CHECK: && !force_redraw ?!
+		if (loop_run == 0) {
 			/* video offline - (eg. window minimized)
 			 * do not update frame
 			 */
@@ -201,13 +202,12 @@ void event_loop(void) {
 		else
 #endif
 #if (defined HAVE_LTCSMPTE || defined HAVE_LTC)
-			if (ltcjack_connected()) newFrame = ltc_poll_frame();
-			else
+		if (ltcjack_connected()) newFrame = ltc_poll_frame();
+		else
 #endif
+		newFrame = jack_poll_frame();
 
-				newFrame = jack_poll_frame();
-
-		if (newFrame <0 ) newFrame=userFrame;
+		if (newFrame < 0) newFrame = userFrame;
 
 #if 0 // DEBUG
 		static long		oldFrame = 0;
@@ -243,11 +243,11 @@ void event_loop(void) {
 			remote_printf(301,"position=%li",dispFrame);
 		}
 		force_redraw=0;
-		dly = delay>0?delay:(1.0/framerate);
+		nominal_delay = delay > 0 ? delay : (1.0/framerate);
 
 		if (splashed) {
 			if (splashed == -1) {
-				splashed =  4.5/dly;
+				splashed =  4.5 / nominal_delay;
 			}
 			splash(buffer);
 		}
@@ -267,18 +267,33 @@ void event_loop(void) {
 		lash_process();
 		js_apply();
 
-		gettimeofday(&clock2, NULL);
-		elapsed_time = ((double) (clock2.tv_sec-clock1.tv_sec)) + ((double) (clock2.tv_usec-clock1.tv_usec)) / 1000000.0;
-		if(elapsed_time < dly) {
-			nanos = (long) floor(1e9L * (dly - elapsed_time));
-			if (!select_sleep(nanos/1000L)) {
+		clock2 = xj_get_monotonic_time();
+		nominal_delay *= 1000000.f;
+		elapsed_time = (clock2 - clock1);
+		if(elapsed_time < nominal_delay) {
+			long microsecdelay = (long) floorf(nominal_delay - elapsed_time);
+#if 0 // debug timing
+			printf("  %7.1f ms, [%ld]\n", microsecdelay / 1e3, offFrame);
+#endif
+#if 1 // poll 10 times per frame, unless -f delay is given explicitly
+			const long pollinterval = ceilf(nominal_delay * .1f);
+			if (microsecdelay > pollinterval && delay <= 0) microsecdelay = pollinterval;
+#endif
+			if (!select_sleep(microsecdelay)) {
 				if (splashed) {
 					if(!--splashed) force_redraw=1;
 				}
 			}
+			if (curFrame!=dispFrame) {
+				clock1 = clock2;
+			}
 		}
-		clock1.tv_sec=clock2.tv_sec;
-		clock1.tv_usec=clock2.tv_usec;
+		else {
+			clock1 = clock2;
+#if 0 // debug timing
+			printf("@@ %7.1f ms [%ld]\n", (nominal_delay - elapsed_time) / 1e3, offFrame);
+#endif
+		}
 	}
 	if ((remote_en||mq_en||ipc_queue) && (remote_mode&4)) {
 		// send current settings

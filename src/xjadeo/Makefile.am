@@ -15,7 +15,8 @@ xjadeo_SOURCES=xjadeo.c ../../aclocal.m4 ../../config.h \
 							 display.c display.h \
 							 display_mac.c display_x11.c display_sdl.c \
 							 display_gl_common.h \
-							 weak_libjack.c weak_libjack.h
+							 weak_libjack.c weak_libjack.h \
+							 gtime.c gtime.h
 
 xjadeo_LDADD = @MQ_LIBS@ @FFMPEG_LIBS@ @XV_LIBS@ @IMLIB_LIBS@ @MIDI_LIBS@ @FREETYPE_LIBS@ @IMLIB2_LIBS@ @LASH_LIBS@ @Xpm_LIBS@ @LIBLO_LIBS@ @SDL_LIBS@ @LTCSMPTE_LIBS@ @LTC_LIBS@ @GL_LIBS@ -lm
 
@@ -29,6 +30,7 @@ endif
 if TARGET_WIN32
 xjadeo_SOURCES+=display_gl_win.c
 xjadeo_CFLAGS+=-DUSE_WEAK_JACK
+xjadeo_LDADD+=-lws2_32 -lwinmm
 endif
 if TARGET_OSX
 xjadeo_SOURCES+=display_gl_osx.m
