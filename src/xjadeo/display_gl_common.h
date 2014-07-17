@@ -186,7 +186,7 @@ static void xjglButton(int btn) {
 }
 
 static void xjglKeyPress(const unsigned int sym, const char *key) {
-	if (!strcmp(key, "q") || sym == 0xff1b) {
+	if (!strcmp(key, "q") || sym == 0xff1b || sym == 0x1b) {
 		if ((interaction_override&OVR_QUIT_KEY) == 0) {
 			loop_flag=0;
 		} else {
@@ -317,7 +317,7 @@ static void xjglKeyPress(const unsigned int sym, const char *key) {
 	else if (!strcmp(key, "m")) {
 		gl_mousepointer(2);
 	}
-	else if (sym == 0xff08 || sym == 0x7f) { // BackSpace, Del
+	else if (sym == 0xff08 || sym == 0x7f || sym == 0x08) { // BackSpace, Del
 		jackt_rewind();
 		remote_notify(NTY_KEYBOARD,
 				310, "keypress=%d # backspace", sym);
