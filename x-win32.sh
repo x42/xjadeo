@@ -1,6 +1,8 @@
 #!/bin/sh
 #NORECONF=1
 
+set -e
+
 WINEBASEDIR=/home/rgareus/.wine/drive_c/x-prefix
 NSISEXE=/home/rgareus/.wine/drive_c/Program\ Files/NSIS/makensis.exe
 unset CC
@@ -16,7 +18,7 @@ PKG_CONFIG_PATH=$WINEBASEDIR/lib/pkgconfig/ CFLAGS="-I$WINEBASEDIR/include -I.."
 fi
 
 NSIDIR=contrib/nsi/
-
+make clean
 make -C src/xjadeo xjadeo.exe || exit
 cp -v src/xjadeo/xjadeo.exe $NSIDIR
 make -C src/xjadeo xjinfo.exe || exit
@@ -44,7 +46,7 @@ cp -v $WINEBIN/libltc-11.dll $NSIDIR
 cp -v contrib/Jadeo.app/Contents/Resources/FreeMonoBold.ttf $NSIDIR
 
 
-#make -C src/qt-gui || exit
+make -C src/qt-gui || exit
 cp -v src/qt-gui/release/qjadeo.exe $NSIDIR
 cp -v src/qt-gui/qjadeo_fr.qm $NSIDIR
 cp -v src/qt-gui/qjadeo_ru.qm $NSIDIR
