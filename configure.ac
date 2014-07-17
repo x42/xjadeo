@@ -74,6 +74,7 @@ dnl IMLIB2RGBA
 		AM_CONDITIONAL([TARGET_OSX], false)
 		AM_CONDITIONAL([TARGET_LINUX], true)
 		AM_CONDITIONAL([TARGET_WIN32], false)
+		LIBS="$LIBS -L/usr/X11R6/lib"
 	;;
   *mingw32*|*win*)
 		AC_MSG_NOTICE([TARGET: WINDOWS])
@@ -175,9 +176,6 @@ if test "x$enable_framecrop" == "xyes"; then
   AC_DEFINE(CROPIMG)
 fi
 
-# FIXME - needed fi. on osx
-LIBS="$LIBS -L/usr/X11R6/lib"
-#X_LIBS="-L/usr/X11R6/lib/"
 
 PKG_CHECK_MODULES(JACK, jack, , [AC_MSG_ERROR(*** You need the JACK audio development kit (jackaudio.org). ***)])
 AC_SUBST(JACK_CFLAGS)
@@ -186,11 +184,11 @@ if test "x$enable_jacksession" != "xno"; then
   AC_CHECK_HEADERS([jack/session.h] , AC_DEFINE(JACK_SESSION) JACK_SESSION=1)
 fi
 
-AC_SEARCH_LIBS(jack_port_get_latency_range, jack, AC_DEFINE(NEW_JACK_LATENCY_API) NEW_JACK_LATENCY_API=1 )
+AC_CHECK_LIB(jack, jack_port_get_latency_range, [AC_DEFINE(NEW_JACK_LATENCY_API) NEW_JACK_LATENCY_API=1])
 
 MQ_LIBS=""
 if test "x$enable_mq" != "xno"; then
-	AC_SEARCH_LIBS( mq_open, rt, AC_DEFINE(HAVE_MQ) MQ_LIBS="-lrt -lpthread" HAVE_MQ=1 )
+	AC_CHECK_LIB(rt, mq_open, [AC_DEFINE(HAVE_MQ) MQ_LIBS="-lrt -lpthread" HAVE_MQ=1])
 fi
 AC_SUBST(MQ_LIBS)
 AC_DEFINE(MQLEN, 512, [ max length of a remote control line. ])
@@ -215,7 +213,6 @@ AS_IF([test -z "$HAVE_MACOSX$HAVE_WINDOWS"], [
 	AC_CHECK_HEADERS([X11/Xlib.h], , [AC_MSG_ERROR(*** X11: You need to install the X11 development package. ***)])
 	AC_CHECK_LIB([X11], [XOpenDisplay], [XV_LIBS="$XV_LIBS -lXext"], AC_MSG_ERROR([*** X11: You need to install the X11 development package: libx11-dev ***]))
 	PKG_CHECK_MODULES(Xpm, xpm, [ AC_DEFINE(HAVE_XPM) HAVE_XPM=1 ], [AC_MSG_ERROR(*** X11: You need to install the libxpm development package. ***)])
-	#AC_SEARCH_LIBS( XpmCreatePixmapFromData, Xpm, AC_DEFINE(HAVE_XPM) XPM_LIBS="-lXpm" HAVE_XPM=1 )
 ])
 
 AS_IF([test "x$enable_osc" != "xno"], [
