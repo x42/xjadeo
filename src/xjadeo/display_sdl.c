@@ -28,7 +28,6 @@
 #include "display.h"
 
 extern long ts_offset; 
-extern char    *smpte_offset;
 extern int 	force_redraw; // tell the main event loop that some cfg has changed
 extern int 	interaction_override; // disable some options.
 extern double framerate;
@@ -494,6 +493,14 @@ void handle_X_events_sdl (void) {
 						OSD_mode^=OSD_OFFF;
 					}
 					force_redraw=1;
+				} else if(ev.key.keysym.sym== SDLK_BACKSLASH) {
+					if ((interaction_override&OVR_AVOFFSET) != 0 ) {
+						remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
+						break;
+					}
+					ts_offset = 0;
+					force_redraw=1;
+					update_smptestring();
 				} else if(ev.key.keysym.sym== SDLK_EQUALS && ev.key.keysym.mod&KMOD_SHIFT) { // '+' SDLK_PLUS does not work :/
 					if ((interaction_override&OVR_AVOFFSET) != 0 ) {
 						remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
@@ -501,9 +508,7 @@ void handle_X_events_sdl (void) {
 					}
 					ts_offset++;
 					force_redraw=1;
-					if (smpte_offset) free(smpte_offset);
-					smpte_offset= calloc(15,sizeof(char));
-					frame_to_smptestring(smpte_offset,ts_offset);
+					update_smptestring();
 				} else if(ev.key.keysym.sym==SDLK_MINUS) {
 					if ((interaction_override&OVR_AVOFFSET) != 0 ) {
 						remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
@@ -511,9 +516,7 @@ void handle_X_events_sdl (void) {
 					}
 					ts_offset--;
 					force_redraw=1;
-					if (smpte_offset) free(smpte_offset);
-					smpte_offset= calloc(15,sizeof(char));
-					frame_to_smptestring(smpte_offset,ts_offset);
+					update_smptestring();
 				} else if(ev.key.keysym.sym== SDLK_LEFTBRACKET && ev.key.keysym.mod&KMOD_SHIFT) { // '{'
 					if ((interaction_override&OVR_AVOFFSET) != 0 ) {
 						remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
@@ -525,9 +528,7 @@ void handle_X_events_sdl (void) {
 						ts_offset-= 25*60;
 					}
 					force_redraw=1;
-					if (smpte_offset) free(smpte_offset);
-					smpte_offset= calloc(15,sizeof(char));
-					frame_to_smptestring(smpte_offset,ts_offset);
+					update_smptestring();
 				} else if(ev.key.keysym.sym== SDLK_RIGHTBRACKET&& ev.key.keysym.mod&KMOD_SHIFT) { // '}'
 					if ((interaction_override&OVR_AVOFFSET) != 0 ) {
 						remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
@@ -539,9 +540,7 @@ void handle_X_events_sdl (void) {
 						ts_offset+= 25*60;
 					}
 					force_redraw=1;
-					if (smpte_offset) free(smpte_offset);
-					smpte_offset= calloc(15,sizeof(char));
-					frame_to_smptestring(smpte_offset,ts_offset);
+					update_smptestring();
 #ifdef CROPIMG
 				} else if(ev.key.keysym.sym== SDLK_LEFTBRACKET) { // '['
 				} else if(ev.key.keysym.sym== SDLK_RIGHTBRACKET) { // ']'

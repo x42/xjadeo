@@ -38,7 +38,6 @@ extern int loop_flag;
 extern int VOutput;
 extern int OSD_mode; // change via keystroke
 extern long ts_offset; 
-extern char *smpte_offset;
 extern int force_redraw; // tell the main event loop that some cfg has changed
 extern int want_letterbox;
 extern int seekflags;
@@ -1477,6 +1476,15 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       OSD_mode=0; 
       force_redraw=1;
     } break;
+    case '\\': {
+      if ((interaction_override&OVR_AVOFFSET) != 0 ) {
+        remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) charcode);
+        break;
+      }
+      ts_offset = 0;
+      force_redraw=1;
+      update_smptestring();
+    } break;
     case '+': {
       if ((interaction_override&OVR_AVOFFSET) != 0 ) {
         remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) charcode);
@@ -1484,9 +1492,7 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       }
       ts_offset++;
       force_redraw=1;
-      if (smpte_offset) free(smpte_offset);
-      smpte_offset= calloc(15,sizeof(char));
-      frame_to_smptestring(smpte_offset,ts_offset);
+      update_smptestring();
     } break;
     case '-': {
       if ((interaction_override&OVR_AVOFFSET) != 0 ) {
@@ -1495,9 +1501,7 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       }
       ts_offset--;
       force_redraw=1;
-      if (smpte_offset) free(smpte_offset);
-      smpte_offset= calloc(15,sizeof(char));
-      frame_to_smptestring(smpte_offset,ts_offset);
+      update_smptestring();
     } break;
     case '{': {
       if ((interaction_override&OVR_AVOFFSET) != 0 ) {
@@ -1510,9 +1514,7 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
         ts_offset-= 25*60;
       }
       force_redraw=1;
-      if (smpte_offset) free(smpte_offset);
-      smpte_offset= calloc(15,sizeof(char));
-      frame_to_smptestring(smpte_offset,ts_offset);
+      update_smptestring();
     } break;
     case '}': {
       if ((interaction_override&OVR_AVOFFSET) != 0 ) {
@@ -1525,9 +1527,7 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
         ts_offset+= 25*60;
       }
       force_redraw=1;
-      if (smpte_offset) free(smpte_offset);
-      smpte_offset= calloc(15,sizeof(char));
-      frame_to_smptestring(smpte_offset,ts_offset);
+      update_smptestring();
     } break;
     case 'm': mousepointer_mac(2); break;
     case '.': { //'.' // resize 100%

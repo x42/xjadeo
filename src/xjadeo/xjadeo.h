@@ -128,6 +128,7 @@ int getvidmode (void);
 const char *vidoutname (int i);
 int try_next_vidoutmode(int user_req);
 void splash (uint8_t *mybuffer);
+void update_smptestring();
 
 void render_buffer (uint8_t *mybuffer);
 void handle_X_events (void);

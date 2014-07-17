@@ -44,7 +44,6 @@
 void jackt_toggle();
 void jackt_rewind();
 extern long ts_offset;
-extern char *smpte_offset;
 extern double framerate;
 
 // globals
@@ -268,6 +267,15 @@ static void xjglKeyPress(const unsigned int sym, const char *key) {
 		h += step;
 		gl_resize(w, h);
 	}
+	else if (!strcmp(key, "\\")) {
+		if ((interaction_override&OVR_AVOFFSET) != 0 ) {
+			remote_notify(NTY_KEYBOARD, 310, "keypress=%d", sym);
+			return;
+		}
+		ts_offset = 0;
+		force_redraw=1;
+		update_smptestring();
+	}
 	else if (!strcmp(key, "+")) {
 		if ((interaction_override&OVR_AVOFFSET) != 0 ) {
 			remote_notify(NTY_KEYBOARD, 310, "keypress=%d", sym);
@@ -275,9 +283,7 @@ static void xjglKeyPress(const unsigned int sym, const char *key) {
 		}
 		ts_offset++;
 		force_redraw=1;
-		if (smpte_offset) free(smpte_offset);
-		smpte_offset= calloc(15,sizeof(char));
-		frame_to_smptestring(smpte_offset,ts_offset);
+		update_smptestring();
 	}
 	else if (!strcmp(key, "-")) {
 		if ((interaction_override&OVR_AVOFFSET) != 0 ) {
@@ -286,9 +292,7 @@ static void xjglKeyPress(const unsigned int sym, const char *key) {
 		}
 		ts_offset--;
 		force_redraw=1;
-		if (smpte_offset) free(smpte_offset);
-		smpte_offset= calloc(15,sizeof(char));
-		frame_to_smptestring(smpte_offset,ts_offset);
+		update_smptestring();
 	}
 	else if (!strcmp(key, "}")) {
 		if ((interaction_override&OVR_AVOFFSET) != 0 ) {
@@ -301,9 +305,7 @@ static void xjglKeyPress(const unsigned int sym, const char *key) {
 			ts_offset+= 25*60;
 		}
 		force_redraw=1;
-		if (smpte_offset) free(smpte_offset);
-		smpte_offset= calloc(15,sizeof(char));
-		frame_to_smptestring(smpte_offset,ts_offset);
+		update_smptestring();
 	}
 	else if (!strcmp(key, "{")) {
 		if ((interaction_override&OVR_AVOFFSET) != 0 ) {
@@ -316,9 +318,7 @@ static void xjglKeyPress(const unsigned int sym, const char *key) {
 			ts_offset-= 25*60;
 		}
 		force_redraw=1;
-		if (smpte_offset) free(smpte_offset);
-		smpte_offset= calloc(15,sizeof(char));
-		frame_to_smptestring(smpte_offset,ts_offset);
+		update_smptestring();
 	}
 	else if (!strcmp(key, "m")) {
 		gl_mousepointer(2);

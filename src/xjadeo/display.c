@@ -38,6 +38,7 @@
 #endif
 
 extern long ts_offset; // display on screen
+extern char *smpte_offset;
 extern int  want_nosplash;
 
 /*******************************************************************************
@@ -445,6 +446,12 @@ void splash (uint8_t *mybuffer) {
 		OSD_bitmap(VO[VOutput].render_fmt, mybuffer,45,0,
 				xj_splash_width, xj_splash_height, xj_splash_bits, NULL);
 	render_buffer(mybuffer);
+}
+
+void update_smptestring() {
+	if (smpte_offset) free(smpte_offset);
+	smpte_offset= calloc(15,sizeof(char));
+	frame_to_smptestring(smpte_offset, ts_offset);
 }
 
 /*******************************************************************************

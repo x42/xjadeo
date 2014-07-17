@@ -477,7 +477,6 @@ extern const vidout VO[];
 extern int VOutput;
 extern int OSD_mode; // change via keystroke
 extern long ts_offset; 
-extern char *smpte_offset;
 extern int 	interaction_override; // disable some options.
 extern double framerate;
 
@@ -771,6 +770,14 @@ void xj_handle_X_events (void) {
 						my_Width+=floor(step*asp_src);
 						my_Height+=step;
 						xj_resize(my_Width, my_Height);
+					} else if (key == XK_backslash ) { // '\' // A/V offset
+						if ((interaction_override&OVR_AVOFFSET) != 0 ) {
+							remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
+							break;
+						}
+						ts_offset = 0;
+						force_redraw=1;
+						update_smptestring();
 					} else if (key == XK_plus ) { //'+' // A/V offset
 						if ((interaction_override&OVR_AVOFFSET) != 0 ) {
 							remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
@@ -778,9 +785,7 @@ void xj_handle_X_events (void) {
 						}
 						ts_offset++;
 						force_redraw=1;
-						if (smpte_offset) free(smpte_offset);
-						smpte_offset= calloc(15,sizeof(char));
-						frame_to_smptestring(smpte_offset,ts_offset);
+						update_smptestring();
 					} else if (key == XK_minus ) { //'-'  A/V offset
 						if ((interaction_override&OVR_AVOFFSET) != 0 ) {
 							remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
@@ -788,9 +793,7 @@ void xj_handle_X_events (void) {
 						}
 						ts_offset--;
 						force_redraw=1;
-						if (smpte_offset) free(smpte_offset);
-						smpte_offset= calloc(15,sizeof(char));
-						frame_to_smptestring(smpte_offset,ts_offset);
+						update_smptestring();
 					} else if (key == XK_braceright ) { //'}' // A/V offset
 						if ((interaction_override&OVR_AVOFFSET) != 0 ) {
 							remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
@@ -802,9 +805,7 @@ void xj_handle_X_events (void) {
 							ts_offset+= 25*60;
 						}
 						force_redraw=1;
-						if (smpte_offset) free(smpte_offset);
-						smpte_offset= calloc(15,sizeof(char));
-						frame_to_smptestring(smpte_offset,ts_offset);
+						update_smptestring();
 					} else if (key == XK_braceleft) { //'{'  A/V offset
 						if ((interaction_override&OVR_AVOFFSET) != 0 ) {
 							remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
@@ -816,9 +817,7 @@ void xj_handle_X_events (void) {
 							ts_offset-= 25*60;
 						}
 						force_redraw=1;
-						if (smpte_offset) free(smpte_offset);
-						smpte_offset= calloc(15,sizeof(char));
-						frame_to_smptestring(smpte_offset,ts_offset);
+						update_smptestring();
 					} else if (key == XK_m ) { // 'm' // toggle mouse pointer
 						xj_mousepointer(2);
 #ifdef CROPIMG
