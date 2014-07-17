@@ -162,7 +162,7 @@ static int select_sleep (const long usec) {
 	}
 #endif
 #ifdef PLATFORM_WINDOWS
-	if (!remote_en || remote_read_h() && usec > 1000) {
+	if ((!remote_en || remote_read_h()) && usec > 1000) {
 		Sleep((usec + 999) / 1000); // XXX not nearly good enough.
 	}
 #else
