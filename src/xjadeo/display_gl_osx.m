@@ -464,6 +464,11 @@ int gl_open_window () {
 	[window setTitle:titleString];
 
 	osx_glview = [XjadeoOpenGLView new];
+	if (!osx_glview) {
+		[window release];
+		[NSAutoreleasePool release];
+		return 1;
+	}
 	osx_window = window;
 
 	[window setContentView:osx_glview];
@@ -474,7 +479,9 @@ int gl_open_window () {
 
 	gl_init();
 	gl_resize(movie_width, movie_height);
-	gl_reallocate_texture(movie_width, movie_height);
+	if (gl_reallocate_texture(movie_width, movie_height)) {
+		gl_close_window();
+	}
 
 	[window setIsVisible:YES];
 	[NSApp finishLaunching];
