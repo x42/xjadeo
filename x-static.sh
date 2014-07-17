@@ -85,9 +85,7 @@ gcc -Wall -O3 \
  -DHAVE_CONFIG_H \
 	"-DSUBVERSION=\"$SRCVERSION\"" \
 	`pkg-config --cflags freetype2 jack` \
-	 xjadeo-xjadeo.o xjadeo-display.o xjadeo-jack.o xjadeo-midi.o xjadeo-freetype.o xjadeo-display_x11.o \
-	 xjadeo-smpte.o xjadeo-main.o xjadeo-remote.o xjadeo-configfile.o xjadeo-lash.o xjadeo-mqueue.o \
-	 xjadeo-display_mac.o xjadeo-xjosc.o xjadeo-display_sdl.o xjadeo-ltc-jack.o \
+	xjadeo-*.o \
 	${LIBF}/libavformat.a \
 	${LIBF}/libavcodec.a \
 	${LIBF}/libswscale.a \
@@ -95,7 +93,7 @@ gcc -Wall -O3 \
 	${LIBF}/libavutil.a \
 	\
 	$SLIBS \
-	`pkg-config --libs jack` -lpthread -lm -lX11 \
+	`pkg-config --libs jack` -lpthread -lm -lX11 -lGLU -lGL \
 || exit 1
 
 strip $OUTFN

@@ -36,17 +36,28 @@ $SUDO apt-get -y install git build-essential yasm \
 
 
 cd $SRC
-git clone -b release/2.0 --depth 1 git://source.ffmpeg.org/ffmpeg
 git clone -b master git://github.com/x42/xjadeo.git
-wget http://www.libsdl.org/release/SDL-1.2.15.tar.gz
-tar xzf SDL-1.2.15.tar.gz
+
+FFVERSION=2.2.5
+#git clone -b release/${FFVERSION} --depth 1 git://source.ffmpeg.org/ffmpeg-${FFVERSION}
+if test -f /tmp/ffmpeg-2.2.5.tar.bz2; then
+	tar xjf /tmp/ffmpeg-2.2.5.tar.bz2
+else
+	wget http://www.ffmpeg.org/releases/ffmpeg-${FFVERSION}.tar.bz2
+	tar xjf ffmpeg-${FFVERSION}.tar.bz2
+fi
+if test -f /tmp/SDL-1.2.15.tar.gz; then
+	tar xzf /tmp/SDL-1.2.15.tar.gz
+else
+	wget http://www.libsdl.org/release/SDL-1.2.15.tar.gz
+	tar xzf SDL-1.2.15.tar.gz
+fi
 
 cd $SRC/xjadeo
 VERSION=$(git describe --tags HEAD)
 git archive --format=tar --prefix=xjadeo-${VERSION}/ HEAD | gzip -9 > /tmp/xjadeo-${VERSION}.tar.gz
 
-cd $SRC/ffmpeg
-#FFVERSION=1.2
+cd $SRC/ffmpeg-${FFVERSION}/
 #git archive --format=tar --prefix=ffmpeg-${FFVERSION}/ HEAD | gzip -9 > /tmp/ffmpeg-${FFVERSION}.tar.gz
 
 ./configure --enable-gpl \
