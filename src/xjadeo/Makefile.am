@@ -11,7 +11,6 @@ xjadeo_SOURCES=xjadeo.c ../../aclocal.m4 ../../config.h \
 							 configfile.c lash.c \
 							 jack.c ltc-jack.c \
 							 midi.c freetype.c smpte.c \
-							 icons/osd_bitmaps.h icons/xjadeo-color-ico.h \
 							 display.c display.h \
 							 display_mac.c display_x11.c display_sdl.c \
 							 display_gl_common.h \
@@ -20,8 +19,8 @@ xjadeo_SOURCES=xjadeo.c ../../aclocal.m4 ../../config.h \
 
 xjadeo_LDADD = @MQ_LIBS@ @FFMPEG_LIBS@ @XV_LIBS@ @IMLIB_LIBS@ @MIDI_LIBS@ @FREETYPE_LIBS@ @IMLIB2_LIBS@ @LASH_LIBS@ @Xpm_LIBS@ @LIBLO_LIBS@ @SDL_LIBS@ @LTCSMPTE_LIBS@ @LTC_LIBS@ @GL_LIBS@ -lm
 
-xjadeo_CFLAGS = -Wall -g -O3 @JACK_CFLAGS@ @FFMPEG_CFLAGS@ @XV_CFLAGS@ @IMLIB_CFLAGS@ @MIDI_CFLAGS@ @FREETYPE_CFLAGS@ @IMLIB2_CFLAGS@ @LASH_CFLAGS@ @LIBLO_CFLAGS@ @SDL_CFLAGS@ @LTCSMPTE_CFLAGS@ @LTC_CFLAGS@ @GL_CFLAGS@ "-DSUBVERSION=\"$(REV)\""
-xjadeo_OBJCFLAGS = -Wall -g -O3 @JACK_CFLAGS@ @FFMPEG_CFLAGS@ @XV_CFLAGS@ @IMLIB_CFLAGS@ @MIDI_CFLAGS@ @FREETYPE_CFLAGS@ @IMLIB2_CFLAGS@ @LASH_CFLAGS@ @LIBLO_CFLAGS@ @SDL_CFLAGS@ @LTCSMPTE_CFLAGS@ @LTC_CFLAGS@ @GL_CFLAGS@ "-DSUBVERSION=\"$(REV)\""
+xjadeo_CFLAGS = -Wall -g -O3 @FFMPEG_CFLAGS@ @XV_CFLAGS@ @IMLIB_CFLAGS@ @MIDI_CFLAGS@ @FREETYPE_CFLAGS@ @IMLIB2_CFLAGS@ @LASH_CFLAGS@ @LIBLO_CFLAGS@ @SDL_CFLAGS@ @LTCSMPTE_CFLAGS@ @LTC_CFLAGS@ @GL_CFLAGS@ @JACK_CFLAGS@ "-DSUBVERSION=\"$(REV)\""
+xjadeo_OBJCFLAGS = -Wall -g -O3 @FFMPEG_CFLAGS@ @XV_CFLAGS@ @IMLIB_CFLAGS@ @MIDI_CFLAGS@ @FREETYPE_CFLAGS@ @IMLIB2_CFLAGS@ @LASH_CFLAGS@ @LIBLO_CFLAGS@ @SDL_CFLAGS@ @LTCSMPTE_CFLAGS@ @LTC_CFLAGS@ @GL_CFLAGS@ @JACK_CFLAGS@ "-DSUBVERSION=\"$(REV)\""
 
 if TARGET_LINUX
 xjadeo_SOURCES+=display_glx.c
@@ -61,7 +60,8 @@ xjadeo_DEPENDENCIES= \
 	icons/brightness.bitmap    icons/gamma.bitmap    icons/osd_bitmaps.h        icons/splash_mask.xbm \
 	icons/brightness_mask.xbm  icons/gamma_mask.xbm  icons/saturation.bitmap    icons/xjadeo-color.xpm \
 	icons/contrast.bitmap      icons/hue.bitmap      icons/saturation_mask.xbm  icons/xjadeo.bitmap \
-	icons/contrast_mask.xbm    icons/hue_mask.xbm    icons/splash.bitmap        icons/xjadeo_mask.xbm
+	icons/contrast_mask.xbm    icons/hue_mask.xbm    icons/splash.bitmap        icons/xjadeo_mask.xbm \
+	icons/osd_bitmaps.h        icons/xjadeo-color-ico.h
 
 paths.h: Makefile
 	@echo '#define BINDIR "$(DESTDIR)/$(bindir)/"' >$@
