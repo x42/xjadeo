@@ -49,14 +49,19 @@ __attribute__ ((visibility ("hidden")))
                   backing:(NSBackingStoreType)bufferingType
                     defer:(BOOL)flag
 {
-	NSWindow* w = [super initWithContentRect:contentRect
-	                               styleMask:(NSClosableWindowMask | NSTitledWindowMask | NSResizableWindowMask | NSMiniaturizableWindowMask)
-	                                 backing:NSBackingStoreBuffered defer:NO];
+	@try {
+		NSWindow* w = [super initWithContentRect:contentRect
+																	 styleMask:(NSClosableWindowMask | NSTitledWindowMask | NSResizableWindowMask | NSMiniaturizableWindowMask)
+																		 backing:NSBackingStoreBuffered defer:NO];
 
-	[w setAcceptsMouseMovedEvents:YES];
-	[w setLevel:NSNormalWindowLevel];
+		[w setAcceptsMouseMovedEvents:YES];
+		[w setLevel:NSNormalWindowLevel];
 
-	return w;
+		return w;
+	}
+	@catch ( NSException *e ) {
+		return nil;
+	}
 }
 
 - (BOOL)windowShouldClose:(id)sender
@@ -460,6 +465,9 @@ int gl_open_window () {
 		encoding:NSUTF8StringEncoding];
 
 	id window = [[XjadeoWindow new]retain];
+	if (window == nil) {
+		return -1;
+	}
 
 	[window setTitle:titleString];
 
