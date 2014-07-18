@@ -7,6 +7,10 @@
 # target install dir:
 : ${PREFIX=$HOME/xjstack}
 # build archs (must include i386)
+#OSX COMPAT
+: ${OSXCOMPAT="-isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5"}
+# concurrency
+MAKEFLAGS="-j2"
 
 if test -z "$NOPPC"; then
 	XJARCH="-arch i386 -arch ppc -arch x86_64"
@@ -35,11 +39,11 @@ export SRCDIR
 function autoconfbuild {
 echo "======= $(pwd) ======="
 PATH=${PREFIX}/bin:/usr/bin:/bin:/usr/sbin:/sbin \
-CFLAGS="${XJARCH} -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -headerpad_max_install_names" \
-CXXFLAGS="${XJARCH} -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -headerpad_max_install_names" \
-LDFLAGS="${XJARCH} -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -headerpad_max_install_names" \
+CFLAGS="${XJARCH} ${OSXCOMPAT}" \
+CXXFLAGS="${XJARCH} ${OSXCOMPAT}" \
+LDFLAGS="${XJARCH} ${OSXCOMPAT} -headerpad_max_install_names" \
 ./configure --disable-dependency-tracking --prefix=$PREFIX --enable-shared $@
-make -j2 && make install
+make $MAKEFLAGS && make install
 }
 
 function download {
@@ -84,9 +88,9 @@ download portmidi-src-217.zip http://sourceforge.net/projects/portmedia/files/po
 cd ${BUILDD}
 unzip ${SRCDIR}/portmidi-src-217.zip
 cd portmidi
-CFLAGS="${XJARCH} -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -headerpad_max_install_names" \
-CXXFLAGS="${XJARCH} -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -headerpad_max_install_names" \
-LDFLAGS="${XJARCH} -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -headerpad_max_install_names" \
+CFLAGS="${XJARCH} ${OSXCOMPAT}" \
+CXXFLAGS="${XJARCH} ${OSXCOMPAT}" \
+LDFLAGS="${XJARCH} ${OSXCOMPAT} -headerpad_max_install_names" \
 make -f pm_mac/Makefile.osx configuration=Release PF=${PREFIX}
 #cd Release; sudo make install
 cp Release/libportmidi.dylib ${PREFIX}/lib/
@@ -110,10 +114,10 @@ autoconfbuild --disable-sdltest --disable-vorbistest --disable-oggtest --disable
 
 ################################################################################
 function x264build {
-CFLAGS="-arch $1 -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -headerpad_max_install_names" \
-LDFLAGS="-arch $1 -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -headerpad_max_install_names" \
+CFLAGS="-arch $1 ${OSXCOMPAT}" \
+LDFLAGS="-arch $1 ${OSXCOMPAT} -headerpad_max_install_names" \
 ./configure --host=$1-macosx-darwin --enable-shared --disable-cli
-make
+make $MAKEFLAGS
 DYL=`ls libx264.*.dylib`
 cp ${DYL} ${DYL}-$1
 }
@@ -158,9 +162,9 @@ mkdir ${PREFIX}/fflipo
 ./configure --prefix=${PREFIX} \
 --enable-libx264 --enable-libtheora --enable-shared --enable-gpl --disable-static --disable-programs --disable-debug \
 --arch=x86_32 --target-os=darwin --cpu=i686 --enable-cross-compile \
---extra-cflags='-arch i386 -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5  -I${PREFIX}/include' \
---extra-ldflags='-arch i386 -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -L${PREFIX}/lib -headerpad_max_install_names'
-make -j4 && make install
+--extra-cflags="-arch i386 ${OSXCOMPAT}  -I${PREFIX}/include" \
+--extra-ldflags="-arch i386 ${OSXCOMPAT} -L${PREFIX}/lib -headerpad_max_install_names"
+make $MAKEFLAGS && make install
 
 find . -iname "*dylib" -type f -exec echo cp -v {} ${PREFIX}/fflipo/\`basename {}\`-i386 \; | bash -
 make clean
@@ -168,9 +172,9 @@ make clean
 ./configure --prefix=${PREFIX} \
 --enable-libx264 --enable-libtheora --enable-shared --enable-gpl --disable-static --disable-programs --disable-debug \
 --arch=x86_64 \
---extra-cflags='-arch x86_64 -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5  -I${PREFIX}/include' \
---extra-ldflags='-arch x86_64 -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -L${PREFIX}/lib -headerpad_max_install_names'
-make -j4
+--extra-cflags="-arch x86_64 ${OSXCOMPAT}  -I${PREFIX}/include" \
+--extra-ldflags="-arch x86_64 ${OSXCOMPAT} -L${PREFIX}/lib -headerpad_max_install_names"
+make $MAKEFLAGS
 find . -iname "*dylib" -type f -exec echo cp -v {} ${PREFIX}/fflipo/\`basename {}\`-x86_64 \; | bash -
 make clean
 
@@ -178,9 +182,9 @@ if test -z "$NOPPC"; then
 ./configure --prefix=${PREFIX} \
 --enable-libx264 --enable-libtheora --enable-shared --enable-gpl --disable-static --disable-programs --disable-debug \
 --arch=ppc \
---extra-cflags='-arch ppc -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5  -I${PREFIX}/include' \
---extra-ldflags='-arch ppc -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -L${PREFIX}/lib -headerpad_max_install_names'
-make -j4
+--extra-cflags="-arch ppc ${OSXCOMPAT}  -I${PREFIX}/include" \
+--extra-ldflags="-arch ppc ${OSXCOMPAT} -L${PREFIX}/lib -headerpad_max_install_names"
+make $MAKEFLAGS
 find . -iname "*dylib" -type f -exec echo cp -v {} ${PREFIX}/fflipo/\`basename {}\`-ppc \; | bash -
 fi
 
@@ -199,4 +203,5 @@ git clone -b master git://github.com/x42/xjadeo.git
 cd xjadeo
 
 export XJARCH
-./buildmac.sh
+export OSXCOMPAT
+./x-osx-bundle.sh

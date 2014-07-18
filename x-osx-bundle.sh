@@ -4,6 +4,7 @@ set -e
 
 : ${XJSTACK=$HOME/xjstack}
 : ${XJARCH=-arch i386 -arch ppc -arch x86_64}
+: ${OSXCOMPAT="-isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -headerpad_max_install_names"}
 
 if test -z "$NOREBUILD"; then
 #############################################################################
@@ -18,9 +19,9 @@ automake --gnu --add-missing --copy
 # BUILD XJADEO
 
 PKG_CONFIG_PATH=$XJSTACK/lib/pkgconfig:/usr/local/lib/pkgconfig \
-CFLAGS="${XJARCH} -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -headerpad_max_install_names" \
-LDFLAGS="${XJARCH} -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -headerpad_max_install_names" \
-OBJCFLAGS="${XJARCH} -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -headerpad_max_install_names" \
+CFLAGS="${XJARCH} ${OSXCOMPAT}" \
+OBJCFLAGS="${XJARCH} ${OSXCOMPAT}" \
+LDFLAGS="${XJARCH} ${OSXCOMPAT} -headerpad_max_install_names" \
 ./configure --disable-xv --disable-qtgui --disable-sdl --with-fontfile=../Resources/VeraMono.ttf --disable-dependency-tracking $@ || exit 1
 make clean
 make
