@@ -39,9 +39,9 @@ export SRCDIR
 function autoconfbuild {
 echo "======= $(pwd) ======="
 PATH=${PREFIX}/bin:/usr/bin:/bin:/usr/sbin:/sbin \
-CFLAGS="${XJARCH} ${OSXCOMPAT}" \
-CXXFLAGS="${XJARCH} ${OSXCOMPAT}" \
-LDFLAGS="${XJARCH} ${OSXCOMPAT} -headerpad_max_install_names" \
+CFLAGS="${XJARCH}${OSXCOMPAT:+ $OSXCOMPAT}" \
+CXXFLAGS="${XJARCH}${OSXCOMPAT:+ $OSXCOMPAT}" \
+LDFLAGS="${XJARCH}${OSXCOMPAT:+ $OSXCOMPAT} -headerpad_max_install_names" \
 ./configure --disable-dependency-tracking --prefix=$PREFIX --enable-shared $@
 make $MAKEFLAGS && make install
 }
