@@ -6,17 +6,32 @@
 : ${BUILDD=$HOME/xjbuildd}
 # target install dir:
 : ${PREFIX=$HOME/xjstack}
-# build archs (must include i386)
-#OSX COMPAT
-: ${OSXCOMPAT="-isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5"}
 # concurrency
-MAKEFLAGS="-j2"
+: ${MAKEFLAGS="-j2"}
 
-if test -z "$NOPPC"; then
-	XJARCH="-arch i386 -arch ppc -arch x86_64"
-else
-	XJARCH="-arch i386 -arch x86_64"
-fi
+case `sw_vers -productVersion | cut -d'.' -f1,2` in
+	"10.4")
+		echo "Tiger"
+		XJARCH="-arch i386 -arch ppc"
+		OSXCOMPAT=""
+		;;
+	"10.5")
+		echo "Leopard"
+		XJARCH="-arch i386 -arch ppc"
+		OSXCOMPAT=""
+		;;
+	"10.6")
+		echo "Snow Leopard"
+		XJARCH="-arch i386 -arch ppc -arch x86_64"
+		OSXCOMPAT="-isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5"
+		;;
+	*)
+		echo "**UNTESTED OSX VERSION**"
+		echo "if it works, please report back :)"
+		XJARCH="-arch i386 -arch x86_64"
+		OSXCOMPAT=""
+		;;
+	esac
 
 ################################################################################
 set -e
