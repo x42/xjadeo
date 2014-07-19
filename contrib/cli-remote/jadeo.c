@@ -55,10 +55,6 @@ int want_dropframes =0; /* --dropframes -N  BEWARE! */
 int have_dropframes =0;
 double 	delay = 0.04; // HERE: for MTC timeout only 
 
-#ifdef HAVE_LASH
-lash_client_t *lash_client;
-#endif
-
 #ifdef JACK_SESSION
 // XXX jadeo does not actually support JACK-SESSION
 // but it uses xjadeo's jack.c

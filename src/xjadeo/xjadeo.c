@@ -181,7 +181,6 @@ void event_loop(void) {
 			 */
 			select_sleep(2e5L);
 			handle_X_events();
-			lash_process();
 			js_apply();
 			continue;
 		}
@@ -255,7 +254,6 @@ void event_loop(void) {
 		}
 
 		handle_X_events();
-		lash_process();
 		js_apply();
 
 		clock2 = xj_get_monotonic_time();

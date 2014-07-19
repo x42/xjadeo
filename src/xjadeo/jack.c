@@ -31,9 +31,6 @@ extern int want_quiet;
 extern int jack_clkconvert;
 extern int interaction_override;
 extern int jack_autostart;
-#ifdef HAVE_LASH
-extern lash_client_t *lash_client;
-#endif
 
 jack_client_t *jack_client = NULL;
 char jackid[16];
@@ -108,9 +105,6 @@ void open_jack(void ) {
 #endif
 		if (!want_quiet)
 			fprintf(stdout, "connected as jack client '%s'\n",jackid);
-#ifdef HAVE_LASH
-		lash_jack_client_name(lash_client, jackid);
-#endif
 	}
 }
 

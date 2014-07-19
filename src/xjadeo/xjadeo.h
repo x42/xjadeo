@@ -23,10 +23,6 @@
 # include <sys/select.h>
 #endif
 
-#ifdef HAVE_LASH
-# include <lash/lash.h>
-#endif
-
 #include <libavutil/avutil.h>
 #include <libavutil/mathematics.h>
 #include <libavutil/mem.h>
@@ -108,12 +104,6 @@ enum {
 #define _NET_WM_STATE_REMOVE        0    /* remove/unset property */
 #define _NET_WM_STATE_ADD           1    /* add/set property */
 #define _NET_WM_STATE_TOGGLE        2    /* toggle property  */
-
-/* prototypes in lash.c */
-void lash_process();
-#ifdef HAVE_LASH
-void lash_setup();
-#endif
 
 /* prototypes of fn's in  display.c */
 void newsourcebuffer (void);

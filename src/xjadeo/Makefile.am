@@ -5,10 +5,10 @@ bin_PROGRAMS=xjadeo xjremote @XJINFO_BIN@
 
 EXTRA_PROGRAMS = xjinfo
 
-xjadeo_SOURCES=xjadeo.c ../../aclocal.m4 ../../config.h \
-							 main.c xjadeo.h ffcompat.h \
+xjadeo_SOURCES=main.c ../../aclocal.m4 ../../config.h \
+							 xjadeo.c xjadeo.h ffcompat.h \
 							 remote.c remote.h mqueue.c xjosc.c \
-							 configfile.c lash.c \
+							 configfile.c \
 							 jack.c ltc-jack.c \
 							 midi.c freetype.c smpte.c \
 							 display.c display.h \

@@ -100,7 +100,6 @@ int start_fullscreen =0;/* --fullscreen // -s */
 int want_letterbox =0;  /* --letterbox -b */
 int want_dropframes =0; /* --dropframes -N  -- force using drop-frame timecode */
 int want_autodrop =1;   /* --nodropframes -n (hidden option) -- allow using drop-frame timecode */
-int avoid_lash   =0;	/* --nolash */
 int remote_en =0;	/* --remote, -R */
 int no_initial_sync =0; /* --nosyncsource, -J */
 int jack_autostart =1; /* linked to no_initial_sync */
@@ -139,10 +138,6 @@ int js_winx = -1;
 int js_winy = -1;
 int js_winw = -1;
 int js_winh = -1;
-#endif
-
-#ifdef HAVE_LASH
-lash_client_t *lash_client;
 #endif
 
 int    midi_clkadj =1;	/* --midiclk  */
@@ -200,7 +195,6 @@ static struct option const long_options[] =
 	{"info", no_argument, 0, 'i'},
 	{"ontop", no_argument, 0, 'a'},
 	{"fullscreen", no_argument, 0, 's'},
-	{"nolash", required_argument, 0, 'L'},
 	{"dropframes", no_argument, 0, 'N'},
 	{"nodropframes", no_argument, 0, 'n'},
 	{"letterbox", no_argument, 0, 'b'},
@@ -268,7 +262,6 @@ decode_switches (int argc, char **argv)
 		"O:"	/* --osc  */
 #endif
 		"D"	/* debug */
-		"L"	/* no lash */
 		"J"	/* no jack / no-initial sync */
 		"V",	/* version */
 			long_options, (int *) 0)) != EOF)
@@ -318,9 +311,6 @@ decode_switches (int argc, char **argv)
 				break;
 			case 'N':		/* --dropframes */
 				want_dropframes = 1;
-				break;
-			case 'L':		/* --nolash */
-				avoid_lash = 1;
 				break;
 			case 'b':		/* --letterbox */
 				want_letterbox = 1;
@@ -472,11 +462,6 @@ jack video monitor\n", program_name);
 "  -k, --keyframes           seek to keyframes only\n"
 "  -K, --continuous          decode video source continuously. (extra latency\n"
 "                            when seeking to non-key frames.)\n"
-#ifdef HAVE_LASH
-"  -L, --nolash              ignore the fact that xjadeo could use lash.\n"
-"  --lash-no-autoresume      [liblash option]\n"
-"  --lash-no-start-server    [liblash option]\n"
-#endif /* HAVE_LASH */
 "  -l, --ltc                 sync to LinearTimeCode (audio-jack).\n"
 #ifdef JACK_SESSION
 "  -U, --uuid                specify JACK-SESSION UUID.\n"
@@ -542,9 +527,6 @@ static void printversion (void) {
 	}
 #endif
 	printf ("[ ");
-#ifdef HAVE_LASH
-	printf("LASH ");
-#endif
 #ifdef HAVE_LTC
 	printf("LTC ");
 #endif
@@ -684,7 +666,6 @@ int
 main (int argc, char **argv)
 {
 	int i;
-	int lashed = 0; // did we get started by lashd ?
 	char*   movie= NULL;
 
 #ifdef PLATFORM_OSX // OSX GUI default
@@ -707,10 +688,6 @@ main (int argc, char **argv)
 		argv=gArgv;
 	}
 #endif
-#ifdef HAVE_LASH
-	for (i=0;i<argc;i++) if (!strncmp(argv[i],"--lash-id",9)) lashed=1;
-	lash_args_t *lash_args = lash_extract_args(&argc, &argv);
-#endif
 
 	i = decode_switches (argc, argv);
 
@@ -718,21 +695,6 @@ main (int argc, char **argv)
 		if (!want_quiet)
 			fprintf(stderr, "Failed load JACK shared library.\n");
 	}
-
-#ifdef HAVE_LASH
-	if (avoid_lash == 0)  { ///< check if this works as promised
-		lash_client = lash_init (lash_args, PACKAGE_NAME,
-				0  | LASH_Config_Data_Set
-				,LASH_PROTOCOL (2,0));
-		if (!lash_client) {
-			fprintf(stderr, "could not initialise LASH!\n");
-		} else {
-			lash_setup();
-			if (!want_quiet) printf("Connected to LASH.\n");
-		}
-		//lash_args_destroy(lash_args);
-	}
-#endif
 
 	if (videomode < 0) vidoutmode(videomode); // dump modes and exit.
 
@@ -750,11 +712,6 @@ main (int argc, char **argv)
 	}
 
 	if (want_verbose) printf ("xjadeo %s\n", VERSION);
-
-	if (lashed==1 && remote_en) {
-		printf("xjadeo remote-ctrl is unavailable when resuming a LASH session\n");
-		remote_en=0;
-	}
 
 	if (stat_osd_fontfile()) {
 #ifdef PLATFORM_WINDOWS

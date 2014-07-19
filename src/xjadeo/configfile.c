@@ -63,7 +63,6 @@ extern int want_nosplash;
 extern int mq_en;
 extern char *ipc_queue;
 extern int remote_en;
-extern int avoid_lash;
 extern char *midi_driver;
 extern int use_jack;
 extern int interaction_override;
@@ -223,10 +222,7 @@ int parseoption (char *item, char *value) {
 	} else if (!strncasecmp(item,"LETTERBOX",9)) {
 		YES_OK(want_letterbox)
 	} else if (!strncasecmp(item,"LASH",4)) {
-		if (!strncasecmp(value,"no",2)) {
-			avoid_lash = 1; rv=1;
-		} else if (!strncasecmp(value,"yes",3))
-			rv=1;
+		rv=1; // legacy -- ignore
 	} else if (!strncasecmp(item,"MQ",2)) {
 		YES_OK(mq_en);
 	} else if (!strncasecmp(item,"FONTFILE",8)) {

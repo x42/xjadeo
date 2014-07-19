@@ -1089,19 +1089,6 @@ static void exec_remote_cmd_recursive (Dcommand *leave, char *cmd) {
 		remote_printf(401,"command not implemented.");
 }
 
-#ifdef HAVE_LASH
-# if !(defined HAVE_MQ || defined HAVE_IPCMSG)
-#warning
-#warning
-#warning LASH support - but no POSIX message queues!
-#warning
-#warning This xjadeo will not be able to (re)connect
-#warning to a GUI when launched by lashd!
-#warning
-#warning
-# endif
-#endif
-
 //--------------------------------------------
 // remote control - STDIO
 //--------------------------------------------
