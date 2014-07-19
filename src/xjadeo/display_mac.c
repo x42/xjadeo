@@ -1,4 +1,10 @@
-/* xjadeo - jack video monitor
+/* xjadeo - openGL display for OSX
+ *
+ * (C) 2008,2014 Robin Gareus <robin@gareus.org>
+ *
+ * this code was inspired by mplayer's libvo/vo_quartz.c
+ * (c) 2004 Nicolas Plourde <nicolasplourde@gmail.com>
+ * (C) 2004 Romain Dolbeau <romain@dolbeau.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,16 +19,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
- *
- * (c) 2008 Robin Gareus <robin@gareus.org>
- *
- * this code was inspired by mplayer's libvo/vo_quartz.c 
- * (c) 2004 Nicolas Plourde <nicolasplourde@gmail.com>
- * (C) 2004 Romain Dolbeau <romain@dolbeau.org>
- *
- *
  */
+
 #include "xjadeo.h"
+
 #if defined PLATFORM_OSX && (defined __i386 || defined __ppc)
 
 void xapi_open(void *d);
@@ -90,8 +90,6 @@ static inline void * memcpy_pic2(void * dst, const void * src,
 
 #include <Carbon/Carbon.h>
 #include <QuickTime/QuickTime.h>
-//#include <QuickTime/ImageCodec.h>
-//
 
 #ifdef WORDS_BIGENDIAN           
 #define be2me_16(x) (x)
@@ -174,7 +172,6 @@ enum // menubar
         mOSDFrame, 
         mOSDSmpte, 
         mOSDBox, 
-    //  mOSDFont, 
         mOSDOffO, 
         mOSDOffS, 
         mOSDOffF, 
@@ -371,7 +368,6 @@ static void mac_CreateWindow(uint32_t d_width, uint32_t d_height, WindowAttribut
   AppendMenuItemTextWithCFString(osdMenu, CFSTR("SMPTE-Offset"), 0, 0, &index);
   AppendMenuItemTextWithCFString(osdMenu, NULL, kMenuItemAttrSeparator, 0, &index);
   AppendMenuItemTextWithCFString(osdMenu, CFSTR("Box"), 0, mOSDBox, &index);
-//AppendMenuItemTextWithCFString(osdMenu, CFSTR("Font"), 0, mOSDFont, &index);
 
   CreateNewMenu (0, 0, &osdoMenu);
   osdoMenuTitle = CFSTR("SMPTE-Offset");
@@ -1742,6 +1738,5 @@ OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
   return result;
 }
 
-#endif /* HAVE_MAC */
-
+#endif /* PLATFORM_OSX PPC,i386 */
 // vim: sw=2 sts=2 ts=8 et

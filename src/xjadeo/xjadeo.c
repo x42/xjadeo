@@ -1,4 +1,7 @@
-/* xjadeo - jack video monitor
+/* xjadeo - jack video monitor, decoder and main event loop
+ *
+ * (C) 2006-2014 Robin Gareus <robin@gareus.org>
+ * (C) 2006-2011 Luis Garrido <luisgarrido@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,22 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
- */
-/* Credits:
- *
- * xjadeo:
- *  Luis Garrido <luisgarrido@users.sourceforge.net>
- *  Robin Gareus <robin@gareus.org>
- *
- * XLib code:
- * http://www.ac3.edu.au/SGI_Developer/books/XLib_PG/sgi_html/index.html
- *
- * WM_DELETE_WINDOW code:
- * http://biology.ncsa.uiuc.edu/library/SGI_bookshelves/SGI_Developer/books/OpenGL_Porting/sgi_html/apf.html
- *
- * ffmpeg code:
- * http://www.inb.uni-luebeck.de/~boehme/using_libavcodec.html
  *
  */
 #include "xjadeo.h"

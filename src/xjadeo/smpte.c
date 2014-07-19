@@ -1,4 +1,6 @@
-/* simple timecode parser.
+/* xjadeo - simple timecode parser.
+ *
+ * (C) 2006 Robin Gareus <robin@gareus.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,16 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
- * (c) 2006
- *  Robin Gareus <robin@gareus.org>
- *
- * NOTE: compiles standalone for testing
- * 	gcc -o smpte smpte.c  -lm
- *
- * 	run ./smpte <timecode>
- *
  */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

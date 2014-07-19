@@ -1,4 +1,4 @@
-/* xjadeo - jack video monitor
+/* xjadeo - jack video monitor, common openGL functions
  *
  * Copyright (C) 2014 Robin Gareus <robin@gareus.org>
  *

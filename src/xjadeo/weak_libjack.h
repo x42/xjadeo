@@ -1,3 +1,24 @@
+/* xjadeo - weak dynamic JACK linking
+ *
+ * (C) 2014 Robin Gareus <robin@gareus.org>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+#ifndef XJADEO_WEAK_JACK_H
+#define XJADEO_WEAK_JACK_H
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -101,4 +122,6 @@ int WJACK_session_reply (jack_client_t *client, jack_session_event_t *event);
 void WJACK_session_event_free (jack_session_event_t *event);
 #endif
 
-#endif
+#endif // USE_WEAK_JACK
+
+#endif // XJADEO_WEAK_JACK_H

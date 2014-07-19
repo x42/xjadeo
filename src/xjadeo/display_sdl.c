@@ -1,4 +1,7 @@
-/* xjadeo - jack video monitor
+/* xjadeo - SDL display variant
+ *
+ * (C) 2006-2014 Robin Gareus <robin@gareus.org>
+ * (C) 2006-2011 Luis Garrido <luisgarrido@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,15 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
- *
- * (c) 2006 
- *  Robin Gareus <robin@gareus.org>
- *  Luis Garrido <luisgarrido@users.sourceforge.net>
- *
- * this file was inspired by playdv source code of http://libdv.sourceforge.net/.
- *  - (c) 2000 Charles 'Buck' Krasic 
- *  - (c) 2000 Erik Walthinsen 
- *
  */
 
 #include "xjadeo.h"
@@ -63,7 +57,6 @@ void close_window_sdl(void) {
 	if(sdl_overlay) SDL_FreeYUVOverlay(sdl_overlay); 
 	SDL_Quit();
 }
-
 
 int open_window_sdl (void) {
 	const SDL_VideoInfo *video_info;
@@ -110,17 +103,6 @@ int open_window_sdl (void) {
 		fprintf(stderr,"unsupported SDL YV12.\n"); 
 		goto no_overlay;
 	}  
-#if 0  // verify YUV alignment
-	if ((sdl_overlay->pixels[1] - sdl_overlay->pixels[0]) != ( movie_width * movie_height) ||
-			(sdl_overlay->pixels[2] - sdl_overlay->pixels[1]) != ( movie_width * movie_height /4) ) {
-		printf("unsupported SDL YV12 pixel buffer alignment.\n"); 
-		goto no_overlay;
-	}  
-#endif
-	/*
-	SDL_Surface* icon = SDL_LoadBMP(iconName));
-	SDL_WM_SetIcon(icon, NULL);
-	*/
 
 	if (start_ontop) {
 		sdl_set_ontop(1);
@@ -139,7 +121,6 @@ no_sdl:
 }
 
 void black_border_sdl(SDL_Rect b) {
-	//printf(" bb: +%i+%i %i %i\n", b.x, b.y, b.w, b.h);
 	SDL_FillRect(sdl_screen, &b, SDL_MapRGB(sdl_screen->format, 0,0,0));
 	SDL_UpdateRect(sdl_screen, b.x, b.y, b.w, b.h);
 }
@@ -156,10 +137,7 @@ void resized_sdl () {
 	sdl_dest_rect.h = dh;
 	sdl_dest_rect.x = (sdl_rect.w - sdl_dest_rect.w)/2;
 	sdl_dest_rect.y = (sdl_rect.h - sdl_dest_rect.h)/2;
-#if 0
-	SDL_FillRect(sdl_screen, &sdl_rect, SDL_MapRGB(sdl_screen->format, 0,0,0));
-	SDL_UpdateRect(sdl_screen, sdl_rect.x, sdl_rect.y, sdl_rect.w, sdl_rect.h);
-#else
+
 	SDL_Rect b;
 	if (sdl_dest_rect.y >0 ){
 		b.x=0;b.y=0; b.w=sdl_rect.w; b.h=sdl_dest_rect.y;
@@ -176,7 +154,6 @@ void resized_sdl () {
 		b.x=sdl_rect.w - sdl_dest_rect.x;b.y=0; b.w=sdl_dest_rect.x; b.h=sdl_rect.h;
 		black_border_sdl(b);
 	}
-#endif
 }
 
 void mousecursor_sdl(int action) {
@@ -256,17 +233,6 @@ void position_sdl(int x, int y) {
 #if (defined HAVE_LIBXV || defined HAVE_IMLIB2)
 	if ( info.subsystem == SDL_SYSWM_X11 ) {
 			info.info.x11.lock_func();
-#if 0 /* get root window size  -> center window  */
-			int x, y;
-			int w, h;
-			w = DisplayWidth(info.info.x11.display,
-			DefaultScreen(info.info.x11.display));
-
-			h = DisplayHeight(info.info.x11.display,
-			DefaultScreen(info.info.x11.display));
-			x = (w - screen->w)/2;
-			y = (h - screen->h)/2;
-#endif
 			XMoveWindow(info.info.x11.display, info.info.x11.wmwindow, x, y);
 			info.info.x11.unlock_func();
 		} 
@@ -566,14 +532,7 @@ void handle_X_events_sdl (void) {
 			case SDL_MOUSEBUTTONUP:
 				if(ev.button.button == SDL_BUTTON_LEFT) {
 					resize_sdl(ffctv_width, ffctv_height);
-				} else 
-#if 0 // fix aspect only on right-button and scroll. 
-					 if(ev.button.button == SDL_BUTTON_WHEELUP ||
-						ev.button.button == SDL_BUTTON_WHEELDOWN ||
-						ev.button.button == SDL_BUTTON_RIGHT)
-#endif
-					 { 
-
+				} else {
 					unsigned int my_Width,my_Height;
 					getsize_sdl(&my_Width,&my_Height);
 

@@ -1,6 +1,6 @@
-/* xjadeo - jack video monitor
+/* xjadeo - Linear Time Code Sync - libltc interface
  *
- * (c) 2010, 2011  Robin Gareus <robin@gareus.org>
+ * (C) 2010-2014 Robin Gareus <robin@gareus.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

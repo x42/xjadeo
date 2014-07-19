@@ -1,5 +1,8 @@
-/* xjadeo - jack video monitor
- * midi.c - midi SMPTE / raw midi data parser.
+/* xjadeo - MIDI / MTC sync
+ *
+ * (C) 2006-2014 Robin Gareus <robin@gareus.org>
+ * (C) 2006 Luis Garrido <luisgarrido@users.sourceforge.net>
+ * (C) 2005 Clemens Ladisch <clemens@ladisch.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,18 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
- * (c) 2006
- *  Robin Gareus <robin@gareus.org>
- *  Luis Garrido <luisgarrido@users.sourceforge.net>
- *
- * Copyright (c) 2005 Clemens Ladisch <clemens@ladisch.de>
- *
- * many kudos to the portmidi developers and their
- * example code...
- *
- * the alsa midi code was inspired by the alsa-tools
- * amidi.c, aseqdump.c written by Clemens Ladisch <clemens@ladisch.de>
  */
 
 #include <xjadeo.h>

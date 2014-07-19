@@ -1,3 +1,6 @@
+#ifndef XJ_GTIME_H
+#define XJ_GTIME_H
+
 #ifdef _WIN32
 #if (!defined __uint32_t_defined && !defined _STDINT_H)
 typedef long long int int64_t;
@@ -29,3 +32,5 @@ typedef int uint32_t;
  **/
 
 int64_t xj_get_monotonic_time (void);
+
+#endif // XJ_GTIME_H

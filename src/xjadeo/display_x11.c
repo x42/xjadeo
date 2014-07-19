@@ -1,4 +1,7 @@
-/* xjadeo - jack video monitor
+/* xjadeo - X11/XVideo display
+ *
+ * (C) 2006-2014 Robin Gareus <robin@gareus.org>
+ * (C) 2006-2011 Luis Garrido <luisgarrido@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,17 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
- *
- * (c) 2006 - 2012
- *  Robin Gareus <robin@gareus.org>
- *  Luis Garrido <luisgarrido@users.sourceforge.net>
- *
- * this file was inspired by playdv source code of http://libdv.sourceforge.net/.
- *  - (c) 2000 Charles 'Buck' Krasic 
- *  - (c) 2000 Erik Walthinsen 
- *
- * EWMH fullscreen code - from mplayer 
- *  - Strasser, Alexander (beastd) <eclipse7@gmx.net>  ?!
  */
 
 #include "xjadeo.h"

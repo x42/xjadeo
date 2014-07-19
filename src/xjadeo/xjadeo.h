@@ -1,3 +1,6 @@
+/* shared header file for xjadeo */
+#ifndef XJADEO_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -208,3 +211,5 @@ int readconfig (char *fn);
 /* freetype - On screen display */
 int render_font (char *fontfile, char *text, int px);
 void free_freetype ();
+
+#endif

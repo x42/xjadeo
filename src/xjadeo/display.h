@@ -1,27 +1,29 @@
-/* shared header file for xjadeo display backends */
+/* xjadeo - video output abstraction and common display functions */
 
-  extern int movie_width, movie_height;
-  extern int ffctv_width, ffctv_height;
-  extern float movie_aspect;
-  extern int loop_flag, loop_run;
-  extern uint8_t *buffer;
+#ifndef XJADEO_DISPLAY_H
 
-  extern int want_quiet;
-  extern int want_debug;
-  extern int want_verbose;
-  extern int start_ontop;
-  extern int start_fullscreen;
-  extern int want_letterbox;
-  extern int remote_en;
+extern int movie_width, movie_height;
+extern int ffctv_width, ffctv_height;
+extern float movie_aspect;
+extern int loop_flag, loop_run;
+extern uint8_t *buffer;
 
-  extern char OSD_fontfile[1024];
-  extern char OSD_text[128];
-  extern char OSD_frame[48];
-  extern char OSD_smpte[13];
-  extern int OSD_mode;
-  extern int OSD_fx, OSD_fy;
-  extern int OSD_sx, OSD_sy;
-  extern int OSD_tx, OSD_ty;
+extern int want_quiet;
+extern int want_debug;
+extern int want_verbose;
+extern int start_ontop;
+extern int start_fullscreen;
+extern int want_letterbox;
+extern int remote_en;
+
+extern char OSD_fontfile[1024];
+extern char OSD_text[128];
+extern char OSD_frame[48];
+extern char OSD_smpte[13];
+extern int OSD_mode;
+extern int OSD_fx, OSD_fy;
+extern int OSD_sx, OSD_sy;
+extern int OSD_tx, OSD_ty;
 
 /* prototypes in display.c */
 inline void stride_memcpy(void * dst, const void * src, int width, int height, int dstStride, int srcStride);
@@ -209,3 +211,5 @@ void gl_letterbox_change ();
 #else
 # define SUP_OPENGL 0
 #endif
+
+#endif // XJADEO_DISPLAY_H

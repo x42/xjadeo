@@ -1,23 +1,22 @@
-/*  xj-five - message queues
+/* xjadeo - remote control, POSIX message queue
+ *
+ * Copyright (C) 2006,2014 Robin Gareus
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ */
 
-    Copyright (C) 2006 Robin Gareus
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-
-    $Id: xj-five.c,v 1.12 2006/09/09 10:55:12 rgareus Exp $
-*/
 #include "xjadeo.h"
 
 #ifdef HAVE_MQ
@@ -27,7 +26,6 @@
 #include <unistd.h>
 #include <stdarg.h>
 
-
 #include <mqueue.h>
 #include <errno.h>
 
@@ -36,7 +34,6 @@ extern int loop_run; // display active
 extern int loop_flag;// program active
 extern int want_quiet;
 extern int want_verbose;
-
 
 /* see xjremote.c for information on this one */
 typedef struct {

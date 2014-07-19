@@ -1,4 +1,4 @@
-/* xjadeo - jack video monitor
+/* xjadeo - openGL display for X11
  *
  * Copyright (C) 2014 Robin Gareus <robin@gareus.org>
  *
