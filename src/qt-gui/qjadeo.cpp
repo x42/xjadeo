@@ -218,32 +218,16 @@ void QJadeo::filePreferences()
     pdialog->prefLineJackMidi->setText(m_jackmidiport);
     pdialog->prefLineAlsaMidi->setText(m_alsamidiport);
     pdialog->prefLineXjadeo->setText(m_xjadeopath);
-    pdialog->prefLineXjinfo->setText(m_xjinfopath);
-    pdialog->prefLineMencoder->setText(m_mencoderpath);
-    pdialog->prefLineMcOptions->setText(m_mencoderopts);
-    pdialog->codecComboBox->setEditText(m_importcodec);
-    pdialog->destDirLineEdit->setText(m_importdir);
-    if (m_importdestination)
-      pdialog->prefDirCheckBox->toggle();
-    pdialog->destDirLineEdit->setEnabled(m_importdestination);
     /* exec dialog */
     if( pdialog->exec()) {
     /* apply settings */
-      m_importcodec = pdialog->codecComboBox->currentText();
-      m_importdestination = pdialog->prefDirCheckBox->isChecked();
-      m_mencoderpath = pdialog->prefLineMencoder->text();
       fileImportAction->setEnabled(testexec(m_mencoderpath));
-      m_mencoderopts = pdialog->prefLineMcOptions->text();
       if (!pdialog->prefLineXjadeo->text().isEmpty())
 	m_xjadeopath = pdialog->prefLineXjadeo->text();
-      if (!pdialog->prefLineXjinfo->text().isEmpty())
-	m_xjinfopath = pdialog->prefLineXjinfo->text();
       if (!pdialog->prefLineAlsaMidi->text().isEmpty())
 	m_alsamidiport = pdialog->prefLineAlsaMidi->text();
       if (!pdialog->prefLineJackMidi->text().isEmpty())
 	m_jackmidiport = pdialog->prefLineJackMidi->text();
-      if (pdialog->prefDirCheckBox->isChecked() && !pdialog->destDirLineEdit->text().isEmpty())
-	m_importdir = pdialog->destDirLineEdit->text();
     /* and save */
       saveOptions();
     }
@@ -253,6 +237,7 @@ void QJadeo::filePreferences()
 
 void QJadeo::fileImport()
 {
+#if 0
   ImportDialog *idialog = new ImportDialog(this);
 
   if (idialog) {
@@ -293,6 +278,7 @@ void QJadeo::fileImport()
     }
     delete idialog;
   }
+#endif
 }
 
 void QJadeo::helpAbout()

@@ -211,7 +211,7 @@
      <x>0</x>
      <y>0</y>
      <width>400</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="fileMenu">
@@ -219,7 +219,6 @@
      <string>&amp;File</string>
     </property>
     <addaction name="fileOpenAction"/>
-    <addaction name="fileImportAction"/>
     <addaction name="separator"/>
     <addaction name="filePreferencesAction"/>
     <addaction name="separator"/>

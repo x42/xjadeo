@@ -34,23 +34,25 @@ void PrefDialog::languageChange()
 }
  */
 
-#include <qfiledialog.h>
+//#include <qfiledialog.h>
 
 void PrefDialog::selPrefsDest()
 {
+#if 0
   QString s = QFileDialog::getExistingDirectory(this, 
 			tr("Select default destination folder"),
 		  "",
 			QFileDialog::ShowDirsOnly| QFileDialog::DontResolveSymlinks);
-  if (!s.isEmpty()) {
-      destDirLineEdit->setText(s);
   }
+#endif
 }
 
 
-void PrefDialog::prefDirEnable( bool t)
+void PrefDialog::prefDirEnable(bool /*t*/)
 {
+#if 0
   destDirLineEdit->setEnabled(t);
   selDestPushButton->setEnabled(t);
+#endif
 }
 
