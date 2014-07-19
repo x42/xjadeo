@@ -5,7 +5,7 @@
 # - ChangeLog
 
 : ${SFUSER:=x42}
-: ${OSXMACHINE:=priroda.local}
+: ${OSXMACHINE:=ardour@priroda.local}
 : ${COWBUILDER:=opendaw.local}
 
 if test -z "$BINARYONLY"; then
@@ -88,6 +88,8 @@ if test "$ok" != 0; then
 	exit
 fi
 
+# TODO: build the 3 in parallel, OSX, win and linux
+# idea: use a makefile with concurrency
 echo "building win32 ..."
 ./x-win32.sh || exit
 #clean up build system
@@ -103,16 +105,12 @@ if test "$ok" != 0; then
 	exit
 fi
 
-rsync -Pa $COWBUILDER:/tmp/xjadeo-i386-linux-gnu-v${VERSION}.tgz /tmp/ || exit
-rsync -Pa $COWBUILDER:/tmp/xjadeo-x86_64-linux-gnu-v${VERSION}.tgz /tmp/ || exit
-
-echo "building osx package on $OSXMACHINE ..."
+echo "building osx package ..."
 ssh $OSXMACHINE << EOF
 exec /bin/bash -l
-cd src/xjadeo || exit 1
-git pull || exit 1
-git fetch --tags || exit 1
-./buildmac.sh
+curl -L -o /tmp/xjadeo-x-pbuildstatic.sh https://raw.github.com/x42/xjadeo/master/x-osx-buildstack.sh
+chmod +x /tmp/xjadeo-x-pbuildstatic.sh
+/tmp/xjadeo-x-pbuildstatic.sh
 EOF
 
 ok=$?
@@ -121,6 +119,9 @@ if test "$ok" != 0; then
 	exit
 fi
 
+# collect binaries from build-hosts
+rsync -Pa $COWBUILDER:/tmp/xjadeo-i386-linux-gnu-v${VERSION}.tgz /tmp/ || exit
+rsync -Pa $COWBUILDER:/tmp/xjadeo-x86_64-linux-gnu-v${VERSION}.tgz /tmp/ || exit
 rsync -Pa $OSXMACHINE:/tmp/jadeo-${VERSION}.dmg /tmp/ || exit
 
 #upload files to sourceforge
@@ -134,4 +135,5 @@ put /tmp/xjadeo-x86_64-linux-gnu-v${VERSION}.tgz
 put /tmp/jadeo-${VERSION}.dmg
 EOF
 
+# custom upload hook
 test -x x-releasestatic.sh && ./x-releasestatic.sh
