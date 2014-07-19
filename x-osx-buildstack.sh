@@ -212,6 +212,11 @@ done
 rm -rf ${PREFIX}/fflipo
 
 ################################################################################
+if test -n "$DOCLEAN"; then
+	rm -rf ${BUILDD}
+	mkdir ${BUILDD}
+fi
+################################################################################
 cd ${BUILDD}
 rm -rf xjadeo
 git clone -b master git://github.com/x42/xjadeo.git
