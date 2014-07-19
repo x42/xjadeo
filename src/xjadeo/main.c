@@ -34,13 +34,8 @@
 
 #include "xjadeo.h"
 
-#ifdef OLD_FFMPEG
-#include <avcodec.h> // needed for PIX_FMT
-#include <avformat.h>
-#else
 #include <libavcodec/avcodec.h> // needed for PIX_FMT
 #include <libavformat/avformat.h>
-#endif
 
 #include <getopt.h>
 
@@ -130,8 +125,6 @@ int remote_mode =0;	/* 0: undirectional ; >0: bidir
 			 *   (2) notify changed timecode
 			 */
 
-int try_codec =0;	/* --try-codec */
-
 int seekflags = SEEK_ANY; /* -k ,K */
 
 #ifdef HAVE_MIDI
@@ -145,7 +138,7 @@ int jack_clkconvert =1; /* --jackfps  - NOT YET IMPLEMENTED
 			 * [0:audio_frames_per_video_frame
 			 * 1:video-file] */
 int use_jack = 1;
-#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
+#ifdef HAVE_LTC
 int use_ltc = 0;        /* -l , --ltc */
 #endif
 char *load_rc = NULL;
@@ -215,7 +208,6 @@ static struct option const long_options[] =
 	{"ipc", required_argument, 0, 'W'},
 	{"help", no_argument, 0, 'h'},
 	{"version", no_argument, 0, 'V'},
-	{"try-codec", no_argument, 0, 't'},
 	{"info", no_argument, 0, 'i'},
 	{"ontop", no_argument, 0, 'a'},
 	{"fullscreen", no_argument, 0, 's'},
@@ -263,7 +255,6 @@ decode_switches (int argc, char **argv)
 		"k"	/* keyframes */
 		"K"	/* anyframe */
 		"o:"	/* offset */
-		"t"	/* try-codec */
 		"T:"	/* ttf-font */
 		"f:"	/* fps */
 		"F:"	/* file FPS */
@@ -345,9 +336,6 @@ decode_switches (int argc, char **argv)
 			case 'b':		/* --letterbox */
 				want_letterbox = 1;
 				break;
-			case 't':		/* --try */
-				try_codec = 1;
-				break;
 			case 'i':		/* --info */
 				OSD_mode=atoi(optarg)&3;
 				if (!want_quiet) printf("On screen display: [%s%s%s] \n",
@@ -416,7 +404,7 @@ decode_switches (int argc, char **argv)
 				printf("This version of xjadeo is compiled without MIDI support\n");
 				break;
 #endif
-#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
+#ifdef HAVE_LTC
 			case 'l':		/* --ltc */
 				use_ltc = 1;
 				break;
@@ -543,9 +531,6 @@ jack video monitor\n", program_name);
 "  -S, --nosplash            do not display splash image on startup.\n"
 "  -s, --fullscreen          start xjadeo in fullscreen mode.\n"
 "                            requires x11 or xv videomode.\n"
-"  -t, --try-codec           checks if the video-file can be played by jadeo.\n"
-"                            exits with code 1 if the file is not supported.\n"
-"                            no window is opened in this mode.\n"
 "  -T <file>,                \n"
 "      --ttf-file <file>     path to .ttf font for on-screen-display\n"
 #ifdef HAVE_IPCMSG
@@ -571,7 +556,7 @@ static void printversion (void) {
 #ifdef HAVE_LASH
 	printf("LASH ");
 #endif
-#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
+#ifdef HAVE_LTC
 	printf("LTC ");
 #endif
 #ifdef JACK_SESSION
@@ -618,9 +603,6 @@ static void printversion (void) {
 #endif
 #ifdef HAVE_SDL
 			"SDL "
-#endif
-#if HAVE_IMLIB
-			"X11/imlib "
 #endif
 #if HAVE_IMLIB2
 			"X11/imlib2"
@@ -681,7 +663,7 @@ static void clean_up (int status) {
 	if (midi_connected()) midi_close();
 	else
 #endif
-#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
+#ifdef HAVE_LTC
 		if (ltcjack_connected()) close_ltcjack();
 		else
 #endif
@@ -815,8 +797,6 @@ main (int argc, char **argv)
 	// format needs to be set before calling init_moviebuffer
 	render_fmt = vidoutmode(videomode);
 
-	// only try to seek to frame 1 and decode it.
-	if (try_codec) do_try_this_file_and_exit (movie);
 #ifndef PLATFORM_WINDOWS
 	signal (SIGHUP, catchsig);
 	signal (SIGINT, catchsig);
@@ -856,7 +836,7 @@ main (int argc, char **argv)
 			if (midi_connected()) midi_close();
 			else
 #endif
-#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
+#ifdef HAVE_LTC
 				if (ltcjack_connected()) close_ltcjack();
 				else
 #endif
@@ -892,7 +872,7 @@ main (int argc, char **argv)
 	} else
 #endif
 
-#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
+#ifdef HAVE_LTC
 	if (use_ltc) {
 		open_ltcjack(NULL);
 	} else

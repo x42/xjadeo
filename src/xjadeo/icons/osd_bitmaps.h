@@ -6,8 +6,9 @@
 #include "contrast_mask.xbm"
 #include "gamma.bitmap"
 #include "gamma_mask.xbm"
-#include "hue.bitmap"
-#include "hue_mask.xbm"
+// UNUSED
+//#include "hue.bitmap"
+//#include "hue_mask.xbm"
 #include "saturation.bitmap"
 #include "saturation_mask.xbm"
 #endif

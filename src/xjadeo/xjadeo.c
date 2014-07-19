@@ -335,9 +335,7 @@ void init_moviebuffer(void) {
 	// Assign appropriate parts of buffer to image planes in pFrameFMT
 	if (pFrameFMT) {
 		avpicture_fill((AVPicture *)pFrameFMT, buffer, render_fmt, movie_width, movie_height);
-#ifdef HAVE_SWSCALE
 		pSWSCtx = sws_getContext(pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, movie_width, movie_height, render_fmt, SWS_BICUBIC, NULL, NULL, NULL);
-#endif
 	}
 	render_empty_frame(0);
 }
@@ -891,7 +889,6 @@ void display_frame(int64_t timestamp, int force_update, int do_render) {
 			/* Did we get a video frame? */
 			if(frameFinished) {
 				/* Convert the image from its native format to FMT */
-#ifdef HAVE_SWSCALE
 				// TODO: this can be done once per Video output.
 				int dstStride[8] = {0,0,0,0,0,0,0,0};
 				switch (render_fmt) {
@@ -912,11 +909,6 @@ void display_frame(int64_t timestamp, int force_update, int do_render) {
 						dstStride[2] = movie_width/2;
 				}
 				sws_scale(pSWSCtx, (const uint8_t * const*)pFrame->data, pFrame->linesize, 0, pCodecCtx->height, pFrameFMT->data, dstStride);
-#else
-				img_convert((AVPicture *)pFrameFMT, render_fmt,
-						(AVPicture*)pFrame, pCodecCtx->pix_fmt, pCodecCtx->width,
-						pCodecCtx->height);
-#endif
 				if (do_render)
 					render_buffer(buffer); // in pFrameFMT
 				av_free_packet(&packet); /* XXX */
@@ -950,9 +942,7 @@ int close_movie() {
 
 	if (!pFrameFMT) return(-1);
 	// Free the software scaler
-#ifdef HAVE_SWSCALE
 	sws_freeContext(pSWSCtx);
-#endif
 
 	// Free the formatted image
 	if(buffer) free(buffer);
@@ -976,33 +966,4 @@ int close_movie() {
 	pFormatCtx = NULL;
 	framerate = 10; // prevent slow reaction to remote-ctl (event loop).
 	return (0);
-}
-
-void do_try_this_file_and_exit(char *movie) {
-	AVPacket packet;
-	packet.data=NULL;
-	int frameFinished=0;
-
-	if(open_movie(movie)){
-		if (!want_quiet)
-			printf("File not found or invalid.\n");
-		exit(1);
-	}
-	init_moviebuffer();
-	if (my_seek_frame(&packet, 1)) {
-#if LIBAVCODEC_VERSION_MAJOR < 52 || ( LIBAVCODEC_VERSION_MAJOR == 52 && LIBAVCODEC_VERSION_MINOR < 21)
-		avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet.data, packet.size);
-#else
-		avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
-#endif
-	}
-	close_movie();
-	if (!frameFinished) {
-		if (!want_quiet)
-			printf("sorry. this video codec not supported.\n");
-		exit(1);
-	}
-	if (!want_quiet)
-		printf("ok. great encoding, dude.\n");
-	exit (0);
 }

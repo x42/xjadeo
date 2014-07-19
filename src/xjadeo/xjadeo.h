@@ -24,13 +24,9 @@
 # include <lash/lash.h>
 #endif
 
-#ifdef OLD_FFMPEG
-#include <avutil.h>
-#else
 #include <libavutil/avutil.h>
 #include <libavutil/mathematics.h>
 #include <libavutil/mem.h>
-#endif
 
 #ifndef PIX_FMT_BGRA32
 #define PIX_FMT_BGRA32 PIX_FMT_BGRA
@@ -169,7 +165,6 @@ void avinit (void);
 void override_fps (double fps);
 void init_moviebuffer(void);
 void event_loop(void);
-void do_try_this_file_and_exit(char *movie);
 
 /* jack.c function prototypes */
 long jack_poll_frame (void);

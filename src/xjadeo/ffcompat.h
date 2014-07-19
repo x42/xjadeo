@@ -29,23 +29,10 @@
 #ifndef FFCOMPAT_H
 #define FFCOMPAT_H
 
-#ifdef OLD_FFMPEG
-#include <avcodec.h> // needed for PIX_FMT 
-#include <avformat.h>
-#else
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libavutil/avutil.h>
-#endif
-
-#ifdef HAVE_SWSCALE
-#ifdef OLD_FFMPEG
-#include <swscale.h>
-#else
 #include <libswscale/swscale.h>
-#endif
-#endif
-
 
 #ifndef AVCODEC_MAX_AUDIO_FRAME_SIZE
 #define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000

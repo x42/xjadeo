@@ -48,7 +48,7 @@ extern int avoid_lash;
 extern char *midi_driver;
 extern int use_jack;
 extern int interaction_override;
-#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
+#ifdef HAVE_LTC
 extern int use_ltc;
 #endif
 
@@ -73,7 +73,7 @@ extern int OSD_fx, OSD_tx, OSD_sx, OSD_fy, OSD_sy, OSD_ty;
 int start_ontop;
 int start_fullscreen;
 
-#if (HAVE_LIBXV || HAVE_IMLIB || HAVE_IMLIB2)
+#if (HAVE_LIBXV || HAVE_IMLIB2)
 extern int xj_ontop;
 extern int xj_fullscreen;
 #endif
@@ -143,12 +143,12 @@ int parseoption (char *item, char *value) {
 		rv=1;
 	} else if (!strncasecmp(item,"SYNCSOURCE",10)) {
 		use_jack=1;
-#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
+#ifdef HAVE_LTC
 		use_ltc=0;
 #endif
 		switch (atoi(value)) {
 			case 3:
-#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
+#ifdef HAVE_LTC
 				use_ltc=1;
 #endif
 #ifdef HAVE_MIDI
@@ -399,7 +399,7 @@ int saveconfig (const char *fn) {
 	fprintf(fp, "SMPTEOFFSET=%s\n", smpte_offset?smpte_offset:"0");
 	// use current setting and connection -- not commandline
 	int ss =0;
-#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
+#ifdef HAVE_LTC
 	if (ltcjack_connected()) ss=3;
 	else
 #endif
@@ -438,7 +438,7 @@ int saveconfig (const char *fn) {
 	fprintf(fp, "WINSIZEW=%i\n", w);
 	fprintf(fp, "WINSIZEH=%i\n", h);
 
-#if (HAVE_LIBXV || HAVE_IMLIB || HAVE_IMLIB2)
+#if (HAVE_LIBXV || HAVE_IMLIB2)
 	fprintf(fp, "WINONTOP=%s\n", BOOL(xj_ontop));
 	fprintf(fp, "WINFULLSCREEN=%s\n", BOOL(xj_fullscreen));
 #endif

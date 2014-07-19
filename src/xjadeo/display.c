@@ -22,13 +22,8 @@
 #include "xjadeo.h"
 #include "display.h"
 
-#ifdef OLD_FFMPEG
-#include <avcodec.h> // needed for PIX_FMT
-#include <avformat.h>
-#else
 #include <libavcodec/avcodec.h> // needed for PIX_FMT
 #include <libavformat/avformat.h>
-#endif
 
 #ifndef MIN
 #define MIN(A,B) (((A)<(B)) ? (A) : (B))
@@ -197,17 +192,6 @@ const vidout VO[] = {
 		&getsize_sdl, &position_sdl, &get_window_pos_sdl,
 		&sdl_toggle_fullscreen, &sdl_set_ontop, &mousecursor_sdl,
 		&sdl_get_fullscreen, &sdl_get_ontop, &sdl_letterbox_change
-#else
-			NULLOUTPUT
-#endif
-	},
-	{ PIX_FMT_RGB24,   SUP_IMLIB,   "x11 - ImLib (obsolete)",
-#if HAVE_IMLIB
-		&render_imlib, &open_window_imlib, &close_window_imlib,
-		&handle_X_events_imlib, &newsrc_imlib, &resize_imlib,
-		&get_window_size_imlib, &position_imlib, &get_window_pos_imlib,
-		&xj_set_fullscreen, &xj_set_ontop, &xj_mousepointer,
-		&getfullscreen_null, &getontop_null &letterbox_change_null
 #else
 			NULLOUTPUT
 #endif
@@ -459,11 +443,12 @@ void update_smptestring() {
  * display wrapper functions
  */
 
-#if (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2)
+#if (defined HAVE_LIBXV || defined HAVE_IMLIB2)
 #include "icons/osd_bitmaps.h"
 #endif
 
-#define OBM(NAME,YPOS)	OSD_bitmap(VO[VOutput].render_fmt, mybuffer,YPOS,0, osd_##NAME##_width, osd_##NAME##_height, osd_##NAME##_bits, osd_##NAME##_mask_bits);
+#define OBM(NAME,YPOS) \
+	OSD_bitmap(VO[VOutput].render_fmt, mybuffer,YPOS,0, osd_##NAME##_width, osd_##NAME##_height, osd_##NAME##_bits, osd_##NAME##_mask_bits);
 
 void render_buffer (uint8_t *mybuffer) {
 	if (!mybuffer) return;
@@ -474,36 +459,21 @@ void render_buffer (uint8_t *mybuffer) {
 
 #if (HAVE_LIBXV || HAVE_IMLIB2)
 	if (OSD_mode&OSD_EQ) {
-		char tempeq[48];
 		int v0,v1,v2,v3,v4;
 		if(xj_get_eq("brightness",&v0)) v0=0;
 		if(xj_get_eq("contrast",&v1)) v1=0;
 		if(xj_get_eq("gamma",&v2)) v2=0;
 		if(xj_get_eq("saturation",&v3)) v3=0;
 		if(xj_get_eq("hue",&v4)) v4=0;
-		if (0) {
-			snprintf(tempeq,48,"B:%i C:%i S:%i H:%i G:%i", v0/10, v1/10, v2/10, v3/10, v4/10);
-			OSD_render (VO[VOutput].render_fmt, mybuffer, tempeq, OSD_CENTER, 50);
-		} else {
-#if 1
-			OBM(brightness, 3)
-			OBM(contrast, 23)
-			OBM(gamma, 43)
-			OBM(saturation, 63)
-			OBM(hue, 83)
-#else
-			OSD_render (VO[VOutput].render_fmt, mybuffer, "Brigtness:", OSD_CENTER, 3);
-			OSD_render (VO[VOutput].render_fmt, mybuffer, "Contrast:", OSD_CENTER, 23);
-			OSD_render (VO[VOutput].render_fmt, mybuffer, "Gamma:", OSD_CENTER, 43);
-			OSD_render (VO[VOutput].render_fmt, mybuffer, "Saturation:", OSD_CENTER, 63);
-			OSD_render (VO[VOutput].render_fmt, mybuffer, "Hue:", OSD_CENTER, 83);
-#endif
-			OSD_bar(VO[VOutput].render_fmt, mybuffer,10, -1000.0,1000.0,(double) v0, 0.0);
-			OSD_bar(VO[VOutput].render_fmt, mybuffer,30, -1000.0,1000.0,(double) v1, (VOutput==1)?-500.0:0.0);
-			OSD_bar(VO[VOutput].render_fmt, mybuffer,50, -1000.0,1000.0,(double) v2, 0.0);
-			OSD_bar(VO[VOutput].render_fmt, mybuffer,70, -1000.0,1000.0,(double) v3, 0.0);
-			OSD_bar(VO[VOutput].render_fmt, mybuffer,90, -1000.0,1000.0,(double) v4, 0.0);
-		}
+		OBM(brightness, 3);
+		OBM(contrast, 23);
+		OBM(gamma, 43);
+		OBM(saturation, 63);
+		OSD_bar(VO[VOutput].render_fmt, mybuffer,10, -1000.0,1000.0,(double) v0, 0.0);
+		OSD_bar(VO[VOutput].render_fmt, mybuffer,30, -1000.0,1000.0,(double) v1, (VOutput==1)?-500.0:0.0);
+		OSD_bar(VO[VOutput].render_fmt, mybuffer,50, -1000.0,1000.0,(double) v2, 0.0);
+		OSD_bar(VO[VOutput].render_fmt, mybuffer,70, -1000.0,1000.0,(double) v3, 0.0);
+		OSD_bar(VO[VOutput].render_fmt, mybuffer,90, -1000.0,1000.0,(double) v4, 0.0);
 
 	} else
 #endif

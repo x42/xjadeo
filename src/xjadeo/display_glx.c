@@ -18,11 +18,14 @@
  */
 
 #include "display_gl_common.h"
-#if (defined HAVE_GL && !defined PLATFORM_WINDOWS)
+#if (defined HAVE_GL && !defined PLATFORM_WINDOWS && !defined PLATFORM_OSX)
 
 #include <GL/glx.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
+#include <X11/xpm.h>
+
+#include "icons/xjadeo-color.xpm"
 
 static Display*   _gl_display;
 static int        _gl_screen;
@@ -62,14 +65,6 @@ static void glx_netwm(const char *atom, const int onoff) {
 	}
 }
 
-#ifdef HAVE_XPM
-#include <X11/xpm.h>
-#include "icons/xjadeo-color.xpm"
-#else
-#include "icons/xjadeo.bitmap"
-#include "icons/xjadeo_mask.xbm"
-#endif
-
 static void setup_window_hints_and_icon(Display* dpy, Window win, Window parent, const int maxsize) {
 	XTextProperty	x_wname, x_iname;
 	XSizeHints	hints;
@@ -85,12 +80,7 @@ static void setup_window_hints_and_icon(Display* dpy, Window win, Window parent,
 	hints.max_height = maxsize;
 
 	wmhints.input = True;
-#ifdef HAVE_XPM
 	XpmCreatePixmapFromData(dpy, parent, xjadeo_color_xpm, &wmhints.icon_pixmap, &wmhints.icon_mask, NULL);
-#else
-	wmhints.icon_pixmap = XCreateBitmapFromData(dpy, parent, (char *)xjadeo_bits , xjadeo_width, xjadeo_height);
-	wmhints.icon_mask  = XCreateBitmapFromData(dpy, parent, (char *)xjadeo_mask_bits , xjadeo_mask_width, xjadeo_mask_height);
-#endif
 	wmhints.flags = InputHint | IconPixmapHint | IconMaskHint;
 
 	XStringListToTextProperty(&w_name, 1 ,&x_wname);

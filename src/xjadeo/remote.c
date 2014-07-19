@@ -50,13 +50,8 @@
  */
 #include "xjadeo.h"
 
-#ifdef OLD_FFMPEG
-#include <avcodec.h> // needed for PIX_FMT
-#include <avformat.h>
-#else
 #include <libavcodec/avcodec.h> // needed for PIX_FMT
 #include <libavformat/avformat.h>
-#endif
 
 #include <time.h>
 #include <getopt.h>
@@ -530,7 +525,7 @@ void xapi_ltc_status(void *d) {
 }
 
 void xapi_open_ltc(void *d) {
-#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
+#ifdef HAVE_LTC
 #ifdef HAVE_MIDI
 	midi_close();
 #endif
@@ -546,7 +541,7 @@ void xapi_open_ltc(void *d) {
 }
 
 void xapi_close_ltc(void *d) {
-#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
+#ifdef HAVE_LTC
 	close_ltcjack();
 	remote_printf(100,"closed ltc-jack connection");
 #else
@@ -558,7 +553,7 @@ void xapi_open_jack(void *d) {
 #ifdef HAVE_MIDI
 	midi_close();
 #endif
-#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
+#ifdef HAVE_LTC
 	close_ltcjack();
 #endif
 	open_jack();
@@ -674,7 +669,7 @@ void xapi_posd(void *d) {
 
 void xapi_psync(void *d) {
 	int ss =0;
-#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
+#ifdef HAVE_LTC
 	if (ltcjack_connected()) ss=3;
 	else
 #endif

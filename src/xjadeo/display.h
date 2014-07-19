@@ -83,7 +83,7 @@ void sdl_letterbox_change (void);
  * Shared X11 functions
  */
 
-#if (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2)
+#if (defined HAVE_LIBXV || defined HAVE_IMLIB2)
 
 void xj_set_fullscreen (int action);
 void xj_mousepointer (int action);
@@ -128,34 +128,6 @@ void handle_X_events_xv (void);
 void newsrc_xv (void); 
 int open_window_xv (void); 
 void close_window_xv(void);
-
-/*******************************************************************************
- *
- * X11 / ImLib 
- */
-
-#if HAVE_IMLIB
-
-# include <X11/Xlib.h>
-# include <X11/Xutil.h>
-# include <X11/Xos.h>
-# include <X11/Xatom.h>
-# include <Imlib.h>
-
-# define SUP_IMLIB 1
-#else
-# define SUP_IMLIB 0
-#endif 
-
-void get_window_size_imlib (unsigned int *my_Width, unsigned int *my_Height);
-void get_window_pos_imlib (int *x,  int *y);
-int open_window_imlib (void);
-void close_window_imlib(void);
-void render_imlib (uint8_t *mybuffer);
-void newsrc_imlib (void) ;
-void handle_X_events_imlib (void);
-void resize_imlib (unsigned int x, unsigned int y);
-void position_imlib (int x, int y);
 
 /*******************************************************************************
  *

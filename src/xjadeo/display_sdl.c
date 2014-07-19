@@ -219,7 +219,7 @@ void get_window_pos_sdl (int *rx, int *ry) {
 			*ry = rect.top;
 			return;
 		}
-#elif (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2)
+#elif (defined HAVE_LIBXV || defined HAVE_IMLIB2)
 		if (info.subsystem == SDL_SYSWM_X11 ) {
 			// NB. with SDL window decorations are not taken into account :(
 			Window	dummy;
@@ -253,7 +253,7 @@ void position_sdl(int x, int y) {
 			sdl_ontop ? HWND_TOPMOST : HWND_NOTOPMOST,
 			x, y, sdl_rect.w, sdl_rect.h, 0);
 #endif
-#if (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2)
+#if (defined HAVE_LIBXV || defined HAVE_IMLIB2)
 	if ( info.subsystem == SDL_SYSWM_X11 ) {
 			info.info.x11.lock_func();
 #if 0 /* get root window size  -> center window  */
@@ -274,7 +274,7 @@ void position_sdl(int x, int y) {
 	} 
 }
 
-#if (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2)
+#if (defined HAVE_LIBXV || defined HAVE_IMLIB2)
 static void net_wm_set_property(char *atom, int state) {
 	SDL_SysWMinfo info;
 	SDL_VERSION(&info.version);
@@ -323,7 +323,7 @@ void sdl_set_ontop (int action) {
 				sdl_ontop ? HWND_TOPMOST : HWND_NOTOPMOST,
 				0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 	}
-#elif (defined HAVE_LIBXV || defined HAVE_IMLIB || defined HAVE_IMLIB2)
+#elif (defined HAVE_LIBXV || defined HAVE_IMLIB2)
 	net_wm_set_property("_NET_WM_STATE_ABOVE", action);
 #endif
 }

@@ -39,7 +39,10 @@
 void jackt_toggle();
 void jackt_rewind();
 
-#if (HAVE_LIBXV || HAVE_IMLIB || HAVE_IMLIB2)
+#if (HAVE_LIBXV || HAVE_IMLIB2)
+
+#include <X11/xpm.h>
+#include "icons/xjadeo-color.xpm"
 
 Display *xj_dpy = NULL;
 Window	xj_rwin, xj_win;
@@ -124,14 +127,6 @@ static void net_wm_set_property(char *atom, int state) {
 	}
 }
 
-#ifdef HAVE_XPM
-#include <X11/xpm.h>
-#include "icons/xjadeo-color.xpm"
-#else 
-#include "icons/xjadeo.bitmap"
-#include "icons/xjadeo_mask.xbm"
-#endif
-
 void xj_set_hints (void) {
 	XTextProperty	x_wname, x_iname;
 	XSizeHints	hints;
@@ -149,12 +144,7 @@ void xj_set_hints (void) {
 	hints.max_height = 2048;
 
 	wmhints.input = True;
-#ifdef HAVE_XPM
 	XpmCreatePixmapFromData(xj_dpy, xj_rwin, xjadeo_color_xpm, &wmhints.icon_pixmap, &wmhints.icon_mask, NULL);
-#else
-	wmhints.icon_pixmap = XCreateBitmapFromData(xj_dpy, xj_rwin, (char *)xjadeo_bits , xjadeo_width, xjadeo_height);
-	wmhints.icon_mask  = XCreateBitmapFromData(xj_dpy, xj_rwin, (char *)xjadeo_mask_bits , xjadeo_mask_width, xjadeo_mask_height);
-#endif
 	wmhints.flags = InputHint | IconPixmapHint | IconMaskHint ;// | StateHint
 
 	XStringListToTextProperty(&w_name, 1 ,&x_wname);
@@ -1373,142 +1363,6 @@ void position_xv (int x, int y) {
 #endif
 
 #endif /* HAVE_LIBXV */
-
-
-
-/*******************************************************************************
- * X11 / ImLib 
- */
-
-#if HAVE_IMLIB
-
-ImlibData *imlib = NULL;
-int       depth;
-//XImage    *image;
-Pixmap    pxm, pxmmask;
-
-int open_window_imlib (void) {
-	XGCValues values;
-	long ev_mask;
-
-	if ( (xj_dpy=XOpenDisplay(NULL)) == NULL ) {
-		fprintf( stderr, "Cannot connect to X server\n");
-		return (1); 
-	}
-
-	imlib = Imlib_init(xj_dpy);
-
-	xj_screen = DefaultScreen(xj_dpy); 
-	xj_rwin = RootWindow(xj_dpy, xj_screen);
-	depth = DefaultDepth(xj_dpy, xj_screen);
-
-	xj_win = XCreateSimpleWindow(
-		xj_dpy, xj_rwin,
-		0,             // x
-		0,             // y
-		ffctv_width,   // width
-		ffctv_height,  // height
-		0,             // border
-		BlackPixel(xj_dpy, xj_screen), 
-		WhitePixel(xj_dpy, xj_screen)
-	);
-
-	xj_set_hints();
-
-	ev_mask =  KeyPressMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | StructureNotifyMask;
-	XSelectInput(xj_dpy, xj_win, ev_mask);
-
-#ifdef DND 
-	init_dnd();
-#endif
-	XMapRaised(xj_dpy, xj_win);
-
-	/* express interest in WM killing this app */
-	if ((xj_del_atom = XInternAtom(xj_dpy, "WM_DELETE_WINDOW", True)) != None)
-		XSetWMProtocols(xj_dpy, xj_win, &xj_del_atom, 1);
-
-	xj_gc = XCreateGC(xj_dpy, xj_win, 0, &values);
-
-	check_wm_atoms();
-	if (start_ontop) xj_ontop=1;
-	if (start_fullscreen) xj_fullscreen=1;
-	xj_set_fullscreen(xj_fullscreen);
-	xj_set_ontop(xj_ontop);
-
-	return 0;
-}
-
-void close_window_imlib(void)
-{
-//	XSync(xj_dpy, True);
-
-	if (loop_flag)
-		XSetCloseDownMode(xj_dpy, RetainPermanent);
-	else
-		XSetCloseDownMode(xj_dpy, DestroyAll);
-	XDestroyWindow(xj_dpy, xj_win);
-	XFreeGC(xj_dpy, xj_gc);
-	XSync(xj_dpy, False);
-//	XCloseDisplay(xj_dpy);
-	imlib=NULL;  
-}
-
-void render_imlib (uint8_t *mybuffer) {
-	unsigned int my_Width,my_Height;
-	ImlibImage *iimage;
-	if (!mybuffer || !imlib) return;
-	iimage = Imlib_create_image_from_data(imlib, mybuffer, NULL, movie_width, movie_height);
-
-	/* get the current window size */
-	xj_get_window_size(&my_Width,&my_Height);
-
-	/* Render the original 24-bit Image data into a pixmap of size w * h */
-	Imlib_render(imlib,iimage, my_Width,my_Height );
-
-	/* Extract the Image and mask pixmaps from the Image */
-	pxm=Imlib_move_image(imlib,iimage);
-	/* The mask will be 0 if the image has no transparency */
-	//pxmmask=Imlib_move_mask(imlib,iimage);
-
-	/* Put the Image pixmap in the background of the window */
-	XSetWindowBackgroundPixmap(xj_dpy,xj_win,pxm);       
-	XClearWindow(xj_dpy,xj_win);       
-	//No need to sync. XPending will take care in the event loop.
-	//XSync(xj_dpy, False);     
-	Imlib_free_pixmap(imlib, pxm);
-	Imlib_kill_image(imlib, iimage);
-}
-
-void newsrc_imlib (void) { 
-	; // nothing to do :)
-}
-
-void handle_X_events_imlib (void) {
-	xj_handle_X_events();
-}
-
-#if 1 // LEGACY CODE
-
-void get_window_pos_imlib (int *x,  int *y) {
-	xj_get_window_pos(x,y); 
-}
-
-void get_window_size_imlib (unsigned int *my_Width, unsigned int *my_Height) {
-	xj_get_window_size(my_Width,my_Height);
-}
-
-void resize_imlib (unsigned int x, unsigned int y) { 
-	xj_resize(x, y);
-}
-
-void position_imlib (int x, int y) { 
-	xj_position(x, y);
-}
-
-#endif
-
-#endif /* HAVE_IMLIB */
-
 
 /*******************************************************************************
  *
