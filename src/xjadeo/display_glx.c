@@ -153,8 +153,8 @@ int gl_open_window () {
 	attr.colormap     = cmap;
 	attr.border_pixel = 0;
 
-	_gl_width = movie_width;
-	_gl_height = movie_height;
+	_gl_width = ffctv_width;
+	_gl_height = ffctv_height;
 
 	attr.event_mask = ExposureMask | KeyPressMask
 		| ButtonPressMask | ButtonReleaseMask

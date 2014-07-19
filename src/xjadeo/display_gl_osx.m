@@ -62,6 +62,7 @@ __attribute__ ((visibility ("hidden")))
 	@catch ( NSException *e ) {
 		return nil;
 	}
+	return nil;
 }
 
 - (BOOL)windowShouldClose:(id)sender
@@ -486,7 +487,7 @@ int gl_open_window () {
 	[window makeKeyAndOrderFront:window];
 
 	gl_init();
-	gl_resize(movie_width, movie_height);
+	gl_resize(ffctv_width, ffctv_height);
 	if (gl_reallocate_texture(movie_width, movie_height)) {
 		gl_close_window();
 	}

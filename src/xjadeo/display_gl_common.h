@@ -51,6 +51,8 @@ extern int 	force_redraw;
 extern int 	interaction_override; // disable some options.
 extern int  movie_width;
 extern int  movie_height;
+extern int  ffctv_width;
+extern int  ffctv_height;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -124,6 +126,7 @@ static void gl_init () {
 }
 
 void gl_newsrc () {
+	gl_reallocate_texture(movie_width, movie_height);
 }
 
 static void opengl_draw (int width, int height, unsigned char* surf_data) {
@@ -172,7 +175,7 @@ static void xjglExpose() {
 
 static void xjglButton(int btn) {
 	if (btn == 1) {
-		gl_resize (movie_width, movie_height);
+		gl_resize (ffctv_width, ffctv_height);
 	} else {
 		const float asp_src = movie_aspect ? movie_aspect : (float)movie_width/(float)movie_height;
 		int w = _gl_width;
@@ -242,7 +245,7 @@ static void xjglKeyPress(const unsigned int sym, const char *key) {
 		force_redraw=1;
 	}
 	else if (!strcmp(key, ".")) {
-		gl_resize(movie_width, movie_height);
+		gl_resize(ffctv_width, ffctv_height);
 	}
 	else if (!strcmp(key, ",")) {
 		const float asp_src = movie_aspect ? movie_aspect : (float)movie_width/(float)movie_height;

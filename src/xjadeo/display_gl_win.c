@@ -202,8 +202,8 @@ int gl_open_window () {
 		return 1;
 	}
 
-	_gl_width = movie_width;
-	_gl_height = movie_height;
+	_gl_width = ffctv_width;
+	_gl_height = ffctv_height;
 
 	winFlags = start_fullscreen ? (WS_POPUP | WS_CLIPCHILDREN) : WS_OVERLAPPEDWINDOW;
 	RECT wr = { 0, 0, (long)_gl_width, (long)_gl_height };
