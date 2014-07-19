@@ -2,7 +2,6 @@
 
 # update version in
 # - configure.ac
-# - debian/changelog
 # - ChangeLog
 
 : ${SFUSER:=x42}

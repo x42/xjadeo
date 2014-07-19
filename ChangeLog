@@ -1,9 +1,17 @@
 2014-07-17 (unreleased)  Robin Gareus <robin@gareus.org>
 * v0.8 pre-release
 * add openGL display (Linux, Win32, OSX)
+* fix RGBA32 (imlib2, openGL) blank frame alpha.
 * weak linking against jack (windows, OSX)
 * OSX: don't connect to jack by default.
 * support XDG_CONFIG_HOME
+* remove deprecated qjadeo import (xjinfo/mencoder) -> use ffmpeg
+* remove LASH support (use jack-session)
+* remove support for ancient ffmpeg < 0.5
+* change -J semantics: don't connect to and later (remote) don't autostart jack
+* major cleanup of accumulated cruft.
+* rework fps detection (new ffmpeg API)
+* remove cutom debian package -> use debian's *real* package.
 
 2014-07-13 (0.7.8)  Robin Gareus <robin@gareus.org>
 * document -J option in --help
