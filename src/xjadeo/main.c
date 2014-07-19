@@ -119,6 +119,7 @@ int want_autodrop =1;   /* --nodropframes -n (hidden option) -- allow using drop
 int avoid_lash   =0;	/* --nolash */
 int remote_en =0;	/* --remote, -R */
 int no_initial_sync =0; /* --nosyncsource, -J */
+int jack_autostart =1; /* linked to no_initial_sync */
 int osc_port =0;	/* --osc, -O */
 int mq_en =0;		/* --mq, -Q */
 char *ipc_queue = NULL; /* --ipc, -W */
@@ -448,6 +449,7 @@ decode_switches (int argc, char **argv)
 				break;
 			case 'J':
 				no_initial_sync = 1;
+				jack_autostart = 0;
 				break;
 			case 'h':
 				usage (0);
@@ -716,7 +718,6 @@ main (int argc, char **argv)
 
 #ifdef PLATFORM_OSX // OSX GUI default
 	seekflags = SEEK_CONTINUOUS;
-	no_initial_sync = 1;
 #endif
 
 	program_name = argv[0];

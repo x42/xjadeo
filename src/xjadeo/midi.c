@@ -463,6 +463,7 @@ static long pm_midi_poll_frame (void) {
 
 jack_client_t *jack_midi_client = NULL;
 jack_port_t   *jack_midi_port;
+extern int jack_autostart;
 
 #define JACK_MIDI_QUEUE_SIZE (1024)
 typedef struct my_midi_event {
@@ -548,10 +549,10 @@ static void jm_midi_open(char *midiid) {
 		snprintf(jackmidiid,16,"xjadeo-%i",i);
 #ifdef JACK_SESSION
 		if (jack_uuid)
-			jack_midi_client = WJACK_client_open2 (jackmidiid, JackUseExactName|JackSessionID, NULL, jack_uuid);
+			jack_midi_client = WJACK_client_open2 (jackmidiid, JackUseExactName|JackSessionID|(jack_autostart ? 0 : JackNoStartServer), NULL, jack_uuid);
 		else
 #endif
-			jack_midi_client = WJACK_client_open1 (jackmidiid, JackUseExactName, NULL);
+			jack_midi_client = WJACK_client_open1 (jackmidiid, JackUseExactName|(jack_autostart ? 0 : JackNoStartServer), NULL);
 	} while (jack_midi_client == NULL && i++<16);
 
 	if (!jack_midi_client) {

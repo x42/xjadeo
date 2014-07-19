@@ -41,6 +41,7 @@ jack_port_t *j_input_port = NULL;
 jack_default_audio_sample_t *j_in;
 jack_nframes_t j_latency = 0;
 jack_client_t *j_client = NULL;
+extern int jack_autostart;
 
 static double ltc_position = 0;
 static long long int monotonic_fcnt = 0;
@@ -183,7 +184,7 @@ static void ltcjack_shutdown (void *arg) {
  */
 static int init_jack(const char *client_name) {
 	jack_status_t status;
-	jack_options_t options = JackNullOption;
+	jack_options_t options = jack_autostart ? JackNullOption : JackNoStartServer;
 #ifdef JACK_SESSION
 	if (jack_uuid)
 		j_client = WJACK_client_open2 (client_name, options|JackSessionID, &status, jack_uuid);

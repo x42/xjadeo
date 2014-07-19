@@ -39,6 +39,7 @@ char *program_name;
 
 long frames = 25;
 double duration =1;
+int jack_autostart = 1;
 
 /* hardcoded settings */
 int want_quiet = 1;

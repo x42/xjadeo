@@ -32,6 +32,7 @@ extern double framerate;
 extern int want_quiet;
 extern int jack_clkconvert;
 extern int interaction_override;
+extern int jack_autostart;
 #ifdef HAVE_LASH
 extern lash_client_t *lash_client;
 #endif
@@ -91,7 +92,7 @@ void open_jack(void ) {
 		snprintf(jackid,16,"xjadeo-%i",i);
 #ifdef JACK_SESSION
 		if (jack_uuid)
-			jack_client = WJACK_client_open2 (jackid, JackUseExactName|JackSessionID, NULL, jack_uuid);
+			jack_client = WJACK_client_open2 (jackid, JackUseExactName|JackSessionID|(jack_autostart ? 0 : JackNoStartServer), NULL, jack_uuid);
 		else
 #endif
 			jack_client = WJACK_client_open1 (jackid, JackUseExactName, NULL);
