@@ -20,6 +20,7 @@
  */
 #include "xjadeo.h"
 #include "ffcompat.h"
+#include <libswscale/swscale.h>
 #include "remote.h"
 #include "gtime.h"
 
@@ -329,7 +330,7 @@ void init_moviebuffer(void) {
 
 void avinit (void) {
 	av_register_all();
-#if LIBAVFORMAT_BUILD < 0x351400
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(53, 20, 0)
 	avcodec_init();
 #endif
 	avcodec_register_all();
@@ -386,7 +387,7 @@ int open_movie(char* file_name) {
 		return (-1);
 	}
 
-#if LIBAVFORMAT_BUILD < 0x350200
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(53, 2, 0)
 	if (!want_quiet) dump_format(pFormatCtx, 0, file_name, 0);
 #else
 	if (!want_quiet) av_dump_format(pFormatCtx, 0, file_name, 0);
@@ -394,12 +395,7 @@ int open_movie(char* file_name) {
 
 	/* Find the first video stream */
 	for(i=0; i<pFormatCtx->nb_streams; i++)
-#if LIBAVFORMAT_BUILD > 4629
-		if(pFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_VIDEO)
-#else
-		if(pFormatCtx->streams[i]->codec.codec_type==AVMEDIA_TYPE_VIDEO)
-#endif
-		{
+		if(pFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_VIDEO) {
 			videoStream=i;
 			break;
 		}
@@ -413,20 +409,13 @@ int open_movie(char* file_name) {
 
 	av_stream = pFormatCtx->streams[videoStream];
 
-	// At LIBAVFORMAT_BUILD==4624 r_frame_rate becomes an AVRational. Before it was an int.
-	if (filefps >0 ) framerate=filefps;
-#if LIBAVFORMAT_BUILD <= 4616
-	else framerate = (double) av_stream->codec.frame_rate / (double) av_stream->codec.frame_rate_base;
-#elif LIBAVFORMAT_BUILD <= 4623 // I'm not sure that this is correct:
-	else framerate = (double) av_stream->r_frame_rate / (double) av_stream->r_frame_rate_base;
-#else
-			else if(av_stream->r_frame_rate.den && av_stream->r_frame_rate.num) {
-				framerate = av_q2d(av_stream->r_frame_rate);
-				if ((framerate < 4 || framerate > 100 ) && (av_stream->time_base.num && av_stream->time_base.den))
-					framerate = 1.0/av_q2d(av_stream->time_base);
-			}
-			else framerate = 1.0/av_q2d(av_stream->time_base);
-#endif
+	if (filefps > 0) framerate=filefps;
+	else if(av_stream->r_frame_rate.den && av_stream->r_frame_rate.num) {
+		framerate = av_q2d(av_stream->r_frame_rate);
+		if ((framerate < 4 || framerate > 100 ) && (av_stream->time_base.num && av_stream->time_base.den))
+			framerate = 1.0/av_q2d(av_stream->time_base);
+	}
+	else framerate = 1.0/av_q2d(av_stream->time_base);
 
 	// detect drop frame timecode
 	if (fabs(framerate - 30000.0/1001.0) < 0.01) {
@@ -435,24 +424,9 @@ int open_movie(char* file_name) {
 			fprintf(stdout, "enabled drop-frame-timecode (use -n to override).\n");
 	}
 
-#if defined(__BIG_ENDIAN__) && (__ppc__) && LIBAVFORMAT_BUILD <= 4616
-	// this cast is weird, but it works.. the bytes seem to be in 'correct' order, but the two
-	// 4byte-words are swapped. ?!
-	// I wonder how this behaves on a 64bit arch
-	// - maybe it's bug in ffmpeg or all video files I tried had a bad header :D
-	int64_t dur = (int64_t) (pFormatCtx->duration);
-	duration = ( ((double) (((dur&0xffffffff)<<32)|((dur>>32)&0xffffffff))) / (double) AV_TIME_BASE );
-#else
 	duration = (double) (((double) (pFormatCtx->duration))/ (double) AV_TIME_BASE);
-#endif
 	frames = (long) (framerate * duration);
-#if LIBAVFORMAT_BUILD <= 4623  // check if correct;
-	tpf = (double) framerate / (double) av_stream->codec.frame_rate * (double) av_stream->codec.frame_rate_base;
-#elif LIBAVFORMAT_BUILD <= 4629 // check if correct;
-	tpf = (av_q2d(pFormatCtx->streams[videoStream]->r_frame_rate)/framerate);
-#else
 	tpf = 1.0/(av_q2d(pFormatCtx->streams[videoStream]->time_base)*framerate);
-#endif
 	if (!want_ignstart && pFormatCtx->start_time != AV_NOPTS_VALUE) {
 		file_frame_offset = (int64_t) floor(framerate * (double) pFormatCtx->start_time / (double) AV_TIME_BASE);
 	}
@@ -471,11 +445,7 @@ int open_movie(char* file_name) {
 	}
 
 	// Get a pointer to the codec context for the video stream
-#if LIBAVFORMAT_BUILD > 4629
 	pCodecCtx=pFormatCtx->streams[videoStream]->codec;
-#else
-	pCodecCtx=&(pFormatCtx->streams[videoStream]->codec);
-#endif
 
 	if (!want_quiet) {
 		fprintf(stderr, "image size: %ix%i px\n", pCodecCtx->width, pCodecCtx->height);
@@ -507,8 +477,7 @@ int open_movie(char* file_name) {
 		ffctv_height = ((int)rint(pCodecCtx->width / movie_aspect)) & ~1;
 	}
 
-	// somewhere around LIBAVFORMAT_BUILD  4630
-#ifdef AVFMT_FLAG_GENPTS
+#ifdef AVFMT_FLAG_GENPTS // XXX check if enum
 	if (want_genpts)
 		pFormatCtx->flags|=AVFMT_FLAG_GENPTS;
 #endif
@@ -565,13 +534,7 @@ void override_fps (double fps) {
 
 	framerate =  fps;
 	frames = (long) (framerate * duration);
-#if LIBAVFORMAT_BUILD <= 4623  // check if correct;
-	tpf = (double) framerate / (double) pCodecCtx->frame_rate * (double) pCodecCtx->frame_rate_base;
-#elif LIBAVFORMAT_BUILD <= 4629 // check if correct;
-	tpf = (av_q2d(pFormatCtx->streams[videoStream]->r_frame_rate)/framerate);
-#else
 	tpf = 1.0/(av_q2d(pFormatCtx->streams[videoStream]->time_base)*framerate);
-#endif
 	// recalc offset with new framerate
 	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset);
 }
@@ -662,20 +625,16 @@ static void render_empty_frame(int blit) {
 
 static void reset_video_head(AVPacket *packet) {
 	int             frameFinished=0;
-#if LIBAVFORMAT_BUILD < 4617
-	av_seek_frame(pFormatCtx, videoStream, 0);
-#else
 	av_seek_frame(pFormatCtx, videoStream, 0, AVSEEK_FLAG_BACKWARD);
-#endif
 	avcodec_flush_buffers(pCodecCtx);
 
 	while (!frameFinished) {
 		av_read_frame(pFormatCtx, packet);
 		if(packet->stream_index==videoStream)
-#if LIBAVCODEC_VERSION_MAJOR < 52 || ( LIBAVCODEC_VERSION_MAJOR == 52 && LIBAVCODEC_VERSION_MINOR < 21)
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 21, 0)
 			avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet->data, packet->size);
 #else
-		avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, packet);
+			avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, packet);
 #endif
 		if(packet->data) av_free_packet(packet);
 	}
@@ -699,12 +658,9 @@ static int my_seek_frame (AVPacket *packet, int64_t timestamp) {
 		timestamp+= file_frame_offset;
 	}
 
-	// TODO: assert  0 < timestamp + ts_offset - (..->start_time)   < length
-
-#if LIBAVFORMAT_BUILD > 4629 // verify this version
-# ifdef FFDEBUG
+#ifdef FFDEBUG
 	printf("\nDEBUG: want frame=%li  ", (long int) timestamp);
-# endif
+#endif
 
 	if (filefps > 0) {
 		timestamp*=tpf;
@@ -714,14 +670,10 @@ static int my_seek_frame (AVPacket *packet, int64_t timestamp) {
 		timestamp=av_rescale_q(timestamp,c1_Q,v_stream->r_frame_rate); //< timestamp/=framerate;
 	}
 
-# ifdef FFDEBUG
+#ifdef FFDEBUG
 	printf("ts=%li   ##\n", (long int) timestamp);
-# endif
 #endif
 
-#if LIBAVFORMAT_BUILD < 4617
-	rv= av_seek_frame(pFormatCtx, videoStream, timestamp / framerate * 1000000LL);
-#else
 	if (seekflags==SEEK_ANY) {
 		rv= av_seek_frame(pFormatCtx, videoStream, timestamp, AVSEEK_FLAG_ANY | AVSEEK_FLAG_BACKWARD) ;
 		avcodec_flush_buffers(pCodecCtx);
@@ -742,7 +694,6 @@ static int my_seek_frame (AVPacket *packet, int64_t timestamp) {
 		rv= av_seek_frame(pFormatCtx, videoStream, timestamp, AVSEEK_FLAG_BACKWARD) ;
 		avcodec_flush_buffers(pCodecCtx);
 	}
-#endif
 
 	if (rv < 0 && (timestamp == 0 || seekflags == SEEK_CONTINUOUS)) {
 		rv = av_seek_frame(pFormatCtx, videoStream, timestamp, 0);
@@ -757,23 +708,15 @@ read_frame:
 		if (!want_quiet) printf("Reached movie end\n");
 		return (0);
 	}
-#if LIBAVFORMAT_BUILD >=4616
 	if (av_dup_packet(packet) < 0) {
 		printf("can not allocate packet\n");
 		goto read_frame;
 	}
-#endif
 	if(packet->stream_index!=videoStream) {
 		if (packet->data)
 			av_free_packet(packet);
 		goto read_frame;
 	}
-	/* backwards compatible - no cont. seeking (seekmode ANY or KEY ; cmd-arg: -K, -k)
-	 * do we want a AVSEEK_FLAG_ANY + SEEK_CONTINUOUS option ?? not now.  */
-#if LIBAVFORMAT_BUILD < 4617
-	return (1);
-#endif
-
 	if (seekflags!=SEEK_CONTINUOUS) return (1);
 
 #ifdef FFDEBUG
@@ -817,7 +760,7 @@ read_frame:
 	//my_avprev= mtsb;
 
 	int frameFinished;
-#if LIBAVCODEC_VERSION_MAJOR < 52 || ( LIBAVCODEC_VERSION_MAJOR == 52 && LIBAVCODEC_VERSION_MINOR < 21)
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 21, 0)
 	avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet->data, packet->size);
 #else
 	avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, packet);
@@ -865,7 +808,7 @@ void display_frame(int64_t timestamp, int force_update, int do_render) {
 		while (1) {
 			frameFinished=0;
 			if(packet.stream_index==videoStream)
-#if LIBAVCODEC_VERSION_MAJOR < 52 || ( LIBAVCODEC_VERSION_MAJOR == 52 && LIBAVCODEC_VERSION_MINOR < 21)
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 21, 0)
 				avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet.data, packet.size);
 #else
 			avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
@@ -907,12 +850,10 @@ void display_frame(int64_t timestamp, int force_update, int do_render) {
 					render_empty_frame(1);
 					break;
 				}
-#if LIBAVFORMAT_BUILD >=4616
 				if (av_dup_packet(&packet) < 0) {
 					printf("can not allocate packet\n");
 					break;
 				}
-#endif
 			}
 		} /* end while !frame_finished */
 	} else {
