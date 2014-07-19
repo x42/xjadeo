@@ -21,7 +21,12 @@
 # include <config.h>
 #endif
 
+#ifdef HAVE_LTC
+
 #include <stdio.h>
+#include <ltc.h>
+#include <math.h>
+
 #include "weak_libjack.h"
 
 #ifdef JACK_SESSION
@@ -29,75 +34,19 @@ extern char *jack_uuid;
 void jack_session_cb( jack_session_event_t *event, void *arg );
 #endif
 
-#if (defined HAVE_LTCSMPTE || defined HAVE_LTC)
 extern double framerate;
-
-#include <math.h>
+extern int jack_autostart;
 
 void close_ltcjack(void);
 
-jack_nframes_t j_samplerate = 48000;
-jack_port_t *j_input_port = NULL;
-jack_default_audio_sample_t *j_in;
-jack_nframes_t j_latency = 0;
-jack_client_t *j_client = NULL;
-extern int jack_autostart;
+static jack_nframes_t j_samplerate = 48000;
+static jack_port_t *j_input_port = NULL;
+static jack_default_audio_sample_t *j_in;
+static jack_nframes_t j_latency = 0;
+static jack_client_t *j_client = NULL;
 
 static double ltc_position = 0;
 static long long int monotonic_fcnt = 0;
-
-#ifdef HAVE_LTCSMPTE
-#warning using deprecated libltcsmpte - get https://github.com/x42/libltc
-#include <ltcsmpte/ltcsmpte.h>
-
-static SMPTEDecoder *ltc_decoder = NULL;
-
-static int myProcess(SMPTEDecoder *d, double *jt)  {
-	SMPTEFrameExt frame;
-#ifdef DEBUG
-	int errors;
-#endif
-	int i=0; /* marker - if queue is flushed - don't read the last */
-	int rv=0;
-#if 0 /* process only last LTC (0: all in decoder queue) */
-	while (SMPTEDecoderRead(d,&frame)) {i++;}
-#endif
-	while (i || SMPTEDecoderRead(d,&frame)) {
-		SMPTETime stime;
-		i=0;
-
-		SMPTEFrameToTime(&frame.base,&stime);
-#ifdef DEBUG
-		SMPTEDecoderErrors(d,&errors);
-#endif
-
-		if (jt) {
-			*jt=(double) (
-					((stime.hours*60+stime.mins)*60 +stime.secs)*j_samplerate
-					+ ((double)stime.frame*(double)j_samplerate/framerate)
-					+ frame.startpos - monotonic_fcnt
-					);
-			//printf("LTC-debug %f %li %li\n",*jt,frame.startpos, frame.endpos);
-		}
-
-#ifdef DEBUG
-		int ms;
-		SMPTEDecoderFrameToMillisecs(d,&frame,&ms);
-		printf("LTC: %02d:%02d:%02d:%02d %8d %d \n",
-				stime.hours,stime.mins,
-				stime.secs,stime.frame,
-				ms,
-				errors);
-#endif
-		++rv;
-	}
-	return rv;
-}
-
-#else // HAVE_LTC -- new libltc
-
-#include <ltc.h>
-
 static LTCDecoder *ltc_decoder = NULL;
 
 static int myProcess(LTCDecoder *d, double *jt)  {
@@ -131,7 +80,6 @@ static int myProcess(LTCDecoder *d, double *jt)  {
 	}
 	return rv;
 }
-#endif
 
 #ifdef NEW_JACK_LATENCY_API
 static int jack_latency_cb(void *arg) {
@@ -160,11 +108,7 @@ static int process (jack_nframes_t nframes, void *arg) {
 	  sound[i] = (unsigned char) (snd&0xff);
 	}
 
-#ifdef HAVE_LTCSMPTE
-	SMPTEDecoderWrite(ltc_decoder, sound,nframes, monotonic_fcnt-j_latency);
-#else // HAVE_LTC
 	ltc_decoder_write(ltc_decoder, sound, nframes, monotonic_fcnt-j_latency);
-#endif
 	myProcess(ltc_decoder, &ltc_position);
 	monotonic_fcnt += nframes;
 	return 0;
@@ -219,15 +163,7 @@ static int init_jack(const char *client_name) {
 }
 
 static int jack_portsetup(void) {
-#ifdef HAVE_LTCSMPTE
-	FrameRate *fps;
-	fps = FR_create(1, 1, FRF_NONE);
-	FR_setdbl(fps, framerate, 1); // auto-detect drop-frames
-	ltc_decoder = SMPTEDecoderCreate(j_samplerate,fps,8,1);
-	FR_free(fps);
-#else
 	ltc_decoder = ltc_decoder_create(j_samplerate * 25, 8);
-#endif
 	if (!ltc_decoder)
 		return -1;
 
@@ -276,11 +212,7 @@ void close_ltcjack(void) {
 		WJACK_client_close (j_client);
 	}
 	if (ltc_decoder) {
-#ifdef HAVE_LTCSMPTE
-		SMPTEFreeDecoder(ltc_decoder);
-#else
 		ltc_decoder_free(ltc_decoder);
-#endif
 	}
 	j_client=NULL;
 	ltc_decoder=NULL;
