@@ -34,7 +34,6 @@ Section "jadeo (required)"
   
   ; Put file there
   File "xjadeo.exe"
-  File "xjinfo.exe"
 	File "SDL.dll"
 	File "avcodec-54.dll"
 	File "avformat-54.dll"
@@ -103,7 +102,6 @@ Section "Uninstall"
 
   ; Remove files and uninstaller
   Delete $INSTDIR\xjadeo.exe
-  Delete $INSTDIR\xjinfo.exe
   Delete $INSTDIR\SDL.dll
   Delete $INSTDIR\avcodec-52.dll
   Delete $INSTDIR\avformat-52.dll

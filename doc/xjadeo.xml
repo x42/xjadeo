@@ -2936,8 +2936,6 @@ make install # (requires root privileges) </screen></para>
 
         <para><xref linkend="xjremote"/></para>
 
-        <para><xref linkend="xjinfo"/></para>
-
         <para><ulink url="http://xjadeo.sourceforge.net/">online-manual</ulink></para>
       </refsect1>
     </refentry>
@@ -3183,101 +3181,6 @@ make install # (requires root privileges) </screen></para>
       </refsect1>
     </refentry>
 
-    <refentry id="xjinfo">
-      <refmeta>
-        <refentrytitle>xjinfo</refentrytitle>
-
-        <manvolnum>1</manvolnum>
-
-        <refmiscinfo class="source">http://xjadeo.sf.net</refmiscinfo>
-
-        <refmiscinfo class="version">0.6.X</refmiscinfo>
-      </refmeta>
-
-      <refnamediv>
-        <refname>xjinfo</refname>
-
-        <refpurpose>Display A/V file info in XML format.</refpurpose>
-      </refnamediv>
-
-      <refsynopsisdiv>
-        <cmdsynopsis>
-          <command>xjinfo</command>
-
-          <arg choice="opt">-chtvVx</arg>
-
-          <arg choice="plain"><replaceable>videofile</replaceable></arg>
-        </cmdsynopsis>
-      </refsynopsisdiv>
-
-      <refsect1>
-        <title>DESCRIPTION</title>
-
-        <para><application>xjinfo</application> does basically the same as
-        <command>ffprobe</command> but displays the information in XML or
-        simple text format that can be used for scripting.</para>
-      </refsect1>
-
-      <refsect1>
-        <title>OPTIONS</title>
-
-        <variablelist>
-          <varlistentry>
-            <term><option>-c</option>, <option>--csv</option></term>
-
-            <listitem>
-              <para>comma separated values, one line per video stream in file.
-              Use the built-in help <option>-h</option> to learn about the
-              format.</para>
-            </listitem>
-          </varlistentry>
-
-          <varlistentry>
-            <term><option>-h</option>, <option>-h, --help</option></term>
-
-            <listitem>
-              <para>Print usage help and exit.</para>
-            </listitem>
-          </varlistentry>
-
-          <varlistentry>
-            <term><option>-t</option>, <option>--time</option>,
-            <option>--duration</option></term>
-
-            <listitem>
-              <para>print the duration in seconds (without trailing
-              newline)</para>
-            </listitem>
-          </varlistentry>
-
-          <varlistentry>
-            <term><option>-v</option>, <option>--text</option></term>
-
-            <listitem>
-              <para>print a single line: duration, fps, geometry and codec
-              info.</para>
-            </listitem>
-          </varlistentry>
-
-          <varlistentry>
-            <term><option>-x</option>, <option>--xml</option></term>
-
-            <listitem>
-              <para>output XML data. This is the default if no option is
-              specified.</para>
-
-              <para>A DTD is available with the source or from <ulink url="http://xjadeo.git.sourceforge.net/git/gitweb.cgi?p=xjadeo/xjadeo;a=blob_plain;f=src/xjadeo/avinfo.dtd">xjadeo.sf.net</ulink></para>
-            </listitem>
-          </varlistentry>
-        </variablelist>
-      </refsect1>
-
-      <refsect1>
-        <title>SEE ALSO</title>
-
-        <para><xref linkend="xjadeo"/></para>
-      </refsect1>
-    </refentry>
   </appendix>
 </article>
 <!-- vim: set fenc=utf-8 sts=2 sw=2 ts=8 et spell spelllang=en_us : -->

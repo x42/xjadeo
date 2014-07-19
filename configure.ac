@@ -387,17 +387,14 @@ if test "$enable_qtgui" = "yes"; then
 	AC_SUBST(ac_lrelease)
 
 	ac_qtgui_dir="qt-gui"
-	XJINFO_BIN="xjinfo$EXESUF"
 
 	AC_CONFIG_FILES(src/qt-gui/Makefile src/qt-gui/qjadeo.pro)
 
 else
 	ac_qtgui_dir=""
-	XJINFO_BIN=""
 fi
 
 AC_SUBST(ac_qtgui_dir)
-AC_SUBST(XJINFO_BIN)
 
 dnl ---------- End of Qt GUI stuff ---------------
 

@@ -1,9 +1,7 @@
 #TODO: use a dedicated script for 'git desc' - this is "non-POSIX" way:
 REV = $(shell test -d ../../.git && git describe --always --tags HEAD 2>/dev/null)
 
-bin_PROGRAMS=xjadeo xjremote @XJINFO_BIN@
-
-EXTRA_PROGRAMS = xjinfo
+bin_PROGRAMS=xjadeo xjremote
 
 xjadeo_SOURCES=main.c ../../aclocal.m4 ../../config.h \
 							 xjadeo.c xjadeo.h ffcompat.h \
@@ -42,16 +40,6 @@ endif
 xjremote_SOURCES = xjremote.c
 
 xjremote_LDADD = @MQ_LIBS@
-
-
-xjinfo_SOURCES = avinfo.c ffcompat.h
-
-xjinfo_LDADD = @FFMPEG_LIBS@
-
-xjinfo_CFLAGS = -Wall -g -O3 @FFMPEG_CFLAGS@
-
-#ctags:
-#	find . -type f -name "*.[ch]*" | xargs @CTAGS@
 
 MAINTAINERCLEANFILES = Makefile.in
 
