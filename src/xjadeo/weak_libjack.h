@@ -59,6 +59,7 @@
 #define WJACK_get_ports jack_get_ports
 #define WJACK_port_register jack_port_register
 #define WJACK_connect jack_connect
+#define WJACK_free jack_free
 
 #define WJACK_transport_locate jack_transport_locate
 #define WJACK_transport_start jack_transport_start
@@ -102,6 +103,7 @@ const char * WJACK_port_name (const jack_port_t *port);
 const char ** WJACK_get_ports (jack_client_t *client, const char *port_name_pattern, const char *type_name_pattern, unsigned long flags);
 jack_port_t * WJACK_port_register (jack_client_t *client, const char *port_name, const char *port_type, unsigned long flags, unsigned long buffer_size);
 int WJACK_connect (jack_client_t *client, const char *source_port, const char *destination_port);
+void WJACK_free (void *ptr);
 
 /* <jack/transport.h> */
 int WJACK_transport_locate (jack_client_t *client, jack_nframes_t frame);

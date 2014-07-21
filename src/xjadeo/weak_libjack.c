@@ -78,6 +78,7 @@ static struct WeakJack {
 	void * _get_ports;
 	void * _port_register;
 	void * _connect;
+	void * _free;
 
 	void * _transport_locate;
 	void * _transport_start;
@@ -135,6 +136,7 @@ int init_weak_jack() {
 	MAPSYM(get_ports, 1)
 	MAPSYM(port_register, 1)
 	MAPSYM(connect, 1)
+	MAPSYM(free, 0)
 	MAPSYM(transport_locate, 1)
 	MAPSYM(transport_start, 1)
 	MAPSYM(transport_stop, 1)
@@ -230,6 +232,7 @@ JPFUN(const char*,  port_name, (const jack_port_t *p), (p), NULL);
 JPFUN(const char**, get_ports,(jack_client_t *c, const char *p, const char *t, unsigned long f), (c,p,t,f), NULL);
 JPFUN(jack_port_t*, port_register, (jack_client_t *c, const char *n, const char *t, unsigned long f, unsigned long b), (c,n,t,f,b), NULL);
 JPFUN(int,          connect, (jack_client_t *c, const char *s, const char *d), (c,s,d), -1);
+JXFUN(void,         free, (void *p), (p), free(p););
 
 JPFUN(int,  transport_locate, (jack_client_t *c, jack_nframes_t f), (c,f), 0);
 JCFUN(void, transport_start, );

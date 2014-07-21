@@ -589,6 +589,7 @@ static void jm_midi_open(char *midiid) {
 					}
 				}
 			}
+			WJACK_free(found_ports);
 		}
 	}
 
