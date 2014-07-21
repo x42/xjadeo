@@ -81,6 +81,8 @@ cd $SRC/SDL-1.2.15
 	--disable-joystick --disable-cdrom --disable-loadso \
 	--disable-video-ggi --disable-video-svga --disable-video-aalib
 make -j4
+# hack to allow 'normal' make build w/o errror (irrelevant for static builds, but hey)
+sed -i 's/^Libs:.*$/Libs: -L${libdir}  -lSDL  -lpthread -lXrandr -ldirectfb/' sdl.pc
 make install
 
 cd $SRC/xjadeo

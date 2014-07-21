@@ -29,6 +29,7 @@ AC_ARG_ENABLE(portmidi,    AC_HELP_STRING([--disable-portmidi], [disable portmid
 AC_ARG_ENABLE(alsamidi,    AC_HELP_STRING([--disable-alsamidi], [disable alsamidi support (default:auto)]))
 AC_ARG_ENABLE(qtgui,       AC_HELP_STRING([--enable-qtgui],[Build the Qt GUI controller (default:off)]))
 AC_ARG_WITH(qt4prefix,     AS_HELP_STRING([--with-qt4prefix], [prefix for Qt4 installation, e.g. "/usr/lib/qt4"]), qt4prefix="$withval", qt4prefix="")
+AC_ARG_WITH(qmakeargs,     AS_HELP_STRING([--with-qmakeargs], [specify custom qmake arguments]), qmakeargs="$withval", qmakeargs="")
 AC_ARG_ENABLE(contrib,     AC_HELP_STRING([--enable-contrib], [Compile and install code in contrib folder (default:off)]))
 AC_ARG_ENABLE(tiff,        AC_HELP_STRING([--disable-tiff], [disable libtiff support (affects only contrib/tsmm/) (default:on)]))
 AC_ARG_ENABLE(timescale,   AC_HELP_STRING([--enable-timescale], [enable time-mapping/loop-playback support - experimental - DO NOT USE]))
@@ -39,7 +40,7 @@ LIBPREF=lib
 LIBSUF=.a
 
 case $target_os in
-  *darwin*)
+	*darwin*)
 		AC_MSG_NOTICE([TARGET: OSX])
 		PM_OS=mac
 		AC_DEFINE([PLATFORM_OSX], [], [use macintosh native display])
@@ -51,10 +52,10 @@ case $target_os in
 		AM_CONDITIONAL([TARGET_OSX], true)
 		AM_CONDITIONAL([TARGET_LINUX], false)
 		AM_CONDITIONAL([TARGET_WIN32], false)
-dnl 2006/11/13 : 32 bit RGBA is known not to work on OSX ffmpeg+imlib2
-dnl IMLIB2RGBA
-  	;;
-  *linux*)
+		dnl 2006/11/13 : 32 bit RGBA is known not to work on OSX ffmpeg+imlib2
+		dnl IMLIB2RGBA
+		;;
+	*linux*)
 		AC_MSG_NOTICE([TARGET: LINUX])
 		PM_OS="linux";
 		AC_DEFINE([IMLIB2RGBA], [], [use native RGB32 ffmpeg -> imlib.])
@@ -62,8 +63,8 @@ dnl IMLIB2RGBA
 		AM_CONDITIONAL([TARGET_LINUX], true)
 		AM_CONDITIONAL([TARGET_WIN32], false)
 		LIBS="$LIBS -L/usr/X11R6/lib"
-	;;
-  *mingw32*|*win*)
+		;;
+	*mingw32*|*win*)
 		AC_MSG_NOTICE([TARGET: WINDOWS])
 		PM_OS=win
 		AC_DEFINE([PLATFORM_WINDOWS], [], [windows SDL version])
@@ -76,10 +77,10 @@ dnl IMLIB2RGBA
 		AM_CONDITIONAL([TARGET_OSX], false)
 		AM_CONDITIONAL([TARGET_LINUX], false)
 		AM_CONDITIONAL([TARGET_WIN32], true)
-  	;;
-  *)
+		;;
+	*)
 		AC_MSG_WARN([*** unknown target OS ***])
-  ;;
+		;;
 esac
 
 dnl AC_SUBST(DISPLAY_OPENGL)
@@ -149,11 +150,11 @@ AC_DEFINE(DRAW_CROSS)
 AC_DEFINE(COLOREQ)
 
 if test "x$enable_timescale" != "xyes"; then
-  AC_DEFINE(TIMEMAP)
+	AC_DEFINE(TIMEMAP)
 fi
 
 if test "x$enable_framecrop" == "xyes"; then
-  AC_DEFINE(CROPIMG)
+	AC_DEFINE(CROPIMG)
 fi
 
 AC_HEADER_MAJOR
@@ -168,10 +169,16 @@ AC_SUBST(JACK_CFLAGS)
 AC_SUBST(JACK_LIBS)
 
 if test "x$enable_jacksession" != "xno"; then
-  AC_CHECK_HEADERS([jack/session.h], AC_DEFINE(JACK_SESSION) JACK_SESSION=1)
+	tmp_CPPFLAGS="$CPPFLAGS"
+	CPPFLAGS="$CPPFLAGS $JACK_CFLAGS"
+	AC_CHECK_HEADERS([jack/session.h], AC_DEFINE(JACK_SESSION) JACK_SESSION=1)
+	CPPFLAGS="$tmp_CPPFLAGS"
 fi
 
+tmp_LDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS $JACK_LDFLAGS"
 AC_CHECK_LIB(jack, jack_port_get_latency_range, [AC_DEFINE(NEW_JACK_LATENCY_API) NEW_JACK_LATENCY_API=1])
+LDFLAGS="$tmp_LDFLAGS"
 
 dnl ---------------------------------------------------------------------------
 dnl Check for ffmpeg: avformat/avcodec
@@ -256,13 +263,17 @@ if test "x$enable_midi" != "xno"; then
 	fi
 	if test "x$FOUND_H_PORTMIDI$FOUND_L_PORTMIDI" = "xyesyes"; then
 		MIDI_LIBS="-lportmidi"
+dnl TODO check if porttime is needed for threading
 		if test "$PM_OS" != "mac"; then
 		  MIDI_LIBS="${MIDI_LIBS} -lporttime"
 	  fi
 	fi
 
 	if test "x$JACKMIDI" != "xno"; then
+		tmp_CPPFLAGS="$CPPFLAGS"
+		CPPFLAGS="$CPPFLAGS $JACK_CFLAGS"
 		AC_CHECK_HEADERS(jack/midiport.h, [FOUND_H_JACKMIDI=yes])
+		CPPFLAGS=$tmp_CPPFLAGS
 	fi
 
 	if test "x$enable_alsamidi" != "xno"; then
@@ -373,14 +384,21 @@ if test "$enable_qtgui" = "yes"; then
 	AC_PATH_PROG(ac_qmake, qmake, [no], $qt4prefix/bin)
 	AC_PATH_PROG(ac_lrelease, lrelease, [no], $qt4prefix/bin)
 	if test "x$ac_qmake" = "xno" -o "x$ac_lrelease" = "xno" ; then
-    AC_MSG_ERROR([qmake not found: please install the Qt4 development
-    package of your distribution. Try setting the --with-qt4config parameter; or use --disable-qtgui to compile xjadeo.])
+		AC_MSG_ERROR([qmake not found: please install the Qt4 development
+		              package of your distribution. Try setting --with-qt4prefix=QTROOT
+		              or use --disable-qtgui to compile xjadeo.])
 	fi
 
 	HAVE_QT4=1
 
-	if test -n "$PLATFORM_WINDOWS"; then
-		ac_qmake_args="-spec win32-x-g++ -config release"
+	if test "x$qmakeargs" = "x"; then
+		if test -n "$PLATFORM_WINDOWS"; then
+			ac_qmake_args="-spec win32-x-g++ -config release"
+		else
+			ac_qmake_args="-config release"
+		fi
+	else
+		ac_qmake_args="$qmakeargs"
 	fi
 	AC_SUBST(ac_qmake)
 	AC_SUBST(ac_qmake_args)
@@ -436,7 +454,7 @@ if test -n "$HAVE_MQ"; then
 elif test -n "$HAVE_IPCMSG"; then
 	RCTLREPORT="IPC-MSG";
 else
-	RCTLREPORT="not avail.";
+	RCTLREPORT="N/A (stdio only)";
 fi
 
 if test -z "$HAVE_FT"; then
@@ -445,7 +463,7 @@ else
 	OSDREPORT="
    - freetype:       yes
    - default font:   "
-  if test -n "$fontfile" ; then
+	if test -n "$fontfile" ; then
 		OSDREPORT="${OSDREPORT}$fontfile";
 	else
 		OSDREPORT="${OSDREPORT}-"

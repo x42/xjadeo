@@ -4,16 +4,16 @@ REV = $(shell test -d ../../.git && git describe --always --tags HEAD 2>/dev/nul
 bin_PROGRAMS=xjadeo xjremote
 
 xjadeo_SOURCES=main.c ../../aclocal.m4 ../../config.h \
-							 xjadeo.c xjadeo.h ffcompat.h \
-							 remote.c remote.h mqueue.c xjosc.c \
-							 configfile.c \
-							 jack.c ltc-jack.c \
-							 midi.c freetype.c smpte.c \
-							 display.c display.h \
-							 display_mac.c display_x11.c display_sdl.c \
-							 display_gl_common.h \
-							 weak_libjack.c weak_libjack.h \
-							 gtime.c gtime.h
+	xjadeo.c xjadeo.h ffcompat.h \
+	remote.c remote.h mqueue.c xjosc.c \
+	configfile.c \
+	jack.c ltc-jack.c \
+	midi.c freetype.c smpte.c \
+	display.c display.h \
+	display_mac.c display_x11.c display_sdl.c \
+	display_gl_common.h \
+	weak_libjack.c weak_libjack.h \
+	gtime.c gtime.h
 
 xjadeo_LDADD = @MQ_LIBS@ @FFMPEG_LIBS@ @XV_LIBS@ @MIDI_LIBS@ @FREETYPE_LIBS@ @IMLIB2_LIBS@ @XPM_LIBS@ @LIBLO_LIBS@ @SDL_LIBS@ @LTC_LIBS@ @GL_LIBS@ -lm
 
@@ -50,7 +50,7 @@ xjadeo_DEPENDENCIES= \
 	icons/brightness.bitmap    icons/gamma.bitmap    icons/saturation.bitmap    icons/osd_bitmaps.h \
 	icons/brightness_mask.xbm  icons/gamma_mask.xbm  icons/saturation_mask.xbm  icons/xjadeo-color.xpm \
 	icons/contrast.bitmap      icons/hue.bitmap      icons/splash.bitmap        icons/xjadeo-color-ico.h \
-	icons/contrast_mask.xbm    icons/hue_mask.xbm    icons/splash_mask.xbm
+	icons/contrast_mask.xbm    icons/hue_mask.xbm    icons/splash_mask.xbm      paths.h
 
 paths.h: Makefile
 	@echo '#define BINDIR "$(DESTDIR)/$(bindir)/"' >$@

@@ -12,7 +12,7 @@ export PKG_CONFIG_PATH=${LIBF}/pkgconfig
 
 if test -z "$NORECONF"; then
 	./configure \
-		--disable-lash --disable-mq --disable-ipc \
+		--disable-mq --disable-ipc \
 		--disable-qtgui --disable-jacksession --disable-portmidi --disable-alsamidi \
 	  --with-fontfile=/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf \
 	|| exit
