@@ -243,7 +243,7 @@ JPFUN(uint32_t, midi_get_event_count, (void* p), (p), 0);
 JPFUN(int, midi_event_get, (jack_midi_event_t *e, void *p, uint32_t i), (e,p,i), -1);
 #endif
 
-#ifdef HAVE_JACKMIDI
+#ifdef JACK_SESSION
 /* <jack/session.h> */
 JPFUN(int, set_session_callback, (jack_client_t *c, JackSessionCallback s, void *a), (c,s,a), -1);
 JPFUN(int, session_reply, (jack_client_t *c, jack_session_event_t *e), (c,e), -1);

@@ -240,36 +240,82 @@ static XjadeoOpenGLView* osx_glview;
 static id osx_window;
 
 static NSMenuItem *syncJACK;
+#ifdef HAVE_LTC
 static NSMenuItem *syncLTC;
-static NSMenuItem *syncMTC;
+#endif
+#ifdef HAVE_JACKMIDI
+static NSMenuItem *syncMTCJ; // jack
+#endif
+#ifdef HAVE_PORTMIDI
+static NSMenuItem *syncMTCP; // portmidi
+#endif
 static NSMenuItem *syncNone;
 
 static void update_sync_menu() {
 	if (jack_connected()) {
 		[syncNone setState:NSOffState];
 		[syncJACK setState:NSOnState];
-		[syncLTC setState:NSOffState];
-		[syncMTC setState:NSOffState];
+#ifdef HAVE_LTC
+		[syncLTC  setState:NSOffState];
+#endif
+#ifdef HAVE_JACKMIDI
+		[syncMTCJ setState:NSOffState];
+#endif
+#ifdef HAVE_PORTMIDI
+		[syncMTCP setState:NSOffState];
+#endif
 	}
 	else if (ltcjack_connected()) {
 		[syncNone setState:NSOffState];
 		[syncJACK setState:NSOffState];
-		[syncLTC setState:NSOnState];
-		[syncMTC setState:NSOffState];
+#ifdef HAVE_LTC
+		[syncLTC  setState:NSOnState];
+#endif
+#ifdef HAVE_JACKMIDI
+		[syncMTCJ setState:NSOffState];
+#endif
+#ifdef HAVE_PORTMIDI
+		[syncMTCP setState:NSOffState];
+#endif
 	}
 	else if (midi_connected() && !strcmp(midi_driver_name(), "PORTMIDI")) {
+		[syncNone setState:NSOffState];
+		[syncJACK setState:NSOffState];
+#ifdef HAVE_LTC
+		[syncLTC  setState:NSOffState];
+#endif
+#ifdef HAVE_JACKMIDI
+		[syncMTCJ setState:NSOffState];
+#endif
+#ifdef HAVE_PORTMIDI
+		[syncMTCP setState:NSOnState];
+#endif
 	}
 	else if (midi_connected() && !strcmp(midi_driver_name(), "JACK-MIDI")) {
 		[syncNone setState:NSOffState];
 		[syncJACK setState:NSOffState];
-		[syncLTC setState:NSOffState];
-		[syncMTC setState:NSOnState];
+#ifdef HAVE_LTC
+		[syncLTC  setState:NSOffState];
+#endif
+#ifdef HAVE_JACKMIDI
+		[syncMTCJ setState:NSOnState];
+#endif
+#ifdef HAVE_PORTMIDI
+		[syncMTCP setState:NSOffState];
+#endif
 	}
 	else {
 		[syncNone setState:NSOnState];
 		[syncJACK setState:NSOffState];
-		[syncLTC setState:NSOffState];
-		[syncMTC setState:NSOffState];
+#ifdef HAVE_LTC
+		[syncLTC  setState:NSOffState];
+#endif
+#ifdef HAVE_JACKMIDI
+		[syncMTCJ setState:NSOffState];
+#endif
+#ifdef HAVE_PORTMIDI
+		[syncMTCP setState:NSOffState];
+#endif
 	}
 }
 
@@ -326,7 +372,7 @@ static void update_sync_menu() {
 #ifdef HAVE_MIDI
 	if (midi_connected()) midi_close();
 #endif
-#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
+#ifdef HAVE_LTC
 	if (ltcjack_connected()) close_ltcjack();
 #endif
 	open_jack();
@@ -339,27 +385,49 @@ static void update_sync_menu() {
 #ifdef HAVE_MIDI
 	if (midi_connected()) midi_close();
 #endif
-#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
+#ifdef HAVE_LTC
 	if (!ltcjack_connected())
 		open_ltcjack(NULL);
 #endif
 	update_sync_menu();
 }
 
-- (void)syncToMTC:(id)sender
+- (void)syncToMTCJ:(id)sender
 {
 	if (jack_connected()) close_jack();
-#if defined (HAVE_LTCSMPTE) || defined (HAVE_LTC)
+#ifdef HAVE_LTC
 	if (ltcjack_connected()) close_ltcjack();
 #endif
 #ifdef HAVE_MIDI
+	if (midi_connected() && strcmp(midi_driver_name(), "JACK-MIDI")) {
+		midi_close();
+	}
 	if (!midi_connected()) {
-		midi_choose_driver("jack");
+		midi_choose_driver("JACK");
 		midi_open("-1");
 	}
 #endif
 	update_sync_menu();
 }
+
+- (void)syncToMTCP:(id)sender
+{
+	if (jack_connected()) close_jack();
+#ifdef HAVE_LTC
+	if (ltcjack_connected()) close_ltcjack();
+#endif
+#ifdef HAVE_MIDI
+	if (midi_connected() && strcmp(midi_driver_name(), "PORTMIDI")) {
+		midi_close();
+	}
+	if (!midi_connected()) {
+		midi_choose_driver("PORTMIDI");
+		midi_open("-1");
+	}
+#endif
+	update_sync_menu();
+}
+
 - (void)syncToNone:(id)sender
 {
 }
@@ -419,8 +487,15 @@ static void makeAppMenu(void) {
 	[syncMenu setAutoenablesItems:NO];
 
 	syncJACK = [syncMenu addItemWithTitle:@"JACK" action:@selector(syncToJack:) keyEquivalent:@"j"];
+#ifdef HAVE_LTC
 	syncLTC  = [syncMenu addItemWithTitle:@"LTC" action:@selector(syncToLTC:) keyEquivalent:@"l"];
-	syncMTC  = [syncMenu addItemWithTitle:@"MTC" action:@selector(syncToMTC:) keyEquivalent:@"m"];
+#endif
+#ifdef HAVE_JACKMIDI
+	syncMTCJ  = [syncMenu addItemWithTitle:@"MTC (jackmidi)" action:@selector(syncToMTCJ:) keyEquivalent:@"m"];
+#endif
+#ifdef HAVE_PORTMIDI
+	syncMTCP  = [syncMenu addItemWithTitle:@"MTC (portmidi)" action:@selector(syncToMTCP:) keyEquivalent:@"p"];
+#endif
 	syncNone = [syncMenu addItemWithTitle:@"None" action:@selector(syncToNone:) keyEquivalent:@""];
 	[syncNone setEnabled:NO];
 
