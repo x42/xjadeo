@@ -91,7 +91,8 @@ fi
 # TODO: build the 3 in parallel, OSX, win and linux
 # idea: use a makefile with concurrency
 echo "building win32 ..."
-./x-win32.sh || exit
+# TODO use x-win-pbuild on $COWBUILDER
+./x-win-bundle.sh || exit
 #clean up build system
 ./configure --enable-contrib --enable-qtgui
 
@@ -129,7 +130,7 @@ sftp $SFUSER,xjadeo@frs.sourceforge.net << EOF
 cd /home/frs/project/x/xj/xjadeo/xjadeo
 mkdir v${VERSION}
 cd v${VERSION}
-put contrib/nsi/jadeo_installer_v${WINVERS}.exe
+put /tmp/jadeo_installer_v${WINVERS}.exe
 put /tmp/xjadeo-i386-linux-gnu-v${VERSION}.tgz
 put /tmp/xjadeo-x86_64-linux-gnu-v${VERSION}.tgz
 put /tmp/jadeo-${VERSION}.dmg

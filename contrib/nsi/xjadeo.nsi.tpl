@@ -71,7 +71,7 @@ Section "jadeo (required)"
 	done:
   
   ; Write the installation path into the registry
-  WriteRegStr HKLM SOFTWARE\RSSxjadeo "Install_Dir" "$INSTDIR"
+  WriteRegStr HKLM SOFTWARE\RSS\xjadeo "Install_Dir" "$INSTDIR"
   
   ; Write the uninstall keys for Windows
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\xjadeo" "DisplayName" "Jadeo"
@@ -99,6 +99,7 @@ Section "Uninstall"
   ; Remove registry keys
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\xjadeo"
   DeleteRegKey HKLM SOFTWARE\RSSxjadeo
+  DeleteRegKey HKLM SOFTWARE\RSS\xjadeo
 
   ; Remove files and uninstaller
   Delete $INSTDIR\xjadeo.exe
