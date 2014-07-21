@@ -48,6 +48,7 @@ int			xj_mouse = 0;
 int     xj_dwidth, xj_dheight; // cache window size for rendering currently only Xv
 int			xj_box[4]; // letterbox site - currently only Xv & imlib2
 extern int 	force_redraw; // tell the main event loop that some cfg has changed
+extern int 	interaction_override; // disable some options.
 
 /*******************************************************************************
  * common X11 code 
@@ -410,7 +411,8 @@ void getDragData (XEvent *xe) {
 			t++;
 		}
 	}
-	if (num>0) xapi_open(files[0]);
+	if (num > 0 && !(interaction_override&OVR_LOADFILE))
+		xapi_open(files[0]);
 	free(data);
 }
 
@@ -459,7 +461,6 @@ extern const vidout VO[];
 extern int VOutput;
 extern int OSD_mode; // change via keystroke
 extern long ts_offset; 
-extern int 	interaction_override; // disable some options.
 extern double framerate;
 
 inline void xj_render () { 

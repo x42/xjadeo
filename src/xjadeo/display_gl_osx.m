@@ -68,7 +68,7 @@ __attribute__ ((visibility ("hidden")))
 - (BOOL)windowShouldClose:(id)sender
 {
 	if ((interaction_override&OVR_QUIT_WMG) == 0) {
-		loop_flag=0;
+		loop_flag = 0;
 		return YES;
 	}
 	return NO;
@@ -239,6 +239,7 @@ __attribute__ ((visibility ("hidden")))
 static XjadeoOpenGLView* osx_glview;
 static id osx_window;
 
+static NSMenuItem *fileOpen;
 static NSMenuItem *syncJACK;
 #ifdef HAVE_LTC
 static NSMenuItem *syncLTC;
@@ -317,6 +318,37 @@ static void update_sync_menu() {
 		[syncMTCP setState:NSOffState];
 #endif
 	}
+	if (interaction_override&OVR_MENUSYNC) {
+		[syncNone setEnabled:NO];
+		[syncJACK setEnabled:NO];
+#ifdef HAVE_LTC
+		[syncLTC  setEnabled:NO];
+#endif
+#ifdef HAVE_JACKMIDI
+		[syncMTCJ setEnabled:NO];
+#endif
+#ifdef HAVE_PORTMIDI
+		[syncMTCP setEnabled:NO];
+#endif
+	} else {
+		[syncNone setEnabled:YES];
+		[syncJACK setEnabled:YES];
+#ifdef HAVE_LTC
+		[syncLTC  setEnabled:YES];
+#endif
+#ifdef HAVE_JACKMIDI
+		[syncMTCJ setEnabled:YES];
+#endif
+#ifdef HAVE_PORTMIDI
+		[syncMTCP setEnabled:YES];
+#endif
+	}
+
+	if (interaction_override&OVR_LOADFILE) {
+		[fileOpen setEnabled:NO];
+	} else {
+		[fileOpen setEnabled:YES];
+	}
 }
 
 @interface NSApplication (XJ)
@@ -326,7 +358,9 @@ static void update_sync_menu() {
 /* Invoked from the Quit menu item */
 - (void)terminate:(id)sender
 {
-	loop_flag	 = 0;
+	if ((interaction_override&OVR_QUIT_OSX) == 0) {
+		loop_flag = 0;
+	}
 }
 
 - (void)showAbout:(id)sender
@@ -348,6 +382,7 @@ static void update_sync_menu() {
 
 - (void)openVideo:(id)sender
 {
+	if (interaction_override&OVR_LOADFILE) return;
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
 	[panel setCanChooseFiles:YES];
 	[panel setCanChooseDirectories:NO];
@@ -360,7 +395,7 @@ static void update_sync_menu() {
 			if (![url isFileURL]) continue;
 			NSLog(@"%@", url.path);
 			const char *fn= [url.path UTF8String];
-      xapi_open((void*)fn);
+			xapi_open((void*)fn);
 			break;
 		}
 	}
@@ -369,6 +404,7 @@ static void update_sync_menu() {
 
 - (void)syncToJack:(id)sender
 {
+	if (interaction_override&OVR_MENUSYNC) return;
 #ifdef HAVE_MIDI
 	if (midi_connected()) midi_close();
 #endif
@@ -381,6 +417,7 @@ static void update_sync_menu() {
 
 - (void)syncToLTC:(id)sender
 {
+	if (interaction_override&OVR_MENUSYNC) return;
 	if (jack_connected()) close_jack();
 #ifdef HAVE_MIDI
 	if (midi_connected()) midi_close();
@@ -394,6 +431,7 @@ static void update_sync_menu() {
 
 - (void)syncToMTCJ:(id)sender
 {
+	if (interaction_override&OVR_MENUSYNC) return;
 	if (jack_connected()) close_jack();
 #ifdef HAVE_LTC
 	if (ltcjack_connected()) close_ltcjack();
@@ -412,6 +450,7 @@ static void update_sync_menu() {
 
 - (void)syncToMTCP:(id)sender
 {
+	if (interaction_override&OVR_MENUSYNC) return;
 	if (jack_connected()) close_jack();
 #ifdef HAVE_LTC
 	if (ltcjack_connected()) close_ltcjack();
@@ -456,8 +495,6 @@ static void makeAppMenu(void) {
 	NSString *appName = @"xjadeo";
 	NSString *title;
 
-	[appMenu addItemWithTitle:@"Open" action:@selector(openVideo:) keyEquivalent:@"o"];
-
 #if 1
 	title = [@"About " stringByAppendingString:appName];
 	[appMenu addItemWithTitle:title action:@selector(showAbout:) keyEquivalent:@""];
@@ -479,8 +516,27 @@ static void makeAppMenu(void) {
 
 	[appMenuItem setSubmenu:appMenu];
 
+	/* Create the file menu */
+	NSMenu     *fileMenu;
+	NSMenuItem *fileMenuItem;
+	fileMenu = [[NSMenu alloc] initWithTitle:@"File"];
+	[fileMenu setAutoenablesItems:NO];
+
+	fileOpen = [fileMenu addItemWithTitle:@"Open" action:@selector(openVideo:) keyEquivalent:@"o"];
+
+	if (interaction_override&OVR_LOADFILE) {
+		[fileOpen setEnabled:NO];
+	} else {
+		[fileOpen setEnabled:YES];
+	}
+
+	fileMenuItem = [[NSMenuItem alloc] initWithTitle:@"File" action:nil keyEquivalent:@""];
+	[fileMenuItem setSubmenu:fileMenu];
+	[[NSApp mainMenu] addItem:fileMenuItem];
+	[fileMenu release];
+	[fileMenuItem release];
+
 	/* Create the sync menu */
-#if 1
 	NSMenu     *syncMenu;
 	NSMenuItem *syncMenuItem;
 	syncMenu = [[NSMenu alloc] initWithTitle:@"Sync"];
@@ -504,7 +560,6 @@ static void makeAppMenu(void) {
 	[[NSApp mainMenu] addItem:syncMenuItem];
 	[syncMenu release];
 	[syncMenuItem release];
-#endif
 
 	/* Create the window menu */
 

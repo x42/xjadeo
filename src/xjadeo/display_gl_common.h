@@ -332,7 +332,8 @@ static void xjglKeyPress(const unsigned int sym, const char *key) {
 		gl_mousepointer(2);
 	}
 	else if (sym == 0xff08 || sym == 0x7f || sym == 0x08) { // BackSpace, Del
-		jackt_rewind();
+		if ((interaction_override&OVR_JCONTROL) == 0)
+			jackt_rewind();
 		remote_notify(NTY_KEYBOARD,
 				310, "keypress=%d # backspace", sym);
 	}

@@ -494,8 +494,8 @@ static OSStatus OpenDocuments( AEDescList docList ) {
       OSErr error; 
       error = FSRefMakePath(&fsRef, revpath, sizeof(revpath));
       if (error !=noErr) continue;
-      printf("%s\n", revpath); 
-      xapi_open(revpath);
+      if (!(interaction_override&OVR_LOADFILE))
+        xapi_open(revpath);
       break;
     }
   }
@@ -1665,15 +1665,18 @@ OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
       force_redraw=1;
       break;
     case mJackPlay:
-      jackt_start();
+      if ((interaction_override&OVR_JCONTROL) == 0)
+        jackt_start();
       break;
     case mJackRewind:
-      jackt_rewind();
+      if ((interaction_override&OVR_JCONTROL) == 0)
+        jackt_rewind();
       break;
     case mJackStop:
       jackt_stop();
       break;
     case mSyncJack:
+	if (interaction_override&OVR_MENUSYNC) break;
 	open_jack();
 #ifdef HAVE_MIDI
 	if (midi_connected()) midi_close();
@@ -1683,6 +1686,7 @@ OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
 #endif
       break;
     case mSyncLTC:
+	if (interaction_override&OVR_MENUSYNC) break;
 	if (jack_connected()) close_jack();
 #ifdef HAVE_MIDI
 	if (midi_connected()) midi_close();
@@ -1690,7 +1694,9 @@ OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
 	open_ltcjack(NULL);
       break;
     case mSyncJackMidi:
-    case mSyncPortMidi: {
+    case mSyncPortMidi:
+        if (interaction_override&OVR_MENUSYNC) break;
+      {
 	if (jack_connected()) close_jack();
 #ifdef HAVE_LTC
 	if (ltcjack_connected()) close_ltcjack();
@@ -1711,6 +1717,7 @@ OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
       }
       break;
     case mSyncNone:
+        if (interaction_override&OVR_MENUSYNC) break;
 	if (jack_connected()) close_jack();
 #ifdef HAVE_MIDI
 	if (midi_connected()) midi_close();
