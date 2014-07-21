@@ -349,27 +349,41 @@ int readconfig (char *fn) {
 #endif
 
 void xjadeorc (void) {
-	char *home;
-	char *xdg;
 	char filename[PATH_MAX];
-	if ((strlen(SYSCFGDIR) + strlen(XJADEORC) + 2) < PATH_MAX) {
+	// system-wide first
+	if ((strlen(SYSCFGDIR) + strlen(XJADEORC) + 1) < PATH_MAX) {
 		sprintf(filename, "%s" PATHSEP "%s", SYSCFGDIR, XJADEORC);
 		if (testfile(filename)) readconfig(filename);
 	}
-	home = getenv("HOME");
+	// $HOME/.xjadeorc -- legcacy
+	const char * home = getenv("HOME");
 	if (home && (strlen(home) + strlen(XJADEORC) + 2) < PATH_MAX) {
 		sprintf(filename, "%s" PATHSEP ".%s", home, XJADEORC);
 		if (testfile(filename)) readconfig(filename);
 	}
-	xdg = getenv("XDG_CONFIG_HOME");
+#ifdef PLATFORM_WINDOWS
+	// out of luck with CSIDL_LOCAL_APPDATA
+#else
+	// unices - use XDG_CONFIG_HOME
+	const char *xdg = getenv("XDG_CONFIG_HOME");
 	if (xdg && (strlen(xdg) + strlen(XJADEORC) + 8) < PATH_MAX) {
 		sprintf(filename, "%s" PATHSEP "xjadeo" PATHSEP "%s", xdg, XJADEORC);
 		if (testfile(filename)) readconfig(filename);
 	}
+	// fall back if XDG_CONFIG_HOME is unset
+#ifdef PLATFORM_OSX
+	if (!xdg && home && (strlen(home) + strlen(XJADEORC) + 21) < PATH_MAX) {
+		sprintf(filename, "%s" PATHSEP "Library/Preferences/%s", home, XJADEORC);
+		if (testfile(filename)) readconfig(filename);
+	}
+#else
 	if (!xdg && home && (strlen(home) + strlen(XJADEORC) + 16) < PATH_MAX) {
 		sprintf(filename, "%s" PATHSEP ".config" PATHSEP "xjadeo" PATHSEP "%s", xdg, XJADEORC);
 		if (testfile(filename)) readconfig(filename);
 	}
+#endif
+#endif
+	// current pwd
 	if (strlen(XJADEORC) < PATH_MAX) {
 		sprintf(filename, "%s", XJADEORC);
 		if (testfile(filename)) readconfig(filename);
