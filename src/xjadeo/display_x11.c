@@ -261,187 +261,6 @@ void set_x11_icon_name(unsigned char *icon) {
 */
 
 /*******************************************************************************
- * Drag and Drop - common X11 code
- */
-# ifdef DND 
-	Atom 			xj_a_XdndDrop;   
-	Atom 			xj_a_XdndFinished;   
-	Atom 			xj_a_XdndActionCopy;   
-	Atom 			xj_a_XdndLeave;   
-	Atom 			xj_a_XdndPosition;   
-	Atom 			xj_a_XdndStatus;   
-	Atom 			xj_a_XdndEnter;   
-	Atom 			xj_a_XdndAware;   
-	Atom 			xj_a_XdndTypeList;   
-	Atom 			xj_a_XdndSelection;   
-	Atom			xj_atom;
-	int 			dnd_source;
-	const int 		xdnd_version = 5;
-
-void HandleEnter(XEvent * xe) {
-	long *l = xe->xclient.data.l;
-	xj_atom= None;
-	Atom ok0 = XInternAtom(xj_dpy, "text/uri-list", False);
-	Atom ok1 = XInternAtom(xj_dpy, "text/plain", False);
-	Atom ok2 = XInternAtom(xj_dpy, "UTF8_STRING", False);
-
-	int version = (int)(((unsigned long)(l[1])) >> 24);
-	if (version > xdnd_version) return;
-	dnd_source = l[0];
-
-	if (l[1] & 0x1UL) {
-		Atom type = 0;
-		int f,ll;
-		unsigned long n, a;
-		unsigned char *data;
-		int offset = 0;
-		a=1;
-	while(a && xj_atom== None){
-			XGetWindowProperty(xj_dpy, dnd_source, xj_a_XdndTypeList, offset,
-			256, False, XA_ATOM, &type, &f,&n,&a,&data);
-				if(data == NULL || type != XA_ATOM || f != 8*sizeof(Atom)){
-				XFree(data);
-				return;
-			}
-			for (ll=0; ll<n; ll++) {
-			//	if (data[ll]!=None) printf("DEBUG atom:%s\n", XGetAtomName(xj_dpy,data[ll]));
-				if ((data[ll] == ok1) || (data[ll]==ok1) || (data[ll] == ok2)) {
-					xj_atom= data[ll];
-					break;
-				}
-			}
-			if (data) XFree(data);
-		}
-	} else {
-		int i;
-		for(i=2; i < 5; i++) {
-		//	if(l[i]!=None) printf("DEBUG atom:%s\n", XGetAtomName(xj_dpy,l[i]));
-			if ((l[i] == ok0) || (l[i] == ok1) || (l[i] == ok2)) xj_atom= l[i];
-		}
-	}
-	if (want_debug)
-		printf("DEBUG: DND ok: %i\n",xj_atom!=None);
-}
-
-void SendStatus (XEvent * xe) {
-	XEvent xev;
-	xev.xany.type = ClientMessage;
-	xev.xany.display = xj_dpy;
-	xev.xclient.window       = dnd_source;
-	xev.xclient.message_type = xj_a_XdndStatus;
-	xev.xclient.format = 32;
-	xev.xclient.data.l[0] = xj_win; 
-	xev.xclient.data.l[1] = 0x3; // bit0: accept ; bit1: want_position
-	xev.xclient.data.l[2] = xe->xclient.data.l[2];
-//	xj_get_window_size(&w,&h);
-//	xev.xclient.data.l[3] = (w<<16) | (h&0xFFFFUL); // w, h 
-	xev.xclient.data.l[3] = (1<<16) | (1&0xFFFFUL); // w, h 
-	xev.xclient.data.l[4] = xj_a_XdndActionCopy; // action
-	XSendEvent(xj_dpy, dnd_source, False, NoEventMask, &xev);
-}
-
-void SendFinished (void) {
-	XEvent xev;
-	memset(&xev,0,sizeof(XEvent));
-	xev.xany.type = ClientMessage;
-	xev.xany.display = xj_dpy;
-	xev.xclient.window       = dnd_source;
-	xev.xclient.message_type = xj_a_XdndFinished;
-	xev.xclient.format = 32;
-	xev.xclient.data.l[0] = xj_win;
-	XSendEvent(xj_dpy, dnd_source, False, NoEventMask, &xev);
-}
-
-#define MAX_DND_FILES 8
-void xapi_open(void *d); 
-
-void getDragData (XEvent *xe) {
-	Atom type;
-	int f;
-	unsigned long n, a;
-	unsigned char *data;
-
-	if(xe->xselection.property != xj_a_XdndSelection) return;
-
-	XGetWindowProperty(xj_dpy, xe->xselection.requestor,
-			xe->xselection.property, 0, 65536, 
-	    True, xj_atom, &type, &f, &n, &a, &data);
-
-	SendFinished();
-
-	if (!data){
-		fprintf(stderr, "WARNING: drag-n-drop - no data\n"); 
-		return;
-	}
-
-	/* Handle dropped files */
-	char * retain = (char*)data;
-	char * files[MAX_DND_FILES];
-	int num = 0;
-
-	while(retain < ((char *) data) + n) {
-		int nl = 0;
-		if (!strncmp(retain,"file:",5)) { retain+=5; }
-		files[num++]=retain;
-
-		while(retain < (((char *)data) + n)){
-			if(*retain == '\r' || *retain == '\n'){
-				*retain=0;
-				nl = 1;
-			} else if (nl) break;
-			retain++;
-		}
-
-		if (num >= MAX_DND_FILES)
-			break;
-	}
-
-	if (want_debug)
-		for (f=0;f<num;f++) {
-			printf("drag-n-drop: recv: %i '%s'\n",f,files[f]);
-		}
-	{ //translate %20 -> to whitespaces, etc.
-		char *t=files[0];
-		while ((t=strchr(t,'%')) && strlen(t)>2) {
-			int ti=0;
-			char tc= t[3];
-			t[3]=0; ti=(int)strtol(&(t[1]),NULL,16); t[3]=tc; 
-			memmove(t+1,t+3,strlen(t)-2);
-			tc=(char)ti; *t=tc; t[strlen(t)]='\0';
-			t++;
-		}
-	}
-	if (num > 0 && !(interaction_override&OVR_LOADFILE))
-		xapi_open(files[0]);
-	free(data);
-}
-
-void init_dnd () {
-	Atom atm = (Atom)xdnd_version;
-	if ((xj_a_XdndDrop = XInternAtom (xj_dpy, "XdndDrop", True)) != None && 
-	    (xj_a_XdndLeave = XInternAtom (xj_dpy, "XdndLeave", True)) != None && 
-	    (xj_a_XdndEnter = XInternAtom (xj_dpy, "XdndEnter", True)) != None && 
-	/*  (xj_uri_atom = XInternAtom (xj_dpy, "text/uri-list", True)) != None &&  */
-	    (xj_a_XdndActionCopy = XInternAtom (xj_dpy, "XdndActionCopy", True)) != None && 
-	    (xj_a_XdndFinished = XInternAtom (xj_dpy, "XdndFinished", True)) != None && 
-	    (xj_a_XdndPosition = XInternAtom (xj_dpy, "XdndPosition", True)) != None && 
-	    (xj_a_XdndStatus = XInternAtom (xj_dpy, "XdndStatus", True)) != None && 
-	    (xj_a_XdndTypeList = XInternAtom (xj_dpy, "XdndTypeList", True)) != None && 
-	    (xj_a_XdndSelection = XInternAtom (xj_dpy, "XdndSelection", True)) != None && 
-	    (xj_a_XdndAware = XInternAtom (xj_dpy, "XdndAware", True)) != None  ) {
-	    	if(!want_quiet) printf("enabled drag-DROP support.\n");
-		XChangeProperty(xj_dpy, xj_win, xj_a_XdndAware, XA_ATOM, 32, PropModeReplace, (unsigned char *)&atm, 1);
-	}
-}
-
-void disable_dnd () {
-	XDeleteProperty(xj_dpy, xj_win, xj_a_XdndAware);
-}
-
-# endif /* DND */
-
-
-/*******************************************************************************
  * X event callback handler
  */
 #define EQCLAMP(var) if((var)<-999) { var=-1000;} if((var)>999) { var=1000;}
@@ -501,52 +320,29 @@ void xj_handle_X_events (void) {
 //	XLockDisplay(xj_dpy);
 	while(XPending(xj_dpy)) {
 		XNextEvent(xj_dpy, &event);
+#ifdef DND
+		if (handle_dnd_event(xj_dpy, xj_win, &event)) continue;
+#endif
 		switch (event.type) {
 			case Expose:
 			// TODO: update only rect (ev.xexpose.x, ev.xexpose.y, ev.xexpose.width, ev.xexpose.height)
 				xj_render();
 				break;
-			case SelectionRequest:
-				break;
-			case SelectionNotify:
-#ifdef DND
-				getDragData(&event);
-#endif
-				break;
 			case ClientMessage:
-#ifdef DND
-		       	//	fprintf(stdout, "event client: %i\n",event.xclient.message_type);
-				if (event.xclient.message_type == xj_a_XdndPosition) {
-					if (xj_atom!= None) SendStatus(&event);
-				} else if (event.xclient.message_type == xj_a_XdndLeave) {
-					if (want_debug) printf("DND LEAVE!\n");
-				} else if (event.xclient.message_type == xj_a_XdndEnter) {
-					HandleEnter(&event);
-				} else if (event.xclient.message_type == xj_a_XdndDrop) {
-					if ((event.xclient.data.l[0] != XGetSelectionOwner(xj_dpy, xj_a_XdndSelection))
-					    || (event.xclient.data.l[0] != dnd_source)){
-					    	if (!want_quiet)
-							fprintf(stderr,"[x11] DnD owner mismatch.");
-					}
-					if(want_debug) printf("DROP!\n");
-					if (xj_atom!= None) {
-						XConvertSelection(xj_dpy, xj_a_XdndSelection, xj_atom, xj_a_XdndSelection, xj_win, CurrentTime);
-					}
-					SendFinished();
-				} else 
-#endif
 				if (event.xclient.data.l[0] == xj_del_atom) {
-				//	fprintf(stdout, "Window destoyed...\n");
+					//fprintf(stdout, "Window destoyed...\n");
 					if ((interaction_override&OVR_QUIT_WMG) == 0) loop_flag=0;
-#if 0
-				} else if (event.xclient.data.l[0] == xj_a_TakeFocus)  {
-		         		fprintf(stdout, "take X focus!\n");
-#endif
-#if 0
-				} else {
-		         		fprintf(stdout, "unhandled X-client event: %ld\n",(long) event.xclient.message_type);
-#endif
 				}
+#if 0
+				else if (event.xclient.data.l[0] == xj_a_TakeFocus)  {
+					fprintf(stdout, "take X focus!\n");
+				}
+#endif
+#if 0
+				else {
+					fprintf(stdout, "unhandled X-client event: %ld\n",(long) event.xclient.message_type);
+				}
+#endif
 				break;
 			case ConfigureNotify: // from XV only 
 				{
@@ -1282,7 +1078,7 @@ int open_window_xv (void) {
 	XSelectInput(xj_dpy, xj_win, ev_mask);
 
 #ifdef DND
-	init_dnd();
+	init_dnd(xj_dpy, xj_win);
 #endif
 	XMapRaised(xj_dpy, xj_win);
 
@@ -1405,7 +1201,7 @@ int open_window_imlib2 (void) {
 	XSelectInput(xj_dpy, xj_win, ev_mask);
 
 #ifdef DND 
-	init_dnd();
+	init_dnd(xj_dpy, xj_win);
 #endif
 	XMapRaised(xj_dpy, xj_win);
 

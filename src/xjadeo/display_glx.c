@@ -185,6 +185,9 @@ int gl_open_window () {
 		return 1;
 	}
 
+#ifdef DND
+	init_dnd(_gl_display, _gl_win);
+#endif
 	XMapRaised(_gl_display, _gl_win);
 
 	if (want_verbose) {
@@ -258,7 +261,9 @@ void gl_handle_events () {
 	XEvent event;
 	while (XPending(_gl_display) > 0) {
 		XNextEvent(_gl_display, &event);
-
+#ifdef DND
+		if (handle_dnd_event(_gl_display, _gl_win, &event)) continue;
+#endif
 		switch (event.type) {
 			case MapNotify:
 				loop_run=1;
