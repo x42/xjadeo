@@ -7,7 +7,6 @@
 #
 
 : ${SRC=/usr/src}
-: ${PFX=$HOME/local}
 
 if [ "$(id -u)" != "0" -a -z "$SUDO" ]; then
 	echo "This script must be run as root in pbuilder" 1>&2
@@ -21,7 +20,7 @@ apt-get -y install build-essential \
 	qt4-linguist-tools qt4-qmake \
 	wine libwine-gl xauth xvfb
 
-cd $SRC
+cd "$SRC"
 git clone -b master git://github.com/x42/xjadeo.git
 
 ## HACK ALERT ##
@@ -40,28 +39,28 @@ else
 	tar xJf xjadeo_windows_stack.tar.xz
 fi
 
-$SRC/xj-win-stack/update_pc_prefix.sh
+"$SRC"/xj-win-stack/update_pc_prefix.sh
 
 # major hack alert. For now we use the hosts QT build system
 # (qmake, lreleae) but run the pre-processor via wine
 # using the target's chain.
 cat > /usr/bin/rcc << EOF
-xvfb-run wine $SRC/xj-win-stack/Qt/bin/rcc.exe \$@
+xvfb-run wine "$SRC"/xj-win-stack/Qt/bin/rcc.exe \$@
 sleep 1
 EOF
 chmod +x /usr/bin/rcc
 
 ###############################################################################
 
-cd $SRC/xjadeo
+cd "$SRC"/xjadeo
 aclocal
 autoconf
 autoreconf -i
 
-export WINPREFIX=$SRC/xj-win-stack
-export WINLIB=$SRC/xj-win-stack/lib
-export QTDLL=$WINPREFIX/Qt/lib
+export WINPREFIX="$SRC/xj-win-stack"
+export WINLIB="$SRC/xj-win-stack/lib"
+export QTDLL="$WINPREFIX/Qt/lib"
 export QTSPECPATH="$WINPREFIX/Qt/mkspecs/win32-x-g++"
-export NSISEXE=$WINPREFIX/NSIS/makensis
+export NSISEXE="$WINPREFIX/NSIS/makensis"
 
 ./x-win-bundle.sh --with-qt4prefix=/usr
