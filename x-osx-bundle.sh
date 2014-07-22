@@ -195,7 +195,12 @@ echo '
 	   eject
      end tell
    end tell
-' | osascript
+' | osascript || {
+	umount "${DiskDevice}"
+	hdiutil eject "${DiskDevice}"
+	exit 1
+}
+
 
 set +e
 chmod -Rf go-w "${MNTPATH}"
