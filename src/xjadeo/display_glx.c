@@ -353,7 +353,7 @@ void gl_get_window_size (unsigned int *w, unsigned int *h) {
 
 void gl_get_window_pos (int *rx, int *ry) {
 	Window	dummy;
-	XTranslateCoordinates (_gl_display, _gl_win, DefaultRootWindow(_gl_win), 0, 0, rx, ry, &dummy);
+	XTranslateCoordinates (_gl_display, _gl_win, DefaultRootWindow(_gl_display), 0, 0, rx, ry, &dummy);
 	while (dummy !=None) {
 		int x = 0;
 		int y = 0;
