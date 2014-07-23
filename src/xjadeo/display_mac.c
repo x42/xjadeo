@@ -776,49 +776,19 @@ static OSStatus MouseEventHandler(EventHandlerCallRef nextHandler, EventRef even
         GetEventParameter(event, kEventParamMouseButton, typeMouseButton, 0, sizeof(EventMouseButton), 0, &button);
 
         part = FindWindow(mousePos,&tmpWin);
-        if(kind == kEventMouseUp)
-        {
-#if 0
-          if (part != inContent) break;
-          switch(button) {
-            case kEventMouseButtonPrimary:
-              mac_put_key(0, '.');
-              break;
-            case kEventMouseButtonSecondary:
-              mac_put_key(0, ',');
-              break;
-            case kEventMouseButtonTertiary:
-              ;
-              break;
-            default:result = eventNotHandledErr;break;
-          }
-#endif
+        if(kind == kEventMouseUp) {
           break;
         }
         if( (winMousePos.h > (bounds.right - 15)) && (winMousePos.v > (bounds.bottom)) ) {
           if(!vo_mac_fs)
-                  GrowWindow(theWindow, mousePos, NULL);
+            GrowWindow(theWindow, mousePos, NULL);
         }
         else if(part == inMenuBar) {
           MenuSelect(mousePos);
           HiliteMenu(0);
         }
         else if(part == inContent) {
-#if 0
-          switch(button) {
-            case kEventMouseButtonPrimary:
-              break;
-            case kEventMouseButtonSecondary:
-              break;
-            case kEventMouseButtonTertiary:
-              break;
-            default:
-              result = eventNotHandledErr;
-              break;
-          }
-#else
           result = eventNotHandledErr;
-#endif
         }
       }
       break;

@@ -164,10 +164,9 @@ static void xjglExpose() {
 }
 
 static void xjglButton(int btn) {
-	if ((interaction_override&OVR_MOUSEBTN)) return;
 	switch (btn) {
-		case 1:
-			XCresize_percent(100);
+		case 2:
+			XCresize_aspect(0);
 			break;
 		case 5:
 			XCresize_aspect(-1);
@@ -176,7 +175,6 @@ static void xjglButton(int btn) {
 			XCresize_aspect(1);
 			break;
 		default:
-			XCresize_aspect(0);
 			break;
 	}
 }

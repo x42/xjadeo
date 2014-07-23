@@ -461,21 +461,18 @@ void handle_X_events_sdl (void) {
 				force_redraw=1;
 				break;
 			case SDL_MOUSEBUTTONUP:
-				if ((interaction_override&OVR_MOUSEBTN) == 0) {
-					switch(ev.button.button) {
-						case SDL_BUTTON_LEFT:
-							XCresize_percent(100);
-							break;
-						case SDL_BUTTON_WHEELUP:
-							XCresize_aspect(-1);
-							break;
-						case SDL_BUTTON_WHEELDOWN:
-							XCresize_aspect(1);
-							break;
-						default:
-							XCresize_aspect(0);
-							break;
-					}
+				switch(ev.button.button) {
+					case SDL_BUTTON_WHEELUP:
+						XCresize_aspect(-1);
+						break;
+					case SDL_BUTTON_WHEELDOWN:
+						XCresize_aspect(1);
+						break;
+					case SDL_BUTTON_MIDDLE:
+						XCresize_aspect(0);
+						break;
+					default:
+						break;
 				}
 				break;
       case SDL_ACTIVEEVENT:			/** Application loses/gains visibility */

@@ -211,11 +211,11 @@ static void update_menus () {
 		mainmenu[3].sensitive = 1;
 	}
 	if (interaction_override & OVR_LOADFILE) {
-		mainmenu[6].sensitive = 0;
 		mainmenu[7].sensitive = 0;
+		mainmenu[8].sensitive = 0;
 	} else {
-		mainmenu[6].sensitive = 1;
 		mainmenu[7].sensitive = 1;
+		mainmenu[8].sensitive = 1;
 	}
 }
 

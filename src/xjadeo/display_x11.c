@@ -301,24 +301,23 @@ static void xj_handle_X_events (void) {
 							);
 				} else
 #endif
-					if ((interaction_override&OVR_MOUSEBTN) == 0) {
-						switch (event.xbutton.button) {
-							case 1:
-								XCresize_percent(100);
-								break;
-							case 5:
-								XCresize_aspect(-1);
-								break;
-							case 4:
-								XCresize_aspect(1);
-								break;
-							default:
-								XCresize_aspect(0);
-								break;
-						}
-						if (getvidmode() == 2) // only XV
-							xj_render();
+				{
+					switch (event.xbutton.button) {
+						case 2:
+							XCresize_aspect(0);
+							break;
+						case 5:
+							XCresize_aspect(-1);
+							break;
+						case 4:
+							XCresize_aspect(1);
+							break;
+						default:
+							break;
 					}
+					if (getvidmode() == 2) // only XV
+						xj_render();
+				}
 				break;
 			case KeyPress:
 				{
