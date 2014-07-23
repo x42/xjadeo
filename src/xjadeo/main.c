@@ -113,7 +113,7 @@ int remote_mode =0;	/* 0: undirectional ; >0: bidir
 			 *   (2) notify changed timecode
 			 */
 
-int seekflags = SEEK_ANY; /* -k ,K */
+int seekflags = SEEK_CONTINUOUS; /* -k, -K, -Y */
 
 #ifdef HAVE_MIDI
 char midiid[128] = "-2";  /* --midi # -1: autodetect -2: jack-transport, -3: none/userFrame */
@@ -179,6 +179,7 @@ static struct option const long_options[] =
 	{"ignorefileoffset", no_argument, 0, 'I'},
 	{"nofileoffset", no_argument, 0, 'I'},
 	{"nosplash", no_argument, 0, 'S'},
+	{"anyframe", no_argument, 0, 'Y'},
 	{"keyframes", no_argument, 0, 'k'},
 	{"continuous", required_argument, 0, 'K'},
 	{"offset", no_argument, 0, 'o'},
@@ -235,8 +236,9 @@ decode_switches (int argc, char **argv)
 		"R"	/* stdio remote control */
 		"Q"	/* POSIX rt-message queues */
 		"W:"	/* IPC message queues */
-		"k"	/* keyframes */
-		"K"	/* anyframe */
+		"k"	/* keyframe seek */
+		"K"	/* cont'd seek */
+		"Y"	/* anyframe seek */
 		"o:"	/* offset */
 		"T:"	/* ttf-font */
 		"f:"	/* fps */
@@ -330,18 +332,19 @@ decode_switches (int argc, char **argv)
 				//ts_offset=smptestring_to_frame(optarg,0);
 				//printf("set time offset to %li frames\n",ts_offset);
 				break;
+			case 'Y':		/* --anyframe */
+				seekflags=SEEK_ANY;
+				if (!want_quiet)
+					printf("seeking to any frame (as is)\n");
 			case 'k':		/* --keyframes */
 				seekflags=SEEK_KEY;
-				printf("seeking to keyframes only\n");
+				if (!want_quiet)
+					printf("seeking to keyframes only\n");
 				break;
-			case 'K':		/* --anyframe */
+			case 'K':		/* --continuous */
 				seekflags=SEEK_CONTINUOUS;
 				if (!want_quiet)
-#if LIBAVFORMAT_BUILD < 4617
-					printf("libavformat (ffmpeg) does not support continuous seeking...\n uprade your ffmpeg library and recompile xjadeo!\n");
-#else
-				printf("enabled continuous seeking..\n");
-#endif
+					printf("continuous accurate seeking.\n");
 				break;
 			case 'F':		/* --filefps */
 				if(atof(optarg)>0)
@@ -667,10 +670,6 @@ main (int argc, char **argv)
 {
 	int i;
 	char*   movie= NULL;
-
-#ifdef PLATFORM_OSX // OSX GUI default
-	seekflags = SEEK_CONTINUOUS;
-#endif
 
 	program_name = argv[0];
 
