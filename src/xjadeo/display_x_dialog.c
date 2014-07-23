@@ -23,8 +23,6 @@
 
 #ifdef XDLG
 #if (defined HAVE_LIBXV || defined HAVE_IMLIB2 || (defined HAVE_GL && !defined PLATFORM_WINDOWS && !defined PLATFORM_OSX))
-extern int force_redraw;
-extern int interaction_override;
 extern int seekflags;
 
 static Window _dlg_win = 0;
@@ -43,119 +41,6 @@ struct XjxMenuItem {
 	int enabled; // TODO use a callback
 	int sensitive;
 };
-
-///////////////////////////////////////////////////////////////////////////////
-// UI CALLBACKS //
-// TODO share code with display_gl_osx.m et al
-static void ui_sync_to_jack() {
-	if (interaction_override&OVR_MENUSYNC) return;
-#ifdef HAVE_MIDI
-	if (midi_connected()) midi_close();
-#endif
-#ifdef HAVE_LTC
-	if (ltcjack_connected()) close_ltcjack();
-#endif
-	open_jack();
-}
-
-static void ui_sync_to_ltc() {
-	if (interaction_override&OVR_MENUSYNC) return;
-	if (jack_connected()) close_jack();
-#ifdef HAVE_MIDI
-	if (midi_connected()) midi_close();
-#endif
-#ifdef HAVE_LTC
-	if (!ltcjack_connected())
-		open_ltcjack (NULL);
-#endif
-}
-
-static void ui_sync_to_mtc (const char *driver) {
-	if (interaction_override&OVR_MENUSYNC) return;
-	if (jack_connected()) close_jack();
-#ifdef HAVE_LTC
-	if (ltcjack_connected()) close_ltcjack();
-#endif
-#ifdef HAVE_MIDI
-	if (midi_connected() && strcmp (midi_driver_name(), driver)) {
-		midi_close();
-	}
-	if (!midi_connected()) {
-		midi_choose_driver (driver);
-		midi_open ("-1");
-	}
-#endif
-}
-
-static void ui_sync_to_mtc_jack () {
-	ui_sync_to_mtc ("JACK-MIDI");
-}
-static void ui_sync_to_mtc_portmidi () {
-	ui_sync_to_mtc ("PORTMIDI");
-}
-static void ui_sync_to_mtc_alsaraw () {
-	ui_sync_to_mtc ("ALSA-RAW-MIDI");
-}
-static void ui_sync_to_mtc_alsaseq () {
-	ui_sync_to_mtc ("ALSA-Sequencer");
-}
-
-enum SyncSource {
-	SYNC_JACK,
-	SYNC_LTC,
-	SYNC_MTC_JACK,
-	SYNC_MTC_PORTMIDI,
-	SYNC_MTC_ALSASEQ,
-	SYNC_MTC_ALSARAW,
-	SYNC_NONE
-};
-
-// TODO use enum
-static enum SyncSource ui_syncsource() {
-	if (jack_connected()) {
-		return SYNC_JACK;
-	}
-#ifdef HAVE_MIDI
-	else if (ltcjack_connected()) {
-		return SYNC_LTC;
-	}
-#endif
-#ifdef HAVE_MIDI
-	else if (midi_connected() && !strcmp(midi_driver_name(), "PORTMIDI")) {
-		return SYNC_MTC_PORTMIDI;
-	}
-	else if (midi_connected() && !strcmp(midi_driver_name(), "JACK-MIDI")) {
-		return SYNC_MTC_JACK;
-	}
-	else if (midi_connected() && !strcmp(midi_driver_name(), "ALSA-RAW-MIDI")) {
-		return SYNC_MTC_ALSARAW;
-	}
-	else if (midi_connected() && !strcmp(midi_driver_name(), "ALSA-Sequencer")) {
-		return SYNC_MTC_ALSASEQ;
-	}
-#endif
-	else {
-	}
-	return SYNC_NONE;
-}
-
-static void ui_seek_key () {
-	seekflags = SEEK_KEY;
-	force_redraw = 1;
-}
-
-static void ui_seek_any () {
-	seekflags = SEEK_ANY;
-	force_redraw = 1;
-}
-
-static void ui_seek_cont () {
-	seekflags = SEEK_CONTINUOUS;
-	force_redraw = 1;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 
 static void cb_none () {
 	printf("CALLBACK\n");
@@ -180,7 +65,7 @@ static struct XjxMenuItem menuitems[] = {
 	{" Window to Load)", NULL, 0, 0},
 };
 
-// TODO dynamically build menu.
+// TODO dynamically build menu. check OVR_*
 static void update_menu() {
 	const int items = sizeof(menuitems) / sizeof(struct XjxMenuItem);
 	int i;
@@ -252,7 +137,6 @@ static void update_menu() {
 	else {
 		menuitems[11].enabled = 1;
 	}
-
 }
 
 static int query_font_geometry (Display *dpy, const char *txt, int *w, int *h, int *a, int *d) {

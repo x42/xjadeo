@@ -401,8 +401,7 @@ void handle_X_events_sdl (void) {
 						remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
 					}
 				} else if(ev.key.keysym.sym==SDLK_s) {
-					OSD_mode^=OSD_SMPTE;
-					force_redraw=1;
+					ui_osd_tc();
 				} else if(ev.key.keysym.sym==SDLK_a) {
 					sdl_set_ontop(sdl_ontop^=1);
 				} else if(ev.key.keysym.sym==SDLK_f) {
@@ -412,18 +411,12 @@ void handle_X_events_sdl (void) {
 						sdl_letterbox_change();
 				} else if(ev.key.keysym.sym==SDLK_m) { 
 					mousecursor_sdl(2);
-				} else if(ev.key.keysym.sym==SDLK_s) {
-					OSD_mode^=OSD_SMPTE;
-					force_redraw=1;
 				} else if(ev.key.keysym.sym==SDLK_v) {
-					OSD_mode^=OSD_FRAME; 
-					force_redraw=1;
+					ui_osd_fn();
 				} else if(ev.key.keysym.sym==SDLK_b) {
-						OSD_mode^=OSD_BOX;
-						force_redraw=1;
+					ui_osd_box();
 				} else if(ev.key.keysym.sym== SDLK_c && ev.key.keysym.mod&KMOD_SHIFT) {
-					OSD_mode=0; 
-					force_redraw=1;
+					ui_osd_clear();
 				} else if(ev.key.keysym.sym== SDLK_LESS || (ev.key.keysym.sym== SDLK_COMMA && ev.key.keysym.mod&KMOD_SHIFT) ) { // '<'
 					XCresize_scale(-1);
 				} else if(ev.key.keysym.sym== SDLK_GREATER || (ev.key.keysym.sym== SDLK_PERIOD && ev.key.keysym.mod&KMOD_SHIFT) ) { // '>'
@@ -434,15 +427,7 @@ void handle_X_events_sdl (void) {
 				} else if(ev.key.keysym.sym== SDLK_COMMA) { // ','
 					XCresize_aspect(0);
 				} else if(ev.key.keysym.sym==SDLK_o) {
-					if (OSD_mode&OSD_OFFF) {
-						OSD_mode&=~OSD_OFFF;
-						OSD_mode|=OSD_OFFS;
-					} else if (OSD_mode&OSD_OFFS) {
-						OSD_mode^=OSD_OFFS;
-					} else {
-						OSD_mode^=OSD_OFFF;
-					}
-					force_redraw=1;
+					ui_osd_offset_cycle();
 				} else if(ev.key.keysym.sym== SDLK_BACKSLASH) {
 					XCtimeoffset(0, (unsigned int) key);
 				} else if(ev.key.keysym.sym== SDLK_EQUALS && ev.key.keysym.mod&KMOD_SHIFT) { // '+' SDLK_PLUS does not work :/

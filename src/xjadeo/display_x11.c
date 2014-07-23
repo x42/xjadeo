@@ -352,30 +352,18 @@ static void xj_handle_X_events (void) {
 						if (getvidmode() != 2 && getvidmode() != 4) OSD_mode&=~OSD_EQ; // disable but for Xv&imlib2
 						force_redraw=1;
 					} else if   (key == XK_o ) { //'o' // OSD - offset in frames
-						if (OSD_mode&OSD_OFFF) {
-							OSD_mode&=~OSD_OFFF;
-							OSD_mode|=OSD_OFFS;
-						} else if (OSD_mode&OSD_OFFS) {
-							OSD_mode^=OSD_OFFS;
-						} else {
-							OSD_mode^=OSD_OFFF;
-						}
-						force_redraw=1;
+						ui_osd_offset_cycle();
 					} else if (key == XK_s ) { //'s' // OSD - current smpte
-						OSD_mode^=OSD_SMPTE;
-						force_redraw=1;
+						ui_osd_tc();
 					} else if (key == XK_l ) { //'l' // OSD - letterbox
 						want_letterbox=!want_letterbox;
 						xj_letterbox();
 					} else if (key == XK_v ) { //'v' // OSD - current video frame
-						OSD_mode^=OSD_FRAME;
-						force_redraw=1;
+						ui_osd_fn();
 					} else if (key == XK_b ) { //'b' // OSD - black box
-						OSD_mode^=OSD_BOX;
-						force_redraw=1;
+						ui_osd_box();
 					} else if (key == XK_C ) { //'C' // OSD - clear all
-						OSD_mode=0;
-						force_redraw=1;
+						ui_osd_clear();
 					} else if (key == XK_exclam ) { //'Shift-1' //
 						EQMOD("brightness",-8)
 							else { remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key); }

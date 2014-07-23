@@ -191,7 +191,7 @@ void event_loop(void) {
 		if (midi_connected()) newFrame = midi_poll_frame();
 		else
 #endif
-#if (defined HAVE_LTCSMPTE || defined HAVE_LTC)
+#ifdef HAVE_LTC
 		if (ltcjack_connected()) newFrame = ltc_poll_frame();
 		else
 #endif

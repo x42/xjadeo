@@ -196,15 +196,7 @@ static void xjglKeyPress(const unsigned int sym, const char *key) {
 		gl_set_fullscreen(2);
 	}
 	else if (!strcmp(key, "o")) {
-		if (OSD_mode&OSD_OFFF) {
-			OSD_mode&=~OSD_OFFF;
-			OSD_mode|=OSD_OFFS;
-		} else if (OSD_mode&OSD_OFFS) {
-			OSD_mode^=OSD_OFFS;
-		} else {
-			OSD_mode^=OSD_OFFF;
-		}
-		force_redraw=1;
+		ui_osd_offset_cycle();
 	}
 	else if (!strcmp(key, "l")) {
 		want_letterbox=!want_letterbox;
@@ -212,20 +204,16 @@ static void xjglKeyPress(const unsigned int sym, const char *key) {
 		_gl_reexpose = 1;
 	}
 	else if (!strcmp(key, "s")) {
-		OSD_mode^=OSD_SMPTE;
-		force_redraw=1;
+		ui_osd_tc();
 	}
 	else if (!strcmp(key, "v")) {
-		OSD_mode^=OSD_FRAME;
-		force_redraw=1;
+		ui_osd_fn();
 	}
 	else if (!strcmp(key, "b")) {
-		OSD_mode^=OSD_BOX;
-		force_redraw=1;
+		ui_osd_box();
 	}
 	else if (!strcmp(key, "C")) {
-		OSD_mode=0;
-		force_redraw=1;
+		ui_osd_clear();
 	}
 	else if (!strcmp(key, ".")) {
 		XCresize_scale(100);

@@ -75,22 +75,22 @@ extern uint8_t           *buffer;
 extern int               render_fmt;
 
 /* Video File Info */
-extern double 	duration;
-extern double 	framerate;
-extern long	frames;
+extern double duration;
+extern double framerate;
+extern long   frames;
 
 extern AVFormatContext   *pFormatCtx;
 extern int               videoStream;
 
-extern int 	force_redraw; // tell the main event loop that some cfg has changed
+extern int force_redraw; // tell the main event loop that some cfg has changed
 
 /* Option flags and variables */
 extern char *current_file;
-extern long	ts_offset;
-extern char    *smpte_offset;
-extern long	userFrame;
-extern long	dispFrame;
-extern int want_quiet;
+extern long  ts_offset;
+extern char *smpte_offset;
+extern long userFrame;
+extern long dispFrame;
+extern int  want_quiet;
 extern int want_verbose;
 extern int want_letterbox;
 extern int remote_en;
@@ -110,16 +110,16 @@ extern double timescale;
 extern int    wraparound;
 #endif
 
-extern double 		delay;
-extern double 		filefps;
-extern int		videomode;
-extern int 		seekflags;
+extern double delay;
+extern double filefps;
+extern int    videomode;
+extern int    seekflags;
 extern int    interaction_override;
 
 // On screen display
 extern char OSD_fontfile[1024];
 extern char OSD_text[128];
-extern int OSD_mode;
+extern int  OSD_mode;
 
 extern int OSD_fx, OSD_tx, OSD_sx, OSD_fy, OSD_sy, OSD_ty;
 
@@ -412,11 +412,11 @@ void xapi_pseekmode (void *d) {
 void xapi_sseekmode (void *d) {
 	char *mode= (char*)d;
 	if (!strcmp(mode,"key") || atoi(mode)==3)
-		seekflags=SEEK_KEY;
+		ui_seek_key();
 	else if (!strcmp(mode,"any") || atoi(mode)==2)
-		seekflags=SEEK_ANY;
+		ui_seek_any();
 	else if (!strcmp(mode,"continuous") || atoi(mode)==1)
-		seekflags=SEEK_CONTINUOUS;
+		ui_seek_cont();
 	else {
 		remote_printf(422,"invalid argument (1-3 or 'continuous', 'any', 'key')");
 		return;
@@ -498,7 +498,7 @@ void xapi_sfps(void *d) {
 	remote_printf(101,"updatefps=%i",(int) rint(1/delay));
 }
 
-void xapi_sframerate(void *d) {
+static void xapi_sframerate(void *d) {
 	char *off= (char*)d;
 	if (!(atof(off)>0)) {
 		remote_printf(423,"invalid argument (range >0)");
@@ -509,7 +509,7 @@ void xapi_sframerate(void *d) {
 	remote_printf(202, "framerate=%g", framerate);
 }
 
-void xapi_jack_status(void *d) {
+static void xapi_jack_status(void *d) {
 	if (jack_connected())
 		remote_printf(220,"jackclient=%s",jackid);
 	else
@@ -524,19 +524,7 @@ void xapi_ltc_status(void *d) {
 }
 
 void xapi_open_ltc(void *d) {
-#ifdef HAVE_LTC
-#ifdef HAVE_MIDI
-	midi_close();
-#endif
-	close_jack();
-	open_ltcjack((char *) d); // TODO: autoconnect
-	if (ltcjack_connected())
-		remote_printf(100,"opened LTC jack port.");
-	else
-		remote_printf(405,"failed to connect to jack server");
-#else
-	remote_printf(499,"LTC-jack is not available.");
-#endif
+	INT_sync_to_ltc((char *) d, 1);
 }
 
 void xapi_close_ltc(void *d) {
@@ -549,17 +537,7 @@ void xapi_close_ltc(void *d) {
 }
 
 void xapi_open_jack(void *d) {
-#ifdef HAVE_MIDI
-	midi_close();
-#endif
-#ifdef HAVE_LTC
-	close_ltcjack();
-#endif
-	open_jack();
-	if (jack_connected())
-		remote_printf(100,"connected to jack server.");
-	else
-		remote_printf(405,"failed to connect to jack server");
+	INT_sync_to_jack(1);
 }
 
 void xapi_close_jack(void *d) {
@@ -729,6 +707,10 @@ void xapi_smididriver(void *d) {
 }
 
 void xapi_open_midi(void *d) {
+	if (jack_connected()) close_jack();
+#ifdef HAVE_LTC
+	if (ltcjack_connected()) close_ltcjack();
+#endif
 #ifdef HAVE_MIDI
 	char *mp;
 	if (d && strlen(d)>0) mp=d;

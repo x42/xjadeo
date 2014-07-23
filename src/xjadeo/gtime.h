@@ -1,7 +1,11 @@
 #ifndef XJ_GTIME_H
 #define XJ_GTIME_H
 
-#ifdef _WIN32
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#ifdef PLATFORM_WINDOWS
 #if (!defined __uint32_t_defined && !defined _STDINT_H)
 typedef long long int int64_t;
 typedef long long unsigned int uint64_t;

@@ -6,7 +6,7 @@ bin_PROGRAMS=xjadeo xjremote
 xjadeo_SOURCES=main.c ../../aclocal.m4 ../../config.h \
 	xjadeo.c xjadeo.h ffcompat.h \
 	remote.c remote.h mqueue.c xjosc.c \
-	configfile.c \
+	configfile.c common.c \
 	jack.c ltc-jack.c \
 	midi.c freetype.c smpte.c \
 	display.c display.h \

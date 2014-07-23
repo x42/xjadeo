@@ -651,7 +651,7 @@ static void amidi_open(char *port_name) {
 
 	if (amidi) return;
 	if ((err = snd_rawmidi_open(&amidi, NULL, port_name, 0)) < 0) {
-		fprintf(stderr,"cannot open port \"%s\": %s", port_name, snd_strerror(err));
+		fprintf(stderr,"cannot open port \"%s\": %s\n", port_name, snd_strerror(err));
 		return;
 	}
 

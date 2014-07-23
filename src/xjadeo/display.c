@@ -552,6 +552,10 @@ void Xmousepointer (int a) {
 	VO[VOutput].mousepointer(a);
 }
 
+int Xgetletterbox (void) {
+	return want_letterbox;
+}
+
 void Xletterbox (int action) {
 	if (action==2) want_letterbox=!want_letterbox;
 	else want_letterbox = action?1:0;

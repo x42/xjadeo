@@ -31,11 +31,8 @@ void jackt_start();
 void jackt_toggle();
 void jackt_rewind();
 
-int midi_connected(void);
-int jack_connected(void);
-
 extern int loop_flag;
-extern int OSD_mode; // change via keystroke
+extern int OSD_mode;
 extern long ts_offset;
 extern int force_redraw; // tell the main event loop that some cfg has changed
 extern int want_letterbox;
@@ -237,11 +234,11 @@ static void checkMyMenu(void) {
 
   CheckMenuItem (zoomMenu, 6, want_letterbox);
 
-  CheckMenuItem (syncMenu, 1, jack_connected());
-  CheckMenuItem (syncMenu, 4, ltcjack_connected());
-  CheckMenuItem (syncMenu, 5, midi_connected() && !strcmp(midi_driver_name(), "PORTMIDI"));
-  CheckMenuItem (syncMenu, 6, midi_connected() && !strcmp(midi_driver_name(), "JACK-MIDI"));
-  CheckMenuItem (syncMenu, 7, (!jack_connected() && !midi_connected() && !ltcjack_connected()));
+  CheckMenuItem (syncMenu, 1, ui_syncsource() == SYNC_JACK);
+  CheckMenuItem (syncMenu, 4, ui_syncsource() == SYNC_LTC);
+  CheckMenuItem (syncMenu, 5, ui_syncsource() == SYNC_MTC_PORTMIDI);
+  CheckMenuItem (syncMenu, 6, ui_syncsource() == SYNC_MTC_JACK);
+  CheckMenuItem (syncMenu, 7, ui_syncsource() == SYNC_NONE);
 }
 
 // main window setup and painting..
@@ -1443,33 +1440,21 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       want_letterbox = !want_letterbox;
       mac_letterbox_change();
       break;
-    case 'o': { //'o' // OSD - offset in frames
-      if (OSD_mode&OSD_OFFF) {
-              OSD_mode&=~OSD_OFFF;
-              OSD_mode|=OSD_OFFS;
-      } else if (OSD_mode&OSD_OFFS) {
-              OSD_mode^=OSD_OFFS;
-      } else {
-              OSD_mode^=OSD_OFFF;
-      }
-      force_redraw=1;
-    } break;
-    case 's': {
-      OSD_mode^=OSD_SMPTE;
-      force_redraw=1;
-    } break;
-    case 'v': { //'v' // OSD - current video frame
-      OSD_mode^=OSD_FRAME;
-      force_redraw=1;
-    } break;
-    case 'b': { //'b' // OSD - black box
-      OSD_mode^=OSD_BOX;
-      force_redraw=1;
-    } break;
-    case 'C': { //'C' // OSD - clear all
-      OSD_mode=0;
-      force_redraw=1;
-    } break;
+    case 'o':
+      ui_osd_offset_cycle();
+      break;
+    case 's':
+      ui_osd_tc();
+      break;
+    case 'v': //'v' // OSD - current video frame
+      ui_osd_fn();
+      break;
+    case 'b': //'b' // OSD - black box
+      ui_osd_box();
+      break;
+    case 'C': //'C' // OSD - clear all
+      ui_osd_clear();
+      break;
     case '\\':
       XCtimeoffset(0, (unsigned int) charcode);
       break;
@@ -1570,43 +1555,31 @@ OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
       window_resized_mac();
       break;
     case mOSDFrame:
-      OSD_mode^=OSD_FRAME;
-      force_redraw=1;
+      ui_osd_fn();
       break;
     case mOSDSmpte:
-      OSD_mode^=OSD_SMPTE;
-      force_redraw=1;
+      ui_osd_tc();
       break;
     case mOSDOffO:
-      OSD_mode&=~OSD_OFFF;
-      OSD_mode&=~OSD_OFFS;
-      force_redraw=1;
+      ui_osd_offset_none();
       break;
     case mOSDOffS:
-      OSD_mode&=~OSD_OFFF;
-      OSD_mode|=OSD_OFFS;
-      force_redraw=1;
+      ui_osd_offset_tc();
       break;
     case mOSDOffF:
-      OSD_mode&=~OSD_OFFS;
-      OSD_mode|=OSD_OFFF;
-      force_redraw=1;
+      ui_osd_offset_fn();
       break;
     case mOSDBox:
-      OSD_mode^=OSD_BOX;
-      force_redraw=1;
+      ui_osd_box();
     break;
     case mSeekAny:
-      seekflags=SEEK_ANY;
-      force_redraw=1;
+      ui_seek_any();
       break;
     case mSeekKeyFrame:
-      seekflags=SEEK_KEY;
-      force_redraw=1;
+      ui_seek_key();
       break;
     case mSeekContinuous:
-      seekflags=SEEK_CONTINUOUS;
-      force_redraw=1;
+      ui_seek_cont();
       break;
     case mJackPlay:
       if ((interaction_override&OVR_JCONTROL) == 0)
@@ -1620,52 +1593,20 @@ OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
       jackt_stop();
       break;
     case mSyncJack:
-	if (interaction_override&OVR_MENUSYNC) break;
-	open_jack();
-#ifdef HAVE_MIDI
-	if (midi_connected()) midi_close();
-#endif
-#ifdef HAVE_LTC
-	if (ltcjack_connected()) close_ltcjack();
-#endif
+	ui_sync_to_jack();
       break;
     case mSyncLTC:
-	if (interaction_override&OVR_MENUSYNC) break;
-	if (jack_connected()) close_jack();
-#ifdef HAVE_MIDI
-	if (midi_connected()) midi_close();
-#endif
-	open_ltcjack(NULL);
+	ui_sync_to_ltc();
       break;
     case mSyncJackMidi:
+	ui_sync_to_mtc_jack();
+      break;
     case mSyncPortMidi:
-        if (interaction_override&OVR_MENUSYNC) break;
-      {
-	if (jack_connected()) close_jack();
-#ifdef HAVE_LTC
-	if (ltcjack_connected()) close_ltcjack();
-#endif
-#ifdef HAVE_MIDI
-	if (midi_connected()) midi_close();
-        if (acmd->commandID == mSyncPortMidi) {
-          midi_choose_driver("portmidi");
-        } else {
-          midi_choose_driver("jack");
-        }
-        char *mp = "-1";
-	midi_open(mp);
-#endif
-	if (!midi_connected()) {
-          midiAlert();
-        }
-      }
+	ui_sync_to_mtc_portmidi();
+	if (ui_syncsource() != SYNC_MTC_PORTMIDI) { midiAlert(); }
       break;
     case mSyncNone:
-        if (interaction_override&OVR_MENUSYNC) break;
-	if (jack_connected()) close_jack();
-#ifdef HAVE_MIDI
-	if (midi_connected()) midi_close();
-#endif
+      ui_sync_none();
       break;
 #if 1
     case kHICommandNew:

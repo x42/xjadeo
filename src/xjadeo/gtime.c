@@ -20,7 +20,7 @@
 
 #include "gtime.h"
 
-#ifdef _WIN32
+#ifdef PLATFORM_WINDOWS
 
 #include <windows.h>
 
@@ -152,7 +152,7 @@ int64_t xj_get_monotonic_time (void) {
   return ticks * 1000;
 }
 
-#elif defined(__MACH__)
+#elif defined PLATFORM_OSX
 
 #include <mach/mach.h>
 #include <mach/mach_time.h>

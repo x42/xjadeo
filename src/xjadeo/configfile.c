@@ -109,7 +109,6 @@ extern int js_winh;
       rv=1; \
     }
 
-
 #define YES_NO(VAR) \
     if (!strncasecmp(value,"yes",3)){ \
       VAR = 1; rv=1; \
@@ -430,10 +429,10 @@ int saveconfig (const char *fn) {
 	else
 #endif
 #ifdef HAVE_MIDI
-		if (midi_connected()) ss=2;
-		else
+	if (midi_connected()) ss=2;
+	else
 #endif
-			if (jack_connected()) ss=1;
+	if (jack_connected()) ss=1;
 	fprintf(fp, "SYNCSOURCE=%i\n", ss);
 
 	fprintf(fp, "\n## Decoder settings ##\n");

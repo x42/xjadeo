@@ -135,6 +135,7 @@ void Xposition (int x, int y);
 void Xgetpos (int *x, int *y);
 int  Xgetontop (void);
 int  Xgetfullscreen (void);
+int Xgetletterbox (void);
 
 void XCresize_percent (float p);
 void XCresize_aspect (int relscale);
@@ -167,6 +168,43 @@ void avinit (void);
 void override_fps (double fps);
 void init_moviebuffer(void);
 void event_loop(void);
+
+/* common.c */
+void ui_seek_cont ();
+void ui_seek_any ();
+void ui_seek_key ();
+
+void INT_sync_to_jack(int remote_msg);
+void INT_sync_to_ltc(char *port, int remote_msg);
+
+void ui_sync_none ();
+void ui_sync_to_jack ();
+void ui_sync_to_ltc ();
+void ui_sync_to_mtc_jack ();
+void ui_sync_to_mtc_portmidi ();
+void ui_sync_to_mtc_alsaraw ();
+void ui_sync_to_mtc_alsaseq ();
+
+void ui_osd_clear();
+void ui_osd_offset_cycle();
+void ui_osd_offset_tc();
+void ui_osd_offset_fn();
+void ui_osd_offset_none();
+void ui_osd_tc();
+void ui_osd_fn();
+void ui_osd_box();
+
+enum SyncSource {
+	SYNC_JACK,
+	SYNC_LTC,
+	SYNC_MTC_JACK,
+	SYNC_MTC_PORTMIDI,
+	SYNC_MTC_ALSASEQ,
+	SYNC_MTC_ALSARAW,
+	SYNC_NONE
+};
+
+enum SyncSource ui_syncsource();
 
 /* jack.c function prototypes */
 long jack_poll_frame (void);

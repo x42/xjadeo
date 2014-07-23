@@ -253,70 +253,72 @@ static NSMenuItem *syncMTCP; // portmidi
 static NSMenuItem *syncNone;
 
 static void update_sync_menu() {
-	if (jack_connected()) {
-		[syncNone setState:NSOffState];
-		[syncJACK setState:NSOnState];
+	switch(ui_syncsource()) {
+		case SYNC_JACK:
+			[syncNone setState:NSOffState];
+			[syncJACK setState:NSOnState];
 #ifdef HAVE_LTC
-		[syncLTC  setState:NSOffState];
+			[syncLTC  setState:NSOffState];
 #endif
 #ifdef HAVE_JACKMIDI
-		[syncMTCJ setState:NSOffState];
+			[syncMTCJ setState:NSOffState];
 #endif
 #ifdef HAVE_PORTMIDI
-		[syncMTCP setState:NSOffState];
+			[syncMTCP setState:NSOffState];
 #endif
-	}
-	else if (ltcjack_connected()) {
-		[syncNone setState:NSOffState];
-		[syncJACK setState:NSOffState];
+		break;
+		case SYNC_LTC:
+			[syncNone setState:NSOffState];
+			[syncJACK setState:NSOffState];
 #ifdef HAVE_LTC
-		[syncLTC  setState:NSOnState];
+			[syncLTC  setState:NSOnState];
 #endif
 #ifdef HAVE_JACKMIDI
-		[syncMTCJ setState:NSOffState];
+			[syncMTCJ setState:NSOffState];
 #endif
 #ifdef HAVE_PORTMIDI
-		[syncMTCP setState:NSOffState];
+			[syncMTCP setState:NSOffState];
 #endif
-	}
-	else if (midi_connected() && !strcmp(midi_driver_name(), "PORTMIDI")) {
-		[syncNone setState:NSOffState];
-		[syncJACK setState:NSOffState];
+		break;
+		case SYNC_MTC_PORTMIDI:
+			[syncNone setState:NSOffState];
+			[syncJACK setState:NSOffState];
 #ifdef HAVE_LTC
-		[syncLTC  setState:NSOffState];
+			[syncLTC  setState:NSOffState];
 #endif
 #ifdef HAVE_JACKMIDI
-		[syncMTCJ setState:NSOffState];
+			[syncMTCJ setState:NSOffState];
 #endif
 #ifdef HAVE_PORTMIDI
-		[syncMTCP setState:NSOnState];
+			[syncMTCP setState:NSOnState];
 #endif
-	}
-	else if (midi_connected() && !strcmp(midi_driver_name(), "JACK-MIDI")) {
-		[syncNone setState:NSOffState];
-		[syncJACK setState:NSOffState];
+		break;
+		case SYNC_MTC_JACK:
+			[syncNone setState:NSOffState];
+			[syncJACK setState:NSOffState];
 #ifdef HAVE_LTC
-		[syncLTC  setState:NSOffState];
+			[syncLTC  setState:NSOffState];
 #endif
 #ifdef HAVE_JACKMIDI
-		[syncMTCJ setState:NSOnState];
+			[syncMTCJ setState:NSOnState];
 #endif
 #ifdef HAVE_PORTMIDI
-		[syncMTCP setState:NSOffState];
+			[syncMTCP setState:NSOffState];
 #endif
-	}
-	else {
-		[syncNone setState:NSOnState];
-		[syncJACK setState:NSOffState];
+		break;
+		default:
+			[syncNone setState:NSOnState];
+			[syncJACK setState:NSOffState];
 #ifdef HAVE_LTC
-		[syncLTC  setState:NSOffState];
+			[syncLTC  setState:NSOffState];
 #endif
 #ifdef HAVE_JACKMIDI
-		[syncMTCJ setState:NSOffState];
+			[syncMTCJ setState:NSOffState];
 #endif
 #ifdef HAVE_PORTMIDI
-		[syncMTCP setState:NSOffState];
+			[syncMTCP setState:NSOffState];
 #endif
+		break;
 	}
 	if (interaction_override&OVR_MENUSYNC) {
 		[syncNone setEnabled:NO];
@@ -404,71 +406,31 @@ static void update_sync_menu() {
 
 - (void)syncToJack:(id)sender
 {
-	if (interaction_override&OVR_MENUSYNC) return;
-#ifdef HAVE_MIDI
-	if (midi_connected()) midi_close();
-#endif
-#ifdef HAVE_LTC
-	if (ltcjack_connected()) close_ltcjack();
-#endif
-	open_jack();
+	ui_sync_to_jack();
 	update_sync_menu();
 }
 
 - (void)syncToLTC:(id)sender
 {
-	if (interaction_override&OVR_MENUSYNC) return;
-	if (jack_connected()) close_jack();
-#ifdef HAVE_MIDI
-	if (midi_connected()) midi_close();
-#endif
-#ifdef HAVE_LTC
-	if (!ltcjack_connected())
-		open_ltcjack(NULL);
-#endif
+	ui_sync_to_ltc();
 	update_sync_menu();
 }
 
 - (void)syncToMTCJ:(id)sender
 {
-	if (interaction_override&OVR_MENUSYNC) return;
-	if (jack_connected()) close_jack();
-#ifdef HAVE_LTC
-	if (ltcjack_connected()) close_ltcjack();
-#endif
-#ifdef HAVE_MIDI
-	if (midi_connected() && strcmp(midi_driver_name(), "JACK-MIDI")) {
-		midi_close();
-	}
-	if (!midi_connected()) {
-		midi_choose_driver("JACK");
-		midi_open("-1");
-	}
-#endif
+	ui_sync_to_mtc_jack();
 	update_sync_menu();
 }
 
 - (void)syncToMTCP:(id)sender
 {
-	if (interaction_override&OVR_MENUSYNC) return;
-	if (jack_connected()) close_jack();
-#ifdef HAVE_LTC
-	if (ltcjack_connected()) close_ltcjack();
-#endif
-#ifdef HAVE_MIDI
-	if (midi_connected() && strcmp(midi_driver_name(), "PORTMIDI")) {
-		midi_close();
-	}
-	if (!midi_connected()) {
-		midi_choose_driver("PORTMIDI");
-		midi_open("-1");
-	}
-#endif
+	ui_sync_to_mtc_portmidi();
 	update_sync_menu();
 }
 
 - (void)syncToNone:(id)sender
 {
+	ui_sync_none();
 }
 
 @end

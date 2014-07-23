@@ -1,0 +1,211 @@
+/* xjadeo - common access functions
+ *
+ * Copyright (C) 2014 Robin Gareus <robin@gareus.org>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+
+#include "xjadeo.h"
+
+/// here ??
+extern int interaction_override;
+extern int force_redraw;
+extern int seekflags;
+extern int OSD_mode; // change via keystroke
+
+// GUI access
+
+void ui_seek_key () {
+	seekflags = SEEK_KEY;
+	force_redraw = 1;
+}
+
+void ui_seek_any () {
+	seekflags = SEEK_ANY;
+	force_redraw = 1;
+}
+
+void ui_seek_cont () {
+	seekflags = SEEK_CONTINUOUS;
+	force_redraw = 1;
+}
+
+
+void INT_sync_to_jack (int remote_msg) {
+#ifdef HAVE_MIDI
+	if (midi_connected()) midi_close();
+#endif
+#ifdef HAVE_LTC
+	if (ltcjack_connected()) close_ltcjack();
+#endif
+	open_jack();
+	if (remote_msg) {
+		if (jack_connected())
+			remote_printf (100,"connected to jack server.");
+		else
+			remote_printf (405,"failed to connect to jack server");
+	}
+}
+
+void INT_sync_to_ltc (char *port, int remote_msg) {
+	if (jack_connected()) close_jack();
+#ifdef HAVE_MIDI
+	if (midi_connected()) midi_close();
+#endif
+#ifdef HAVE_LTC
+	if (!ltcjack_connected()) {
+		open_ltcjack (port);
+	}
+	if (remote_msg) {
+		if (ltcjack_connected())
+			remote_printf (100,"opened LTC jack port.");
+		else
+			remote_printf (405,"failed to connect to jack server");
+	}
+#else
+	if (remote_msg)
+		remote_printf (499,"LTC-jack is not available.");
+#endif
+}
+
+void ui_sync_none () {
+	if (interaction_override&OVR_MENUSYNC) return;
+	if (jack_connected()) close_jack();
+#ifdef HAVE_MIDI
+	if (midi_connected()) midi_close();
+#endif
+#ifdef HAVE_LTC
+	if (ltcjack_connected()) close_ltcjack();
+#endif
+}
+
+void ui_sync_to_jack () {
+	if (interaction_override&OVR_MENUSYNC) return;
+	INT_sync_to_jack (0);
+}
+
+void ui_sync_to_ltc () {
+	if (interaction_override&OVR_MENUSYNC) return;
+	INT_sync_to_ltc (NULL, 0);
+}
+
+static void ui_sync_to_mtc (const char *driver) {
+	if (interaction_override&OVR_MENUSYNC) return;
+	if (jack_connected()) close_jack();
+#ifdef HAVE_LTC
+	if (ltcjack_connected()) close_ltcjack();
+#endif
+#ifdef HAVE_MIDI
+	if (midi_connected() && strcmp (midi_driver_name(), driver)) {
+		midi_close();
+	}
+	if (!midi_connected()) {
+		midi_choose_driver (driver);
+		midi_open ("-1");
+	}
+#endif
+}
+
+void ui_sync_to_mtc_jack () {
+	ui_sync_to_mtc ("JACK-MIDI");
+}
+void ui_sync_to_mtc_portmidi () {
+	ui_sync_to_mtc ("PORTMIDI");
+}
+void ui_sync_to_mtc_alsaraw () {
+	ui_sync_to_mtc ("ALSA-RAW-MIDI");
+}
+void ui_sync_to_mtc_alsaseq () {
+	ui_sync_to_mtc ("ALSA-Sequencer");
+}
+
+enum SyncSource ui_syncsource() {
+	if (jack_connected()) {
+		return SYNC_JACK;
+	}
+#ifdef HAVE_MIDI
+	else if (ltcjack_connected()) {
+		return SYNC_LTC;
+	}
+#endif
+#ifdef HAVE_MIDI
+	else if (midi_connected() && !strcmp (midi_driver_name(), "PORTMIDI")) {
+		return SYNC_MTC_PORTMIDI;
+	}
+	else if (midi_connected() && !strcmp (midi_driver_name(), "JACK-MIDI")) {
+		return SYNC_MTC_JACK;
+	}
+	else if (midi_connected() && !strcmp (midi_driver_name(), "ALSA-RAW-MIDI")) {
+		return SYNC_MTC_ALSARAW;
+	}
+	else if (midi_connected() && !strcmp (midi_driver_name(), "ALSA-Sequencer")) {
+		return SYNC_MTC_ALSASEQ;
+	}
+#endif
+	else {
+	}
+	return SYNC_NONE;
+}
+
+void ui_osd_clear () {
+	OSD_mode = 0;
+	force_redraw = 1;
+}
+
+void ui_osd_offset_cycle () {
+	if (OSD_mode & OSD_OFFF) {
+		OSD_mode &= ~OSD_OFFF;
+		OSD_mode |= OSD_OFFS;
+	}
+	else if (OSD_mode & OSD_OFFS) {
+		OSD_mode^=OSD_OFFS;
+	} else {
+		OSD_mode^=OSD_OFFF;
+	}
+	force_redraw = 1;
+}
+
+void ui_osd_offset_tc () {
+	OSD_mode &= ~OSD_OFFF;
+	OSD_mode |= OSD_OFFS;
+	force_redraw = 1;
+}
+
+void ui_osd_offset_fn () {
+	OSD_mode &= ~OSD_OFFS;
+	OSD_mode |= OSD_OFFF;
+	force_redraw = 1;
+}
+
+void ui_osd_offset_none () {
+	OSD_mode &= ~OSD_OFFS;
+	OSD_mode &= ~OSD_OFFF;
+	force_redraw = 1;
+}
+
+void ui_osd_tc () {
+	OSD_mode ^= OSD_SMPTE;
+	force_redraw = 1;
+}
+
+void ui_osd_fn () {
+	OSD_mode ^= OSD_FRAME;
+	force_redraw = 1;
+}
+
+void ui_osd_box () {
+	OSD_mode ^= OSD_BOX;
+	force_redraw = 1;
+}
