@@ -15,6 +15,8 @@ extern int start_ontop;
 extern int start_fullscreen;
 extern int want_letterbox;
 extern int remote_en;
+extern int force_redraw;
+extern int interaction_override;
 
 extern char OSD_fontfile[1024];
 extern char OSD_text[128];
@@ -89,7 +91,6 @@ void sdl_letterbox_change (void);
 
 void xj_set_fullscreen (int action);
 void xj_mousepointer (int action);
-int xj_get_eq(char *prop, int *value);
 void xj_set_ontop (int action);
 void xj_position (int x, int y);
 void xj_resize (unsigned int x, unsigned int y);
@@ -98,6 +99,7 @@ void xj_get_window_pos (int *x,  int *y);
 int  xj_get_ontop ();
 int  xj_get_fullscreen ();
 void xj_letterbox();
+int  xj_get_eq(char *prop, int *value);
 
 #endif
 

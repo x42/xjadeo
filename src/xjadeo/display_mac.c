@@ -18,7 +18,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
 #include "xjadeo.h"
@@ -35,9 +35,8 @@ int midi_connected(void);
 int jack_connected(void);
 
 extern int loop_flag;
-extern int VOutput;
 extern int OSD_mode; // change via keystroke
-extern long ts_offset; 
+extern long ts_offset;
 extern int force_redraw; // tell the main event loop that some cfg has changed
 extern int want_letterbox;
 extern int seekflags;
@@ -58,29 +57,29 @@ extern int start_ontop;
 #endif
 
 #define memcpy_pic(d, s, b, h, ds, ss) memcpy_pic2(d, s, b, h, ds, ss, 0)
-static inline void * memcpy_pic2(void * dst, const void * src, 
-                                 int bytesPerLine, int height, 
-                                 int dstStride, int srcStride, int limit2width) 
-{ 
-  int i; 
-  void *retval=dst; 
+static inline void * memcpy_pic2(void * dst, const void * src,
+                                 int bytesPerLine, int height,
+                                 int dstStride, int srcStride, int limit2width)
+{
+  int i;
+  void *retval=dst;
 
-  if(!limit2width && dstStride == srcStride) { 
-    if (srcStride < 0) { 
-      src = (uint8_t*)src + (height-1)*srcStride; 
-      dst = (uint8_t*)dst + (height-1)*dstStride; 
-      srcStride = -srcStride; 
-    } 
-    memcpy(dst, src, srcStride*height); 
-  } else { 
-    for(i=0; i<height; i++) 
-    { 
-      memcpy(dst, src, bytesPerLine); 
-      src = (uint8_t*)src + srcStride; 
-      dst = (uint8_t*)dst + dstStride; 
-    } 
-  } 
-  return retval; 
+  if(!limit2width && dstStride == srcStride) {
+    if (srcStride < 0) {
+      src = (uint8_t*)src + (height-1)*srcStride;
+      dst = (uint8_t*)dst + (height-1)*dstStride;
+      srcStride = -srcStride;
+    }
+    memcpy(dst, src, srcStride*height);
+  } else {
+    for(i=0; i<height; i++)
+    {
+      memcpy(dst, src, bytesPerLine);
+      src = (uint8_t*)src + srcStride;
+      dst = (uint8_t*)dst + dstStride;
+    }
+  }
+  return retval;
 }
 
 
@@ -91,7 +90,7 @@ static inline void * memcpy_pic2(void * dst, const void * src,
 #include <Carbon/Carbon.h>
 #include <QuickTime/QuickTime.h>
 
-#ifdef WORDS_BIGENDIAN           
+#ifdef WORDS_BIGENDIAN
 #define be2me_16(x) (x)
 #define be2me_32(x) (x)
 #define be2me_64(x) (x)
@@ -99,7 +98,7 @@ static inline void * memcpy_pic2(void * dst, const void * src,
 #define le2me_32(x) bswap_32(x)
 #define le2me_64(x) bswap_64(x)
 #else
-#define be2me_16(x) bswap_16(x) 
+#define be2me_16(x) bswap_16(x)
 #define be2me_32(x) bswap_32(x)
 #define be2me_64(x) bswap_64(x)
 #define le2me_16(x) (x)
@@ -129,12 +128,12 @@ static int vo_mac_fs = 0; // we are in fullscreen
 
 ///
 static int mouseHide = 0;
-static int winLevel = 1; // always on top 
+static int winLevel = 1; // always on top
 static Rect imgRect; // size of the original image (unscaled)
 static Rect dstRect; // size of the displayed image (after scaling)
 static Rect winRect; // size of the window containg the displayed image (include padding)
 static Rect oldWinRect; // size of the window containg the displayed image (include padding) when NOT in fullscreen mode
-static Rect oldWinBounds; // last size before entering full-screen 
+static Rect oldWinBounds; // last size before entering full-screen
 
 static Rect deviceRect; // size of the display device
 static int device_width;
@@ -168,13 +167,13 @@ enum // menubar
         mDoubleScreen,
         mFullScreen,
         mKeepAspect, // letterbox
-        mOSDOffset, 
-        mOSDFrame, 
-        mOSDSmpte, 
-        mOSDBox, 
-        mOSDOffO, 
-        mOSDOffS, 
-        mOSDOffF, 
+        mOSDOffset,
+        mOSDFrame,
+        mOSDSmpte,
+        mOSDBox,
+        mOSDOffO,
+        mOSDOffS,
+        mOSDOffF,
         mSyncJack,
         mSyncLTC,
         mSyncJackMidi,
@@ -183,8 +182,8 @@ enum // menubar
         mJackPlay,
         mJackStop,
         mJackRewind,
-        mSeekAny, 
-        mSeekKeyFrame, 
+        mSeekAny,
+        mSeekKeyFrame,
         mSeekContinuous
 };
 
@@ -246,12 +245,12 @@ static void checkMyMenu(void) {
 }
 
 // main window setup and painting..
-static void mac_CreateWindow(uint32_t d_width, uint32_t d_height, WindowAttributes windowAttrs) 
+static void mac_CreateWindow(uint32_t d_width, uint32_t d_height, WindowAttributes windowAttrs)
 {
   CFStringRef    titleKey;
-  CFStringRef    windowTitle; 
+  CFStringRef    windowTitle;
   OSStatus       result;
-  
+
   MenuItemIndex index;
   // FIXME : these may leak memory when re-opening the window.
   CFStringRef   movMenuTitle;
@@ -288,10 +287,10 @@ static void mac_CreateWindow(uint32_t d_width, uint32_t d_height, WindowAttribut
   SetRect(&winRect, 0, 0, d_width, d_height);
   SetRect(&oldWinRect, 0, 0, d_width, d_height);
   SetRect(&dstRect, 0, 0, d_width, d_height);
-  
+
   //Clear Menu Bar
   ClearMenuBar();
-  
+
   //Create Window Menu
   CreateStandardWindowMenu(0, &windMenu);
   InsertMenu(windMenu, 0);
@@ -301,12 +300,12 @@ static void mac_CreateWindow(uint32_t d_width, uint32_t d_height, WindowAttribut
 //DisableMenuCommand(0, kHICommandServices);
 //AEInstallEventHandler(kCoreEventClass, kAEShowPreferences, NewAEEventHandlerUPP(WindowEventHandler), NULL, false);
 #endif
-  
+
 ////Create Movie Menu
   CreateNewMenu (1004, 0, &movMenu);
   movMenuTitle = CFSTR("Movie");
   SetMenuTitleWithCFString(movMenu, movMenuTitle);
-  
+
   AppendMenuItemTextWithCFString(movMenu, CFSTR("Load File"), 0, mOpen, &index);
   AppendMenuItemTextWithCFString(movMenu, NULL, kMenuItemAttrSeparator, 0, &index);
   AppendMenuItemTextWithCFString(movMenu, CFSTR("Seek"), 0, 0, &index);
@@ -331,7 +330,7 @@ static void mac_CreateWindow(uint32_t d_width, uint32_t d_height, WindowAttribut
   seekMenuTitle = CFSTR("Seek");
   SetMenuTitleWithCFString(seekMenu, seekMenuTitle);
   SetMenuItemHierarchicalMenu(movMenu, 3, seekMenu);
-  
+
   AppendMenuItemTextWithCFString(seekMenu, CFSTR("to any frame"), 0, mSeekAny, &index);
   AppendMenuItemTextWithCFString(seekMenu, CFSTR("keyframes only"), 0, mSeekKeyFrame, &index);
   AppendMenuItemTextWithCFString(seekMenu, CFSTR("Continuously"), 0, mSeekContinuous, &index);
@@ -340,8 +339,8 @@ static void mac_CreateWindow(uint32_t d_width, uint32_t d_height, WindowAttribut
   CreateNewMenu (0, 0, &scrnMenu);
   scrnMenuTitle = CFSTR("Screen");
   SetMenuTitleWithCFString(scrnMenu, scrnMenuTitle);
-  AppendMenuItemTextWithCFString(scrnMenu, CFSTR("OSD"), 0, 0, &index); 
-  AppendMenuItemTextWithCFString(scrnMenu, CFSTR("Zoom"), 0, 0, &index); 
+  AppendMenuItemTextWithCFString(scrnMenu, CFSTR("OSD"), 0, 0, &index);
+  AppendMenuItemTextWithCFString(scrnMenu, CFSTR("Zoom"), 0, 0, &index);
 #if 0
   AppendMenuItemTextWithCFString(scrnMenu, CFSTR("Monitor Speed"), 0, 0, &index);
 
@@ -356,7 +355,7 @@ static void mac_CreateWindow(uint32_t d_width, uint32_t d_height, WindowAttribut
 //CheckMenuItem (fpsMenu, 2, (delay==-1));
   AppendMenuItemTextWithCFString(fpsMenu, CFSTR("custom"), 1, 0, &index); //XXX
 #endif
-   
+
   //Create OSD Menu
   CreateNewMenu (0, 0, &osdMenu);
   osdMenuTitle = CFSTR("OSD");
@@ -382,7 +381,7 @@ static void mac_CreateWindow(uint32_t d_width, uint32_t d_height, WindowAttribut
   zoomMenuTitle = CFSTR("Zoom");
   SetMenuTitleWithCFString(zoomMenu, zoomMenuTitle);
   SetMenuItemHierarchicalMenu(scrnMenu, 2, zoomMenu);
-  
+
   AppendMenuItemTextWithCFString(zoomMenu, CFSTR("Half Size"), 0, mHalfScreen, &index);
   AppendMenuItemTextWithCFString(zoomMenu, CFSTR("Normal Size"), 0, mNormalScreen, &index);
   AppendMenuItemTextWithCFString(zoomMenu, CFSTR("Double Size"), 0, mDoubleScreen, &index);
@@ -394,7 +393,7 @@ static void mac_CreateWindow(uint32_t d_width, uint32_t d_height, WindowAttribut
   CreateNewMenu (0, 0, &syncMenu);
   syncMenuTitle = CFSTR("Sync");
   SetMenuTitleWithCFString(syncMenu, syncMenuTitle);
-  
+
   AppendMenuItemTextWithCFString(syncMenu, CFSTR("JACK"), 0, mSyncJack, &index);
   AppendMenuItemTextWithCFString(syncMenu, CFSTR("Jack Transport"), 0, 0, &index);
   AppendMenuItemTextWithCFString(syncMenu, NULL, kMenuItemAttrSeparator, 0, &index);
@@ -408,20 +407,20 @@ static void mac_CreateWindow(uint32_t d_width, uint32_t d_height, WindowAttribut
   jackMenuTitle = CFSTR("Jack Transport");
   SetMenuTitleWithCFString(jackMenu, jackMenuTitle);
   SetMenuItemHierarchicalMenu(syncMenu, 2, jackMenu);
-  
+
   AppendMenuItemTextWithCFString(jackMenu, CFSTR("Play"), 0, mJackPlay, &index);
   AppendMenuItemTextWithCFString(jackMenu, CFSTR("Stop"), 0, mJackStop, &index);
   AppendMenuItemTextWithCFString(jackMenu, CFSTR("Rewind"), 0, mJackRewind, &index);
 
   checkMyMenu();
-  InsertMenu(movMenu, GetMenuID(windMenu)); 
-  InsertMenu(scrnMenu, GetMenuID(windMenu)); 
+  InsertMenu(movMenu, GetMenuID(windMenu));
+  InsertMenu(scrnMenu, GetMenuID(windMenu));
   InsertMenu(syncMenu, GetMenuID(windMenu)); //insert before Window menu
   DrawMenuBar();
-  
+
   //create window
   CreateNewWindow(kDocumentWindowClass, windowAttrs, &winRect, &theWindow);
-  
+
   CreateWindowGroup(0, &winGroup);
   SetWindowGroup(theWindow, winGroup);
 
@@ -431,7 +430,7 @@ static void mac_CreateWindow(uint32_t d_width, uint32_t d_height, WindowAttribut
   result    = SetWindowTitleWithCFString(theWindow, windowTitle);
   CFRelease(titleKey);
   CFRelease(windowTitle);
-  
+
   //Install event handler
   InstallApplicationEventHandler (NewEventHandlerUPP (KeyEventHandler), GetEventTypeCount(key_events), key_events, NULL, NULL);
   InstallApplicationEventHandler (NewEventHandlerUPP (MouseEventHandler), GetEventTypeCount(mouse_events), mouse_events, NULL, NULL);
@@ -454,7 +453,7 @@ static OSStatus midiAlert(void) {
   return(status);
 }
 
-// TODO 
+// TODO
 DialogRef settingsDialog = 0;
 static OSStatus NavOpenSettings(void) {
   OSStatus status = 0;
@@ -491,7 +490,7 @@ static OSStatus OpenDocuments( AEDescList docList ) {
   for( index = 1; index <= count; index++ ) {
     if ( (status = AEGetNthPtr( &docList, index, typeFSRef, NULL, NULL, &fsRef, sizeof(FSRef), NULL) ) == noErr ) {
       unsigned char revpath[PATH_MAX];
-      OSErr error; 
+      OSErr error;
       error = FSRefMakePath(&fsRef, revpath, sizeof(revpath));
       if (error !=noErr) continue;
       if (!(interaction_override&OVR_LOADFILE))
@@ -530,7 +529,7 @@ static OSStatus NavOpenDocument(void) {
   status = NavGetDefaultDialogCreationOptions( &options );
   require_noerr( status, CantGetDefaultOptions );
 
-//if ( navFilterUPP == NULL ) navFilterUPP = NewNavObjectFilterUPP( NavOpenFilterProc );  
+//if ( navFilterUPP == NULL ) navFilterUPP = NewNavObjectFilterUPP( NavOpenFilterProc );
 
   status  = NavCreateChooseFileDialog( &options, NULL, NULL, NULL, navFilterUPP, NULL, &navDialog );
   require_noerr( status, CantCreateDialog );
@@ -543,7 +542,7 @@ static OSStatus NavOpenDocument(void) {
 
   if ( navReply.validRecord )
         status  = OpenDocuments( navReply.selection );
-  else 
+  else
         status  = userCanceledErr;
 
   NavDisposeReply( &navReply );
@@ -560,17 +559,16 @@ CantGetDefaultOptions:
 // osx helpers
 void window_resized_mac() {
   //printf("resized\n");
-  
+
   int padding = 0;
-  
-  
+
   CGRect tmpBounds;
 
   GetPortBounds( GetWindowPort(theWindow), &winRect );
 
   if(want_letterbox) {
     float window_aspect = (float)((float)(winRect.right)/(float)winRect.bottom);
-	
+
     if (window_aspect > movie_aspect ) {
       padding = (winRect.right - winRect.bottom*movie_aspect)/2;
       SetRect(&dstRect, padding, 0, winRect.bottom*movie_aspect+padding, winRect.bottom);
@@ -629,11 +627,11 @@ void window_fullscreen() {
        // CGDisplayHideCursor(kCGDirectMainDisplay);
        // mouseHide = TRUE;
       }
-			
+
       if(fs_res_x != 0 || fs_res_y != 0) {
         BeginFullScreen( &restoreState, deviceHdl, &fs_res_x, &fs_res_y, NULL, NULL, 0);
         //Get Main device info///////////////////////////////////////////////////
-        deviceRect = (*deviceHdl)->gdRect; 
+        deviceRect = (*deviceHdl)->gdRect;
         device_width = deviceRect.right;
         device_height = deviceRect.bottom;
       }
@@ -644,16 +642,16 @@ void window_fullscreen() {
       GetWindowPortBounds(theWindow, &oldWinRect);
       GetWindowBounds(theWindow, kWindowContentRgn, &oldWinBounds);
     }
-		
+
     //go fullscreen
     int panscan_x = 0; // offset window->image
     int panscan_y = 0;
     if(want_letterbox) {
       float window_aspect = (float)((float)(device_width)/(float)device_height);
-	
+
       if (window_aspect > movie_aspect)
         panscan_x = (device_width - device_height*movie_aspect);
-      else 
+      else
         panscan_y = (device_height - device_width/movie_aspect);
     }
     ChangeWindowAttributes(theWindow, kWindowNoShadowAttribute, 0);
@@ -680,7 +678,7 @@ void window_fullscreen() {
     CGDisplayShowCursor(kCGDirectMainDisplay);
     mouseHide = FALSE;
 #endif
-		
+
     //revert window to previous setting
     ChangeWindowAttributes(theWindow, 0, kWindowNoShadowAttribute);
     SizeWindow(theWindow, oldWinRect.right, oldWinRect.bottom,1);
@@ -695,9 +693,9 @@ static OSStatus KeyEventHandler(EventHandlerCallRef nextHandler, EventRef event,
   printf ("key-event\n");
   OSStatus result = noErr;
   UInt32 class = GetEventClass (event);
-  UInt32 kind = GetEventKind (event); 
+  UInt32 kind = GetEventKind (event);
   result = CallNextEventHandler(nextHandler, event);
-  
+
   if(class == kEventClassKeyboard) {
     char macCharCodes;
     UInt32 macKeyCode;
@@ -716,11 +714,11 @@ static OSStatus KeyEventHandler(EventHandlerCallRef nextHandler, EventRef event,
     }
     else if(macKeyModifiers == 256)
     {
-#if 0    
+#if 0
       switch(macCharCodes) {
         case '[': SetWindowAlpha(theWindow, winAlpha-=0.05); break;
-        case ']': SetWindowAlpha(theWindow, winAlpha+=0.05); break;		
-      }	
+        case ']': SetWindowAlpha(theWindow, winAlpha+=0.05); break;
+      }
 #endif
     }
     else
@@ -735,9 +733,9 @@ static OSStatus MouseEventHandler(EventHandlerCallRef nextHandler, EventRef even
   //printf ("mouse-event\n");
   OSStatus result = noErr;
   UInt32 class = GetEventClass (event);
-  UInt32 kind = GetEventKind (event); 
+  UInt32 kind = GetEventKind (event);
   result = CallNextEventHandler(nextHandler, event);
-  
+
   if(class == kEventClassMouse) {
     WindowPtr tmpWin;
     Point mousePos;
@@ -776,16 +774,16 @@ static OSStatus MouseEventHandler(EventHandlerCallRef nextHandler, EventRef even
         EventMouseButton button;
         short part;
         Rect bounds; // XXX bounds is also a static/global
-        
+
         GetWindowPortBounds(theWindow, &bounds);
         GetEventParameter(event, kEventParamMouseButton, typeMouseButton, 0, sizeof(EventMouseButton), 0, &button);
-        
+
         part = FindWindow(mousePos,&tmpWin);
         if(kind == kEventMouseUp)
         {
 #if 0
           if (part != inContent) break;
-          switch(button) { 
+          switch(button) {
             case kEventMouseButtonPrimary:
               mac_put_key(0, '.');
               break;
@@ -810,7 +808,7 @@ static OSStatus MouseEventHandler(EventHandlerCallRef nextHandler, EventRef even
         }
         else if(part == inContent) {
 #if 0
-          switch(button) { 
+          switch(button) {
             case kEventMouseButtonPrimary:
               break;
             case kEventMouseButtonSecondary:
@@ -825,12 +823,12 @@ static OSStatus MouseEventHandler(EventHandlerCallRef nextHandler, EventRef even
           result = eventNotHandledErr;
 #endif
         }
-      }		
+      }
       break;
 
       case kEventMouseDragged:
       break;
-	      
+
       default:result = eventNotHandledErr;break;
     }
   }
@@ -861,7 +859,7 @@ static OSStatus WindowEventHandler(EventHandlerCallRef nextHandler, EventRef eve
 //uint32_t d_width;
 //uint32_t d_height;
   UInt32 class = GetEventClass (event);
-  UInt32 kind = GetEventKind (event); 
+  UInt32 kind = GetEventKind (event);
 
   if(class == kEventClassCommand) {
     //printf("kEventClassCommand\n");
@@ -870,24 +868,24 @@ static OSStatus WindowEventHandler(EventHandlerCallRef nextHandler, EventRef eve
     GetEventParameter(event, kEventParamDirectObject, typeHICommand, NULL, sizeof( HICommand ), NULL, &theHICommand);
     result = mac_menu_cmd(result, &theHICommand);
 
-    // or slider 
+    // or slider
     // if (kind == kEventCommandProcess) {;}
-    
+
   } else if(class == kEventClassWindow) {
     //printf("kEventClassWindow\n");
     WindowRef     window;
     Rect          rectPort = {0,0,0,0};
-    
+
     GetEventParameter(event, kEventParamDirectObject, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
 
     if(window) {
             GetPortBounds(GetWindowPort(window), &rectPort);
-    }   
+    }
     switch (kind) {
       case kEventWindowClose:
         if ((interaction_override&OVR_QUIT_WMG) == 0 || ask_close()) {
           result = CallNextEventHandler(nextHandler, event);
-        } 
+        }
         break;
       case kEventWindowClosed:
         result = CallNextEventHandler(nextHandler, event);
@@ -910,7 +908,7 @@ static OSStatus WindowEventHandler(EventHandlerCallRef nextHandler, EventRef eve
         //result = eventNotHandledErr;
         break;
     }
-  } 
+  }
   return result;
 }
 
@@ -919,7 +917,7 @@ static void flip_page(void) {
   static int lastTime = 0;
 
   if(theWindow == NULL) return;
-//CGContextFlush (context); // XXX not needed 
+//CGContextFlush (context); // XXX not needed
 
 
   switch (image_format) {
@@ -929,7 +927,7 @@ static void flip_page(void) {
       CGContextDrawImage (context, bounds, image);
     }
     break;
-	    
+
     case PIX_FMT_YUV420P:
     case PIX_FMT_YUYV422:
     case PIX_FMT_UYVY422:
@@ -955,25 +953,25 @@ static void flip_page(void) {
 
     //line white
     CGContextSetRGBStrokeColor (context, 0.2, 0.2, 0.2, 0.5);
-    CGContextMoveToPoint( context, winRect.right-1, 1); CGContextAddLineToPoint( context, winRect.right-1, 1);	
+    CGContextMoveToPoint( context, winRect.right-1, 1); CGContextAddLineToPoint( context, winRect.right-1, 1);
     CGContextMoveToPoint( context, winRect.right-1, 5); CGContextAddLineToPoint( context, winRect.right-5, 1);
     CGContextMoveToPoint( context, winRect.right-1, 9); CGContextAddLineToPoint( context, winRect.right-9, 1);
     CGContextStrokePath( context );
 
     //line gray
     CGContextSetRGBStrokeColor (context, 0.4, 0.4, 0.4, 0.5);
-    CGContextMoveToPoint( context, winRect.right-1, 2); CGContextAddLineToPoint( context, winRect.right-2, 1);	
+    CGContextMoveToPoint( context, winRect.right-1, 2); CGContextAddLineToPoint( context, winRect.right-2, 1);
     CGContextMoveToPoint( context, winRect.right-1, 6); CGContextAddLineToPoint( context, winRect.right-6, 1);
     CGContextMoveToPoint( context, winRect.right-1, 10); CGContextAddLineToPoint( context, winRect.right-10, 1);
     CGContextStrokePath( context );
 
     //line black
     CGContextSetRGBStrokeColor (context, 0.6, 0.6, 0.6, 0.5);
-    CGContextMoveToPoint( context, winRect.right-1, 3); CGContextAddLineToPoint( context, winRect.right-3, 1);	
+    CGContextMoveToPoint( context, winRect.right-1, 3); CGContextAddLineToPoint( context, winRect.right-3, 1);
     CGContextMoveToPoint( context, winRect.right-1, 7); CGContextAddLineToPoint( context, winRect.right-7, 1);
     CGContextMoveToPoint( context, winRect.right-1, 11); CGContextAddLineToPoint( context, winRect.right-11, 1);
     CGContextStrokePath( context );
-    
+
     //CGContextRestoreGState( context );
     CGContextFlush (context);
 }
@@ -983,7 +981,7 @@ static void flip_page(void) {
 	if(vo_mac_fs && !mouseHide) {
 		int curTime = TickCount()/60;
 		static int lastTime = 0;
-		
+
 		if( ((curTime - lastTime) >= 5) || (lastTime == 0) )
 		{
 			CGDisplayHideCursor(kCGDirectMainDisplay);
@@ -1010,7 +1008,7 @@ static int draw_frame(uint8_t *src) {
     case PIX_FMT_RGBA32:
       memcpy(image_data,src,image_size);
       return 0;
-            
+
     case PIX_FMT_YUV420P:
     case PIX_FMT_YUYV422:
     case PIX_FMT_UYVY422:
@@ -1019,9 +1017,9 @@ static int draw_frame(uint8_t *src) {
       stride_memcpy(yuvbuf, src+(xoffset*2),
           movie_width*2,movie_height, movie_width*2, movie_width*4);
 }
-#else 
-      memcpy_pic(((char*)yuvbuf), src, 
-      imgRect.right * 2, imgRect.bottom, 
+#else
+      memcpy_pic(((char*)yuvbuf), src,
+      imgRect.right * 2, imgRect.bottom,
       imgRect.right * 2, imgRect.right * 2);
 #endif
       return 0;
@@ -1035,7 +1033,7 @@ static int draw_frame(uint8_t *src) {
 
 int open_window_mac (void) {
   uint32_t width   = movie_width;
-  uint32_t height  = movie_height; 
+  uint32_t height  = movie_height;
 
   uint32_t d_height= ffctv_height;
   uint32_t d_width = ffctv_width;
@@ -1059,15 +1057,15 @@ int open_window_mac (void) {
       break;
     }
   }
-  
+
   deviceRect = (*deviceHdl)->gdRect;
   device_width = deviceRect.right-deviceRect.left;
   device_height = deviceRect.bottom-deviceRect.top;
-  
+
   //misc setup/////////////////////////////////////////////////////
   SetRect(&imgRect, 0, 0, width, height);
 
-  switch (image_format) 
+  switch (image_format)
   {
     case PIX_FMT_RGBA32:
       image_depth = 32;
@@ -1083,7 +1081,7 @@ int open_window_mac (void) {
   }
   image_size = ((imgRect.right*imgRect.bottom*image_depth)+7)/8;
   vo_fs = start_fullscreen;
-  
+
   if(image_data) free(image_data);
   image_data = malloc(image_size);
 
@@ -1094,7 +1092,7 @@ int open_window_mac (void) {
                 | kWindowAsyncDragAttribute
                 | kWindowLiveResizeAttribute;
   windowAttrs &= (~kWindowResizableAttribute);
-				  
+
   if (theWindow == NULL) {
     mac_CreateWindow(d_width, d_height, windowAttrs);
     if (theWindow == NULL) {
@@ -1122,15 +1120,15 @@ int open_window_mac (void) {
     SizeWindow (theWindow, d_width, d_height, 1);
 #endif
   }
-  
+
   switch (image_format) {
     case PIX_FMT_RGB24:
     case PIX_FMT_RGBA32:
     {
       CreateCGContextForPort (GetWindowPort (theWindow), &context);
-      
+
       dataProviderRef = CGDataProviderCreateWithData (0, image_data, imgRect.right * imgRect.bottom * 4, 0);
-      
+
       image = CGImageCreate   (imgRect.right,
                                imgRect.bottom,
                                8,
@@ -1148,7 +1146,7 @@ int open_window_mac (void) {
       SetIdentityMatrix(&matrix);
       if ((d_width != width) || (d_height != height)) {
         ScaleMatrix(&matrix, FixDiv(Long2Fix(d_width),Long2Fix(width)), FixDiv(Long2Fix(d_height),Long2Fix(height)), 0, 0);
-      }		
+      }
 
       yuv_qt_stuff.desc = (ImageDescriptionHandle)NewHandleClear( sizeof(ImageDescription) );
 
@@ -1196,7 +1194,7 @@ int open_window_mac (void) {
       if (qterr) {
         fprintf(stderr, "mac error: AddImageDescriptionExtension [colr] (%d)\n", qterr);
       }
-		  
+
       qterr = AddImageDescriptionExtension(yuv_qt_stuff.desc, yuv_qt_stuff.extension_fiel, kFieldInfoImageDescriptionExtension);
       if (qterr)
       {
@@ -1260,7 +1258,7 @@ int open_window_mac (void) {
                 GetWindowPort(theWindow),
                 NULL,
                 NULL,
-                ((d_width != width) || (d_height != height)) ? 
+                ((d_width != width) || (d_height != height)) ?
                 &matrix : NULL,
                 srcCopy,
                 NULL,
@@ -1332,12 +1330,12 @@ void resize_mac (unsigned int x, unsigned int y) {
   window_resized_mac();
 }
 
-void getsize_mac (unsigned int *x, unsigned int *y) { 
-  static Rect rect; 
+void getsize_mac (unsigned int *x, unsigned int *y) {
+  static Rect rect;
   GetWindowPortBounds(theWindow, &rect);
   //GetPortBounds( GetWindowPort(theWindow), &rect );
   //GetWindowBounds(theWindow, kWindowContentRgn, &rect);
-  if(x)*x=rect.right; if(y)*y=rect.bottom; 
+  if(x)*x=rect.right; if(y)*y=rect.bottom;
   printf("getsize %i %i\n", *x, *y);
 }
 
@@ -1346,11 +1344,11 @@ void position_mac (int x, int y) {
   MoveWindow(theWindow, x, y, 1);
 }
 
-void getpos_mac (int *x, int *y) { 
-  static Rect rect; 
+void getpos_mac (int *x, int *y) {
+  static Rect rect;
   //GetWindowPortBounds(theWindow, &rect); // OSX < 10.4/5 ?!
   GetWindowBounds(theWindow, kWindowContentRgn, &rect); // OSX 10.6
-  if(x)*x=rect.left; if(y)*y=rect.top; 
+  if(x)*x=rect.left; if(y)*y=rect.top;
   printf("get window pos %i %i\n", *x, *y);
 }
 
@@ -1395,8 +1393,8 @@ void render_mac (uint8_t *mybuffer) {
   draw_frame(mybuffer);
 #elif 0 // testing
   size_t Ylen= movie_width * movie_height;
-  size_t UVlen= movie_width/2 * movie_height/2; 
-  memcpy(yuvbuf,mybuffer,Ylen+UVlen+UVlen); 
+  size_t UVlen= movie_width/2 * movie_height/2;
+  memcpy(yuvbuf,mybuffer,Ylen+UVlen+UVlen);
 #else /* http://www.fourcc.org/indexyuv.htm */
   uint8_t *Yptr=mybuffer;
   uint8_t *Uptr=Yptr + Ylen;
@@ -1441,7 +1439,7 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
     case 'q': if ((interaction_override&OVR_QUIT_KEY) == 0) loop_flag=0; return;
     case 'a': ontop_mac(winLevel==2?0:1); break;
     case 'f': fullscreen_mac(!vo_fs); break;
-    case 'l':  
+    case 'l':
       want_letterbox = !want_letterbox;
       mac_letterbox_change();
       break;
@@ -1456,12 +1454,12 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       }
       force_redraw=1;
     } break;
-    case 's': { 
+    case 's': {
       OSD_mode^=OSD_SMPTE;
       force_redraw=1;
     } break;
     case 'v': { //'v' // OSD - current video frame
-      OSD_mode^=OSD_FRAME; 
+      OSD_mode^=OSD_FRAME;
       force_redraw=1;
     } break;
     case 'b': { //'b' // OSD - black box
@@ -1469,98 +1467,44 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       force_redraw=1;
     } break;
     case 'C': { //'C' // OSD - clear all
-      OSD_mode=0; 
+      OSD_mode=0;
       force_redraw=1;
     } break;
-    case '\\': {
-      if ((interaction_override&OVR_AVOFFSET) != 0 ) {
-        remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) charcode);
-        break;
-      }
-      ts_offset = 0;
-      force_redraw=1;
-      update_smptestring();
-    } break;
-    case '+': {
-      if ((interaction_override&OVR_AVOFFSET) != 0 ) {
-        remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) charcode);
-        break;
-      }
-      ts_offset++;
-      force_redraw=1;
-      update_smptestring();
-    } break;
-    case '-': {
-      if ((interaction_override&OVR_AVOFFSET) != 0 ) {
-        remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) charcode);
-        break;
-      }
-      ts_offset--;
-      force_redraw=1;
-      update_smptestring();
-    } break;
-    case '{': {
-      if ((interaction_override&OVR_AVOFFSET) != 0 ) {
-        remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) charcode);
-        break;
-      }
-      if (framerate > 0) {
-        ts_offset-= framerate *60;
-      } else {
-        ts_offset-= 25*60;
-      }
-      force_redraw=1;
-      update_smptestring();
-    } break;
-    case '}': {
-      if ((interaction_override&OVR_AVOFFSET) != 0 ) {
-        remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) charcode);
-        break;
-      }
-      if (framerate > 0) {
-        ts_offset+= framerate *60;
-      } else {
-        ts_offset+= 25*60;
-      }
-      force_redraw=1;
-      update_smptestring();
-    } break;
+    case '\\':
+      XCtimeoffset(0, (unsigned int) charcode);
+      break;
+    case '+':
+      XCtimeoffset(1, (unsigned int) charcode);
+      break;
+    case '-':
+      XCtimeoffset(-1, (unsigned int) charcode);
+      break;
+    case '{':
+      XCtimeoffset(-2, (unsigned int) charcode);
+      break;
+    case '}':
+      XCtimeoffset(2, (unsigned int) charcode);
+      break;
     case 'm': mousepointer_mac(2); break;
-    case '.': { //'.' // resize 100%
-      resize_mac(ffctv_width, ffctv_height);
-    } break;
-    case ',': { //',' // resize to aspect ratio
-      unsigned int my_Width,my_Height;
-      getsize_mac(&my_Width,&my_Height);
-      if( movie_aspect < ((float)my_Width/(float)my_Height) )
-        my_Width=floor((float)my_Height * movie_aspect);
-      else
-        my_Height=floor((float)my_Width / movie_aspect);
-      resize_mac(my_Width, my_Height);
-    } break;
-    case '<': { //'<' // resize *.83
-      unsigned int my_Width,my_Height;
-      getsize_mac(&my_Width,&my_Height);
-      float step=0.2*my_Height;
-      my_Width-=floor(step*movie_aspect);
-      my_Height-=step;
-      resize_mac(my_Width, my_Height);
-    } break;
-    case '>': { //'>' // resize *1.2
-      unsigned int my_Width,my_Height;
-      getsize_mac(&my_Width,&my_Height);
-      float step=0.2*my_Height;
-      my_Width+=floor(step*movie_aspect);
-      my_Height+=step;
-      resize_mac(my_Width, my_Height);
-    } break;
+    case '.': //'.' // resize 100%
+      XCresize_percent(100);
+      break;
+    case ',': //',' // resize to aspect ratio
+      XCresize_aspect(0);
+      break;
+    case '<': //'<' // resize *.83
+      XCresize_scale(-1);
+      break;
+    case '>': //'>' // resize *1.2
+      XCresize_scale(1);
+      break;
 #ifdef CROPIMG
-    case '[': { 
+    case '[': {
       xoffset-=2;
       if (xoffset<0) xoffset=0;
       force_redraw=1;
     } break;
-    case ']': { 
+    case ']': {
       xoffset+=2;
       if (xoffset>movie_width) xoffset=movie_width;
       force_redraw=1;
@@ -1574,7 +1518,7 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       if ((interaction_override&OVR_JCONTROL) == 0) jackt_toggle();
       remote_notify(NTY_KEYBOARD, 310, "keypress=%d # space", (unsigned int) 0x0020);
       break;
-    default: 
+    default:
       remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) charcode);
       //printf("yet unhandled keyboard event: '%c' 0x%x\n",c,c);
       break;
@@ -1626,7 +1570,7 @@ OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
       window_resized_mac();
       break;
     case mOSDFrame:
-      OSD_mode^=OSD_FRAME; 
+      OSD_mode^=OSD_FRAME;
       force_redraw=1;
       break;
     case mOSDSmpte:
@@ -1713,7 +1657,7 @@ OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
 #endif
 	if (!midi_connected()) {
           midiAlert();
-        } 
+        }
       }
       break;
     case mSyncNone:

@@ -15,17 +15,17 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
 #include "xjadeo.h"
 #include "display.h"
 
 #define IMC // cache imlib2 image
-#undef  IM_CUSTOM_COLORTABLE 
+#undef  IM_CUSTOM_COLORTABLE
 
 #ifdef CROPIMG
-	int xoffset = 0;
+int xoffset = 0;
 #endif
 
 void jackt_toggle();
@@ -36,60 +36,26 @@ void jackt_rewind();
 #include <X11/xpm.h>
 #include "icons/xjadeo-color.xpm"
 
-Display *xj_dpy = NULL;
-Window	xj_rwin, xj_win;
-int			xj_screen; 
-GC      xj_gc;
-Atom    xj_del_atom; 
-int			xj_ontop = 0;  
-int			xj_fullscreen = 0;  
-int			xj_mouse = 0; 
+extern const  vidout VO[];
+extern int    OSD_mode; // change via keystroke
+extern long   ts_offset;
+extern double framerate;
 
-int     xj_dwidth, xj_dheight; // cache window size for rendering currently only Xv
-int			xj_box[4]; // letterbox site - currently only Xv & imlib2
-extern int 	force_redraw; // tell the main event loop that some cfg has changed
-extern int 	interaction_override; // disable some options.
+static Display *xj_dpy = NULL;
+static Window   xj_rwin, xj_win;
+static int      xj_screen;
+static GC       xj_gc;
+static Atom     xj_del_atom;
+static int      xj_ontop = 0;
+static int      xj_fullscreen = 0;
+static int      xj_mouse = 0;
+
+static int      xj_dwidth, xj_dheight; // cache window size for rendering currently only Xv
+static int      xj_box[4]; // letterbox site - currently only Xv & imlib2
 
 /*******************************************************************************
- * common X11 code 
+ * common X11 code
  */
-
-/* blatantly ripped off mplayer's libvo/x11_common.c - THX. */
-
-#if 0 // DETECT NET_WM
-
-#define NET_WM_STATE_TEST(ARGX,ARGY) { \
-	Atom type= XInternAtom(xj_dpy, ARGX,True);\
-	if (type!=None && atom == type) { \
-		if (!want_quiet) fprintf(stderr,"[x11] Detected wm supports " #ARGX " state.\n" );\
-		return ARGY; } }
-
-static int net_wm_support_state_test(Atom atom) {
-	NET_WM_STATE_TEST("_NET_WM_STATE_FULLSCREEN",1);
-	NET_WM_STATE_TEST("_NET_WM_STATE_ABOVE",2);
-	NET_WM_STATE_TEST("_NET_WM_STATE_STAYS_ON_TOP",4);
-	/* printf("DEBUG atom:%s\n", XGetAtomName(xj_dpy,atom)); */
-	return 0;
-}
-
-void check_wm_atoms(void) {
-	Atom *args;
-	int i, format;
-	int wm=0;
-	unsigned long nitems, bytesafter;
-	Atom type = XInternAtom(xj_dpy, "_NET_SUPPORTED",0);
-	/* if ((args = XListProperties(xj_dpy,xj_win, &nitems))) { */
-	if (Success == XGetWindowProperty(xj_dpy, xj_rwin, type,
-		0, 16384, False, AnyPropertyType,
-		&type, &format, &nitems, &bytesafter, (unsigned char **) &args) && nitems > 0) {
-		if (!want_quiet) fprintf(stderr,"[x11] Detected wm supports NetWM.\n");
-		for (i = 0; i < nitems; i++) wm |= net_wm_support_state_test(args[i]);
-	}
-	XFree(args);
-}
-#else
-void check_wm_atoms(void) { ; }
-#endif
 
 static void net_wm_set_property(char *atom, int state) {
 	XEvent xev;
@@ -112,15 +78,15 @@ static void net_wm_set_property(char *atom, int state) {
 	xev.xclient.data.l[0] = set;
 	xev.xclient.data.l[1] = property;
 	xev.xclient.data.l[2] = 0;
-	
+
 	if (!XSendEvent(xj_dpy, DefaultRootWindow(xj_dpy), False,
 				SubstructureRedirectMask|SubstructureNotifyMask, &xev))
 	{
-			fprintf(stderr,"error changing X11 property\n");
+		fprintf(stderr,"error changing X11 property\n");
 	}
 }
 
-void xj_set_hints (void) {
+static void xj_set_hints (void) {
 	XTextProperty	x_wname, x_iname;
 	XSizeHints	hints;
 	XWMHints	wmhints;
@@ -149,8 +115,7 @@ void xj_set_hints (void) {
 void xj_set_ontop (int action) {
 	if (action==2) xj_ontop^=1;
 	else xj_ontop=action;
-	net_wm_set_property("_NET_WM_STATE_ABOVE", action); 
-//	net_wm_set_property("_NET_WM_STATE_STAYS_ON_TOP", action);
+	net_wm_set_property("_NET_WM_STATE_ABOVE", action);
 }
 
 int xj_get_ontop () {
@@ -167,26 +132,23 @@ int xj_get_fullscreen () {
 	return (xj_fullscreen);
 }
 
-/* also from mplayer's libvo/x11_common.c - thanks GPL !*/
-void xj_hidecursor (void) {
+static void xj_hidecursor (void) {
 	Cursor no_ptr;
 	Pixmap bm_no;
 	XColor black, dummy;
-	Colormap colormap;
-	static char bm_no_data[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+	const char bm_no_data[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+	Colormap colormap = DefaultColormap (xj_dpy, xj_screen);
 
-	colormap = DefaultColormap(xj_dpy, xj_screen);
-	if (!XAllocNamedColor(xj_dpy, colormap, "black", &black, &dummy) ) return; 
-	bm_no = XCreateBitmapFromData(xj_dpy, xj_win, bm_no_data, 8, 8);
-	no_ptr = XCreatePixmapCursor(xj_dpy, bm_no, bm_no, &black, &black, 0, 0);
-	XDefineCursor(xj_dpy, xj_win, no_ptr);
-	XFreeCursor(xj_dpy, no_ptr);
+	if (!XAllocNamedColor (xj_dpy, colormap, "black", &black, &dummy)) return;
+	bm_no = XCreateBitmapFromData (xj_dpy, xj_win, bm_no_data, 8, 8);
+	no_ptr = XCreatePixmapCursor (xj_dpy, bm_no, bm_no, &black, &black, 0, 0);
+	XDefineCursor (xj_dpy, xj_win, no_ptr);
+	XFreeCursor (xj_dpy, no_ptr);
 	if (bm_no != None) XFreePixmap(xj_dpy, bm_no);
-	XFreeColors(xj_dpy,colormap,&black.pixel,1,0);
+	XFreeColors (xj_dpy, colormap, &black.pixel, 1, 0);
 }
 
-
-void xj_showcursor (void) {
+static void xj_showcursor (void) {
 	XDefineCursor(xj_dpy,xj_win, 0);
 }
 
@@ -219,15 +181,15 @@ void xj_get_window_size (unsigned int *my_Width, unsigned int *my_Height) {
 	XGetGeometry(xj_dpy, xj_win, &dummy_w, &dummyX,&dummyY,my_Width,my_Height,&dummy_u0,&dummy_u1);
 }
 
-void xj_resize (unsigned int x, unsigned int y) { 
+void xj_resize (unsigned int x, unsigned int y) {
 	XResizeWindow(xj_dpy, xj_win, x, y);
 }
 
-void xj_position (int x, int y) { 
+void xj_position (int x, int y) {
 	XMoveWindow(xj_dpy, xj_win,x,y);
 }
 
-void xj_letterbox() {
+void xj_letterbox () {
 	if (!want_letterbox) { /* scale */
 		xj_box[0]=xj_box[1]=0;
 		xj_box[2]=xj_dwidth;
@@ -248,76 +210,50 @@ void xj_letterbox() {
 	force_redraw=1;
 }
 
-/*
-void set_x11_icon_name(unsigned char *icon) {
-	XTextProperty text_prop;
-	text_prop.value = icon;
-	text_prop.nitems = strlen((char*)icon);
-	text_prop.encoding = XA_STRING;
-	text_prop.format = 8;
-	XSetWMIconName(xj_dpy, xj_win, &text_prop);
-	XFlush(xj_dpy);
-}
-*/
-
-/*******************************************************************************
- * X event callback handler
- */
 #define EQCLAMP(var) if((var)<-999) { var=-1000;} if((var)>999) { var=1000;}
 #define EQMOD(PROP,STEP) if(!xj_get_eq(PROP,&value)){value+=(STEP); EQCLAMP(value); xj_set_eq(PROP,value); force_redraw=1;}
 
-// EQ prototypes 
+// EQ prototypes
 #ifdef HAVE_LIBXV
-int xv_set_eq(char *name, int value);
-int xv_get_eq(char *name, int *value);
+static int xv_set_eq(char *name, int value);
+static int xv_get_eq(char *name, int *value);
 #endif
 #ifdef HAVE_IMLIB2
-int im2_get_eq(char *name, int *value);
-int im2_set_eq(char *name, int value);
+static int im2_get_eq(char *name, int *value);
+static int im2_set_eq(char *name, int value);
 #endif
 
-extern const vidout VO[];
-extern int VOutput;
-extern int OSD_mode; // change via keystroke
-extern long ts_offset; 
-extern double framerate;
-
-inline void xj_render () { 
-	/* this is the only reference to the global buffer..
-	 * buffer = mybuffer (so far no shared mem or sth) */
-	VO[VOutput].render(buffer); 
+static inline void xj_render () {
+	VO[getvidmode()].render(buffer);
 }
 
 int xj_get_eq(char *prop, int *value) {
 #ifdef COLOREQ
 # ifdef HAVE_LIBXV
-	if (VOutput == 1) return (xv_get_eq(prop,value));
+	if (getvidmode() == 2) return (xv_get_eq(prop,value));
 # endif
 # ifdef HAVE_IMLIB2
-	if (VOutput == 4) return (im2_get_eq(prop,value));
+	if (getvidmode() == 4) return (im2_get_eq(prop,value));
 # endif
 #endif
 	if (value) *value=0;
 	return (1); // error
 }
 
-void xj_set_eq (char *prop, int value) { 
+static void xj_set_eq (char *prop, int value) {
 #ifdef COLOREQ
-# ifdef HAVE_LIBXV 
-	if (VOutput == 1) xv_set_eq(prop,value);
+# ifdef HAVE_LIBXV
+	if (getvidmode() == 2) xv_set_eq(prop,value);
 # endif
 # ifdef HAVE_IMLIB2
-	if (VOutput == 4) im2_set_eq(prop,value);
+	if (getvidmode() == 4) im2_set_eq(prop,value);
 # endif
 #endif
 }
 
-
-void xj_handle_X_events (void) {
+static void xj_handle_X_events (void) {
 	XEvent event;
 	int value=0;
-//	XSynchronize(xj_dpy,False );
-//	XLockDisplay(xj_dpy);
 	while(XPending(xj_dpy)) {
 		XNextEvent(xj_dpy, &event);
 #ifdef XDLG
@@ -331,26 +267,14 @@ void xj_handle_X_events (void) {
 		}
 		switch (event.type) {
 			case Expose:
-			// TODO: update only rect (ev.xexpose.x, ev.xexpose.y, ev.xexpose.width, ev.xexpose.height)
 				xj_render();
 				break;
 			case ClientMessage:
 				if (event.xclient.data.l[0] == xj_del_atom) {
-					//fprintf(stdout, "Window destoyed...\n");
 					if ((interaction_override&OVR_QUIT_WMG) == 0) loop_flag=0;
 				}
-#if 0
-				else if (event.xclient.data.l[0] == xj_a_TakeFocus)  {
-					fprintf(stdout, "take X focus!\n");
-				}
-#endif
-#if 0
-				else {
-					fprintf(stdout, "unhandled X-client event: %ld\n",(long) event.xclient.message_type);
-				}
-#endif
 				break;
-			case ConfigureNotify: // from XV only 
+			case ConfigureNotify:
 				{
 					unsigned int my_Width,my_Height;
 					xj_get_window_size(&my_Width,&my_Height);
@@ -358,31 +282,13 @@ void xj_handle_X_events (void) {
 					xj_dheight= my_Height;
 					xj_letterbox();
 				}
-				if (VOutput == 1) // only XV
+				if (getvidmode() == 2) // only XV
 					xj_render();
 				break;
-#if 0
-			case VisibilityNotify:
-				if (event.xvisibility.state == VisibilityUnobscured) {
-			//		fprintf(stdout, "VisibilityUnobscured!\n");
-					loop_run=1;
-				}
-				else if (event.xvisibility.state == VisibilityPartiallyObscured) {
-			//		fprintf(stdout, "Visibility Partly Unobscured!\n");
-					loop_run=1;
-				}
-				else {
-					loop_run=0;
-			//		fprintf(stdout, "Visibility Hidden!\n");
-				}
-				break;
-#endif
-			case MapNotify: 
-			//	fprintf(stdout, "Window (re)mapped - enable Video.\n");
+			case MapNotify:
 				loop_run=1;
 				break;
-			case UnmapNotify: 
-			//	fprintf(stdout, "Window unmapped/minimized - disabled Video.\n");
+			case UnmapNotify:
 				loop_run=0;
 				break;
 			case ButtonPress:
@@ -395,37 +301,24 @@ void xj_handle_X_events (void) {
 							);
 				} else
 #endif
-				if (event.xbutton.button == 1) {
-					if ((interaction_override&OVR_MOUSEBTN) == 0)
-					  xj_resize(ffctv_width, ffctv_height);
-				} else {
-					const float asp_src = movie_aspect ? movie_aspect : (float)movie_width/(float)movie_height;
-					unsigned int my_Width,my_Height;
-					xj_get_window_size(&my_Width,&my_Height);
-
-
-					if (event.xbutton.button == 5 && my_Height > 32 && my_Width > 32)  {
-						float step=sqrt((float)my_Height);
-						my_Width-=floor(step*asp_src);
-						my_Height-=step;
+					if ((interaction_override&OVR_MOUSEBTN) == 0) {
+						switch (event.xbutton.button) {
+							case 1:
+								XCresize_percent(100);
+								break;
+							case 5:
+								XCresize_aspect(-1);
+								break;
+							case 4:
+								XCresize_aspect(1);
+								break;
+							default:
+								XCresize_aspect(0);
+								break;
+						}
+						if (getvidmode() == 2) // only XV
+							xj_render();
 					}
-					if (event.xbutton.button == 4) {
-						float step=sqrt((float)my_Height);
-						my_Width+=floor(step*asp_src);
-						my_Height+=step;
-					}
-
-					// resize to match movie aspect ratio
-					if( asp_src < ((float)my_Width/(float)my_Height) )
-						my_Width=floor((float)my_Height * asp_src);
-					else	my_Height=floor((float)my_Width / asp_src);
-
-					xj_resize(my_Width, my_Height);
-				}
-//				fprintf(stdout, "Button %i release event.\n", event.xbutton.button);
-
-				if (VOutput == 1) // only XV
-					xj_render();
 				break;
 			case KeyPress:
 				{
@@ -443,7 +336,7 @@ void xj_handle_X_events (void) {
 							remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
 						}
 					}
-					else if   (key == XK_q ) {// 'q'
+					else if   (key == XK_q ) { // 'q'
 						if ((interaction_override&OVR_QUIT_KEY) == 0) {
 							loop_flag=0;
 						} else {
@@ -456,7 +349,7 @@ void xj_handle_X_events (void) {
 						xj_set_fullscreen(xj_fullscreen^=1);
 					else if   (key == XK_e ) {//'e' // toggle OSD EQ config
 						OSD_mode^=OSD_EQ;
-						if (VOutput!=1 && VOutput!=4) OSD_mode&=~OSD_EQ; // disable but for Xv&imlib2
+						if (getvidmode() != 2 && getvidmode() != 4) OSD_mode&=~OSD_EQ; // disable but for Xv&imlib2
 						force_redraw=1;
 					} else if   (key == XK_o ) { //'o' // OSD - offset in frames
 						if (OSD_mode&OSD_OFFF) {
@@ -526,7 +419,7 @@ void xj_handle_X_events (void) {
 						EQMOD("hue",+5)
 							else { remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key); }
 					} else if (key == XK_E ) { //'E' //
-						if (VOutput==1)
+						if (getvidmode() == 2)
 							xj_set_eq("contrast",-500); // xvinfo default:64 (0..255)
 						else
 							xj_set_eq("contrast",0);
@@ -536,80 +429,23 @@ void xj_handle_X_events (void) {
 						xj_set_eq("gamma",0);
 						force_redraw=1;
 					} else if (key == XK_period ) { //'.' // resize 100%
-						xj_resize(ffctv_width, ffctv_height);
+						XCresize_percent(100);
 					} else if (key == XK_comma ) { //',' // resize to aspect ratio
-						const float asp_src = movie_aspect ? movie_aspect : (float)movie_width/(float)movie_height;
-						unsigned int my_Width,my_Height;
-						xj_get_window_size(&my_Width,&my_Height);
-						if( asp_src < ((float)my_Width/(float)my_Height) )
-							my_Width=rint((float)my_Height * asp_src);
-						else 	my_Height=rint((float)my_Width / asp_src);
-						xj_resize(my_Width, my_Height);
+						XCresize_aspect(0);
 					} else if (key == XK_less ) { //'<' // resize *.83
-						const float asp_src = movie_aspect ? movie_aspect : (float)movie_width/(float)movie_height;
-						unsigned int my_Width,my_Height;
-						xj_get_window_size(&my_Width,&my_Height);
-						float step=0.2*my_Height;
-						my_Width-=floor(step*asp_src);
-						my_Height-=step;
-						xj_resize(my_Width, my_Height);
-
+						XCresize_scale(-1);
 					} else if (key == XK_greater ) { //'>' // resize *1.2
-						const float asp_src = movie_aspect ? movie_aspect : (float)movie_width/(float)movie_height;
-						unsigned int my_Width,my_Height;
-						xj_get_window_size(&my_Width,&my_Height);
-						float step=0.2*my_Height;
-						my_Width+=floor(step*asp_src);
-						my_Height+=step;
-						xj_resize(my_Width, my_Height);
+						XCresize_scale(1);
 					} else if (key == XK_backslash ) { // '\' // A/V offset
-						if ((interaction_override&OVR_AVOFFSET) != 0 ) {
-							remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
-							break;
-						}
-						ts_offset = 0;
-						force_redraw=1;
-						update_smptestring();
+						XCtimeoffset(0, (unsigned int) key);
 					} else if (key == XK_plus ) { //'+' // A/V offset
-						if ((interaction_override&OVR_AVOFFSET) != 0 ) {
-							remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
-							break;
-						}
-						ts_offset++;
-						force_redraw=1;
-						update_smptestring();
+						XCtimeoffset(1, (unsigned int) key);
 					} else if (key == XK_minus ) { //'-'  A/V offset
-						if ((interaction_override&OVR_AVOFFSET) != 0 ) {
-							remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
-							break;
-						}
-						ts_offset--;
-						force_redraw=1;
-						update_smptestring();
+						XCtimeoffset(-1, (unsigned int) key);
 					} else if (key == XK_braceright ) { //'}' // A/V offset
-						if ((interaction_override&OVR_AVOFFSET) != 0 ) {
-							remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
-							break;
-						}
-						if (framerate > 0) {
-							ts_offset+= framerate *60;
-						} else {
-							ts_offset+= 25*60;
-						}
-						force_redraw=1;
-						update_smptestring();
+						XCtimeoffset(2, (unsigned int) key);
 					} else if (key == XK_braceleft) { //'{'  A/V offset
-						if ((interaction_override&OVR_AVOFFSET) != 0 ) {
-							remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
-							break;
-						}
-						if (framerate > 0) {
-							ts_offset-= framerate *60;
-						} else {
-							ts_offset-= 25*60;
-						}
-						force_redraw=1;
-						update_smptestring();
+						XCtimeoffset(-2, (unsigned int) key);
 					} else if (key == XK_m ) { // 'm' // toggle mouse pointer
 						xj_mousepointer(2);
 #ifdef CROPIMG
@@ -646,13 +482,10 @@ void xj_handle_X_events (void) {
 			case ReparentNotify:
 				break;
 			default:
-			/* TODO: I get Xevents type 94 (0x5e) a lot - 
-			 * no what could that be ?  */
-			//	printf("unhandled X event: type: %ld =0x%x\n",(long) event.type ,(int) event.type);
+				//printf("unhandled X event: type: %ld = 0x%x\n", (long) event.type, (int) event.type);
 				break;
 		}
 	}
-//	XUnlockDisplay(xj_dpy);
 }
 
 #endif /* HAVE any of xv, imlib* */
@@ -671,35 +504,31 @@ void xj_handle_X_events (void) {
 //#define FOURCC_YUV2 0x32595559  /* YUV2   YUV422 */
 //#define FOURCC_UYVY 0x59565955  /* YUV 4:2:2 */
 
+static int              xv_swidth;
+static int              xv_sheight;
+static XvPortID         xv_port;
+static XShmSegmentInfo  xv_shminfo;
+static XvImage         *xv_image;
 
+static char   *xv_buffer;
+static size_t  xv_len;
+static int     xv_one_memcpy = 0;
+static int     xv_pic_format = FOURCC_I420;
 
-	Screen       		*xv_scn;
-	int          		xv_swidth, xv_sheight;
-
-	XEvent       		xv_event;
-	XvPortID    	 	xv_port;
-	XShmSegmentInfo  	xv_shminfo;
-	XvImage      		*xv_image;
-
-	char	 		*xv_buffer;
-	size_t		xv_len;
-	int			xv_one_memcpy = 0; 
-	int			xv_pic_format = FOURCC_I420; 
-
-void allocate_xvimage (void) {
+static void allocate_xvimage (void) {
 	// YV12 has 12 bits per pixel. 8bitY 2+2 UV
 	xv_len = movie_width * movie_height * 3 / 2 ;
 
 	/* shared memory allocation etc.  */
 	xv_image = XvShmCreateImage(xj_dpy, xv_port,
-		xv_pic_format, NULL, // FIXME: use xjadeo buffer directly 
+		xv_pic_format, NULL, // FIXME: use xjadeo buffer directly
 		xv_swidth, xv_sheight, //768, 486, //720, 576,
 		&xv_shminfo);
 
-	/* TODO: check that this does not break support for some VIC's 
-	 * let's ship xjadeo w/ xv_one_memcpy=0; - slower(?) but safer(!) 
+	/* TODO: check that this does not break support for some VIC's
+	 * let's ship xjadeo w/ xv_one_memcpy=0; - slower(?) but safer(!)
 	 * (maybe the U/V planes are swapped, byte order or whatever...)
-	 */ 
+	 */
 #if 0
 	if (xv_len != xv_image->data_size) xv_one_memcpy =0; else xv_one_memcpy=1;
 #else
@@ -717,7 +546,7 @@ void allocate_xvimage (void) {
 		shmctl (xv_shminfo.shmid, IPC_RMID, 0);
 }
 
-void deallocate_xvimage(void) {
+static void deallocate_xvimage(void) {
 	XShmDetach(xj_dpy, &xv_shminfo);
 	shmdt(xv_shminfo.shmaddr);
 	XFree(xv_image);
@@ -725,19 +554,15 @@ void deallocate_xvimage(void) {
 	xv_buffer=NULL;
 }
 
-inline void xv_draw_colorkey(void)
-{
-	if ( 1 ) // bars
-	{
-		XSetForeground( xj_dpy, xj_gc, 0 );
-		if (xj_box[1] > 0 ) { 
-			XFillRectangle( xj_dpy, xj_win, xj_gc, 0, 0, xj_box[2], xj_box[1]);
-			XFillRectangle( xj_dpy, xj_win, xj_gc, 0, xj_box[1]+xj_box[3], xj_box[2], xj_box[1]+xj_box[3]+xj_box[1]);
-		} /* else */
-		if (xj_box[0] > 0 ) {
-			XFillRectangle( xj_dpy, xj_win, xj_gc, 0, 0, xj_box[0], xj_box[3]);
-			XFillRectangle( xj_dpy, xj_win, xj_gc, xj_box[0]+xj_box[2], 0, xj_box[0]+xj_box[2]+xj_box[0], xj_box[3]);
-		}
+static inline void xv_draw_colorkey(void) {
+	XSetForeground( xj_dpy, xj_gc, 0 );
+	if (xj_box[1] > 0 ) {
+		XFillRectangle( xj_dpy, xj_win, xj_gc, 0, 0, xj_box[2], xj_box[1]);
+		XFillRectangle( xj_dpy, xj_win, xj_gc, 0, xj_box[1]+xj_box[3], xj_box[2], xj_box[1]+xj_box[3]+xj_box[1]);
+	} /* else */
+	if (xj_box[0] > 0 ) {
+		XFillRectangle( xj_dpy, xj_win, xj_gc, 0, 0, xj_box[0], xj_box[3]);
+		XFillRectangle( xj_dpy, xj_win, xj_gc, xj_box[0]+xj_box[2], 0, xj_box[0]+xj_box[2]+xj_box[0], xj_box[3]);
 	}
 }
 
@@ -747,20 +572,20 @@ void render_xv (uint8_t *mybuffer) {
 	xv_draw_colorkey(); // TODO: only redraw on resize ?
 
 	size_t Ylen  = movie_width * movie_height;
-	size_t UVlen = movie_width * movie_height/4; 
-	size_t mw2 = movie_width /2; 
-	size_t mh2 = movie_height /2; 
+	size_t UVlen = movie_width * movie_height/4;
+	size_t mw2 = movie_width /2;
+	size_t mh2 = movie_height /2;
 
 #ifdef CROPIMG
 	Ylen*=2;
 	UVlen*=2;
 	mw2*=2;
 	size_t stride = xv_swidth*2; // XXX
-#else 
+#else
 	size_t stride = xv_swidth;
 #endif
-	// decode ffmpeg - YUV 
-	uint8_t *Yptr=mybuffer; // Y 
+	// decode ffmpeg - YUV
+	uint8_t *Yptr=mybuffer; // Y
 	uint8_t *Uptr=Yptr + Ylen; // U
 	uint8_t *Vptr=Uptr + UVlen; // V
 
@@ -770,7 +595,7 @@ void render_xv (uint8_t *mybuffer) {
 	Vptr+= xoffset/2;
 #endif
 	if (xv_pic_format == FOURCC_I420 && xv_one_memcpy) {
-		// copy YUV420P 
+		// copy YUV420P
 		memcpy(xv_buffer,mybuffer,Ylen+UVlen+UVlen); // Y+U+V
 	} else if (xv_pic_format == FOURCC_I420) {
 	
@@ -827,7 +652,7 @@ void newsrc_xv (void) {
 	xj_render();
 
 #if 1 // keep current window size when loading a new file ?? -> TODO config option
-      // and also other video modes.. 
+      // and also other video modes..
 	xj_get_window_size(&my_Width,&my_Height);
 #else
 	my_Width=movie_width;
@@ -838,10 +663,11 @@ void newsrc_xv (void) {
 }
 
 #ifdef COLOREQ
-int xv_set_eq(char *name, int value) {
+static int xv_set_eq(char *name, int value) {
 	XvAttribute *attributes;
 	int i, howmany, xv_atom;
 
+	printf("xv_set_eq\n");
 	/* get available attributes */
 	attributes = XvQueryPortAttributes(xj_dpy, xv_port, &howmany);
 	for (i = 0; i < howmany && attributes; i++)
@@ -895,8 +721,7 @@ int xv_set_eq(char *name, int value) {
 	return (1); // not found.
 }
 
-int xv_get_eq(char *name, int *value)
-{
+static int xv_get_eq(char *name, int *value) {
 	XvAttribute *attributes;
 	int i, howmany, xv_atom;
 
@@ -915,7 +740,7 @@ int xv_get_eq(char *name, int *value)
 
 				/* -1000 <= val <= 1000 */
 				val = (port_value - port_min)*2000.0/(port_max - port_min) - 1000;
-				//printf("DEBUG: got port att:%s value:%i\n",attributes[i].name,port_value);
+				//printf("DEBUG: got port att:%s value:%i\n", attributes[i].name, port_value);
 
 				if (!strcmp(attributes[i].name, "XV_BRIGHTNESS")
 						&& (!strcasecmp(name, "brightness")))
@@ -946,7 +771,7 @@ int xv_get_eq(char *name, int *value)
 					*value = val;
 				else
 					continue;
-//	printf( "xv_get_eq called! (%s, %d)\n", name, *value);
+
 				return (0); // all right
 			}
 		}
@@ -955,7 +780,6 @@ int xv_get_eq(char *name, int *value)
 #endif
 
 int open_window_xv (void) {
-
 	unsigned int 	ad_cnt;
 	int fmt_cnt, got_port, i, k;
 	int xv_have_YV12, xv_have_I420;
@@ -968,7 +792,7 @@ int open_window_xv (void) {
 
 	if ( (xj_dpy=XOpenDisplay(NULL)) == NULL ) {
 		fprintf( stderr, "Cannot connect to X server\n");
-		return (1); 
+		return (1);
 	}
 
 	xj_rwin = DefaultRootWindow(xj_dpy);
@@ -1007,7 +831,7 @@ int open_window_xv (void) {
 		if (!fmt_info || fmt_cnt == 0) {
 			fprintf(stderr, "Xv: %s: NO supported formats\n", ad_info[i].name);
 			continue;
-		} 
+		}
 
 		for(xv_have_YV12=0, xv_have_I420=0, k=0; k < fmt_cnt; ++k) {
 			if (want_debug) {
@@ -1022,17 +846,17 @@ int open_window_xv (void) {
 
 				fprintf (stderr, " [%s]\n", fmt_info[k].guid);
 			}
-			if (FOURCC_YV12 == fmt_info[k].id) xv_have_YV12 = 1; 
-			if (FOURCC_I420 == fmt_info[k].id) xv_have_I420 = 1; 
+			if (FOURCC_YV12 == fmt_info[k].id) xv_have_YV12 = 1;
+			if (FOURCC_I420 == fmt_info[k].id) xv_have_I420 = 1;
 		}
 
 		if (xv_have_I420) {
 			xv_pic_format = FOURCC_I420;
-			if (!want_quiet) 
+			if (!want_quiet)
 				fprintf(stderr,"XV: using YUV420P + Xvideo extension (I420)\n");
-		} else if (xv_have_YV12) { 
+		} else if (xv_have_YV12) {
 			xv_pic_format = FOURCC_YV12;
-			if (!want_quiet) 
+			if (!want_quiet)
 				fprintf(stderr,"XV: using YUV420P + Xvideo extension (YV12)\n");
 		} else {
 			fprintf(stderr,
@@ -1042,15 +866,16 @@ int open_window_xv (void) {
 			}
 			fprintf(stderr, ")\n");
 			continue;
-		} 
+		}
 
 		for(xv_port = ad_info[i].base_id, k = 0; k < ad_info[i].num_ports; ++k, ++(xv_port)) {
 			if(!XvGrabPort(xj_dpy, xv_port, CurrentTime)) {
 				if (want_verbose) fprintf(stdout, "Xv: grabbed port %ld\n", xv_port);
 				got_port = True;
 				break;
-			} 
-		} 
+			}
+		}
+		// TODO allow to ovverride (e.g. 2nd port)
 		if(got_port) break;
 	} /* for */
 
@@ -1083,7 +908,6 @@ int open_window_xv (void) {
 			XWhitePixel(xj_dpy, xj_screen),
 			XBlackPixel(xj_dpy, xj_screen));
 
-//	XmbSetWMProperties(xj_dpy, xj_win, "xjadeo", NULL, NULL, 0, NULL, NULL, NULL);
 	xj_set_hints();
 
 	ev_mask =  KeyPressMask | ButtonPressMask | ButtonReleaseMask |
@@ -1102,32 +926,32 @@ int open_window_xv (void) {
 
 	allocate_xvimage();
 
-	check_wm_atoms();
 	if (start_ontop) xj_ontop=1;
 	if (start_fullscreen) xj_fullscreen=1;
 	xj_set_fullscreen(xj_fullscreen);
 	xj_set_ontop(xj_ontop);
 
+#if 0
 	// XV_BRIGHTNESS  XV_CONTRAST, XV_SATURATION , XV_COLORKEY
-	#if 0 // broken with some gfx boards. 
+	// broken with some gfx boards.
+
 	/* 004:<:003e: 20: Request(16): InternAtom only-if-exists=true(0x01)  name='XV_COLORKEY'
 	 * 004:>:0x003e:32: Reply to InternAtom: atom=0x59("XV_COLORKEY")
-	 * 004:<:003f: 12: XVideo-Request(141,14): unknown 
+	 * 004:<:003f: 12: XVideo-Request(141,14): unknown
 	 * 004:>:003f:32: unexpected reply
-	 * 004:<:0040: 52: XVideo-Request(141,19): unknown 
-	 * 004:<:0041: 52: XVideo-Request(141,19): unknown 
+	 * 004:<:0040: 52: XVideo-Request(141,19): unknown
+	 * 004:<:0041: 52: XVideo-Request(141,19): unknown
 	 */
 	int value=0;
 	Atom xj_a_colorkey = XInternAtom (xj_dpy, "XV_COLORKEY", True);
 	if (xj_a_colorkey!=None && Success == XvGetPortAttribute(xj_dpy, xv_port, xj_a_colorkey, &value)) {
 		XvSetPortAttribute(xj_dpy, xv_port, xj_a_colorkey, 0x00000000); // AARRGGBB
 	}
-	#endif
+#endif
 	return 0;
 }
 
 void close_window_xv(void) {
-	//XvFreeAdaptorInfo(ai);
 #ifdef XDLG
 	close_x_dialog(xj_dpy);
 #endif
@@ -1139,13 +963,15 @@ void close_window_xv(void) {
 	if(xv_image) XFree(xv_image);
 	XSync(xj_dpy, False);
 	XFreeGC(xj_dpy, xj_gc);
-	if (!loop_flag) // TODO: do 'DestroyAll' during shutdown()
+#if 1
+	if (!loop_flag)
 		XSetCloseDownMode(xj_dpy, DestroyAll);
+#endif
 	XDestroyWindow(xj_dpy, xj_win);
 	XCloseDisplay(xj_dpy);
 }
 
-#if 1 // LEGACY 
+#if 1 // LEGACY wrapper functions
 
 void handle_X_events_xv (void) {
 	xj_handle_X_events();
@@ -1156,14 +982,14 @@ void get_window_size_xv (unsigned int *my_Width, unsigned int *my_Height) {
 }
 
 void get_window_pos_xv (int *x,  int *y) {
-	xj_get_window_pos(x,y); 
+	xj_get_window_pos(x,y);
 }
 
-void resize_xv (unsigned int x, unsigned int y) { 
+void resize_xv (unsigned int x, unsigned int y) {
 	xj_resize(x, y);
 }
 
-void position_xv (int x, int y) { 
+void position_xv (int x, int y) {
 	xj_position(x, y);
 }
 #endif
@@ -1172,14 +998,15 @@ void position_xv (int x, int y) {
 
 /*******************************************************************************
  *
- * X11 / ImLib2 
+ * X11 / ImLib2
  */
 
 #if HAVE_IMLIB2
 
-int       im_depth;
-Visual    *im_vis;
-Colormap  im_cm;
+static int         im_depth;
+static Visual     *im_vis;
+static Colormap    im_cm;
+static Imlib_Image im_image = NULL;
 
 int open_window_imlib2 (void) {
 	XGCValues values;
@@ -1187,11 +1014,11 @@ int open_window_imlib2 (void) {
 
 	if ( (xj_dpy=XOpenDisplay(NULL)) == NULL ) {
 		fprintf( stderr, "Cannot connect to X server\n");
-		return (1); 
+		return (1);
 	}
 
-	xj_screen = DefaultScreen(xj_dpy); 
-	xj_rwin = RootWindow(xj_dpy, xj_screen); 
+	xj_screen = DefaultScreen(xj_dpy);
+	xj_rwin = RootWindow(xj_dpy, xj_screen);
 	im_depth = DefaultDepth(xj_dpy, xj_screen);
 	im_vis = DefaultVisual(xj_dpy, xj_screen);
 	im_cm = DefaultColormap(xj_dpy, xj_screen);
@@ -1208,7 +1035,7 @@ int open_window_imlib2 (void) {
 		xj_dwidth,     // width
 		xj_dheight,    // height
 		0,             // border
-		BlackPixel(xj_dpy, xj_screen), 
+		BlackPixel(xj_dpy, xj_screen),
 		WhitePixel(xj_dpy, xj_screen)
 	);
 
@@ -1217,13 +1044,13 @@ int open_window_imlib2 (void) {
 	ev_mask =  KeyPressMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | StructureNotifyMask;
 	XSelectInput(xj_dpy, xj_win, ev_mask);
 
-#ifdef DND 
+#ifdef DND
 	init_dnd(xj_dpy, xj_win);
 #endif
 	XMapRaised(xj_dpy, xj_win);
 
-	imlib_set_cache_size(4096 * 1024); // check 
-	imlib_context_set_dither(0); 
+	imlib_set_cache_size(4096 * 1024); // check
+	imlib_context_set_dither(0);
 
 	/* express interest in WM killing this app */
 	if ((xj_del_atom = XInternAtom(xj_dpy, "WM_DELETE_WINDOW", True)) != None)
@@ -1236,8 +1063,6 @@ int open_window_imlib2 (void) {
 	imlib_context_set_colormap(im_cm);
 	imlib_context_set_drawable(xj_win);
 
-	check_wm_atoms();
-
 	if (start_ontop) xj_ontop=1;
 	if (start_fullscreen) xj_fullscreen=1;
 	xj_set_fullscreen(xj_fullscreen);
@@ -1246,8 +1071,6 @@ int open_window_imlib2 (void) {
 	return 0;
 }
 
-static Imlib_Image im_image = NULL;
-
 void close_window_imlib2(void)
 {
 	if (im_image) {
@@ -1255,34 +1078,37 @@ void close_window_imlib2(void)
 		imlib_free_image();
 		im_image = NULL;
 	}
-//	XSync(xj_dpy, True);
+#if 1 //
 	if (loop_flag)
 		XSetCloseDownMode(xj_dpy, RetainPermanent);
 	else
 		XSetCloseDownMode(xj_dpy, DestroyAll);
+#endif
 	XDestroyWindow(xj_dpy, xj_win);
 	XFreeGC(xj_dpy, xj_gc);
 	XSync(xj_dpy, False);
-//	XCloseDisplay(xj_dpy);
+#if 0
+	XCloseDisplay(xj_dpy);
+#endif
 }
 
 #ifdef COLOREQ
-int im_gamma = 0;
-int im_brightness = 0;
-int im_contrast = 0;
-int im_colormod = 0;
+static int im_gamma = 0;
+static int im_brightness = 0;
+static int im_contrast = 0;
+static int im_colormod = 0;
 
-int im2_set_eq(char *name, int value) {
+static int im2_set_eq(char *name, int value) {
 	if (!strcasecmp(name, "brightness")) im_brightness = value;
 	else if (!strcasecmp(name, "contrast")) im_contrast = value;
 	else if (!strcasecmp(name, "gamma")) im_gamma = value;
 	else return -1;
-	im_colormod=1; // TODO: set to 0 if all values 'normal'
+	im_colormod = 1; // TODO: set to 0 if all values 'normal'
 	return 0; // ok
 }
 
-int im2_get_eq(char *name, int *value) {
-	if  (!value) return 1; 
+static int im2_get_eq(char *name, int *value) {
+	if  (!value) return 1;
 	if (!strcasecmp(name, "brightness")) *value = im_brightness;
 	else if (!strcasecmp(name, "contrast")) *value = im_contrast;
 	else if (!strcasecmp(name, "gamma")) *value = im_gamma;
@@ -1294,7 +1120,7 @@ int im2_get_eq(char *name, int *value) {
 
 #define N_CLAMP(VAR) if((VAR)<0){(VAR)=0;} if ((VAR)>1){(VAR) = 1;}
 
-void im_set_equalizer(void) {
+static void im_set_equalizer(void) {
 	DATA8 red_table[256], green_table[256], blue_table[256], alpha_table[256];
 	float gamma, brightness, contrast;
 	float rf, gf, bf;
@@ -1356,7 +1182,7 @@ void render_imlib2 (uint8_t *mybuffer) {
 	uint8_t * rgbabuf = mybuffer;
 # else
 	memcpy(data,mybuffer,4*sizeof(uint8_t)*movie_width*movie_height);
-# endif 
+# endif
 #else /* rgb24 -> rgba32 */
 # ifndef IMC
 	uint8_t * rgbabuf = malloc(4*sizeof(uint8_t)*movie_width*movie_height);
@@ -1441,7 +1267,7 @@ void render_imlib2 (uint8_t *mybuffer) {
 #endif
 }
 
-void newsrc_imlib2 (void) { 
+void newsrc_imlib2 (void) {
 	unsigned int my_Width,my_Height;
 #ifdef IMC
 	if (im_image) {
@@ -1458,7 +1284,7 @@ void newsrc_imlib2 (void) {
 	xj_resize( my_Width, my_Height);
 }
 
-#if 1 // LEGACY 
+#if 1 // LEGACY
 
 void handle_X_events_imlib2 (void) {
 	xj_handle_X_events();
@@ -1469,17 +1295,16 @@ void get_window_size_imlib2 (unsigned int *my_Width, unsigned int *my_Height) {
 }
 
 void get_window_pos_imlib2 (int *x,  int *y) {
-	xj_get_window_pos(x,y); 
+	xj_get_window_pos(x,y);
 }
 
-void resize_imlib2 (unsigned int x, unsigned int y) { 
+void resize_imlib2 (unsigned int x, unsigned int y) {
 	xj_resize(x, y);
 }
 
-void position_imlib2 (int x, int y) { 
+void position_imlib2 (int x, int y) {
 	xj_position(x, y);
 }
 #endif
 
 #endif
-

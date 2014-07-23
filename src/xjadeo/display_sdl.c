@@ -24,7 +24,6 @@
 extern long ts_offset; 
 extern int 	force_redraw; // tell the main event loop that some cfg has changed
 extern int 	interaction_override; // disable some options.
-extern double framerate;
 
 void jackt_toggle();
 void jackt_rewind();
@@ -383,7 +382,6 @@ void handle_X_events_sdl (void) {
 		switch(ev.type){
 			case SDL_VIDEOEXPOSE: // SDL render event
 				render_sdl(buffer);
-			//	printf("SDL render event.\n");
 				break;
 			case SDL_QUIT:
 				if ((interaction_override&OVR_QUIT_KEY) == 0) loop_flag=0;
@@ -427,28 +425,14 @@ void handle_X_events_sdl (void) {
 					OSD_mode=0; 
 					force_redraw=1;
 				} else if(ev.key.keysym.sym== SDLK_LESS || (ev.key.keysym.sym== SDLK_COMMA && ev.key.keysym.mod&KMOD_SHIFT) ) { // '<'
-					unsigned int my_Width,my_Height;
-					getsize_sdl(&my_Width,&my_Height);
-					float step=0.2*my_Height;
-					my_Width-=floor(step*movie_aspect);
-					my_Height-=step;
-					resize_sdl(my_Width, my_Height);
+					XCresize_scale(-1);
 				} else if(ev.key.keysym.sym== SDLK_GREATER || (ev.key.keysym.sym== SDLK_PERIOD && ev.key.keysym.mod&KMOD_SHIFT) ) { // '>'
-					unsigned int my_Width,my_Height;
-					getsize_sdl(&my_Width,&my_Height);
-					float step=0.2*my_Height;
-					my_Width+=floor(step*movie_aspect);
-					my_Height+=step;
-					resize_sdl(my_Width, my_Height);
+					XCresize_scale(1);
 				} else if(ev.key.keysym.sym==SDLK_PERIOD) {
+					XCresize_percent(100);
 					resize_sdl(ffctv_width, ffctv_height);
 				} else if(ev.key.keysym.sym== SDLK_COMMA) { // ','
-						unsigned int my_Width,my_Height;
-						getsize_sdl(&my_Width,&my_Height);
-						if( movie_aspect < ((float)my_Width/(float)my_Height) )
-							my_Width=rint((float)my_Height * movie_aspect);
-						else 	my_Height=rint((float)my_Width / movie_aspect);
-						resize_sdl(my_Width, my_Height);
+					XCresize_aspect(0);
 				} else if(ev.key.keysym.sym==SDLK_o) {
 					if (OSD_mode&OSD_OFFF) {
 						OSD_mode&=~OSD_OFFF;
@@ -460,53 +444,15 @@ void handle_X_events_sdl (void) {
 					}
 					force_redraw=1;
 				} else if(ev.key.keysym.sym== SDLK_BACKSLASH) {
-					if ((interaction_override&OVR_AVOFFSET) != 0 ) {
-						remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
-						break;
-					}
-					ts_offset = 0;
-					force_redraw=1;
-					update_smptestring();
+					XCtimeoffset(0, (unsigned int) key);
 				} else if(ev.key.keysym.sym== SDLK_EQUALS && ev.key.keysym.mod&KMOD_SHIFT) { // '+' SDLK_PLUS does not work :/
-					if ((interaction_override&OVR_AVOFFSET) != 0 ) {
-						remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
-						break;
-					}
-					ts_offset++;
-					force_redraw=1;
-					update_smptestring();
+					XCtimeoffset(1, (unsigned int) key);
 				} else if(ev.key.keysym.sym==SDLK_MINUS) {
-					if ((interaction_override&OVR_AVOFFSET) != 0 ) {
-						remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
-						break;
-					}
-					ts_offset--;
-					force_redraw=1;
-					update_smptestring();
+					XCtimeoffset(-1, (unsigned int) key);
 				} else if(ev.key.keysym.sym== SDLK_LEFTBRACKET && ev.key.keysym.mod&KMOD_SHIFT) { // '{'
-					if ((interaction_override&OVR_AVOFFSET) != 0 ) {
-						remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
-						break;
-					}
-					if (framerate > 0) {
-						ts_offset-= framerate *60;
-					} else {
-						ts_offset-= 25*60;
-					}
-					force_redraw=1;
-					update_smptestring();
+					XCtimeoffset(-2, (unsigned int) key);
 				} else if(ev.key.keysym.sym== SDLK_RIGHTBRACKET&& ev.key.keysym.mod&KMOD_SHIFT) { // '}'
-					if ((interaction_override&OVR_AVOFFSET) != 0 ) {
-						remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
-						break;
-					}
-					if (framerate > 0) {
-						ts_offset+= framerate *60;
-					} else {
-						ts_offset+= 25*60;
-					}
-					force_redraw=1;
-					update_smptestring();
+					XCtimeoffset(2, (unsigned int) key);
 #ifdef CROPIMG
 				} else if(ev.key.keysym.sym== SDLK_LEFTBRACKET) { // '['
 				} else if(ev.key.keysym.sym== SDLK_RIGHTBRACKET) { // ']'
@@ -530,28 +476,21 @@ void handle_X_events_sdl (void) {
 				force_redraw=1;
 				break;
 			case SDL_MOUSEBUTTONUP:
-				if(ev.button.button == SDL_BUTTON_LEFT) {
-					resize_sdl(ffctv_width, ffctv_height);
-				} else {
-					unsigned int my_Width,my_Height;
-					getsize_sdl(&my_Width,&my_Height);
-
-					if(ev.button.button == SDL_BUTTON_WHEELUP) {
-						float step=sqrt((float)my_Height);
-						my_Width-=floor(step*movie_aspect);
-						my_Height-=step;
+				if ((interaction_override&OVR_MOUSEBTN) == 0) {
+					switch(ev.button.button) {
+						case SDL_BUTTON_LEFT:
+							XCresize_percent(100);
+							break;
+						case SDL_BUTTON_WHEELUP:
+							XCresize_aspect(-1);
+							break;
+						case SDL_BUTTON_WHEELDOWN:
+							XCresize_aspect(1);
+							break;
+						default:
+							XCresize_aspect(0);
+							break;
 					}
-					if(ev.button.button == SDL_BUTTON_WHEELDOWN) {
-						float step=sqrt((float)my_Height);
-						my_Width+=floor(step*movie_aspect);
-						my_Height+=step;
-					} 
-					// resize to match movie aspect ratio
-					if( movie_aspect < ((float)my_Width/(float)my_Height) )
-						my_Width=floor((float)my_Height * movie_aspect);
-					else my_Height=floor((float)my_Width / movie_aspect);
-
-					resize_sdl(my_Width,my_Height);
 				}
 				break;
       case SDL_ACTIVEEVENT:			/** Application loses/gains visibility */

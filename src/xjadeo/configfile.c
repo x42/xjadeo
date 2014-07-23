@@ -52,22 +52,23 @@ int testfile (char *filename) {
 }
 
 
-extern char OSD_fontfile[1024];
-extern double     delay;
+extern char   OSD_fontfile[1024];
+extern double delay;
 extern int    videomode;
-extern int     seekflags;
-extern int want_quiet;
-extern int want_verbose;
-extern int want_letterbox;
-extern int want_nosplash;
-extern int mq_en;
-extern char *ipc_queue;
-extern int remote_en;
-extern char *midi_driver;
-extern int use_jack;
-extern int interaction_override;
+extern int    seekflags;
+extern int    want_quiet;
+extern int    want_verbose;
+extern int    want_letterbox;
+extern int    want_nosplash;
+extern int    mq_en;
+extern char  *ipc_queue;
+extern int    remote_en;
+extern char  *midi_driver;
+extern int    use_jack;
+extern int    interaction_override;
+
 #ifdef HAVE_LTC
-extern int use_ltc;
+extern int  use_ltc;
 #endif
 
 #ifdef HAVE_MIDI
@@ -76,25 +77,21 @@ extern int midi_clkconvert;  /* --midifps [0:MTC|1:VIDEO|2:RESAMPLE] */
 extern int midi_clkadj;    /* 0|1 */
 #endif
 
-extern long	userFrame;
-extern char *smpte_offset;
-extern char *load_movie;
+extern long   userFrame;
+extern char  *smpte_offset;
+extern char  *load_movie;
 extern double filefps;
-extern int osc_port;
-extern int want_dropframes;
-extern int want_autodrop;
-extern int want_genpts;
-extern int want_ignstart;
-extern int OSD_mode;
-extern char OSD_text[128];
-extern int OSD_fx, OSD_tx, OSD_sx, OSD_fy, OSD_sy, OSD_ty;
+extern int    osc_port;
+extern int    want_dropframes;
+extern int    want_autodrop;
+extern int    want_genpts;
+extern int    want_ignstart;
+extern int    OSD_mode;
+extern char   OSD_text[128];
+extern int    OSD_fx, OSD_tx, OSD_sx, OSD_fy, OSD_sy, OSD_ty;
+
 int start_ontop;
 int start_fullscreen;
-
-#if (HAVE_LIBXV || HAVE_IMLIB2)
-extern int xj_ontop;
-extern int xj_fullscreen;
-#endif
 
 extern char	*current_file;
 #ifdef JACK_SESSION
@@ -467,10 +464,8 @@ int saveconfig (const char *fn) {
 	fprintf(fp, "WINSIZEW=%i\n", w);
 	fprintf(fp, "WINSIZEH=%i\n", h);
 
-#if (HAVE_LIBXV || HAVE_IMLIB2)
-	fprintf(fp, "WINONTOP=%s\n", BOOL(xj_ontop));
-	fprintf(fp, "WINFULLSCREEN=%s\n", BOOL(xj_fullscreen));
-#endif
+	fprintf(fp, "WINONTOP=%s\n", BOOL(Xgetontop()));
+	fprintf(fp, "WINFULLSCREEN=%s\n", BOOL(Xgetfullscreen()));
 
 	fclose(fp);
 	if (!want_quiet)

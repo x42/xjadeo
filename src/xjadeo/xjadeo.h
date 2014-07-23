@@ -122,7 +122,6 @@ int getvidmode (void);
 const char *vidoutname (int i);
 int try_next_vidoutmode(int user_req);
 void splash (uint8_t *mybuffer);
-void update_smptestring();
 
 void render_buffer (uint8_t *mybuffer);
 void handle_X_events (void);
@@ -136,6 +135,11 @@ void Xposition (int x, int y);
 void Xgetpos (int *x, int *y);
 int  Xgetontop (void);
 int  Xgetfullscreen (void);
+
+void XCresize_percent (float p);
+void XCresize_aspect (int relscale);
+void XCresize_scale (int relscale);
+void XCtimeoffset (int mode, unsigned int charcode);
 
 /* remote.c */
 void exec_remote_cmd (char *cmd);

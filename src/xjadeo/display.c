@@ -31,9 +31,10 @@
 #define MAX(A,B) (((A)>(B)) ? (A) : (B))
 #endif
 
-extern long ts_offset; // display on screen
-extern char *smpte_offset;
-extern int  want_nosplash;
+extern char  *smpte_offset;
+extern long   ts_offset; // display on screen
+extern int    want_nosplash;
+extern double framerate;
 
 /*******************************************************************************
  * NULL Video Output
@@ -225,7 +226,7 @@ const vidout VO[] = {
 	{-1,-1,NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL} // the end.
 };
 
-int VOutput = 0;
+static int VOutput = 0;
 
 int parsevidoutname (char *arg) {
 	int i=0;
@@ -431,7 +432,7 @@ void splash (uint8_t *mybuffer) {
 	render_buffer(mybuffer);
 }
 
-void update_smptestring() {
+static void update_smptestring() {
 	if (smpte_offset) free(smpte_offset);
 	smpte_offset= calloc(15,sizeof(char));
 	frame_to_smptestring(smpte_offset, ts_offset);
@@ -563,4 +564,88 @@ void Xfullscreen (int a) {
 
 void Xposition (int x, int y) {
 	VO[VOutput].position(x,y);
+}
+
+
+void XCresize_percent (float p) {
+	const int w = rintf (ffctv_width * p / 100.f);
+	const int h = rintf (ffctv_height * p / 100.f);
+	Xresize(w, h);
+}
+
+void XCresize_aspect (int scale) {
+	const float asp_src = movie_aspect ? movie_aspect : (float)movie_width/(float)movie_height;
+	unsigned int w, h;
+	Xgetsize (&w, &h);
+
+	if (scale < 0 && w > 32 && h > 32)  {
+		const float step = sqrtf ((float)h);
+		w -= floorf (step * asp_src);
+		h -= step;
+	} else if (scale > 0) {
+		const float step = sqrtf ((float)h);
+		w += floorf (step * asp_src);
+		h += step;
+	}
+
+	if (asp_src < ((float)w / (float)h))
+		w = rintf ((float)h * asp_src);
+	else
+		h = rintf((float)w / asp_src);
+
+	Xresize(w, h);
+}
+
+void XCresize_scale (int up) {
+	const float asp_src = movie_aspect ? movie_aspect : (float)movie_width/(float)movie_height;
+	unsigned int w, h;
+
+	Xgetsize (&w, &h);
+	const float step = (float)up * 0.17 * h;
+	w += floorf (step * asp_src);
+	h += step;
+	if (w > 32 && h > 32) {
+		Xresize(w, h);
+	}
+}
+
+void XCtimeoffset (int mode, unsigned int charcode) {
+	if ((interaction_override&OVR_AVOFFSET) != 0 ) {
+		remote_notify(NTY_KEYBOARD, 310, "keypress=%d", charcode);
+		return;
+	}
+
+	long off = ts_offset;
+	switch(mode) {
+		case -1:
+			--ts_offset;
+			break;
+		case 1:
+			++ts_offset;
+			break;
+		case -2:
+			if (framerate > 0) {
+				// TODO drop-frame ??
+				ts_offset -= framerate * 60;
+			} else {
+				ts_offset -= 25*60;
+			}
+			break;
+		case 2:
+			if (framerate > 0) {
+				// TODO drop-frame ??
+				ts_offset += framerate * 60;
+			} else {
+				ts_offset += 25*60;
+			}
+			break;
+		default:
+			ts_offset = 0;
+			break;
+	}
+
+	if (off != ts_offset) {
+		force_redraw=1;
+		update_smptestring();
+	}
 }

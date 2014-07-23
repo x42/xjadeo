@@ -718,7 +718,7 @@ main (int argc, char **argv)
 		HKEY key;
 		DWORD size = PATH_MAX;
 		char path[PATH_MAX+1];
-		if ( (ERROR_SUCCESS == RegOpenKeyExA (HKEY_LOCAL_MACHINE, "Software\\RSSxjadeo", 0, KEY_READ, &key))                                    
+		if ( (ERROR_SUCCESS == RegOpenKeyExA (HKEY_LOCAL_MACHINE, "Software\\RSSxjadeo", 0, KEY_READ, &key))
 				&&  (ERROR_SUCCESS == RegQueryValueExA (key, "Install_Dir", 0, NULL, (LPBYTE)path, &size))
 			 )
 		{

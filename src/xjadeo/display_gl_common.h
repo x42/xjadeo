@@ -43,16 +43,6 @@
 // For keyboard shortcuts
 void jackt_toggle();
 void jackt_rewind();
-extern long ts_offset;
-extern double framerate;
-
-// globals
-extern int 	force_redraw;
-extern int 	interaction_override; // disable some options.
-extern int  movie_width;
-extern int  movie_height;
-extern int  ffctv_width;
-extern int  ffctv_height;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -174,27 +164,20 @@ static void xjglExpose() {
 }
 
 static void xjglButton(int btn) {
-	if (btn == 1) {
-		gl_resize (ffctv_width, ffctv_height);
-	} else {
-		const float asp_src = movie_aspect ? movie_aspect : (float)movie_width/(float)movie_height;
-		int w = _gl_width;
-		int h = _gl_height;
-		if (btn == 5 && w > 32 && h > 32)  {
-			const float step = sqrtf ((float)h);
-			w -= floorf (step * asp_src);
-			h -= step;
-		}
-		if (btn == 4) {
-			const float step = sqrtf ((float)h);
-			w += floorf (step * asp_src);
-			h += step;
-		}
-		if( asp_src < ((float)w / (float)h) )
-			w = floorf ((float)h * asp_src);
-		else
-			h = floorf ((float)w / asp_src);
-		gl_resize (w,h);
+	if ((interaction_override&OVR_MOUSEBTN)) return;
+	switch (btn) {
+		case 1:
+			XCresize_percent(100);
+			break;
+		case 5:
+			XCresize_aspect(-1);
+			break;
+		case 4:
+			XCresize_aspect(1);
+			break;
+		default:
+			XCresize_aspect(0);
+			break;
 	}
 }
 
@@ -245,88 +228,31 @@ static void xjglKeyPress(const unsigned int sym, const char *key) {
 		force_redraw=1;
 	}
 	else if (!strcmp(key, ".")) {
-		gl_resize(ffctv_width, ffctv_height);
+		XCresize_scale(100);
 	}
 	else if (!strcmp(key, ",")) {
-		const float asp_src = movie_aspect ? movie_aspect : (float)movie_width/(float)movie_height;
-		int w = _gl_width;
-		int h = _gl_height;
-		if( asp_src < ((float)_gl_width / (float)_gl_height) )
-			w = rintf ((float)_gl_height * asp_src);
-		else
-			h = rint((float)_gl_width / asp_src);
-		gl_resize(w, h);
+		XCresize_aspect(0);
 	}
 	else if (!strcmp(key, "<")) {
-		const float asp_src = movie_aspect ? movie_aspect : (float)movie_width/(float)movie_height;
-		int w = _gl_width;
-		int h = _gl_height;
-		float step = 0.2 * h;
-		w -= floorf(step * asp_src);
-		h -= step;
-		gl_resize(w, h);
+		XCresize_scale(-1);
 	}
 	else if (!strcmp(key, ">")) {
-		const float asp_src = movie_aspect ? movie_aspect : (float)movie_width/(float)movie_height;
-		int w = _gl_width;
-		int h = _gl_height;
-		float step = 0.2 * h;
-		w += floorf(step * asp_src);
-		h += step;
-		gl_resize(w, h);
+		XCresize_scale(1);
 	}
 	else if (!strcmp(key, "\\")) {
-		if ((interaction_override&OVR_AVOFFSET) != 0 ) {
-			remote_notify(NTY_KEYBOARD, 310, "keypress=%d", sym);
-			return;
-		}
-		ts_offset = 0;
-		force_redraw=1;
-		update_smptestring();
+		XCtimeoffset(0, sym);
 	}
 	else if (!strcmp(key, "+")) {
-		if ((interaction_override&OVR_AVOFFSET) != 0 ) {
-			remote_notify(NTY_KEYBOARD, 310, "keypress=%d", sym);
-			return;
-		}
-		ts_offset++;
-		force_redraw=1;
-		update_smptestring();
+		XCtimeoffset(1, sym);
 	}
 	else if (!strcmp(key, "-")) {
-		if ((interaction_override&OVR_AVOFFSET) != 0 ) {
-			remote_notify(NTY_KEYBOARD, 310, "keypress=%d", sym);
-			return;
-		}
-		ts_offset--;
-		force_redraw=1;
-		update_smptestring();
+		XCtimeoffset(-1, sym);
 	}
 	else if (!strcmp(key, "}")) {
-		if ((interaction_override&OVR_AVOFFSET) != 0 ) {
-			remote_notify(NTY_KEYBOARD, 310, "keypress=%d", sym);
-			return;
-		}
-		if (framerate > 0) {
-			ts_offset+= framerate *60;
-		} else {
-			ts_offset+= 25*60;
-		}
-		force_redraw=1;
-		update_smptestring();
+		XCtimeoffset(2, sym);
 	}
 	else if (!strcmp(key, "{")) {
-		if ((interaction_override&OVR_AVOFFSET) != 0 ) {
-			remote_notify(NTY_KEYBOARD, 310, "keypress=%d", sym);
-			return;
-		}
-		if (framerate > 0) {
-			ts_offset-= framerate *60;
-		} else {
-			ts_offset-= 25*60;
-		}
-		force_redraw=1;
-		update_smptestring();
+		XCtimeoffset(-2, sym);
 	}
 	else if (!strcmp(key, "m")) {
 		gl_mousepointer(2);
