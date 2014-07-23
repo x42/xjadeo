@@ -432,7 +432,7 @@ usage (int status)
 {
   printf ("%s - \
 jack video monitor\n", program_name);
-  printf ("usage: %s [Options] <video-file>\n", program_name);
+  printf ("usage: %s [Options] [video-file]\n", program_name);
   printf ("       %s -R [Options] [<video-file>]\n", program_name);
   printf (""
 "Options:\n"
@@ -676,7 +676,7 @@ main (int argc, char **argv)
 
 	xjadeorc(); // read config files - default values before parsing cmd line.
 
-#ifdef __APPLE__
+#ifdef PLATFORM_OSX
 	if ( argc >= 2 && strncmp (argv[1], "-psn", 4) == 0 ) {
 		char **gArgv = (char **) malloc(sizeof (char *) * argc);
 		int i;
@@ -700,7 +700,7 @@ main (int argc, char **argv)
 
 	if ((i+1)== argc) movie = argv[i];
 	else if ((remote_en || mq_en || ipc_queue || osc_port || load_rc) && i==argc) movie = "";
-#ifndef PLATFORM_OSX
+#ifdef PLATFORM_WINDOWS
 	else usage (EXIT_FAILURE);
 #else
 	else movie = "";
@@ -751,7 +751,7 @@ main (int argc, char **argv)
 	if (osc_port > 0) initialize_osc(osc_port);
 
 	if (open_movie(movie)) {
-#ifndef PLATFORM_OSX
+#ifdef PLATFORM_WINDOWS
 		if (!(remote_en || mq_en || ipc_queue || osc_port)) {
 			exit(1);
 		}

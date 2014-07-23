@@ -364,8 +364,7 @@ int open_movie(char* file_name) {
 		ts_offset = smptestring_to_frame(smpte_offset);
 	}
 
-	if (strlen(file_name) == 0
-			&& (remote_en || mq_en || ipc_queue)) {
+	if (strlen(file_name) == 0) {
 		return -1;
 	}
 
@@ -377,7 +376,7 @@ int open_movie(char* file_name) {
 #endif
 	{
 		if (!remote_en && !mq_en && !ipc_queue)
-			fprintf(stderr, "Cannot open video file %s\n", file_name);
+			fprintf(stderr, "Cannot open video file '%s'\n", file_name);
 		pFormatCtx=NULL;
 		return (-1);
 	}
