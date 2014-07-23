@@ -189,7 +189,7 @@ const char *midi_driver_name();
 long midi_poll_frame (void);
 void midi_open(char *midiid);
 void midi_close(void);
-int midi_choose_driver(char *);
+int midi_choose_driver(const char *);
 #endif
 
 /* xjosc.c */

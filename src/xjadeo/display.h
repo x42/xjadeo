@@ -101,16 +101,25 @@ void xj_letterbox();
 
 #endif
 
-#ifdef DND
 #if (defined HAVE_LIBXV || defined HAVE_IMLIB2 || (defined HAVE_GL && !defined PLATFORM_WINDOWS && !defined PLATFORM_OSX))
 
+#ifdef DND
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 
 void init_dnd (Display *dpy, Window win);
 void disable_dnd (Display *dpy, Window win);
 int handle_dnd_event (Display *dpy, Window win, XEvent *event);
+#endif // DND
+
+#ifdef XDLG
+#include <X11/Xlib.h>
+int show_x_dialog(Display *dpy, Window parent, int x, int y);
+void close_x_dialog(Display *dpy);
+int handle_xdlg_event (Display *dpy, XEvent *event);
 #endif
+
+
 #endif
 
 /*******************************************************************************

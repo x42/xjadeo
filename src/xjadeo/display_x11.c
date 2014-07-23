@@ -320,9 +320,15 @@ void xj_handle_X_events (void) {
 //	XLockDisplay(xj_dpy);
 	while(XPending(xj_dpy)) {
 		XNextEvent(xj_dpy, &event);
+#ifdef XDLG
+		if (handle_xdlg_event(xj_dpy, &event)) continue;
+#endif
 #ifdef DND
 		if (handle_dnd_event(xj_dpy, xj_win, &event)) continue;
 #endif
+		if (event.xany.window != xj_win) {
+			continue;
+		}
 		switch (event.type) {
 			case Expose:
 			// TODO: update only rect (ev.xexpose.x, ev.xexpose.y, ev.xexpose.width, ev.xexpose.height)
@@ -382,6 +388,13 @@ void xj_handle_X_events (void) {
 			case ButtonPress:
 				break;
 			case ButtonRelease:
+#ifdef XDLG
+				if (event.xbutton.button == 3) {
+					show_x_dialog(xj_dpy, xj_win,
+							event.xbutton.x_root, event.xbutton.y_root
+							);
+				} else
+#endif
 				if (event.xbutton.button == 1) {
 					if ((interaction_override&OVR_MOUSEBTN) == 0)
 					  xj_resize(ffctv_width, ffctv_height);
@@ -1115,6 +1128,9 @@ int open_window_xv (void) {
 
 void close_window_xv(void) {
 	//XvFreeAdaptorInfo(ai);
+#ifdef XDLG
+	close_x_dialog(xj_dpy);
+#endif
 	XvStopVideo(xj_dpy, xv_port, xj_win);
 	if(xv_shminfo.shmaddr) {
 		XShmDetach(xj_dpy, &xv_shminfo);
@@ -1125,6 +1141,7 @@ void close_window_xv(void) {
 	XFreeGC(xj_dpy, xj_gc);
 	if (!loop_flag) // TODO: do 'DestroyAll' during shutdown()
 		XSetCloseDownMode(xj_dpy, DestroyAll);
+	XDestroyWindow(xj_dpy, xj_win);
 	XCloseDisplay(xj_dpy);
 }
 

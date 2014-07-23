@@ -252,6 +252,9 @@ int gl_open_window () {
 }
 
 void gl_close_window() {
+#ifdef XDLG
+	close_x_dialog(_gl_display);
+#endif
 	glXDestroyContext(_gl_display, _gl_ctx);
 	XDestroyWindow(_gl_display, _gl_win);
 	XCloseDisplay(_gl_display);
@@ -261,9 +264,15 @@ void gl_handle_events () {
 	XEvent event;
 	while (XPending(_gl_display) > 0) {
 		XNextEvent(_gl_display, &event);
+#ifdef XDLG
+		if (handle_xdlg_event(_gl_display, &event)) continue;
+#endif
 #ifdef DND
 		if (handle_dnd_event(_gl_display, _gl_win, &event)) continue;
 #endif
+		if (event.xany.window != _gl_win) {
+			continue;
+		}
 		switch (event.type) {
 			case MapNotify:
 				loop_run=1;
@@ -287,6 +296,13 @@ void gl_handle_events () {
 			case ButtonPress:
 				break;
 			case ButtonRelease:
+#ifdef XDLG
+				if (event.xbutton.button == 3) {
+					show_x_dialog(_gl_display, _gl_win,
+							event.xbutton.x_root, event.xbutton.y_root
+							);
+				} else
+#endif
 				xjglButton(event.xbutton.button);
 				break;
 			case ReparentNotify:

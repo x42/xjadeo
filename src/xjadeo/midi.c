@@ -1014,7 +1014,7 @@ const midiapi MA[] = {
 
 int current_midi_driver = 0;
 
-int midi_choose_driver(char *id) {
+int midi_choose_driver(const char *id) {
 	if (midi_connected()) return -1;
 	int i=0;
 	while (MA[i].name) {
