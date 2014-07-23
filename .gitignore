@@ -18,6 +18,7 @@ Makefile.in
 /build-stamp
 /stamp-h1
 /xjadeo.lsm
+/INSTALL
 
 # releases
 /*.tar.gz
