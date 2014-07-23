@@ -23,126 +23,208 @@
 
 #ifdef XDLG
 #if (defined HAVE_LIBXV || defined HAVE_IMLIB2 || (defined HAVE_GL && !defined PLATFORM_WINDOWS && !defined PLATFORM_OSX))
+
+#include <X11/Xresource.h>
+
 extern int seekflags;
 
-static Window _dlg_win = 0;
-static GC _dlg_gc = 0;
-static int _dlg_width = 120;
-static int _dlg_height = 150;
-static int _dlg_font_height = 12;
-static int _dlg_font_ascent = 10;
+static XContext _dlg_ctx = 0;
+static int      _dlg_font_height = 0;
+static int      _dlg_font_ascent = 0;
+static XColor   _c_gray1, _c_gray2;
 
-static int menu_hover = -1;
-static XColor _c_gray1, _c_gray2;
+static Window   _dlg_mwin = 0;
+static Window   _dlg_swin = 0;
 
 struct XjxMenuItem {
-	char text[32];
+	const char *text;
+	struct XjxMenuItem *submenu;
 	void (*callback)(void);
-	int enabled; // TODO use a callback
+	int enabled; // TODO use a callback ?!
 	int sensitive;
 };
 
-static void cb_none () {
-	printf("CALLBACK\n");
-}
-
-// TODO dynamically build menu.
-static struct XjxMenuItem menuitems[] = {
-	{"Sync", NULL, 0, 0},
-	{"Jack", &ui_sync_to_jack, 0, 1},
-	{"LTC", &ui_sync_to_ltc, 0, 1},
-	{"MTC (JACK)", &ui_sync_to_mtc_jack, 0, 1},
-	{"MTC (PortMidi)", &ui_sync_to_mtc_portmidi, 0, 1},
-	{"MTC (ALSA Seq)", &ui_sync_to_mtc_alsaseq, 0, 1},
-	{"MTC (ALSA Raw)", &ui_sync_to_mtc_alsaraw, 0, 1},
-	{"", NULL, 0, 0},
-	{"Seek", NULL, 0, 0},
-	{"Key Frames Only", &ui_seek_key, 0, 1},
-	{"Any Fame", &ui_seek_any, 0, 1},
-	{"PTS", &ui_seek_cont, 1, 1},
-	{"", NULL, 0, 0},
-	{"(Drag&Drop File on", NULL, 0, 0},
-	{" Window to Load)", NULL, 0, 0},
+struct XJDialog {
+	GC  gc;
+	int x0;
+	int y0;
+	int width;
+	int height;
+	int menu_hover;
+	int menu_count;
+	struct XjxMenuItem *menu_items;
 };
 
-// TODO dynamically build menu. check OVR_*
-static void update_menu() {
-	const int items = sizeof(menuitems) / sizeof(struct XjxMenuItem);
+
+static int show_submenu(Display *dpy, struct XjxMenuItem *sm, int x, int y, int pw);
+static void hide_submenu(Display *dpy);
+
+///////////////////////////////////////////////////////////////////////////////
+
+//static void cb_none ()      { printf("TEST CALLBACK\n"); }
+
+static void ui_scale50()    { XCresize_percent(50); }
+static void ui_scale100()   { XCresize_percent(100); }
+static void ui_scale150()   { XCresize_percent(150); }
+static void ui_aspect()     { XCresize_aspect(0); }
+static void ui_ontop()      { Xontop(2); }
+static void ui_letterbox()  { Xletterbox(2); }
+static void ui_fullscreen() { Xfullscreen(2); }
+
+static struct XjxMenuItem submenu_sync[] = {
+	{"Jack",           NULL, &ui_sync_to_jack, 0, 1},
+	{"LTC",            NULL, &ui_sync_to_ltc, 0, 1},
+	{"MTC (JACK)",     NULL, &ui_sync_to_mtc_jack, 0, 1},
+	{"MTC (PortMidi)", NULL, &ui_sync_to_mtc_portmidi, 0, 1},
+	{"MTC (ALSA Seq)", NULL, &ui_sync_to_mtc_alsaseq, 0, 1},
+	{"MTC (ALSA Raw)", NULL, &ui_sync_to_mtc_alsaraw, 0, 1},
+	{NULL, NULL, NULL, 0, 0},
+};
+
+static struct XjxMenuItem submenu_seek[] = {
+	{"Key Frames Only", NULL, &ui_seek_key, 0, 1},
+	{"Any Fame",        NULL, &ui_seek_any, 0, 1},
+	{"PTS",             NULL, &ui_seek_cont, 1, 1},
+	{NULL, NULL, NULL, 0, 0},
+};
+
+static struct XjxMenuItem submenu_size[] = {
+	{"50%",          NULL, &ui_scale50, 0, 1},
+	{"100%",         NULL, &ui_scale100, 0, 1},
+	{"150%",         NULL, &ui_scale150, 0, 1},
+	{"", NULL, NULL, 0, 0},
+	{"Reset Aspect", NULL, &ui_aspect, 0, 1},
+	{"Letterbox",    NULL, &ui_letterbox, 0, 1},
+	{"", NULL, NULL, 0, 0},
+	{"On Top",       NULL, &ui_ontop, 0, 1},
+	{"Fullscreen",   NULL, &ui_fullscreen, 0, 1},
+	{NULL, NULL, NULL, 0, 0},
+};
+
+static struct XjxMenuItem submenu_osd[] = {
+	{"Frame Number",      NULL, &ui_osd_fn, 0, 1},
+	{"Timecode",          NULL, &ui_osd_tc, 0, 1},
+	{"", NULL, NULL, 0, 0},
+	{"Offset Off",        NULL, &ui_osd_offset_none, 0, 1},
+	{"Offset FN",         NULL, &ui_osd_offset_fn, 0, 1},
+	{"Offset TC",         NULL, &ui_osd_offset_tc, 0, 1},
+	{"", NULL, NULL, 0, 0},
+	{"Background",        NULL, &ui_osd_box, 0, 1},
+	{NULL, NULL, NULL, 0, 0},
+};
+
+static struct XjxMenuItem mainmenu[] = {
+	{"XJadeo", NULL, NULL, 0, 1},
+	{"", NULL, NULL, 0, 0},
+	{"Sync", submenu_sync, NULL, 0, 1},
+	{"Seek", submenu_seek, NULL, 0, 1},
+	{"Size", submenu_size, NULL, 0, 1},
+	{"OSD",  submenu_osd,  NULL, 0, 1},
+	{"", NULL, NULL, 0, 0},
+	{"(Drag&Drop File on", NULL, NULL, 0, 1},
+	{" Window to Load)", NULL, NULL, 0, 1},
+	{NULL, NULL, NULL, 0, 0},
+};
+
+#define CLEARMENU(mnu) \
+	for (i = 0; mnu[i].text; ++i) { mnu[i].enabled = 0; }
+
+static void update_menus () {
 	int i;
-	for(i = 0; i < items; ++i) {
-		menuitems[i].enabled = 0;
-	}
+	CLEARMENU(mainmenu);
+	CLEARMENU(submenu_sync);
+	CLEARMENU(submenu_seek);
+	CLEARMENU(submenu_size);
+	CLEARMENU(submenu_osd);
 
 #ifdef HAVE_LTC
-	menuitems[2].sensitive = 1;
+	submenu_sync[1].sensitive = 1;
 #else
-	menuitems[2].sensitive = 0;
+	submenu_sync[1].sensitive = 0;
 #endif
 #ifdef HAVE_JACKMIDI
-	menuitems[3].sensitive = 1;
+	submenu_sync[2].sensitive = 1;
 #else
-	menuitems[3].sensitive = 0;
+	submenu_sync[2].sensitive = 0;
 #endif
 #ifdef HAVE_PORTMIDI
-	menuitems[4].sensitive = 1;
+	submenu_sync[3].sensitive = 1;
 #else
-	menuitems[4].sensitive = 0;
+	submenu_sync[3].sensitive = 0;
 #endif
 #ifdef ALSA_SEQ_MIDI
-	menuitems[5].sensitive = 1;
+	submenu_sync[4].sensitive = 1;
 #else
-	menuitems[5].sensitive = 0;
+	submenu_sync[4].sensitive = 0;
 #endif
 #ifdef ALSA_RAW_MIDI
-	menuitems[6].sensitive = 1;
+	submenu_sync[5].sensitive = 1;
 #else
-	menuitems[6].sensitive = 0;
+	submenu_sync[5].sensitive = 0;
 #endif
 
-	switch (ui_syncsource()) {
-		case SYNC_JACK:
-			menuitems[1].enabled = 1;
-			break;
-		case SYNC_LTC:
-			menuitems[2].enabled = 1;
-			break;
-		case SYNC_MTC_JACK:
-			menuitems[3].enabled = 1;
-			break;
-		case SYNC_MTC_PORTMIDI:
-			menuitems[4].enabled = 1;
-			break;
-		case SYNC_MTC_ALSASEQ:
-			menuitems[5].enabled = 1;
-			break;
-		case SYNC_MTC_ALSARAW:
-			menuitems[6].enabled = 1;
-			break;
-		case SYNC_NONE:
-			break;
+	submenu_sync[ui_syncsource()].enabled = 1;
+
+	switch(seekflags) {
+		case SEEK_KEY: submenu_seek[0].enabled = 1; break;
+		case SEEK_ANY: submenu_seek[1].enabled = 1; break;
+		default:       submenu_seek[2].enabled = 1; break;
 	}
 
-#if 0
-	menuitems[9].sensitive = 0;
-	menuitems[10].sensitive = 0;
-	menuitems[11].sensitive = 0;
-#endif
+	if (OSD_mode&OSD_FRAME) {
+		submenu_osd[0].enabled = 1;
+	}
+	if (OSD_mode&OSD_SMPTE) {
+		submenu_osd[1].enabled = 1;
+	}
+	if (!(OSD_mode&(OSD_OFFF|OSD_OFFS))) {
+		submenu_osd[3].enabled = 1;
+	}
+	if (OSD_mode&OSD_OFFF) {
+		submenu_osd[4].enabled = 1;
+	}
+	if (OSD_mode&OSD_OFFS) {
+		submenu_osd[5].enabled = 1;
+	}
+	if (OSD_mode&OSD_BOX) {
+		submenu_osd[7].enabled = 1;
+	}
 
-	if (seekflags == SEEK_KEY) {
-		menuitems[9].enabled = 1;
+	if (Xgetletterbox()) {
+		submenu_size[5].enabled = 1;
 	}
-	else if (seekflags == SEEK_ANY) {
-		menuitems[10].enabled = 1;
+	if (Xgetontop()) {
+		submenu_size[7].enabled = 1;
 	}
-	else {
-		menuitems[11].enabled = 1;
+	if (Xgetfullscreen()) {
+		submenu_size[8].enabled = 1;
+	}
+
+	if (interaction_override & OVR_MENUSYNC) {
+		mainmenu[2].sensitive = 0;
+	} else {
+		mainmenu[2].sensitive = 1;
+	}
+	if (interaction_override & OVR_MENUSYNC) { // XXX Seek
+		mainmenu[3].sensitive = 0;
+	} else {
+		mainmenu[3].sensitive = 1;
+	}
+	if (interaction_override & OVR_LOADFILE) {
+		mainmenu[6].sensitive = 0;
+		mainmenu[7].sensitive = 0;
+	} else {
+		mainmenu[6].sensitive = 1;
+		mainmenu[7].sensitive = 1;
 	}
 }
 
-static int query_font_geometry (Display *dpy, const char *txt, int *w, int *h, int *a, int *d) {
+///////////////////////////////////////////////////////////////////////////////
+
+static int query_font_geometry (Display *dpy, GC gc, const char *txt, int *w, int *h, int *a, int *d) {
 	XCharStruct text_structure;
 	int font_direction, font_ascent, font_descent;
-	XFontStruct *fontinfo = XQueryFont (dpy, XGContextFromGC (_dlg_gc));
+	XFontStruct *fontinfo = XQueryFont (dpy, XGContextFromGC (gc));
 
 	if (!fontinfo) { return -1; }
 	XTextExtents (fontinfo, txt, strlen (txt), &font_direction, &font_ascent, &font_descent, &text_structure);
@@ -154,93 +236,28 @@ static int query_font_geometry (Display *dpy, const char *txt, int *w, int *h, i
 	return 0;
 }
 
-static void dialog_expose (Display *dpy) {
-	unsigned long whiteColor = WhitePixel (dpy, DefaultScreen (dpy));
-	unsigned long blackColor = BlackPixel (dpy, DefaultScreen (dpy));
-
-	XSetForeground (dpy, _dlg_gc, _c_gray1.pixel);
-	XFillRectangle (dpy, _dlg_win, _dlg_gc, 0, 0, _dlg_width, _dlg_height);
-
-	XFontStruct *fontinfo = XQueryFont (dpy, XGContextFromGC (_dlg_gc));
-	if (!fontinfo) {
-		return;
+static void close_x_dialog_win (Display *dpy, Window *win) {
+	struct XJDialog *dlg = NULL;
+	if (!win || !*win) return;
+	XFindContext (dpy, *win, _dlg_ctx, (XPointer*)&dlg);
+	if (dlg) {
+		XDeleteContext (dpy, *win, _dlg_ctx);
+		XFreeGC (dpy, dlg->gc);
+		free(dlg);
 	}
-
-	const int items = sizeof(menuitems) / sizeof(struct XjxMenuItem);
-	int i;
-
-	for (i=0; i < items; ++i) {
-		int t_x = 15;
-		int t_y = (i+1) * (_dlg_font_height + 2);
-		if (strlen (menuitems[i].text) == 0) {
-			t_y -= _dlg_font_ascent * .5;
-			XSetForeground (dpy, _dlg_gc, _c_gray2.pixel);
-			XDrawLine (dpy, _dlg_win, _dlg_gc, 5, t_y, _dlg_width - 6, t_y);
-			continue; // space
-		}
-
-		if (!menuitems[i].callback) {
-			// center align headings
-			int t_w = 0;
-			query_font_geometry (dpy, menuitems[i].text, &t_w, NULL, NULL, NULL);
-			t_x = (_dlg_width - t_w) * .5;
-		}
-
-		if (menu_hover == i && menuitems[i].callback && menuitems[i].sensitive) {
-			XSetForeground (dpy, _dlg_gc, blackColor);
-			XFillRectangle (dpy, _dlg_win, _dlg_gc, 2, t_y - _dlg_font_ascent, _dlg_width - 4, _dlg_font_height);
-			XSetForeground (dpy, _dlg_gc, whiteColor);
-		}
-		else if (!menuitems[i].sensitive && menuitems[i].callback) {
-			XSetForeground (dpy, _dlg_gc, _c_gray2.pixel);
-		}
-		else {
-			XSetForeground (dpy, _dlg_gc, blackColor);
-		}
-
-		XDrawString (dpy, _dlg_win, _dlg_gc, t_x, t_y, menuitems[i].text, strlen (menuitems[i].text));
-		if (menuitems[i].enabled) {
-			XFillArc (dpy, _dlg_win, _dlg_gc, 5, t_y - _dlg_font_ascent * .5 - 3, 7, 7, 0, 360*64);
-		}
-	}
-	XFlush (dpy);
+	XDestroyWindow (dpy, *win);
+	*win = 0;
 }
 
-static void dialog_motion (Display *dpy, int x, int y) {
-	int am = menu_hover;
-	if (x < 0 || y < 0) {
-		menu_hover = -1;
-	} else {
-		menu_hover = y / (_dlg_font_height + 2);
-		if (!menuitems[menu_hover].callback || !menuitems[menu_hover].sensitive) {
-			menu_hover = -1;
-		}
-	}
-	if (am != menu_hover) {
-		dialog_expose (dpy);
-	}
-}
-
-static void dialog_click (Display *dpy, int x, int y) {
-	const int items = sizeof(menuitems) / sizeof(struct XjxMenuItem);
-	if (menu_hover >= 0 && menu_hover < items) {
-		if (menuitems[menu_hover].callback && menuitems[menu_hover].sensitive) {
-			menuitems[menu_hover].callback();
-			close_x_dialog(dpy);
-		}
-	}
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-int show_x_dialog (Display *dpy, Window parent, int x, int y) {
-	if (_dlg_win) return -1;
-
-	XColor dummy;
-
-	Colormap colormap = DefaultColormap (dpy, DefaultScreen (dpy));
-	if (!XAllocNamedColor (dpy, colormap, "LightGray", &_c_gray1, &dummy)) return -1;
-	if (!XAllocNamedColor (dpy, colormap, "DarkGray", &_c_gray2, &dummy)) return -1;
+static int open_x_dialog_win (
+		Display *dpy, Window *win,
+		int x, int y, int pw,
+		struct XjxMenuItem *menu, const int m_items
+		)
+{
+	if (!dpy) return -1;
+	if (!win) return -1;
+	if (*win) return -1;
 
 	XSetWindowAttributes attr;
 	memset (&attr, 0, sizeof(XSetWindowAttributes));
@@ -253,78 +270,270 @@ int show_x_dialog (Display *dpy, Window parent, int x, int y) {
 		| ConfigureNotify | StructureNotifyMask
 		| PointerMotionMask ;
 
+	int dlg_width  = 100;
+	int dlg_height = 100;
 
-	// TODO check position, realign at edge of screen
-	_dlg_win = XCreateWindow (
+	*win = XCreateWindow (
 		dpy, DefaultRootWindow (dpy),
-		x, y, _dlg_width, _dlg_height,
+		x, y, dlg_width, dlg_height,
 		1,  CopyFromParent, InputOutput, CopyFromParent,
 		CWOverrideRedirect | CWSaveUnder | CWEventMask | CWBorderPixel, &attr);
 
-	if (!_dlg_win) {
-		return 1;
+	if (!*win) { return 1; }
+
+	GC dlg_gc = XCreateGC (dpy, *win, 0, NULL);
+
+	if (_dlg_font_height == 0) { // 1st time only
+		if (query_font_geometry (dpy, dlg_gc, "|0Yy", NULL, &_dlg_font_height, &_dlg_font_ascent, NULL)) {
+			XFreeGC (dpy, dlg_gc);
+			XDestroyWindow (dpy, *win);
+			*win = 0;
+			return -1;
+		}
+		_dlg_font_height +=2;
+		_dlg_font_ascent +=1;
 	}
 
-	_dlg_gc = XCreateGC (dpy, _dlg_win, 0, NULL);
-	query_font_geometry (dpy, "|0Yy", NULL, &_dlg_font_height, &_dlg_font_ascent, NULL);
-	_dlg_font_height +=2;
-	_dlg_font_ascent +=1;
-	menu_hover = -1;
-
-	const int items = sizeof(menuitems) / sizeof(struct XjxMenuItem);
-	_dlg_height = (_dlg_font_height + 2) * (items + .5);
+	dlg_height = (_dlg_font_height + 2) * (m_items + .5);
 
 	int i;
 	int max_w = 80;
-	for(i = 0; i < items; ++i) {
+	for(i = 0; i < m_items; ++i) {
 		int cw;
-		if (!query_font_geometry(dpy, menuitems[i].text, &cw, NULL, NULL, NULL)) {
+		if (!query_font_geometry(dpy, dlg_gc, menu[i].text, &cw, NULL, NULL, NULL)) {
 			if (cw > max_w) max_w = cw;
 		}
 	}
-	_dlg_width = max_w + 25;
-	XResizeWindow (dpy, _dlg_win, _dlg_width, _dlg_height);
+	dlg_width = max_w + 25;
+	XResizeWindow (dpy, *win, dlg_width, dlg_height);
 
 	XWindowAttributes wa;
-	XGetWindowAttributes (dpy, _dlg_win, &wa);
+	XGetWindowAttributes (dpy, *win, &wa);
 	if (wa.screen) {
-		int sc_w = WidthOfScreen (wa.screen) - _dlg_width - 5;
-		int sc_h = HeightOfScreen (wa.screen) - _dlg_height - 5;
-		if (x > sc_w) x = sc_w;
-		if (y > sc_h) y = sc_h;
-		XMoveWindow (dpy, _dlg_win, x, y);
+		int sc_w = WidthOfScreen (wa.screen) - dlg_width - 5;
+		int sc_h = HeightOfScreen (wa.screen) - dlg_height - 5;
+		if (x > sc_w) x = sc_w - pw;
+		if (y > sc_h) y = y + _dlg_font_height - 2 - dlg_height;
+		XMoveWindow (dpy, *win, x, y);
 	}
 
-	XMapRaised (dpy, _dlg_win);
+	struct XJDialog *dlg = malloc(sizeof(struct XJDialog));
+	dlg->gc = dlg_gc;
+	dlg->x0 = x;
+	dlg->y0 = y;
+	dlg->width = dlg_width;
+	dlg->height = dlg_height;
+	dlg->menu_hover = -1;
+	dlg->menu_count = m_items;
+	dlg->menu_items = menu;
 
-	XGrabPointer (dpy, _dlg_win, False,
+	XSaveContext(dpy, *win, _dlg_ctx, (XPointer)dlg);
+	XMapRaised (dpy, *win);
+
+	return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+static void dialog_expose (Display *dpy, Window win) {
+	struct XJDialog *dlg = NULL;
+	XFindContext (dpy, win, _dlg_ctx, (XPointer*)&dlg);
+	if (!dlg) return;
+
+	const unsigned long whiteColor = WhitePixel (dpy, DefaultScreen (dpy));
+	const unsigned long blackColor = BlackPixel (dpy, DefaultScreen (dpy));
+
+	XSetForeground (dpy, dlg->gc, _c_gray1.pixel);
+	XFillRectangle (dpy, win, dlg->gc, 0, 0, dlg->width, dlg->height);
+
+	XFontStruct *fontinfo = XQueryFont (dpy, XGContextFromGC (dlg->gc));
+	if (!fontinfo) {
+		return;
+	}
+
+	int i;
+	for (i=0; i < dlg->menu_count; ++i) {
+		int t_x = 15;
+		int t_y = (i+1) * (_dlg_font_height + 2);
+		if (strlen (dlg->menu_items[i].text) == 0) {
+			t_y -= _dlg_font_ascent * .5;
+			XSetForeground (dpy, dlg->gc, _c_gray2.pixel);
+			XDrawLine (dpy, win, dlg->gc, 5, t_y, dlg->width - 6, t_y);
+			continue; // separator
+		}
+
+		if (!dlg->menu_items[i].callback && !dlg->menu_items[i].submenu) {
+			// center align headings
+			int t_w = 0;
+			query_font_geometry (dpy, dlg->gc, dlg->menu_items[i].text, &t_w, NULL, NULL, NULL);
+			t_x = (dlg->width - t_w) * .5;
+		}
+
+		if (dlg->menu_hover == i && dlg->menu_items[i].sensitive
+				&& (dlg->menu_items[i].callback || dlg->menu_items[i].submenu))
+		{
+			XSetForeground (dpy, dlg->gc, blackColor);
+			XFillRectangle (dpy, win, dlg->gc, 2, t_y - _dlg_font_ascent, dlg->width - 4, _dlg_font_height);
+			XSetForeground (dpy, dlg->gc, whiteColor);
+		}
+		else if (!dlg->menu_items[i].sensitive)
+		{
+			XSetForeground (dpy, dlg->gc, _c_gray2.pixel);
+		}
+		else
+		{
+			XSetForeground (dpy, dlg->gc, blackColor);
+		}
+
+		XDrawString (dpy, win, dlg->gc, t_x, t_y, dlg->menu_items[i].text, strlen (dlg->menu_items[i].text));
+		if (dlg->menu_items[i].enabled) {
+			XFillArc (dpy, win, dlg->gc, 5, t_y - _dlg_font_ascent * .5 - 3, 7, 7, 0, 360*64);
+		}
+		if (dlg->menu_items[i].submenu) {
+			XPoint pts[3] = { {dlg->width - 5, t_y - _dlg_font_ascent * .5 + 1}, {-4, -4}, {0, 8}};
+			XFillPolygon (dpy, win, dlg->gc, pts, 3, Convex, CoordModePrevious);
+		}
+	}
+	XFlush (dpy);
+}
+
+static void dialog_motion (Display *dpy, Window win, int x, int y) {
+	struct XJDialog *dlg = NULL;
+	XFindContext (dpy, win, _dlg_ctx, (XPointer*)&dlg);
+	if (!dlg) return;
+
+	x -= dlg->x0;
+	y -= dlg->y0;
+
+	int am = dlg->menu_hover;
+	if (x <= 0 || y <= 0 || x >= dlg->width || y >= dlg->height) {
+		am = -1;
+	} else {
+		am = y / (_dlg_font_height + 2); // TODO skip hidden 
+		if (am < 0 || am >= dlg->menu_count
+				|| !(dlg->menu_items[am].callback || dlg->menu_items[am].submenu)
+				|| !(dlg->menu_items[am].sensitive)
+			 )
+		{
+			am = -1;
+		}
+	}
+#define HAS_SUBMENU(i) (i >= 0 && i <= dlg->menu_count && dlg->menu_items[i].submenu)
+
+	if (am != dlg->menu_hover) {
+		if (am == -1 && HAS_SUBMENU(dlg->menu_hover)) {
+			; // keep submenu
+		} else {
+			dlg->menu_hover = am;
+			if (win == _dlg_mwin) { // TOP LEVEL ONLY, not self
+				if (HAS_SUBMENU(dlg->menu_hover)) {
+					show_submenu(dpy, dlg->menu_items[dlg->menu_hover].submenu,
+							dlg->x0, dlg->y0 + (am + .5) * (_dlg_font_height + 2), dlg->width - 1);
+				} else {
+					hide_submenu(dpy);
+				}
+			}
+			dialog_expose (dpy, win);
+		}
+	}
+}
+
+static int dialog_click (Display *dpy, Window win, int x, int y, int b) {
+	struct XJDialog *dlg = NULL;
+	XFindContext (dpy, win, _dlg_ctx, (XPointer*)&dlg);
+	if (!dlg) return -1;
+
+	x -= dlg->x0;
+	y -= dlg->y0;
+
+	if (x <= 0 || y <= 0 || x >= dlg->width || y >= dlg->height) {
+		return -1;
+	}
+	if (b != 1) return 0;
+
+	if (dlg->menu_hover >= 0 && dlg->menu_hover < dlg->menu_count) {
+		if (dlg->menu_items[dlg->menu_hover].callback && dlg->menu_items[dlg->menu_hover].sensitive) {
+			dlg->menu_items[dlg->menu_hover].callback();
+			close_x_dialog(dpy);
+		}
+	}
+	return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+static int show_submenu(Display *dpy, struct XjxMenuItem *sm, int x, int y, int pw) {
+	assert(_dlg_mwin);
+	close_x_dialog_win(dpy, &_dlg_swin);
+
+	x += pw;
+	int items; for (items = 0; sm[items].text; ++items);
+	return open_x_dialog_win(dpy, &_dlg_swin, x, y, pw, sm, items);
+}
+
+static void hide_submenu(Display *dpy) {
+	assert(_dlg_mwin);
+	close_x_dialog_win(dpy, &_dlg_swin);
+}
+
+int show_x_dialog (Display *dpy, Window parent, int x, int y) {
+	if (_dlg_mwin) return -1;
+	if (!_dlg_ctx) {
+		_dlg_ctx = XUniqueContext();
+	}
+
+	XColor dummy;
+	Colormap colormap = DefaultColormap (dpy, DefaultScreen (dpy));
+	if (!XAllocNamedColor (dpy, colormap, "LightGray", &_c_gray1, &dummy)) return -1;
+	if (!XAllocNamedColor (dpy, colormap, "DarkGray", &_c_gray2, &dummy)) return -1;
+
+	update_menus();
+
+	int items; for (items = 0; mainmenu[items].text; ++items);
+	if (open_x_dialog_win(dpy, &_dlg_mwin, x, y, 0, mainmenu, items)) {
+		return -1;
+	}
+#if 1
+	XGrabPointer (dpy, _dlg_mwin, True,
 			ButtonReleaseMask | ButtonPressMask | EnterWindowMask | LeaveWindowMask | PointerMotionMask | StructureNotifyMask,
 			GrabModeAsync, GrabModeAsync, None, None, CurrentTime);
-	XGrabKeyboard (dpy, _dlg_win, False, GrabModeAsync, GrabModeAsync, CurrentTime);
+	XGrabKeyboard (dpy, _dlg_mwin, True, GrabModeAsync, GrabModeAsync, CurrentTime);
 	//XSetInputFocus (dpy, parent, RevertToNone, CurrentTime);
-
-	update_menu();
+#endif
 	return 0;
 }
 
 void close_x_dialog (Display *dpy) {
-	if (!_dlg_win) return;
-	Colormap colormap = DefaultColormap (dpy, DefaultScreen (dpy));
+	if (!_dlg_mwin) {
+		assert(!_dlg_swin);
+		return;
+	}
 	XUngrabPointer (dpy, CurrentTime);
 	XUngrabKeyboard (dpy, CurrentTime);
 	XSync (dpy, False);
+
+	close_x_dialog_win(dpy, &_dlg_mwin);
+	close_x_dialog_win(dpy, &_dlg_swin);
+
+	Colormap colormap = DefaultColormap (dpy, DefaultScreen (dpy));
 	XFreeColors (dpy, colormap, &_c_gray1.pixel, 1, 0);
 	XFreeColors (dpy, colormap, &_c_gray2.pixel, 1, 0);
-	XFreeGC (dpy, _dlg_gc);
-	XDestroyWindow (dpy, _dlg_win);
-	_dlg_win = 0;
 	force_redraw = 1;
 }
 
 
 int handle_xdlg_event (Display *dpy, XEvent *event) {
-	if (!_dlg_win) return 0;
-	if (event->xany.window != _dlg_win) {
+	if (!_dlg_mwin) return 0;
+	assert(event->xany.window);
+	if (event->xany.window != _dlg_mwin && event->xany.window != _dlg_swin) {
+		switch (event->type) {
+			case ButtonRelease:
+			case KeyRelease:
+			close_x_dialog (dpy);
+				break;
+			default:
+				break;
+		}
 		return 0;
 	}
 
@@ -334,42 +543,28 @@ int handle_xdlg_event (Display *dpy, XEvent *event) {
 			break;
 		case Expose:
 			if (event->xexpose.count == 0) {
-				dialog_expose (dpy);
+				dialog_expose (dpy, event->xany.window);
 			}
 			break;
 		case MotionNotify:
-			if (event->xmotion.x > 0 && event->xmotion.y > 0
-					&& event->xmotion.x < _dlg_width
-					&& event->xmotion.y < _dlg_height)
-			{
-				dialog_motion (dpy, event->xmotion.x, event->xmotion.y);
-			} else {
-				dialog_motion (dpy, -1, -1);
-			}
+			dialog_motion (dpy, event->xany.window, event->xmotion.x_root, event->xmotion.y_root);
 			if (event->xmotion.is_hint == NotifyHint) {
-				XGetMotionEvents (dpy, _dlg_win, CurrentTime, CurrentTime, NULL);
+				XGetMotionEvents (dpy, event->xany.window, CurrentTime, CurrentTime, NULL);
 			}
 			break;
 		case ButtonPress:
 			break;
 		case ButtonRelease:
-			assert(_dlg_win);
-			if (event->xbutton.x > 0 && event->xbutton.y > 0
-					&& event->xbutton.x < _dlg_width
-					&& event->xbutton.y < _dlg_height)
-			{
-				if (event->xbutton.button == 1)
-					dialog_click (dpy, event->xbutton.x, event->xbutton.y);
-			} else if (_dlg_win) {
+			if (dialog_click(dpy, event->xany.window, event->xbutton.x_root, event->xbutton.y_root, event->xbutton.button)) {
 				close_x_dialog (dpy);
 			}
 			break;
 		case KeyRelease:
-			assert(_dlg_win);
 			close_x_dialog (dpy);
 			break;
 	}
 	return 1;
 }
+
 #endif // platform
 #endif // XDLG

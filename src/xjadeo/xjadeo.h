@@ -195,7 +195,7 @@ void ui_osd_fn();
 void ui_osd_box();
 
 enum SyncSource {
-	SYNC_JACK,
+	SYNC_JACK = 0, // used in display_x_dialog.c
 	SYNC_LTC,
 	SYNC_MTC_JACK,
 	SYNC_MTC_PORTMIDI,

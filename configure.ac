@@ -137,7 +137,8 @@ AH_TEMPLATE([TTFFONTFILE], [absolute path to truetype default OSD font file])
 dnl misc
 AH_TEMPLATE([HAVE_TIFF], [Define as 1 if you have libtiff (contrib/tsmm)])
 AH_TEMPLATE([CFG_WARN_ONLY], [errors in the resource config file only result in a warning message instead of forcing xjadeo to exit.])
-AH_TEMPLATE([DND], [enable xjadeo x11 drag and drop])
+AH_TEMPLATE([DND], [enable xjadeo x11/glx drag and drop])
+AH_TEMPLATE([XDLG], [enable xjadeo x11/glx context menu])
 AH_TEMPLATE([COLOREQ], [enable XV and imlib2 color equalizer])
 AH_TEMPLATE([TIMEMAP], [enable dynamic time scaling])
 AH_TEMPLATE([CROPIMG], [enable frame cropping])
@@ -146,6 +147,7 @@ AH_TEMPLATE([DRAW_CROSS], [paint a X on screen when unable to decode or display 
 dnl fixed configuration
 AC_DEFINE(CFG_WARN_ONLY)
 AC_DEFINE(DND)
+AC_DEFINE(XDLG)
 AC_DEFINE(DRAW_CROSS)
 AC_DEFINE(COLOREQ)
 
