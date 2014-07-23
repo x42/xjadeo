@@ -14,7 +14,8 @@
 * remove cutom debian package -> use debian's *real* package.
 * fix memleak when connecting jack-midi ports
 * add override for sync and file changes (OSX menu, X11 DnD)
-* fix X11 drag-drop
+* fix X11/GLX drag-drop
+* built-in X11/GLX context-menu
 
 2014-07-13 (0.7.8)  Robin Gareus <robin@gareus.org>
 * document -J option in --help

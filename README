@@ -24,22 +24,25 @@ Development packages for the following software must be available to compile xja
 
 * ffmpeg (from ffmpeg.org)
 * jack-audio-connection-kit (jackaudio.org)
-* libX11, libxv
+* libX11
 
-recommended:
-* freetype2  (for on-screen display)
-* imlib2 (RGB display)
-* SDL (window build)
-* alsa (for alsa midi MTC support)
-* portmidi (alternate midi driver)
-* libltc (for LTC support)
-* liblo for OSC support
+Recommended optional dependencies:
+* glu (opengl display)
+* freetype2  (on-screen-display)
+* asound (ALSA MIDI [MTC] support)
+* portmidi, porttime (windows/OSX MIDI [MTC] support)
+* libltc (LTC support)
+* liblo (OSC remote control support)
+
+options:
+* libxv (on Linux, X-video acceleration)
+* imlib2 (Linux RGB display)
+* SDL (meant for windows only, really - but works on Linux,OSX too)
 
 deprecated:
-* QT3 or QT4 (for GUI)
+* QT3 or QT4 (for external remote-control UI)
 
 
-
-Copyright (C) 2005 - 2013 GPLv2
+Copyright (C) 2005 - 2014 GPLv2
  Luis Garrido <luisgarrido@users.sourceforge.net>
  Robin Gareus <robin@gareus.org>
