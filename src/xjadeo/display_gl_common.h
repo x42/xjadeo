@@ -214,7 +214,7 @@ static void xjglKeyPress(const unsigned int sym, const char *key) {
 		ui_osd_clear();
 	}
 	else if (!strcmp(key, ".")) {
-		XCresize_scale(100);
+		XCresize_percent(100);
 	}
 	else if (!strcmp(key, ",")) {
 		XCresize_aspect(0);
