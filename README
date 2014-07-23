@@ -8,13 +8,11 @@ or visit http://xjadeo.sf.net/
 Basic build instructions
 ------------------------
 
-```bash
-  git clone git://github.com/x42/xjadeo.git
-  ./autogen.sh
-  ./configure
-  make
-  sudo make install
-```
+git clone git://github.com/x42/xjadeo.git
+./autogen.sh
+./configure
+make
+sudo make install
 
 
 Build Dependencies
@@ -22,9 +20,10 @@ Build Dependencies
 
 Development packages for the following software must be available to compile xjadeo:
 
-* ffmpeg (from ffmpeg.org)
+* ffmpeg (from ffmpeg.org at least version 1.0)
 * jack-audio-connection-kit (jackaudio.org)
-* libX11
+* libX11 (on Linux Only)
+* glu (mandatory for OSX and Windows only, but recommended on GNU/Linux)
 
 Recommended optional dependencies:
 * glu (opengl display)
@@ -34,13 +33,13 @@ Recommended optional dependencies:
 * libltc (LTC support)
 * liblo (OSC remote control support)
 
-options:
+Options:
 * libxv (on Linux, X-video acceleration)
 * imlib2 (Linux RGB display)
-* SDL (meant for windows only, really - but works on Linux,OSX too)
+* SDL (meant for windows only, really - but works on Linux, OSX too)
 
-deprecated:
-* QT3 or QT4 (for external remote-control UI)
+Deprecated:
+* QT3 or QT4 (for external remote-control GUI)
 
 
 Copyright (C) 2005 - 2014 GPLv2
