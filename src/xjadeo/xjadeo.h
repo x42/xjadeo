@@ -212,6 +212,11 @@ void open_jack(void );
 void close_jack(void);
 int jack_connected(void);
 
+void jackt_rewind();
+void jackt_start();
+void jackt_stop();
+void jackt_toggle();
+
 /* ltc-jack.c function prototypes */
 long ltc_poll_frame (void);
 void open_ltcjack(char *autoconnect);

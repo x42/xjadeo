@@ -25,9 +25,6 @@ extern long ts_offset;
 extern int 	force_redraw; // tell the main event loop that some cfg has changed
 extern int 	interaction_override; // disable some options.
 
-void jackt_toggle();
-void jackt_rewind();
-
 void calc_letterbox(int src_w, int src_h, int out_w, int out_h, int *sca_w, int *sca_h);
 void resized_sdl ();
 

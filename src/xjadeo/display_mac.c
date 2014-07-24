@@ -26,10 +26,6 @@
 #if defined PLATFORM_OSX && (defined __i386 || defined __ppc)
 
 void xapi_open(void *d);
-void jackt_stop();
-void jackt_start();
-void jackt_toggle();
-void jackt_rewind();
 
 extern int loop_flag;
 extern int OSD_mode;

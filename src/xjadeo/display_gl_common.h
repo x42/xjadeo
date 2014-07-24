@@ -40,10 +40,6 @@
 #define GL_TEXTURE_RECTANGLE_ARB 0x84F5
 #endif
 
-// For keyboard shortcuts
-void jackt_toggle();
-void jackt_rewind();
-
 ///////////////////////////////////////////////////////////////////////////////
 
 static int        _gl_width;

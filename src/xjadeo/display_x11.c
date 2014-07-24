@@ -28,9 +28,6 @@
 int xoffset = 0;
 #endif
 
-void jackt_toggle();
-void jackt_rewind();
-
 #if (HAVE_LIBXV || HAVE_IMLIB2)
 
 #include <X11/xpm.h>
