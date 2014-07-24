@@ -387,10 +387,10 @@ int  gl_get_fullscreen () {
 }
 
 void gl_mousepointer (int action) {
-	if (action==2) _gl_mousepointer^=1;
-	else _gl_mousepointer = action ? 1 : 0;
+	if (action==2) hide_mouse ^= 1;
+	else hide_mouse = action ? 1 : 0;
 
-	if (_gl_mousepointer) {
+	if (hide_mouse) {
 		/* hide */
 		Cursor no_ptr;
 		Pixmap bm_no;

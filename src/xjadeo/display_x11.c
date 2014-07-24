@@ -45,7 +45,6 @@ static GC       xj_gc;
 static Atom     xj_del_atom;
 static int      xj_ontop = 0;
 static int      xj_fullscreen = 0;
-static int      xj_mouse = 0;
 
 static int      xj_dwidth, xj_dheight; // cache window size for rendering currently only Xv
 static int      xj_box[4]; // letterbox site - currently only Xv & imlib2
@@ -150,9 +149,9 @@ static void xj_showcursor (void) {
 }
 
 void xj_mousepointer (int action) {
-	if (action==2) xj_mouse^=1;
-	else xj_mouse=action?0:1;
-	if (xj_mouse) xj_hidecursor();
+	if (action==2) hide_mouse ^= 1;
+	else hide_mouse = action ? 1 : 0;
+	if (hide_mouse) xj_hidecursor();
 	else xj_showcursor();
 }
 

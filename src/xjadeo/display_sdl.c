@@ -21,12 +21,8 @@
 #include "xjadeo.h"
 #include "display.h"
 
-extern long ts_offset; 
-extern int 	force_redraw; // tell the main event loop that some cfg has changed
-extern int 	interaction_override; // disable some options.
-
-void calc_letterbox(int src_w, int src_h, int out_w, int out_h, int *sca_w, int *sca_h);
-void resized_sdl ();
+static void calc_letterbox(int src_w, int src_h, int out_w, int out_h, int *sca_w, int *sca_h);
+static void resized_sdl ();
 
 /*******************************************************************************
  * SDL
@@ -36,17 +32,17 @@ void resized_sdl ();
 
 #define MYSDLFLAGS (SDL_HWSURFACE | SDL_RESIZABLE | SDL_DOUBLEBUF)
 
-  SDL_Surface* sdl_screen;
-  SDL_Overlay *sdl_overlay;
-  SDL_Rect sdl_rect;
-  SDL_Rect sdl_dest_rect;
-  int sdl_pic_format= SDL_YV12_OVERLAY; // fourcc
+static SDL_Surface* sdl_screen;
+static SDL_Overlay *sdl_overlay;
+static SDL_Rect sdl_rect;
+static SDL_Rect sdl_dest_rect;
+static int sdl_pic_format= SDL_YV12_OVERLAY; // fourcc
 
-	int full_screen_width = 1024;
-	int full_screen_height = 768;
-	int	sdl_ontop = 0;
-	int sdl_full_screen = 0;
-	SDL_Rect sdl_oldsize;
+static int full_screen_width = 1024;
+static int full_screen_height = 768;
+static int	sdl_ontop = 0;
+static int sdl_full_screen = 0;
+static SDL_Rect sdl_oldsize;
 
 
 void close_window_sdl(void) {
@@ -116,12 +112,12 @@ no_sdl:
 	return 1;
 }
 
-void black_border_sdl(SDL_Rect b) {
+static void black_border_sdl(SDL_Rect b) {
 	SDL_FillRect(sdl_screen, &b, SDL_MapRGB(sdl_screen->format, 0,0,0));
 	SDL_UpdateRect(sdl_screen, b.x, b.y, b.w, b.h);
 }
 
-void resized_sdl () {
+static void resized_sdl () {
 	if (!want_letterbox) {
 		memcpy(&sdl_dest_rect, &sdl_rect, sizeof (SDL_Rect));
 		return;
@@ -153,10 +149,9 @@ void resized_sdl () {
 }
 
 void mousecursor_sdl(int action) {
-  static int sdl_mouse = 1;
-	if (action==2) sdl_mouse^=1;
-	else sdl_mouse=action?1:0;
-	SDL_ShowCursor(sdl_mouse);
+	if (action==2) hide_mouse ^= 1;
+	else hide_mouse = action ? 1 : 0;
+	SDL_ShowCursor(!hide_mouse);
 }
 
 void resize_sdl (unsigned int x, unsigned int y) { 
@@ -344,7 +339,7 @@ void sdl_toggle_fullscreen(int action) {
 	force_redraw=1;
 }
 
-void calc_letterbox(int src_w, int src_h, int out_w, int out_h, int *sca_w, int *sca_h) {
+static void calc_letterbox(int src_w, int src_h, int out_w, int out_h, int *sca_w, int *sca_h) {
 	const float asp_src = movie_aspect?movie_aspect:(float)src_w/src_h;
   if (asp_src * out_h > out_w) {
     (*sca_w)=out_w;

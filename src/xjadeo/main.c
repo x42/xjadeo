@@ -79,6 +79,7 @@ long  ts_offset = 0;
 long  userFrame = 0; // seek to this frame if jack and midi are N/A
 long  dispFrame = 0; // global strorage... = (SMPTE+offset) with boundaries to [0..movie_file_frames]
 int   force_redraw = 0;
+int   hide_mouse = 0;
 
 int   interaction_override = 0; // disable some options.
 /* 1 (bit 0) : ignore 'q' and 'ESC' quit key

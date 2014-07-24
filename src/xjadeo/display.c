@@ -552,6 +552,10 @@ void Xmousepointer (int a) {
 	VO[VOutput].mousepointer(a);
 }
 
+int Xgetmousepointer (int a) {
+	return hide_mouse;
+}
+
 int Xgetletterbox (void) {
 	return want_letterbox;
 }

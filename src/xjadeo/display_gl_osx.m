@@ -184,7 +184,7 @@ __attribute__ ((visibility ("hidden")))
 - (void)mouseEntered:(NSEvent*)theEvent
 {
 	[self updateTrackingAreas];
-	gl_mousepointer(_gl_mousepointer);
+	gl_mousepointer(hide_mouse);
 }
 
 - (void)mouseExited:(NSEvent*)theEvent
@@ -683,10 +683,10 @@ void gl_set_fullscreen (int action) {
 }
 
 void gl_mousepointer (int action) {
-	if (action==2) _gl_mousepointer^=1;
-	else _gl_mousepointer = action ? 1 : 0;
+	if (action==2) hide_mouse^=1;
+	else hide_mouse = action ? 1 : 0;
 
-	if (_gl_mousepointer) {
+	if (hide_mouse) {
 		CGDisplayHideCursor(kCGDirectMainDisplay);
 	} else {
 		CGDisplayShowCursor(kCGDirectMainDisplay);

@@ -33,6 +33,7 @@ extern long ts_offset;
 extern int force_redraw; // tell the main event loop that some cfg has changed
 extern int want_letterbox;
 extern int seekflags;
+extern int hide_mouse;
 extern int interaction_override; // disable some options.
 
 extern int movie_width;
@@ -120,7 +121,6 @@ static int vo_fs = 0; // enter fullscreen - user setting
 static int vo_mac_fs = 0; // we are in fullscreen
 
 ///
-static int mouseHide = 0;
 static int winLevel = 1; // always on top
 static Rect imgRect; // size of the original image (unscaled)
 static Rect dstRect; // size of the displayed image (after scaling)
@@ -617,8 +617,6 @@ void window_fullscreen() {
     if(winLevel != 0) {
       if(device_id == 0) {
         SetSystemUIMode(kUIModeAllHidden, kUIOptionAutoShowMenuBar);
-       // CGDisplayHideCursor(kCGDirectMainDisplay);
-       // mouseHide = TRUE;
       }
 
       if(fs_res_x != 0 || fs_res_y != 0) {
@@ -667,10 +665,6 @@ void window_fullscreen() {
     }
 
     SetSystemUIMode( kUIModeNormal, 0);
-#if 0 //show mouse cursor
-    CGDisplayShowCursor(kCGDirectMainDisplay);
-    mouseHide = FALSE;
-#endif
 
     //revert window to previous setting
     ChangeWindowAttributes(theWindow, 0, kWindowNoShadowAttribute);
@@ -738,14 +732,6 @@ static OSStatus MouseEventHandler(EventHandlerCallRef nextHandler, EventRef even
     GetEventParameter(event, kEventParamWindowMouseLocation, typeQDPoint, 0, sizeof(Point), 0, &winMousePos);
     switch (kind) {
       case kEventMouseMoved:
-      {
-#if 0 // auto - show mouse whem moving
-        if(vo_mac_fs) {
-          CGDisplayShowCursor(kCGDirectMainDisplay);
-          mouseHide = FALSE;
-        }
-#endif
-      }
       break;
       case kEventMouseWheelMoved:
       {
@@ -940,19 +926,6 @@ static void flip_page(void) {
 }
 #endif
 
-#if 0 //auto hide mouse cursor and futur on-screen control?
-	if(vo_mac_fs && !mouseHide) {
-		int curTime = TickCount()/60;
-		static int lastTime = 0;
-
-		if( ((curTime - lastTime) >= 5) || (lastTime == 0) )
-		{
-			CGDisplayHideCursor(kCGDirectMainDisplay);
-			mouseHide = TRUE;
-			lastTime = curTime;
-		}
-	}
-#endif
 #if 1
   //update activity every 30 seconds to prevent
   //screensaver from starting up.
@@ -1326,14 +1299,14 @@ int get_fullscreen_mac() {
 }
 
 void mousepointer_mac (int a) {
-  if (a>1) a=!mouseHide;
-  printf("mouse cursor: %s\n",a?"hide":"show");
+  if (a>1) a = !hide_mouse;
+  //printf("mouse cursor: %s\n",a?"hide":"show");
   if (a) {
     CGDisplayHideCursor(kCGDirectMainDisplay);
-    mouseHide = 1;
+    hide_mouse = 1;
   } else {
     CGDisplayShowCursor(kCGDirectMainDisplay);
-    mouseHide = 0;
+    hide_mouse = 0;
   }
 }
 

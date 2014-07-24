@@ -408,9 +408,9 @@ void gl_set_fullscreen (int action) {
 }
 
 void gl_mousepointer (int action) {
-	if (action==2) _gl_mousepointer^=1;
-	else _gl_mousepointer = action ? 1 : 0;
-	if (_gl_mousepointer) {
+	if (action==2) hide_mouse ^= 1;
+	else hide_mouse = action ? 1 : 0;
+	if (hide_mouse) {
 		SetClassLong(_gl_hwnd, GCL_HCURSOR, (LONG)hCurs_none);
 		SetCursor(hCurs_none);
 	} else {

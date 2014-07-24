@@ -46,7 +46,6 @@ static int        _gl_width;
 static int        _gl_height;
 static int        _gl_ontop = 0;
 static int        _gl_fullscreen = 0;
-static int        _gl_mousepointer = 0;
 
 static float        _gl_quad_x = 1.0;
 static float        _gl_quad_y = 1.0;

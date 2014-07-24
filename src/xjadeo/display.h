@@ -14,6 +14,7 @@ extern int want_verbose;
 extern int start_ontop;
 extern int start_fullscreen;
 extern int want_letterbox;
+extern int hide_mouse;
 extern int remote_en;
 extern int force_redraw;
 extern int interaction_override;

@@ -135,7 +135,8 @@ void Xposition (int x, int y);
 void Xgetpos (int *x, int *y);
 int  Xgetontop (void);
 int  Xgetfullscreen (void);
-int Xgetletterbox (void);
+int  Xgetletterbox (void);
+int Xgetmousepointer (void);
 
 void XCresize_percent (float p);
 void XCresize_aspect (int relscale);
