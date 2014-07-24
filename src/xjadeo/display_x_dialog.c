@@ -38,6 +38,7 @@ static Window   _dlg_swin = 0;
 
 struct XjxMenuItem {
 	const char *text;
+	const char *key;
 	struct XjxMenuItem *submenu;
 	void (*callback)(void);
 	int enabled; // TODO use a callback ?!
@@ -70,60 +71,81 @@ static void ui_aspect()     { XCresize_aspect(0); }
 static void ui_ontop()      { Xontop(2); }
 static void ui_letterbox()  { Xletterbox(2); }
 static void ui_fullscreen() { Xfullscreen(2); }
+static void ui_mousetoggle(){ Xmousepointer(2); }
 
+/* unlisted key-shorcuts
+ * - Esc, q (quit)
+ * - C (OSD - clear all)
+ * - <, > (scale window size)
+ * - \, -, +, { } (time offset)
+ *
+ * - e, E, 0-9 , Shift + 1-4 (color EQ for xv/imlib)
+ * - [, ] (pan/crop -- ifdef'ed)
+ */
 static struct XjxMenuItem submenu_sync[] = {
-	{"Jack",           NULL, &ui_sync_to_jack, 0, 1},
-	{"LTC",            NULL, &ui_sync_to_ltc, 0, 1},
-	{"MTC (JACK)",     NULL, &ui_sync_to_mtc_jack, 0, 1},
-	{"MTC (PortMidi)", NULL, &ui_sync_to_mtc_portmidi, 0, 1},
-	{"MTC (ALSA Seq)", NULL, &ui_sync_to_mtc_alsaseq, 0, 1},
-	{"MTC (ALSA Raw)", NULL, &ui_sync_to_mtc_alsaraw, 0, 1},
-	{NULL, NULL, NULL, 0, 0},
+	{"Jack",           "", NULL, &ui_sync_to_jack, 0, 1},
+	{"LTC",            "", NULL, &ui_sync_to_ltc, 0, 1},
+	{"MTC (JACK)",     "", NULL, &ui_sync_to_mtc_jack, 0, 1},
+	{"MTC (PortMidi)", "", NULL, &ui_sync_to_mtc_portmidi, 0, 1},
+	{"MTC (ALSA Seq)", "", NULL, &ui_sync_to_mtc_alsaseq, 0, 1},
+	{"MTC (ALSA Raw)", "", NULL, &ui_sync_to_mtc_alsaraw, 0, 1},
+	{NULL, NULL, NULL, NULL, 0, 0},
 };
 
 static struct XjxMenuItem submenu_seek[] = {
-	{"Key Frames Only", NULL, &ui_seek_key, 0, 1},
-	{"Any Fame",        NULL, &ui_seek_any, 0, 1},
-	{"PTS",             NULL, &ui_seek_cont, 1, 1},
-	{NULL, NULL, NULL, 0, 0},
+	{"Key Frames Only", "", NULL, &ui_seek_key, 0, 1},
+	{"Any Fame",        "", NULL, &ui_seek_any, 0, 1},
+	{"PTS",             "", NULL, &ui_seek_cont, 1, 1},
+	{NULL, NULL, NULL, NULL, 0, 0},
 };
 
 static struct XjxMenuItem submenu_size[] = {
-	{"50%",          NULL, &ui_scale50, 0, 1},
-	{"100%",         NULL, &ui_scale100, 0, 1},
-	{"150%",         NULL, &ui_scale150, 0, 1},
-	{"", NULL, NULL, 0, 0},
-	{"Reset Aspect", NULL, &ui_aspect, 0, 1},
-	{"Letterbox",    NULL, &ui_letterbox, 0, 1},
-	{"", NULL, NULL, 0, 0},
-	{"On Top",       NULL, &ui_ontop, 0, 1},
-	{"Fullscreen",   NULL, &ui_fullscreen, 0, 1},
-	{NULL, NULL, NULL, 0, 0},
+	{"50%",          "",  NULL, &ui_scale50, 0, 1},
+	{"100%",         ".", NULL, &ui_scale100, 0, 1},
+	{"150%",         "",  NULL, &ui_scale150, 0, 1},
+	{"",             "",  NULL, NULL, 0, 0},
+	{"Reset Aspect", ",", NULL, &ui_aspect, 0, 1},
+	{"Letterbox",    "l", NULL, &ui_letterbox, 0, 1},
+	{"",             "",  NULL, NULL, 0, 0},
+	{"On Top",       "a", NULL, &ui_ontop, 0, 1},
+	{"Fullscreen",   "f", NULL, &ui_fullscreen, 0, 1},
+	{"",             "",  NULL, NULL, 0, 0},
+	{"Mouse Cursor", "m", NULL, &ui_mousetoggle, 0, 1},
+	{NULL, NULL, NULL, NULL, 0, 0},
 };
 
 static struct XjxMenuItem submenu_osd[] = {
-	{"Frame Number",      NULL, &ui_osd_fn, 0, 1},
-	{"Timecode",          NULL, &ui_osd_tc, 0, 1},
-	{"", NULL, NULL, 0, 0},
-	{"Offset Off",        NULL, &ui_osd_offset_none, 0, 1},
-	{"Offset FN",         NULL, &ui_osd_offset_fn, 0, 1},
-	{"Offset TC",         NULL, &ui_osd_offset_tc, 0, 1},
-	{"", NULL, NULL, 0, 0},
-	{"Background",        NULL, &ui_osd_box, 0, 1},
-	{NULL, NULL, NULL, 0, 0},
+	{"Frame Number", "v", NULL, &ui_osd_fn, 0, 1},
+	{"Timecode",     "s", NULL, &ui_osd_tc, 0, 1},
+	{"",             "",  NULL, NULL, 0, 0},
+	{"Offset Off",   "o", NULL, &ui_osd_offset_none, 0, 1},
+	{"Offset FN",    "",  NULL, &ui_osd_offset_fn, 0, 1},
+	{"Offset TC",    "",  NULL, &ui_osd_offset_tc, 0, 1},
+	{"",             "",  NULL, NULL, 0, 0},
+	{"Background",   "b", NULL, &ui_osd_box, 0, 1},
+	{NULL, NULL, NULL, NULL, 0, 0},
+};
+
+static struct XjxMenuItem submenu_jack[] = {
+	{"Play/Pause", "<spc>", NULL, &jackt_toggle, 0, 1},
+	{"Play", "", NULL, &jackt_start, 0, 1},
+	{"Stop", "", NULL, &jackt_stop, 0, 1},
+	{"Rewind",     "<-",    NULL, &jackt_rewind, 0, 1},
+	{NULL, NULL, NULL, NULL, 0, 0},
 };
 
 static struct XjxMenuItem mainmenu[] = {
-	{"XJadeo", NULL, NULL, 0, 1},
-	{"", NULL, NULL, 0, 0},
-	{"Sync", submenu_sync, NULL, 0, 1},
-	{"Seek", submenu_seek, NULL, 0, 1},
-	{"Size", submenu_size, NULL, 0, 1},
-	{"OSD",  submenu_osd,  NULL, 0, 1},
-	{"", NULL, NULL, 0, 0},
-	{"(Drag&Drop File on", NULL, NULL, 0, 1},
-	{" Window to Load)", NULL, NULL, 0, 1},
-	{NULL, NULL, NULL, 0, 0},
+	{"XJadeo",    "", NULL, NULL, 0, 1},
+	{"",          "", NULL, NULL, 0, 0},
+	{"Sync",      "", submenu_sync, NULL, 0, 1},
+	{"Seek",      "", submenu_seek, NULL, 0, 1},
+	{"Display",   "", submenu_size, NULL, 0, 1},
+	{"OSD",       "", submenu_osd,  NULL, 0, 1},
+	{"Transport", "", submenu_jack, NULL, 0, 1},
+	{"",          "", NULL, NULL, 0, 0},
+	{"(Drag&Drop File on", "", NULL, NULL, 0, 1},
+	{" Window to Load)", "", NULL, NULL, 0, 1},
+	{NULL, NULL, NULL, NULL, 0, 0},
 };
 
 #define CLEARMENU(mnu) \
@@ -136,6 +158,7 @@ static void update_menus () {
 	CLEARMENU(submenu_seek);
 	CLEARMENU(submenu_size);
 	CLEARMENU(submenu_osd);
+	CLEARMENU(submenu_jack);
 
 #ifdef HAVE_LTC
 	submenu_sync[1].sensitive = 1;
@@ -164,6 +187,13 @@ static void update_menus () {
 #endif
 
 	submenu_sync[ui_syncsource()].enabled = 1;
+
+	if (ui_syncsource() == SYNC_JACK && !(interaction_override&OVR_JCONTROL))
+	{
+		mainmenu[6].sensitive = 1;
+	} else {
+		mainmenu[6].sensitive = 0;
+	}
 
 	switch(seekflags) {
 		case SEEK_KEY: submenu_seek[0].enabled = 1; break;
@@ -199,6 +229,9 @@ static void update_menus () {
 	if (Xgetfullscreen()) {
 		submenu_size[8].enabled = 1;
 	}
+	if (!Xgetmousepointer()) {
+		submenu_size[10].enabled = 1;
+	}
 
 	if (interaction_override & OVR_MENUSYNC) {
 		mainmenu[2].sensitive = 0;
@@ -211,11 +244,11 @@ static void update_menus () {
 		mainmenu[3].sensitive = 1;
 	}
 	if (interaction_override & OVR_LOADFILE) {
-		mainmenu[7].sensitive = 0;
 		mainmenu[8].sensitive = 0;
+		mainmenu[9].sensitive = 0;
 	} else {
-		mainmenu[7].sensitive = 1;
 		mainmenu[8].sensitive = 1;
+		mainmenu[9].sensitive = 1;
 	}
 }
 
@@ -301,10 +334,18 @@ static int open_x_dialog_win (
 	for(i = 0; i < m_items; ++i) {
 		int cw;
 		if (!query_font_geometry(dpy, dlg_gc, menu[i].text, &cw, NULL, NULL, NULL)) {
+			if (menu[i].key && strlen(menu[i].key) > 0) {
+				int ks = 0;
+				query_font_geometry(dpy, dlg_gc, menu[i].key, &ks, NULL, NULL, NULL);
+				cw += ks + 6;
+			}
+			if (menu[i].submenu) {
+				cw += 10;
+			}
 			if (cw > max_w) max_w = cw;
 		}
 	}
-	dlg_width = max_w + 25;
+	dlg_width = max_w + 20;
 	XResizeWindow (dpy, *win, dlg_width, dlg_height);
 
 	XWindowAttributes wa;
@@ -386,6 +427,14 @@ static void dialog_expose (Display *dpy, Window win) {
 		}
 
 		XDrawString (dpy, win, dlg->gc, t_x, t_y, dlg->menu_items[i].text, strlen (dlg->menu_items[i].text));
+		if (dlg->menu_items[i].key && strlen(dlg->menu_items[i].key) > 0) {
+			int ks = 10;
+			if (strlen(dlg->menu_items[i].key) > 1) {
+				query_font_geometry(dpy, dlg->gc, dlg->menu_items[i].key, &ks, NULL, NULL, NULL);
+				ks += 3;
+			}
+			XDrawString (dpy, win, dlg->gc, dlg->width - ks, t_y, dlg->menu_items[i].key, strlen (dlg->menu_items[i].key));
+		}
 		if (dlg->menu_items[i].enabled) {
 			XFillArc (dpy, win, dlg->gc, 5, t_y - _dlg_font_ascent * .5 - 3, 7, 7, 0, 360*64);
 		}
