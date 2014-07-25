@@ -265,7 +265,7 @@ static int query_font_geometry (Display *dpy, GC gc, const char *txt, int *w, in
 	if (h) *h = text_structure.ascent + text_structure.descent;
 	if (a) *a = text_structure.ascent;
 	if (d) *d = text_structure.descent;
-	XFreeFontInfo (NULL, fontinfo, 0);
+	XFreeFontInfo (NULL, fontinfo, 1);
 	return 0;
 }
 
@@ -387,11 +387,6 @@ static void dialog_expose (Display *dpy, Window win) {
 
 	XSetForeground (dpy, dlg->gc, _c_gray1.pixel);
 	XFillRectangle (dpy, win, dlg->gc, 0, 0, dlg->width, dlg->height);
-
-	XFontStruct *fontinfo = XQueryFont (dpy, XGContextFromGC (dlg->gc));
-	if (!fontinfo) {
-		return;
-	}
 
 	int i;
 	for (i=0; i < dlg->menu_count; ++i) {

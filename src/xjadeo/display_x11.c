@@ -100,10 +100,12 @@ static void xj_set_hints (void) {
 	XpmCreatePixmapFromData(xj_dpy, xj_rwin, xjadeo_color_xpm, &wmhints.icon_pixmap, &wmhints.icon_mask, NULL);
 	wmhints.flags = InputHint | IconPixmapHint | IconMaskHint ;// | StateHint
 
-	XStringListToTextProperty(&w_name, 1 ,&x_wname);
-	XStringListToTextProperty(&i_name, 1 ,&x_iname);
-
-	XSetWMProperties(xj_dpy, xj_win, &x_wname, &x_iname, NULL, 0, &hints, &wmhints, NULL);
+	if (XStringListToTextProperty (&w_name, 1, &x_wname) &&
+			XStringListToTextProperty (&i_name, 1 ,&x_iname)) {
+		XSetWMProperties (xj_dpy, xj_win, &x_wname, &x_iname, NULL, 0, &hints, &wmhints, NULL);
+		XFree (x_wname.value);
+		XFree (x_iname.value);
+	}
 }
 
 void xj_set_ontop (int action) {
@@ -846,8 +848,11 @@ int open_window_xv (void) {
 				fprintf (stderr, "%#08x[%s] ", fmt_info[k].id, fmt_info[k].guid);
 			}
 			fprintf(stderr, ")\n");
+			XFree(fmt_info);
 			continue;
 		}
+
+		XFree(fmt_info);
 
 		for(xv_port = ad_info[i].base_id, k = 0; k < ad_info[i].num_ports; ++k, ++(xv_port)) {
 			if(!XvGrabPort(xj_dpy, xv_port, CurrentTime)) {
@@ -860,6 +865,7 @@ int open_window_xv (void) {
 		if(got_port) break;
 	} /* for */
 
+	XvFreeAdaptorInfo(ad_info);
 
 	if(!ad_cnt) {
 		fprintf(stderr, "Xv: (ERROR) no adaptor found!\n");

@@ -83,10 +83,13 @@ static void setup_window_hints_and_icon(Display* dpy, Window win, Window parent,
 	XpmCreatePixmapFromData(dpy, parent, xjadeo_color_xpm, &wmhints.icon_pixmap, &wmhints.icon_mask, NULL);
 	wmhints.flags = InputHint | IconPixmapHint | IconMaskHint;
 
-	XStringListToTextProperty(&w_name, 1 ,&x_wname);
-	XStringListToTextProperty(&i_name, 1 ,&x_iname);
-
-	XSetWMProperties(dpy, win, &x_wname, &x_iname, NULL, 0, &hints, &wmhints, NULL);
+	if (XStringListToTextProperty (&w_name, 1, &x_wname) &&
+			XStringListToTextProperty (&i_name, 1, &x_iname))
+	{
+		XSetWMProperties (dpy, win, &x_wname, &x_iname, NULL, 0, &hints, &wmhints, NULL);
+		XFree (x_wname.value);
+		XFree (x_iname.value);
+	}
 }
 
 static int check_glx_extention(const char *ext) {
