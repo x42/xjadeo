@@ -143,6 +143,7 @@ int    midi_clkadj =1;	/* --midiclk  */
 double filefps = -1.0; // if > 0 override autodetected video file frame rate
 int    videomode = 0; // --vo <int>  - default: autodetect
 double delay = -1; // use file's FPS
+int keyframe_interval_limit = 100;
 
 
 // On screen display
@@ -182,6 +183,7 @@ static struct option const long_options[] =
 	{"offset", no_argument, 0, 'o'},
 	{"fps", required_argument, 0, 'f'},
 	{"filefps", required_argument, 0, 'F'},
+	{"keyframe-limit", required_argument, 0, 'K'},
 	{"videomode", required_argument, 0, 'x'},
 	{"vo", required_argument, 0, 'x'},
 	{"remote", no_argument, 0, 'R'},
@@ -230,6 +232,7 @@ decode_switches (int argc, char **argv)
 		"I"	/* ignorefileoffset */
 		"h"	/* help */
 		"S"	/* nosplash */
+		"K:"	/* keyframe limit */
 		"R"	/* stdio remote control */
 		"Q"	/* POSIX rt-message queues */
 		"W:"	/* IPC message queues */
@@ -282,6 +285,11 @@ decode_switches (int argc, char **argv)
 				break;
 			case 'I':		/* --ignorefileoffset */
 				want_ignstart++;
+				break;
+			case 'K':		/* --keyframe-limit */
+				keyframe_interval_limit = atoi(optarg);
+				if (keyframe_interval_limit < 10) keyframe_interval_limit = 10;
+				if (keyframe_interval_limit > 5000) keyframe_interval_limit = 5000;
 				break;
 			case 'P':		/* --avverbose */
 				want_genpts = 1;

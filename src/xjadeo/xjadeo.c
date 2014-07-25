@@ -78,6 +78,7 @@ extern int      remote_mode;
 extern int      mq_en;
 extern char    *ipc_queue;
 extern double   delay;
+extern int      keyframe_interval_limit;
 #ifdef HAVE_LTC
 extern int  use_ltc;
 #endif
@@ -434,8 +435,6 @@ static void reset_index () {
 	pos_mismatch = 0;
 }
 
-#define MAX_KEYFRAME_INTERVAL 100
-
 static int seek_indexed (AVPacket *packet, int64_t ts) {
 #if 0 // seek byte ~bckward hack
 	static int64_t did_contd = 0;
@@ -496,7 +495,7 @@ static int seek_indexed (AVPacket *packet, int64_t ts) {
 		}
 	}
 
-	int bailout = 2 * MAX_KEYFRAME_INTERVAL; // x2 because image may span multiple packets
+	int bailout = 2 * keyframe_interval_limit; // x2 because image may span multiple packets
 	while (1) {
 		if (av_read_frame(pFormatCtx, packet) < 0) {
 			if (!want_quiet)
@@ -655,6 +654,10 @@ static int index_frames () {
 		if (++keyframe_interval > max_keyframe_interval) {
 			max_keyframe_interval = keyframe_interval;
 		}
+		if (max_keyframe_interval > keyframe_interval_limit) {
+			error |=4;
+			break;
+		}
 #if 1
 		if ((fcnt == 500 || fcnt == frames) && max_keyframe_interval == 1) {
 			if (want_verbose)
@@ -666,14 +669,14 @@ static int index_frames () {
 	}
 
 	seek_threshold = max_keyframe_interval - 1;
-	if (seek_threshold > MAX_KEYFRAME_INTERVAL) {
+	if (seek_threshold >= keyframe_interval_limit) {
 		error |= 4;
 		if (!want_quiet)
 			fprintf(stderr,
 					"WARNING: Keyframe distance is very large (>%d frames).\n"
 					"The file is not unsuitable. Please transcode.\n",
-					MAX_KEYFRAME_INTERVAL);
-		seek_threshold = MAX_KEYFRAME_INTERVAL;
+					keyframe_interval_limit);
+		seek_threshold = keyframe_interval_limit;
 	}
 
 	if (want_verbose) {

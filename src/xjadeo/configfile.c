@@ -65,6 +65,7 @@ extern int    remote_en;
 extern char  *midi_driver;
 extern int    use_jack;
 extern int    interaction_override;
+extern int    keyframe_interval_limit;
 
 #ifdef HAVE_LTC
 extern int  use_ltc;
@@ -253,8 +254,10 @@ int parseoption (char *item, char *value) {
 		YES_OK(want_dropframes)
 	} else if (!strncasecmp(item,"AUTODF",6)) {
 		YES_OK(want_autodrop)
-	} else if (!strncasecmp(item,"IAOVERRIDE",6)) {
+	} else if (!strncasecmp(item,"IAOVERRIDE",10)) {
 		interaction_override=atoi(value); rv=1;
+	} else if (!strncasecmp(item,"KEYFRAMELIMIT",13)) {
+		keyframe_interval_limit=atoi(value); rv=1;
 	} else if (!strncasecmp(item,"SMPTEOFFSET",11)) {
 		smpte_offset=strdup(value); rv=1;
 		/*ts_offset is set from smpte_offset */
@@ -403,6 +406,7 @@ int saveconfig (const char *fn) {
 	fprintf(fp, "VERBOSE=%s\n", BOOL(want_verbose));
 	fprintf(fp, "QUIET=%s\n", BOOL(want_quiet));
 	fprintf(fp, "IAOVERRIDE=%i\n", interaction_override);
+	fprintf(fp, "KEYFRAMELIMIT=%i\n", keyframe_interval_limit);
 
 	fprintf(fp, "\n## Sync settings ##\n");
 #ifdef HAVE_MIDI
