@@ -53,7 +53,8 @@ typedef struct {
 	int  (*getfullscreen)(void);
 	int  (*getontop)(void);
 	void (*letterbox_change)(void);
-}vidout;
+} vidout;
+
 
 /*******************************************************************************
  * SDL

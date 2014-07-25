@@ -158,6 +158,7 @@ void rgb2abgr (uint8_t *rgbabuffer, uint8_t *rgbbuffer, int width, int height) {
 
 #define NULLOUTPUT &render_null, &open_window_null, &close_window_null, &handle_X_events_null, &newsrc_null, &resize_null, &getsize_null, &position_null, &getpos_null, &fullscreen_null, &ontop_null, &mousepointer_null, &getfullscreen_null, &getontop_null, &letterbox_change_null
 
+// see xjadeo.h VideoModes
 const vidout VO[] = {
 	{ PIX_FMT_RGB24,   1, 		"NULL", NULLOUTPUT}, // NULL is --vo 0 -> autodetect
 	{ PIX_FMT_BGRA32,   SUP_OPENGL,   "OpenGL",
@@ -235,9 +236,11 @@ int parsevidoutname (char *arg) {
 
 	if (!strncasecmp("list",arg,s0>4?4:s0)) return(-1);
 
-	while (VO[++i].supported>=0) {
-		int s1=strlen(VO[i].name);
-		if (!strncasecmp(VO[i].name,arg,s0>s1?s1:s0)) return(i);
+	for(i = 0; i < sizeof(VO) / sizeof (vidout); ++i) {
+		if (VO[i].supported>=0) {
+			int s1=strlen(VO[i].name);
+			if (!strncasecmp(VO[i].name,arg,s0>s1?s1:s0)) return(i);
+		}
 	}
 	return(0);
 }
@@ -481,7 +484,7 @@ void render_buffer (uint8_t *mybuffer) {
 		if (OSD_mode&OSD_TEXT)
 			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_text, OSD_tx, OSD_ty);
 		if (OSD_mode&OSD_MSG)
-			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_msg, 50, 75);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_msg, 50, 85);
 
 		if (OSD_mode&OSD_OFFF) {
 			char tempoff[30];

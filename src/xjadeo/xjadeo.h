@@ -41,6 +41,16 @@ enum {
 	SEEK_CONTINUOUS ///< seek to keframe before this frame and advance to current frame.
 };
 
+/* display modes */
+enum VideoModes {
+	VO_AUTO = 0,
+	VO_GL,
+	VO_XV,
+	VO_SDL,
+	VO_X11,
+	VO_MAC,
+};
+
 /* freetype - On screen display */
 enum { OSD_LEFT=-1, OSD_CENTER=-2, OSD_RIGHT=-3 }; ///< use positive values as percent or pixel.
 

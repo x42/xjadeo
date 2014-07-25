@@ -166,7 +166,7 @@ void xapi_close_window(void *d) {
 
 void xapi_set_videomode(void *d) {
 	int vmode;
-	if (getvidmode() !=0) {
+	if (getvidmode() != VO_AUTO) {
 		remote_printf(413, "cannot change videomode while window is open.");
 		return;
 	}
@@ -177,7 +177,7 @@ void xapi_set_videomode(void *d) {
 		return;
 	}
 	render_fmt = vidoutmode(vmode);
-	remote_printf(100, "setting video mode to %i",getvidmode());
+	remote_printf(100, "setting video mode to %i", getvidmode());
 
 	open_window(); // required here; else VOutout callback fn will fail.
 
@@ -195,7 +195,7 @@ void xapi_set_videomode(void *d) {
 }
 
 void xapi_open_window(void *d) {
-	if (getvidmode() !=0) {
+	if (getvidmode() != VO_AUTO) {
 		remote_printf(412, "window already open.");
 		return;
 	}
@@ -947,7 +947,7 @@ Dcommand cmd_notify[] = {
 Dcommand cmd_window[] = {
 	{"close", ": close window", NULL, xapi_close_window, 0 },
 	{"open", ": open window", NULL, xapi_open_window, 0 },
-	{"mode " , "<int>: changes video mode and opens window", NULL, xapi_set_videomode, 0 },
+	{"mode " , "<int>: change video mode and open window", NULL, xapi_set_videomode, 0 },
 	{"resize " , "<int>|<int>x<int>: resize window (percent of movie or abs)", NULL, xapi_swinsize, 0 },
 	{"size " , "<int>|<int>x<int>: alias for resize", NULL, xapi_swinsize, 0 },
 	{"position " , "<int>x<int>: move window to absolute position", NULL, xapi_swinpos, 0 },

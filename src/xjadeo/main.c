@@ -737,9 +737,9 @@ main (int argc, char **argv)
 	open_window();
 
 	// try fallbacks if window open failed in autodetect mode
-	if (videomode==0 && getvidmode() ==0) { // re-use cmd-option variable as counter.
+	if (videomode==0 && getvidmode() == VO_AUTO) { // re-use cmd-option variable as counter.
 		if (want_verbose) printf("trying video driver fallbacks.\n");
-		while (getvidmode() ==0) { // check if window is open.
+		while (getvidmode() == VO_AUTO) { // check if window is open.
 			videomode++;
 			int tv=try_next_vidoutmode(videomode);
 			if (tv<0) break; // no videomode found!
@@ -750,7 +750,7 @@ main (int argc, char **argv)
 		}
 	}
 
-	if (getvidmode() == 0) {
+	if (getvidmode() == VO_AUTO) {
 		fprintf(stderr,"Could not open display.\n");
 		if(!remote_en) { // && !mq_en && !ipc_queue) /* TODO: allow windowless startup with MQ ?! */
 #ifdef HAVE_MIDI

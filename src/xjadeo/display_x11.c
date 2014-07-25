@@ -226,10 +226,10 @@ static inline void xj_render () {
 int xj_get_eq(char *prop, int *value) {
 #ifdef COLOREQ
 # ifdef HAVE_LIBXV
-	if (getvidmode() == 2) return (xv_get_eq(prop,value));
+	if (getvidmode() == VO_XV) return (xv_get_eq(prop,value));
 # endif
 # ifdef HAVE_IMLIB2
-	if (getvidmode() == 4) return (im2_get_eq(prop,value));
+	if (getvidmode() == VO_X11) return (im2_get_eq(prop,value));
 # endif
 #endif
 	if (value) *value=0;
@@ -239,10 +239,10 @@ int xj_get_eq(char *prop, int *value) {
 static void xj_set_eq (char *prop, int value) {
 #ifdef COLOREQ
 # ifdef HAVE_LIBXV
-	if (getvidmode() == 2) xv_set_eq(prop,value);
+	if (getvidmode() == VO_XV) xv_set_eq(prop,value);
 # endif
 # ifdef HAVE_IMLIB2
-	if (getvidmode() == 4) im2_set_eq(prop,value);
+	if (getvidmode() == VO_X11) im2_set_eq(prop,value);
 # endif
 #endif
 }
@@ -278,7 +278,7 @@ static void xj_handle_X_events (void) {
 					xj_dheight= my_Height;
 					xj_letterbox();
 				}
-				if (getvidmode() == 2) // only XV
+				if (getvidmode() == VO_XV)
 					xj_render();
 				break;
 			case MapNotify:
@@ -311,7 +311,7 @@ static void xj_handle_X_events (void) {
 						default:
 							break;
 					}
-					if (getvidmode() == 2) // only XV
+					if (getvidmode() == VO_XV)
 						xj_render();
 				}
 				break;
@@ -344,7 +344,7 @@ static void xj_handle_X_events (void) {
 						xj_set_fullscreen(xj_fullscreen^=1);
 					else if   (key == XK_e ) {//'e' // toggle OSD EQ config
 						OSD_mode^=OSD_EQ;
-						if (getvidmode() != 2 && getvidmode() != 4) OSD_mode&=~OSD_EQ; // disable but for Xv&imlib2
+						if (getvidmode() != VO_XV && getvidmode() != VO_X11) OSD_mode&=~OSD_EQ; // disable but for Xv&imlib2
 						force_redraw=1;
 					} else if   (key == XK_o ) { //'o' // OSD - offset in frames
 						ui_osd_offset_cycle();
@@ -402,7 +402,7 @@ static void xj_handle_X_events (void) {
 						EQMOD("hue",+5)
 							else { remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key); }
 					} else if (key == XK_E ) { //'E' //
-						if (getvidmode() == 2)
+						if (getvidmode() == VO_XV)
 							xj_set_eq("contrast",-500); // xvinfo default:64 (0..255)
 						else
 							xj_set_eq("contrast",0);
