@@ -78,7 +78,6 @@ extern int      remote_mode;
 extern int      mq_en;
 extern char    *ipc_queue;
 extern double   delay;
-extern int      seekflags;
 #ifdef HAVE_LTC
 extern int  use_ltc;
 #endif

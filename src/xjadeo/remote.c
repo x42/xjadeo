@@ -113,7 +113,6 @@ extern int     wraparound;
 extern double delay;
 extern double filefps;
 extern int    videomode;
-extern int    seekflags;
 extern int    interaction_override;
 
 // On screen display
@@ -398,28 +397,10 @@ void xapi_ploop(void *d) {
 }
 
 void xapi_pseekmode (void *d) {
-	switch (seekflags) {
-		case SEEK_ANY:
-			remote_printf(201,"seekmode=2 # any"); break;
-		case SEEK_KEY:
-			remote_printf(201,"seekmode=3 # keyframe"); break;
-		default:
-			remote_printf(201,"seekmode=1 # continuous"); break;
-	}
+	remote_printf(899,"seekmode is deprecated.");
 }
 
 void xapi_sseekmode (void *d) {
-	char *mode= (char*)d;
-	if (!strcmp(mode,"key") || atoi(mode)==3)
-		ui_seek_key();
-	else if (!strcmp(mode,"any") || atoi(mode)==2)
-		ui_seek_any();
-	else if (!strcmp(mode,"continuous") || atoi(mode)==1)
-		ui_seek_cont();
-	else {
-		remote_printf(422,"invalid argument (1-3 or 'continuous', 'any', 'key')");
-		return;
-	}
 	xapi_pseekmode(NULL);
 }
 
@@ -933,7 +914,7 @@ Dcommand cmd_get[] = {
 	{"width", ": query width of video source buffer", NULL, xapi_pmwidth , 0 },
 	{"height", ": query width of video source buffer", NULL, xapi_pmheight , 0 },
 
-	{"seekmode", ": display how video frames are searched ", NULL, xapi_pseekmode, 0 },
+	{"seekmode", ": [deprecated] ", NULL, xapi_pseekmode, 0 },
 	{"windowsize" , ": show current window size", NULL, xapi_pwinsize, 0 },
 	{"windowpos" , ": show current window position", NULL, xapi_pwinpos, 0 },
 	{"videomode" , ": display current video mode", NULL, xapi_pvideomode, 0 },
@@ -986,7 +967,7 @@ Dcommand cmd_set[] = {
 	{"offset ", "<int>: set current frame offset", NULL, xapi_soffset , 0 },
 	{"timescale ", "<float> <int>: set timescale and offset", NULL, xapi_stimescale , 0 },
 	{"loop ", "<int>: 0: normal, 1:wrap around", NULL, xapi_sloop , 0 },
-	{"seekmode ", "<1-3>: seek continuous, to any or to keyframes only", NULL, xapi_sseekmode, 0 },
+	{"seekmode ", "[deprecated]", NULL, xapi_sseekmode, 0 },
 	{"framerate ", "<float>: override frame rate of video file", NULL, xapi_sframerate , 0 },
 	{"override ", "<int>: disable window events", NULL, xapi_soverride , 0 },
 	{NULL, NULL, NULL , NULL, 0}

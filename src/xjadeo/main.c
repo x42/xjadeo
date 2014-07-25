@@ -114,8 +114,6 @@ int remote_mode =0;	/* 0: undirectional ; >0: bidir
 			 *   (2) notify changed timecode
 			 */
 
-int seekflags = SEEK_CONTINUOUS; /* -k, -K, -Y */
-
 #ifdef HAVE_MIDI
 char midiid[128] = "-2";  /* --midi # -1: autodetect -2: jack-transport, -3: none/userFrame */
 int midi_clkconvert =0;	  /* --midifps [0:MTC|1:VIDEO|2:RESAMPLE] */
@@ -181,9 +179,6 @@ static struct option const long_options[] =
 	{"ignorefileoffset", no_argument, 0, 'I'},
 	{"nofileoffset", no_argument, 0, 'I'},
 	{"nosplash", no_argument, 0, 'S'},
-	{"anyframe", no_argument, 0, 'Y'},
-	{"keyframes", no_argument, 0, 'k'},
-	{"continuous", required_argument, 0, 'K'},
 	{"offset", no_argument, 0, 'o'},
 	{"fps", required_argument, 0, 'f'},
 	{"filefps", required_argument, 0, 'F'},
@@ -238,9 +233,6 @@ decode_switches (int argc, char **argv)
 		"R"	/* stdio remote control */
 		"Q"	/* POSIX rt-message queues */
 		"W:"	/* IPC message queues */
-		"k"	/* keyframe seek */
-		"K"	/* cont'd seek */
-		"Y"	/* anyframe seek */
 		"o:"	/* offset */
 		"T:"	/* ttf-font */
 		"f:"	/* fps */
@@ -333,20 +325,6 @@ decode_switches (int argc, char **argv)
 				smpte_offset=strdup(optarg);
 				//ts_offset=smptestring_to_frame(optarg,0);
 				//printf("set time offset to %li frames\n",ts_offset);
-				break;
-			case 'Y':		/* --anyframe */
-				seekflags=SEEK_ANY;
-				if (!want_quiet)
-					printf("seeking to any frame (as is)\n");
-			case 'k':		/* --keyframes */
-				seekflags=SEEK_KEY;
-				if (!want_quiet)
-					printf("seeking to keyframes only\n");
-				break;
-			case 'K':		/* --continuous */
-				seekflags=SEEK_CONTINUOUS;
-				if (!want_quiet)
-					printf("continuous accurate seeking.\n");
 				break;
 			case 'F':		/* --filefps */
 				if(atof(optarg)>0)
@@ -464,9 +442,6 @@ jack video monitor\n", program_name);
 "                            eg. override timestamps of split vob files.\n"
 "  -J, --noinitialsync       do not connect to JACK nor use a sync source\n"
 "                            at start. This only works with remote-control.\n"
-"  -k, --keyframes           seek to keyframes only\n"
-"  -K, --continuous          decode video source continuously. (extra latency\n"
-"                            when seeking to non-key frames.)\n"
 "  -l, --ltc                 sync to LinearTimeCode (audio-jack).\n"
 #ifdef JACK_SESSION
 "  -U, --uuid                specify JACK-SESSION UUID.\n"

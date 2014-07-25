@@ -26,8 +26,6 @@
 
 #include <X11/Xresource.h>
 
-extern int seekflags;
-
 static XContext _dlg_ctx = 0;
 static int      _dlg_font_height = 0;
 static int      _dlg_font_ascent = 0;
@@ -92,13 +90,6 @@ static struct XjxMenuItem submenu_sync[] = {
 	{NULL, NULL, NULL, NULL, 0, 0},
 };
 
-static struct XjxMenuItem submenu_seek[] = {
-	{"Key Frames Only", "", NULL, &ui_seek_key, 0, 1},
-	{"Any Fame",        "", NULL, &ui_seek_any, 0, 1},
-	{"PTS",             "", NULL, &ui_seek_cont, 1, 1},
-	{NULL, NULL, NULL, NULL, 0, 0},
-};
-
 static struct XjxMenuItem submenu_size[] = {
 	{"50%",          "",  NULL, &ui_scale50, 0, 1},
 	{"100%",         ".", NULL, &ui_scale100, 0, 1},
@@ -138,7 +129,6 @@ static struct XjxMenuItem mainmenu[] = {
 	{"XJadeo",    "", NULL, NULL, 0, 1},
 	{"",          "", NULL, NULL, 0, 0},
 	{"Sync",      "", submenu_sync, NULL, 0, 1},
-	{"Seek",      "", submenu_seek, NULL, 0, 1},
 	{"Display",   "", submenu_size, NULL, 0, 1},
 	{"OSD",       "", submenu_osd,  NULL, 0, 1},
 	{"Transport", "", submenu_jack, NULL, 0, 1},
@@ -155,7 +145,6 @@ static void update_menus () {
 	int i;
 	CLEARMENU(mainmenu);
 	CLEARMENU(submenu_sync);
-	CLEARMENU(submenu_seek);
 	CLEARMENU(submenu_size);
 	CLEARMENU(submenu_osd);
 	CLEARMENU(submenu_jack);
@@ -187,19 +176,6 @@ static void update_menus () {
 #endif
 
 	submenu_sync[ui_syncsource()].enabled = 1;
-
-	if (ui_syncsource() == SYNC_JACK && !(interaction_override&OVR_JCONTROL))
-	{
-		mainmenu[6].sensitive = 1;
-	} else {
-		mainmenu[6].sensitive = 0;
-	}
-
-	switch(seekflags) {
-		case SEEK_KEY: submenu_seek[0].enabled = 1; break;
-		case SEEK_ANY: submenu_seek[1].enabled = 1; break;
-		default:       submenu_seek[2].enabled = 1; break;
-	}
 
 	if (OSD_mode&OSD_FRAME) {
 		submenu_osd[0].enabled = 1;
@@ -233,22 +209,25 @@ static void update_menus () {
 		submenu_size[10].enabled = 1;
 	}
 
+	if (ui_syncsource() == SYNC_JACK && !(interaction_override&OVR_JCONTROL))
+	{
+		mainmenu[5].sensitive = 1;
+	} else {
+		mainmenu[5].sensitive = 0;
+	}
+
 	if (interaction_override & OVR_MENUSYNC) {
 		mainmenu[2].sensitive = 0;
 	} else {
 		mainmenu[2].sensitive = 1;
 	}
-	if (interaction_override & OVR_MENUSYNC) { // XXX Seek
-		mainmenu[3].sensitive = 0;
-	} else {
-		mainmenu[3].sensitive = 1;
-	}
+
 	if (interaction_override & OVR_LOADFILE) {
+		mainmenu[7].sensitive = 0;
 		mainmenu[8].sensitive = 0;
-		mainmenu[9].sensitive = 0;
 	} else {
+		mainmenu[7].sensitive = 1;
 		mainmenu[8].sensitive = 1;
-		mainmenu[9].sensitive = 1;
 	}
 }
 

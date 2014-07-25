@@ -55,7 +55,6 @@ int testfile (char *filename) {
 extern char   OSD_fontfile[1024];
 extern double delay;
 extern int    videomode;
-extern int    seekflags;
 extern int    want_quiet;
 extern int    want_verbose;
 extern int    want_letterbox;
@@ -208,13 +207,7 @@ int parseoption (char *item, char *value) {
 	} else if (!strncasecmp(item,"NOSPLASH",8)) {
 		YES_OK (want_nosplash);
 	} else if (!strncasecmp(item,"SEEK",4)) {
-		if (!strncasecmp(value,"any",3)){
-			seekflags=SEEK_ANY; rv=1;
-		} else if (!strncasecmp(value,"cont",4)){
-			seekflags=SEEK_CONTINUOUS; rv=1;
-		} else if (!strncasecmp(value,"key",3)){
-			seekflags=SEEK_KEY; rv=1;
-		}
+		rv=1; // legacy -- ignore
 	} else if (!strncasecmp(item,"LETTERBOX",9)) {
 		YES_OK(want_letterbox)
 	} else if (!strncasecmp(item,"LASH",4)) {
@@ -402,7 +395,6 @@ int saveconfig (const char *fn) {
 	fprintf(fp, "LETTERBOX=%s\n", BOOL(want_letterbox));
 	fprintf(fp, "VIDEOMODE=%i\n", videomode); // XXX
 	fprintf(fp, "FPS=%f\n", delay<1?-1:1.0/delay);
-	fprintf(fp, "SEEK=%s\n", (seekflags==SEEK_ANY)?"any":(seekflags==SEEK_KEY?"key":"cont"));
 	fprintf(fp, "OSCPORT=%i\n", osc_port);
 	fprintf(fp, "MQ=%s\n", BOOL(mq_en));
 	fprintf(fp, "IPC=%s\n", ipc_queue?ipc_queue:"(null)");

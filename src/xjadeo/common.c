@@ -22,26 +22,7 @@
 /// here ??
 extern int interaction_override;
 extern int force_redraw;
-extern int seekflags;
 extern int OSD_mode; // change via keystroke
-
-// GUI access
-
-void ui_seek_key () {
-	seekflags = SEEK_KEY;
-	force_redraw = 1;
-}
-
-void ui_seek_any () {
-	seekflags = SEEK_ANY;
-	force_redraw = 1;
-}
-
-void ui_seek_cont () {
-	seekflags = SEEK_CONTINUOUS;
-	force_redraw = 1;
-}
-
 
 void INT_sync_to_jack (int remote_msg) {
 #ifdef HAVE_MIDI

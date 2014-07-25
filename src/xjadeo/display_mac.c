@@ -31,7 +31,6 @@ extern int loop_flag;
 extern int OSD_mode;
 extern int force_redraw; // tell the main event loop that some cfg has changed
 extern int want_letterbox;
-extern int seekflags;
 extern int hide_mouse;
 extern int interaction_override; // disable some options.
 
@@ -140,7 +139,6 @@ static MenuRef movMenu;
 static MenuRef osdMenu;
 static MenuRef scrnMenu;
 static MenuRef zoomMenu;
-static MenuRef seekMenu;
 static MenuRef jackMenu;
 static MenuRef syncMenu;
 static MenuRef osdoMenu;
@@ -173,10 +171,7 @@ enum // menubar
         mSyncNone,
         mJackPlay,
         mJackStop,
-        mJackRewind,
-        mSeekAny,
-        mSeekKeyFrame,
-        mSeekContinuous
+        mJackRewind
 };
 
 static WindowRef theWindow = NULL;
@@ -215,10 +210,6 @@ static MatrixRecord matrix;
 
 // update checked menu items
 static void checkMyMenu(void) {
-  CheckMenuItem (seekMenu, 1, seekflags==SEEK_ANY);
-  CheckMenuItem (seekMenu, 2, seekflags==SEEK_KEY);
-  CheckMenuItem (seekMenu, 3, seekflags==SEEK_CONTINUOUS);
-
   CheckMenuItem (osdMenu, 1, (OSD_mode&OSD_FRAME)!=0);
   CheckMenuItem (osdMenu, 2, (OSD_mode&OSD_SMPTE)!=0);
   CheckMenuItem (osdMenu, 5, (OSD_mode&OSD_BOX)!=0);
@@ -247,7 +238,6 @@ static void mac_CreateWindow(uint32_t d_width, uint32_t d_height, WindowAttribut
   // FIXME : these may leak memory when re-opening the window.
   CFStringRef   movMenuTitle;
   CFStringRef   zoomMenuTitle;
-  CFStringRef   seekMenuTitle;
   CFStringRef   jackMenuTitle;
   CFStringRef   osdMenuTitle;
   CFStringRef   osdoMenuTitle;
@@ -299,8 +289,8 @@ static void mac_CreateWindow(uint32_t d_width, uint32_t d_height, WindowAttribut
   SetMenuTitleWithCFString(movMenu, movMenuTitle);
 
   AppendMenuItemTextWithCFString(movMenu, CFSTR("Load File"), 0, mOpen, &index);
-  AppendMenuItemTextWithCFString(movMenu, NULL, kMenuItemAttrSeparator, 0, &index);
-  AppendMenuItemTextWithCFString(movMenu, CFSTR("Seek"), 0, 0, &index);
+  //AppendMenuItemTextWithCFString(movMenu, NULL, kMenuItemAttrSeparator, 0, &index);
+  //AppendMenuItemTextWithCFString(movMenu, CFSTR("Seek"), 0, 0, &index);
 
 #if 0
   AppendMenuItemTextWithCFString(movMenu, CFSTR("Attributes"), 0, 0, &index);
@@ -317,17 +307,7 @@ static void mac_CreateWindow(uint32_t d_width, uint32_t d_height, WindowAttribut
   AppendMenuItemTextWithCFString(movMenu, NULL, kMenuItemAttrSeparator, 0, &index);
   AppendMenuItemTextWithCFString(movMenu, CFSTR("About"), 0, kHICommandAbout, &index);
 #endif
-  //Create seek Menu
-  CreateNewMenu (0, 0, &seekMenu);
-  seekMenuTitle = CFSTR("Seek");
-  SetMenuTitleWithCFString(seekMenu, seekMenuTitle);
-  SetMenuItemHierarchicalMenu(movMenu, 3, seekMenu);
-
-  AppendMenuItemTextWithCFString(seekMenu, CFSTR("to any frame"), 0, mSeekAny, &index);
-  AppendMenuItemTextWithCFString(seekMenu, CFSTR("keyframes only"), 0, mSeekKeyFrame, &index);
-  AppendMenuItemTextWithCFString(seekMenu, CFSTR("Continuously"), 0, mSeekContinuous, &index);
-
-////Create Screen Menu
+  //Create Screen Menu
   CreateNewMenu (0, 0, &scrnMenu);
   scrnMenuTitle = CFSTR("Screen");
   SetMenuTitleWithCFString(scrnMenu, scrnMenuTitle);
@@ -1510,15 +1490,6 @@ OSStatus mac_menu_cmd(OSStatus result, HICommand *acmd) {
     case mOSDBox:
       ui_osd_box();
     break;
-    case mSeekAny:
-      ui_seek_any();
-      break;
-    case mSeekKeyFrame:
-      ui_seek_key();
-      break;
-    case mSeekContinuous:
-      ui_seek_cont();
-      break;
     case mJackPlay:
       if ((interaction_override&OVR_JCONTROL) == 0)
         jackt_start();
