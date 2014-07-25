@@ -87,6 +87,7 @@ static struct XjxMenuItem submenu_sync[] = {
 	{"MTC (PortMidi)", "", NULL, &ui_sync_to_mtc_portmidi, 0, 1},
 	{"MTC (ALSA Seq)", "", NULL, &ui_sync_to_mtc_alsaseq, 0, 1},
 	{"MTC (ALSA Raw)", "", NULL, &ui_sync_to_mtc_alsaraw, 0, 1},
+	{"None",           "", NULL, &ui_sync_none, 0, 1},
 	{NULL, NULL, NULL, NULL, 0, 0},
 };
 
