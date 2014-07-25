@@ -126,15 +126,15 @@ static struct XjxMenuItem submenu_jack[] = {
 };
 
 static struct XjxMenuItem mainmenu[] = {
-	{"XJadeo",    "", NULL, NULL, 0, 1},
-	{"",          "", NULL, NULL, 0, 0},
-	{"Sync",      "", submenu_sync, NULL, 0, 1},
-	{"Display",   "", submenu_size, NULL, 0, 1},
-	{"OSD",       "", submenu_osd,  NULL, 0, 1},
-	{"Transport", "", submenu_jack, NULL, 0, 1},
-	{"",          "", NULL, NULL, 0, 0},
+	{"XJadeo " VERSION,    "", NULL, NULL, 0, 1},
+	{"",                   "", NULL, NULL, 0, 0},
+	{"Sync",               "", submenu_sync, NULL, 0, 1},
+	{"Display",            "", submenu_size, NULL, 0, 1},
+	{"OSD",                "", submenu_osd,  NULL, 0, 1},
+	{"Transport",          "", submenu_jack, NULL, 0, 1},
+	{"",                   "", NULL, NULL, 0, 0},
 	{"(Drag&Drop File on", "", NULL, NULL, 0, 1},
-	{" Window to Load)", "", NULL, NULL, 0, 1},
+	{" Window to Load)",   "", NULL, NULL, 0, 1},
 	{NULL, NULL, NULL, NULL, 0, 0},
 };
 

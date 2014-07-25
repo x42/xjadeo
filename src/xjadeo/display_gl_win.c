@@ -186,6 +186,8 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 		flags_load = MF_DISABLED | MF_GRAYED;
 	}
 
+	AppendMenu(hMenu, MF_STRING | MF_DISABLED, 0, "XJadeo " VERSION);
+	AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
 	AppendMenu(hMenu, MF_STRING | flags_load, mLoad, "Open Video");
 	AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
 	AppendMenu(hMenu, MF_STRING | MF_POPUP | flags_sync, (UINT_PTR)hSubMenuSync, "Sync");
