@@ -395,9 +395,9 @@ static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int y
 	rv.Voff = rv.Uoff + movie_width * movie_height/4;
 	rv.bpp = 0;
 
-	SET_RFMT(rfmt,_render,rv,render)
+	SET_RFMT(rfmt,_render,rv,render);
 
-		const int fontsize = MIN(MAX(16, movie_height/15),120);
+	const int fontsize = MIN(MAX(16, movie_height / 18), 56);
 
 	if ( render_font(OSD_fontfile, text, fontsize) ) return;
 
