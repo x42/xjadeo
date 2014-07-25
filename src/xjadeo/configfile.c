@@ -77,7 +77,7 @@ extern int midi_clkconvert;  /* --midifps [0:MTC|1:VIDEO|2:RESAMPLE] */
 extern int midi_clkadj;    /* 0|1 */
 #endif
 
-extern long   userFrame;
+extern int64_t userFrame;
 extern char  *smpte_offset;
 extern char  *load_movie;
 extern double filefps;
@@ -266,7 +266,7 @@ int parseoption (char *item, char *value) {
 		smpte_offset=strdup(value); rv=1;
 		/*ts_offset is set from smpte_offset */
 	} else if (!strncasecmp(item,"USERFRAME",9)) {
-		userFrame=atol(value); rv=1;
+		userFrame=atoll(value); rv=1;
 	} else if (!strncasecmp(item,"FILEFPS",7)) {
 		filefps = atof(value); rv=1;
 	} else if (!strncasecmp(item,"OSCPORT",7)) {
@@ -419,7 +419,7 @@ int saveconfig (const char *fn) {
 	fprintf(fp, "MIDIID=%s\n", midiid);
 	fprintf(fp, "MIDICLK=%s\n", BOOL(midi_clkadj));
 #endif
-	fprintf(fp, "USERFRAME=%li\n", userFrame);
+	fprintf(fp, "USERFRAME=%"PRId64"\n", userFrame);
 	fprintf(fp, "FILEFPS=%f\n", filefps);
 	fprintf(fp, "SMPTEOFFSET=%s\n", smpte_offset?smpte_offset:"0");
 	// use current setting and connection -- not commandline

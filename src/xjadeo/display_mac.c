@@ -29,7 +29,6 @@ void xapi_open(void *d);
 
 extern int loop_flag;
 extern int OSD_mode;
-extern long ts_offset;
 extern int force_redraw; // tell the main event loop that some cfg has changed
 extern int want_letterbox;
 extern int seekflags;

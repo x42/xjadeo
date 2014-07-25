@@ -69,15 +69,15 @@ int               render_fmt = PIX_FMT_YUV420P; ///< needs to be set before call
 /* Video File Info */
 double  duration = 1;
 double  framerate = 1;
-long  frames = 1;
+int64_t frames = 1;
 int64_t file_frame_offset = 0;
 
 /* Option flags and variables */
 char *current_file = NULL;
 char *smpte_offset = NULL;
-long  ts_offset = 0;
-long  userFrame = 0; // seek to this frame if jack and midi are N/A
-long  dispFrame = 0; // global strorage... = (SMPTE+offset) with boundaries to [0..movie_file_frames]
+int64_t ts_offset = 0;
+int64_t userFrame = 0; // seek to this frame if jack and midi are N/A
+int64_t dispFrame = 0; // global strorage... = (SMPTE+offset) with boundaries to [0..movie_file_frames]
 int   force_redraw = 0;
 int   hide_mouse = 0;
 

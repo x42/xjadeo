@@ -35,8 +35,6 @@ int xoffset = 0;
 
 extern const  vidout VO[];
 extern int    OSD_mode; // change via keystroke
-extern long   ts_offset;
-extern double framerate;
 
 static Display *xj_dpy = NULL;
 static Window   xj_rwin, xj_win;

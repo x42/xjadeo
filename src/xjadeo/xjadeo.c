@@ -54,17 +54,17 @@ extern int render_fmt;
 /* Video File Info */
 extern double  duration;
 extern double  framerate;
-extern long    frames;
+extern int64_t frames;
 extern int64_t file_frame_offset;
 extern int have_dropframes;
 
 /* Option flags and variables */
 extern char    *current_file;
 extern double   filefps;
-extern long     ts_offset;
+extern int64_t  ts_offset;
 extern char    *smpte_offset;
-extern long     userFrame;
-extern long     dispFrame;
+extern int64_t  userFrame;
+extern int64_t  dispFrame;
 extern int      force_redraw;
 extern int      want_quiet;
 extern int      want_debug;
@@ -94,9 +94,9 @@ extern char OSD_msg[128];
 //------------------------------------------------
 
 #ifdef TIMEMAP
-long   timeoffset = 0;
-double timescale = 1.0;
-int    wraparound = 0;
+int64_t timeoffset = 0;
+double  timescale = 1.0;
+int     wraparound = 0;
 #endif
 
 
@@ -109,8 +109,8 @@ struct FrameIndex {
 static struct FrameIndex *fidx = NULL;
 
 static int64_t last_decoded_frame = -1;
+static int64_t fcnt = 0;
 static int seek_threshold = 8;
-static int fcnt = 0;
 static int abort_indexing = 0;
 static int scan_complete = 0;
 static int thread_active = 0;
@@ -196,10 +196,10 @@ static int select_sleep (const long usec) {
 void event_loop(void) {
 	double  elapsed_time;
 	int64_t clock1, clock2;
-	long    newFrame, offFrame;
+	int64_t newFrame, offFrame;
 	float   nominal_delay;
 	int64_t splash_timeout;
-	int     splashed = 0;
+	int     splashed = want_nosplash;
 
 	if (want_verbose) printf("\nentering video update loop @%.2f fps.\n",delay>0?(1.0/delay):framerate);
 	clock1 = xj_get_monotonic_time();
@@ -230,38 +230,38 @@ void event_loop(void) {
 		if (newFrame < 0) newFrame = userFrame;
 
 #if 0 // DEBUG
-		static long		oldFrame = 0;
+		static int64_t oldFrame = 0;
 		if (oldFrame != newFrame) {
 			if (oldFrame +1 != newFrame) {
-				printf("\ndiscontinuity %li -> %li\n", oldFrame, newFrame);
+				printf("\ndiscontinuity %"PRId64" -> %"PRId64"\n", oldFrame, newFrame);
 			}
-			oldFrame=newFrame;
+			oldFrame = newFrame;
 		}
 #endif
 
 #ifdef TIMEMAP
-		newFrame = (long) floor((double) newFrame * timescale) + timeoffset;
+		newFrame = floor((double)newFrame * timescale) + timeoffset;
 		// TODO: calc newFrames/frames instead of while-loop
-		while (newFrame > frames && wraparound && frames!=0)
-			newFrame-=frames;
-		while (newFrame < 0 && wraparound && frames!=0)
-			newFrame+=frames;
+		while (newFrame > frames && wraparound && frames != 0)
+			newFrame -= frames;
+		while (newFrame < 0 && wraparound && frames != 0)
+			newFrame += frames;
 #endif
 
 		offFrame = newFrame + ts_offset;
-		long curFrame = dispFrame;
-		display_frame((int64_t)(offFrame), force_redraw, splashed || want_nosplash);
+		int64_t curFrame = dispFrame;
+		display_frame (offFrame, force_redraw, splashed || want_nosplash);
 		force_redraw=0;
 
 		if ((remote_en||mq_en||ipc_queue)
-				&& ( (remote_mode&NTY_FRAMELOOP) || ((remote_mode&NTY_FRAMECHANGE)&& curFrame!=dispFrame))
+				&& ( (remote_mode&NTY_FRAMELOOP) || ((remote_mode&NTY_FRAMECHANGE) && curFrame != dispFrame))
 			 )
 		{
 			/*call xapi_pposition ?? -> rv:200
 			 * dispFrame is the currently displayed frame
 			 * = SMPTE + offset
 			 */
-			remote_printf(301,"position=%li",dispFrame);
+			remote_printf(301,"position=%"PRId64, dispFrame);
 		}
 		nominal_delay = delay > 0 ? delay : (1.0/framerate);
 
@@ -276,11 +276,11 @@ void event_loop(void) {
 
 		if(want_verbose) {
 #if 0
-			fprintf(stdout, "frame: smpte:%li    \r", newFrame);
+			fprintf(stdout, "frame: smpte:%"PRId64"    \r", newFrame);
 #else
 			char tempsmpte[15];
 			frame_to_smptestring(tempsmpte,newFrame);
-			fprintf(stdout, "smpte: %s f:%li\r", tempsmpte,newFrame);
+			fprintf(stdout, "smpte: %s f:%"PRId64"\r", tempsmpte, newFrame);
 #endif
 			fflush(stdout);
 		}
@@ -294,7 +294,7 @@ void event_loop(void) {
 		if(elapsed_time < nominal_delay) {
 			long microsecdelay = (long) floorf(nominal_delay - elapsed_time);
 #if 0 // debug timing
-			printf("  %7.1f ms, [%ld]\n", microsecdelay / 1e3, offFrame);
+			printf("  %7.1f ms, [%"PRId64"]\n", microsecdelay / 1e3, offFrame);
 #endif
 #if 1 // poll 10 times per frame, unless -f delay is given explicitly
 			const long pollinterval = ceilf(nominal_delay * .1f);
@@ -313,7 +313,7 @@ void event_loop(void) {
 				force_redraw = 1;
 			}
 #if 0 // debug timing
-			printf("@@ %7.1f ms [%ld]\n", (nominal_delay - elapsed_time) / 1e3, offFrame);
+			printf("@@ %7.1f ms [%"PRId64"]\n", (nominal_delay - elapsed_time) / 1e3, offFrame);
 #endif
 		}
 	}
@@ -742,16 +742,17 @@ int open_movie(char* file_name) {
 	/* set some defaults, in case open fails, the main-loop
 	 * will still get some consistent data
 	 */
-	fFirstTime = 1;
-	pFrameFMT = NULL;
-	pFormatCtx=NULL;
+	fFirstTime   = 1;
+	pFrameFMT    = NULL;
+	pFormatCtx   = NULL;
 	movie_width  = ffctv_width = 320;
 	movie_height = ffctv_height = 180;
 	movie_aspect = (float)movie_width / (float) movie_height;
-	duration = frames = 1;
-	framerate = 10; // prevent slow reaction to remote-ctl (event loop).
+	duration     = 1;
+	frames       = 1;
+	framerate    = 10;
+	videoStream  = -1;
 	file_frame_offset = 0;
-	videoStream=-1;
 
 	// recalc offset with default framerate
 	if (smpte_offset) {
@@ -866,8 +867,13 @@ int open_movie(char* file_name) {
 			fprintf(stdout, "enabled drop-frame-timecode (use -n to override).\n");
 	}
 
-	duration = ((double)pFormatCtx->duration / (double)AV_TIME_BASE); /// XXX
-	frames = (long) (framerate * duration);
+	if (pFormatCtx->streams[videoStream]->nb_frames > 0) {
+		frames = pFormatCtx->streams[videoStream]->nb_frames;
+		duration = frames * av_q2d(fr_Q);
+	} else {
+		duration = ((double)pFormatCtx->duration / (double)AV_TIME_BASE); /// XXX
+		frames = framerate * duration;
+	}
 
 	tpf = 1.0 / (av_q2d(pFormatCtx->streams[videoStream]->time_base) * framerate);
 	if (!want_ignstart && pFormatCtx->start_time != AV_NOPTS_VALUE) {
@@ -895,8 +901,8 @@ int open_movie(char* file_name) {
 		else
 			fprintf(stdout, "detected frame rate: %g\n", framerate);
 		fprintf(stdout, "duration in seconds: %g\n", duration);
-		fprintf(stdout, "total frames: %ld\n", frames);
-		fprintf(stdout, "file start offset: %" PRId64 " video-frames\n",file_frame_offset);
+		fprintf(stdout, "total frames: %"PRId64"\n", frames);
+		fprintf(stdout, "file start offset: %" PRId64 " video-frames\n", file_frame_offset);
 		fprintf(stderr, "image size: %ix%i px\n", pCodecCtx->width, pCodecCtx->height);
 	}
 
@@ -996,7 +1002,6 @@ void override_fps (double fps) {
 	if (fps <= 0) return;
 
 	framerate = fps;
-	frames = (long) (framerate * duration);
 	tpf = 1.0/(av_q2d(pFormatCtx->streams[videoStream]->time_base)*framerate);
 	// recalc offset with new framerate
 	if (smpte_offset) ts_offset=smptestring_to_frame(smpte_offset);
@@ -1102,12 +1107,12 @@ void display_frame(int64_t timestamp, int force_update, int do_render) {
 	if (!force_update && dispFrame == timestamp) return;
 
 	if(want_verbose)
-		fprintf(stdout, "\t\t\t\tdisplay:%07li  \r", (long int) timestamp);
+		fprintf(stdout, "\t\t\t\tdisplay:%07"PRId64"  \r", timestamp);
 
 	dispFrame = timestamp;
 
 	if (OSD_mode&OSD_FRAME)
-		snprintf(OSD_frame,48,"Frame: %li", dispFrame);
+		snprintf(OSD_frame, 48, "Frame: %"PRId64, dispFrame);
 	if (OSD_mode&OSD_SMPTE)
 		frame_to_smptestring(OSD_smpte, dispFrame - ts_offset);
 

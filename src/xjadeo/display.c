@@ -32,7 +32,7 @@
 #endif
 
 extern char  *smpte_offset;
-extern long   ts_offset; // display on screen
+extern int64_t ts_offset; // display on screen
 extern int    want_nosplash;
 extern double framerate;
 
@@ -434,7 +434,7 @@ void splash (uint8_t *mybuffer) {
 
 static void update_smptestring() {
 	if (smpte_offset) free(smpte_offset);
-	smpte_offset= calloc(15,sizeof(char));
+	smpte_offset = calloc(15,sizeof(char));
 	frame_to_smptestring(smpte_offset, ts_offset);
 }
 
@@ -485,12 +485,12 @@ void render_buffer (uint8_t *mybuffer) {
 
 		if (OSD_mode&OSD_OFFF) {
 			char tempoff[30];
-			snprintf(tempoff,30,"off: %li",ts_offset);
+			snprintf(tempoff,30,"off: %"PRId64, ts_offset);
 			OSD_render (VO[VOutput].render_fmt, mybuffer, tempoff, OSD_CENTER, 50);
 		} else if (OSD_mode&OSD_OFFS ) {
 			char tempsmpte[30];
 			sprintf(tempsmpte,"off: ");
-			frame_to_smptestring(tempsmpte+4,ts_offset);
+			frame_to_smptestring(tempsmpte+4, ts_offset);
 			OSD_render (VO[VOutput].render_fmt, mybuffer, tempsmpte, OSD_CENTER, 50);
 		}
 	}
@@ -625,7 +625,7 @@ void XCtimeoffset (int mode, unsigned int charcode) {
 		return;
 	}
 
-	long off = ts_offset;
+	int64_t off = ts_offset;
 	switch(mode) {
 		case -1:
 			--ts_offset;

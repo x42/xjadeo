@@ -140,7 +140,7 @@ long int smpte_to_frame(int type, int f, int s, int m, int h, int overflow);
  * used for parsing user input '-o' 'set offset', etc
  * basically the same as smpte_to_frame(...)
  */
-long int smptestring_to_frame (char *str) {
+long int smptestring_to_frame (char *str) { // TODO int64
 	bcd s;
 	long int frame;
 	parse_string(&s,str);

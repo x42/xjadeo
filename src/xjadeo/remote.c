@@ -77,7 +77,7 @@ extern int               render_fmt;
 /* Video File Info */
 extern double duration;
 extern double framerate;
-extern long   frames;
+extern int64_t frames;
 
 extern AVFormatContext   *pFormatCtx;
 extern int               videoStream;
@@ -86,10 +86,10 @@ extern int force_redraw; // tell the main event loop that some cfg has changed
 
 /* Option flags and variables */
 extern char *current_file;
-extern long  ts_offset;
+extern int64_t ts_offset;
 extern char *smpte_offset;
-extern long userFrame;
-extern long dispFrame;
+extern int64_t userFrame;
+extern int64_t dispFrame;
 extern int  want_quiet;
 extern int want_verbose;
 extern int want_letterbox;
@@ -105,9 +105,9 @@ extern char midiid[32];
 #endif
 
 #ifdef TIMEMAP
-extern long   timeoffset;
-extern double timescale;
-extern int    wraparound;
+extern int64_t timeoffset;
+extern double  timescale;
+extern int     wraparound;
 #endif
 
 extern double delay;
@@ -374,17 +374,17 @@ void xapi_pframerate(void *d) {
 }
 
 void xapi_pframes(void *d) {
-	remote_printf(201, "frames=%ld ", frames);
+	remote_printf(201, "frames=%"PRId64, frames);
 }
 
 void xapi_poffset(void *d) {
-	remote_printf(201,"offset=%li",(long int) ts_offset);
+	remote_printf(201,"offset=%"PRId64, ts_offset);
 }
 
 void xapi_ptimescale(void *d) {
 #ifdef TIMEMAP
 	remote_printf(202,"timescale=%g", timescale);
-	remote_printf(201,"timeoffset=%li",(long int) timeoffset);
+	remote_printf(201,"timeoffset=%"PRId64, timeoffset);
 #else
 	remote_printf(499,"timescale is not available.");
 #endif
@@ -433,9 +433,8 @@ void xapi_pmheight(void *d) {
 }
 
 void xapi_soffset(void *d) {
-	//long int new = atol((char*)d);
 	ts_offset = smptestring_to_frame((char*)d);
-	remote_printf(101,"offset=%li",(long int) ts_offset);
+	remote_printf(101,"offset=%"PRId64, ts_offset);
 }
 
 void xapi_stimescale(void *d) {
@@ -481,8 +480,7 @@ void xapi_psmpte(void *d) {
 }
 
 void xapi_seek(void *d) {
-	//long int new = atol((char*)d);
-	userFrame= smptestring_to_frame((char*)d);
+	userFrame = smptestring_to_frame((char*)d);
 	remote_printf(101,"defaultseek=%li",userFrame);
 }
 

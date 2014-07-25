@@ -27,17 +27,17 @@
 #include <lo/lo_lowlevel.h>
 #include "xjadeo.h"
 
-extern int	want_verbose;
-extern int	want_quiet;
-extern int	loop_flag;
-extern int	loop_run;
-extern int 	force_redraw;
-extern int 	movie_width;
-extern long	userFrame;
-extern long	dispFrame;
-extern double 	delay;
-extern double 	filefps;
-extern long	ts_offset;
+extern int      want_verbose;
+extern int      want_quiet;
+extern int      loop_flag;
+extern int      loop_run;
+extern int      force_redraw;
+extern int      movie_width;
+extern int64_t  userFrame;
+extern int64_t  dispFrame;
+extern double   delay;
+extern double   filefps;
+extern int64_t  ts_offset;
 
 #ifdef HAVE_MIDI
 extern int midi_clkconvert;
@@ -46,17 +46,17 @@ extern char midiid[32];
 #endif
 
 #ifdef TIMEMAP
-extern long   timeoffset;
-extern double timescale;
-extern int    wraparound;
+extern int64_t timeoffset;
+extern double  timescale;
+extern int     wraparound;
 #endif
 
 #ifdef CROPIMG
 extern int xoffset;
 #endif
 
-extern double	delay;
-extern double	framerate;
+extern double delay;
+extern double framerate;
 
 // OSD
 extern char OSD_fontfile[1024];
