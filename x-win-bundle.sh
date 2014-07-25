@@ -39,6 +39,7 @@ cp -v $WINLIB/swscale-2.dll "$NSIDIR"
 cp -v $WINLIB/freetype6.dll "$NSIDIR"
 cp -v $WINLIB/SDL.dll "$NSIDIR"
 cp -v $WINLIB/zlib1.dll "$NSIDIR"
+cp -v $WINLIB/pthreadVSE2.dll "$NSIDIR"
 cp -v $WINLIB/libltc-11.dll "$NSIDIR"
 
 cp -v contrib/Jadeo.app/Contents/Resources/FreeMonoBold.ttf "$NSIDIR"

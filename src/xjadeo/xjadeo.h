@@ -82,7 +82,7 @@ enum {
 #define OSD_OFFS (16)
 #define OSD_OFFF (32)
 #define OSD_TEXT (64)
-
+#define OSD_MSG (128)
 #define OSD_BOX (256)
 
 #ifdef TTFFONTFILE

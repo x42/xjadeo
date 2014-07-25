@@ -42,6 +42,7 @@ Section "jadeo (required)"
 	File "swscale-2.dll"
 	File "libltc-11.dll"
 	File "zlib1.dll"
+	File "pthreadVSE2.dll"
 	File "FreeMonoBold.ttf"
   File "xjadeo.nsi"
 
@@ -111,6 +112,7 @@ Section "Uninstall"
   Delete $INSTDIR\freetype6.dll
   Delete $INSTDIR\libltc-11.dll
   Delete $INSTDIR\zlib1.dll
+  Delete $INSTDIR\pthreadVSE2.dll
   Delete $INSTDIR\FreeMonoBold.ttf
   Delete $INSTDIR\xjadeo.nsi
   Delete $INSTDIR\qjadeo.exe

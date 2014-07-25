@@ -478,10 +478,12 @@ void render_buffer (uint8_t *mybuffer) {
 	} else
 #endif
 	{
-		if (OSD_mode&OSD_TEXT )
+		if (OSD_mode&OSD_TEXT)
 			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_text, OSD_tx, OSD_ty);
+		if (OSD_mode&OSD_MSG)
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_msg, 50, 75);
 
-		if (OSD_mode&OSD_OFFF ) {
+		if (OSD_mode&OSD_OFFF) {
 			char tempoff[30];
 			snprintf(tempoff,30,"off: %li",ts_offset);
 			OSD_render (VO[VOutput].render_fmt, mybuffer, tempoff, OSD_CENTER, 50);
@@ -552,7 +554,7 @@ void Xmousepointer (int a) {
 	VO[VOutput].mousepointer(a);
 }
 
-int Xgetmousepointer (int a) {
+int Xgetmousepointer (void) {
 	return hide_mouse;
 }
 

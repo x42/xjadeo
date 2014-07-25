@@ -150,6 +150,7 @@ double delay = -1; // use file's FPS
 // On screen display
 char OSD_fontfile[1024] = FONT_FILE;
 char OSD_text[128] = "xjadeo!";
+char OSD_msg[128] = "";
 char OSD_frame[48] = "";
 char OSD_smpte[13] = "";
 int OSD_mode = 0;

@@ -23,6 +23,7 @@ extern char OSD_fontfile[1024];
 extern char OSD_text[128];
 extern char OSD_frame[48];
 extern char OSD_smpte[13];
+extern char OSD_msg[128];
 extern int OSD_mode;
 extern int OSD_fx, OSD_fy;
 extern int OSD_sx, OSD_sy;
