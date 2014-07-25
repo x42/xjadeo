@@ -43,7 +43,7 @@ case $target_os in
 	*darwin*)
 		AC_MSG_NOTICE([TARGET: OSX])
 		PM_OS=mac
-		AC_DEFINE([PLATFORM_OSX], [], [use macintosh native display])
+		AC_DEFINE([PLATFORM_OSX], [], [Mac OSX version])
 		PLATFORM_OSX=1
 		LDFLAGS="$LDFLAGS -lz -lbz2 -framework Carbon -framework Quicktime"
 		GL_LIBS="-framework Cocoa -framework OpenGL"
@@ -56,6 +56,7 @@ case $target_os in
 		dnl IMLIB2RGBA
 		;;
 	*linux*)
+		AC_DEFINE([PLATFORM_LINUX], [], [GNU/Linux version])
 		AC_MSG_NOTICE([TARGET: LINUX])
 		PM_OS="linux";
 		AC_DEFINE([IMLIB2RGBA], [], [use native RGB32 ffmpeg -> imlib.])

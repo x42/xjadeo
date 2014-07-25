@@ -249,8 +249,9 @@ void event_loop(void) {
 
 		offFrame = newFrame + ts_offset;
 		int64_t curFrame = dispFrame;
-		display_frame (offFrame, force_redraw, splashed || want_nosplash);
-		force_redraw=0;
+		const int fd = force_redraw;
+		force_redraw = 0;
+		display_frame (offFrame, fd, splashed || want_nosplash);
 
 		if ((remote_en||mq_en||ipc_queue)
 				&& ( (remote_mode&NTY_FRAMELOOP) || ((remote_mode&NTY_FRAMECHANGE) && curFrame != dispFrame))
@@ -693,7 +694,10 @@ static int index_frames () {
 
 static void *index_run(void *arg) {
 	OSD_mode |= OSD_MSG;
+	OSD_mode &= ~OSD_EQ;
 	sprintf(OSD_msg, "Indexing. Please wait.");
+	OSD_frame[0] = '\0';
+	OSD_smpte[0] = '\0';
 	force_redraw = 1;
 	if (!index_frames()) {
 		OSD_mode &= ~OSD_MSG;
@@ -1094,6 +1098,15 @@ void display_frame(int64_t timestamp, int force_update, int do_render) {
 	if (!buffer) {
 		return;
 	}
+#if (defined DND && defined PLATFORM_LINUX) || (defined WINMENU && defined PLATFORM_WINDOWS)
+	if (!current_file && !(OSD_mode & OSD_MSG) && getvidmode() != VO_SDL) {
+		sprintf(OSD_msg, "[right-click]");
+		OSD_mode |= OSD_MSG | OSD_BOX;
+		OSD_mode &= ~OSD_EQ;
+		OSD_frame[0] = '\0';
+		OSD_smpte[0] = '\0';
+	}
+#endif
 
 	if (!scan_complete || !current_file) {
 		render_empty_frame(do_render);

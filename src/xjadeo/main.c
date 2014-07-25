@@ -646,7 +646,7 @@ int
 main (int argc, char **argv)
 {
 	int i;
-	char*   movie= NULL;
+	char *movie;
 
 	program_name = argv[0];
 
@@ -675,12 +675,10 @@ main (int argc, char **argv)
 	if (videomode < 0) vidoutmode(videomode); // dump modes and exit.
 
 	if ((i+1)== argc) movie = argv[i];
-	else if ((remote_en || mq_en || ipc_queue || osc_port || load_rc) && i==argc) movie = "";
-#ifdef PLATFORM_WINDOWS
-	else usage (EXIT_FAILURE);
-#else
 	else movie = "";
-#endif
+	// NB without WINMENU or XDND as well with SDL
+	// we should exit if no remote-ctrl was enabled
+	// and no file-name is given. Oh, well.
 
 	if (load_rc) {
 		if (testfile(load_rc)) readconfig(load_rc);
@@ -726,13 +724,7 @@ main (int argc, char **argv)
 
 	if (osc_port > 0) initialize_osc(osc_port);
 
-	if (open_movie(movie)) {
-#ifdef PLATFORM_WINDOWS
-		if (!(remote_en || mq_en || ipc_queue || osc_port)) {
-			exit(1);
-		}
-#endif
-	}
+	open_movie(movie);
 
 	open_window();
 
