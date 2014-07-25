@@ -49,6 +49,9 @@ rm -f ${TARGET_CONTENTS}MacOS/xjremote
 cp src/xjadeo/xjadeo ${TARGET_CONTENTS}MacOS/${PRODUCT_NAME}-bin
 cp src/xjadeo/xjremote ${TARGET_CONTENTS}MacOS/xjremote
 
+strip -SXx ${TARGET_CONTENTS}MacOS/${PRODUCT_NAME}-bin
+strip -SXx ${TARGET_CONTENTS}MacOS/xjremote
+
 echo
 
 ##############################################################################
@@ -110,6 +113,7 @@ for dylib in ${TARGET_CONTENTS}Frameworks/*.dylib ; do
 	if test -L $dylib ; then
 		continue
 	fi
+	strip -SXx $dylib
 
 	# change all the dependencies
 	changes=""
