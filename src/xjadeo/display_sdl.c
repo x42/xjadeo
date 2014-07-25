@@ -21,9 +21,6 @@
 #include "xjadeo.h"
 #include "display.h"
 
-static void calc_letterbox(int src_w, int src_h, int out_w, int out_h, int *sca_w, int *sca_h);
-static void resized_sdl ();
-
 /*******************************************************************************
  * SDL
  */
@@ -44,6 +41,8 @@ static int	sdl_ontop = 0;
 static int sdl_full_screen = 0;
 static SDL_Rect sdl_oldsize;
 
+static void calc_letterbox(int src_w, int src_h, int out_w, int out_h, int *sca_w, int *sca_h);
+static void resized_sdl ();
 
 void close_window_sdl(void) {
 	if(sdl_overlay) SDL_FreeYUVOverlay(sdl_overlay); 

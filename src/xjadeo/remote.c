@@ -333,12 +333,11 @@ void xapi_soverride(void *d) {
 }
 
 void xapi_swinpos(void *d) {
-	int x,y;
 	char *t0= (char*)d;
 	char *t1;
-	x=0;y=0;
 
 	if ((t1=strchr(t0,'x')) && ++t1) {
+		int x,y;
 		x=atoi(t0);
 		y=atoi(t1);
 

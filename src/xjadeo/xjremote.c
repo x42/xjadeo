@@ -385,6 +385,7 @@ void *read_thread (void *d) {
 	if (want_verbose) 
 		printf ("# SHUTTING DOWN receiver thread.\n");
 	mq_close(mqfd);
+	free(msg_buffer);
 	return (NULL);
 }
 

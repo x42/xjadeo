@@ -358,6 +358,7 @@ static int open_x_dialog_win (
 		XMoveWindow (dpy, *win, x, y);
 	}
 
+	//NB. this is free()ed on close by XFindContext() reference.
 	struct XJDialog *dlg = malloc(sizeof(struct XJDialog));
 	dlg->gc = dlg_gc;
 	dlg->x0 = x;
@@ -454,7 +455,7 @@ static void dialog_motion (Display *dpy, Window win, int x, int y) {
 	x -= dlg->x0;
 	y -= dlg->y0;
 
-	int am = dlg->menu_hover;
+	int am;
 	if (x <= 0 || y <= 0 || x >= dlg->width || y >= dlg->height) {
 		am = -1;
 	} else {

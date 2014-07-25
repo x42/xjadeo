@@ -142,10 +142,13 @@ int mymq_read(char *data) {
 	}
 
 	mymsg = (mqmsg*) &msg_buffer[0];
-	if (data) strncpy(data,mymsg->m,MQLEN);
-	data[MQLEN-1]=0;
-
-	return (strlen(data));
+	if (data) {
+		strncpy(data, mymsg->m, MQLEN);
+		data[MQLEN-1] = 0;
+		return strlen(data);
+	} else {
+		return strlen(mymsg->m);
+	}
 }
 
 void mymq_reply(int rv, char *str) {

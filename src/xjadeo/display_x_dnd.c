@@ -259,6 +259,7 @@ int handle_dnd_event (Display *dpy, Window win, XEvent *event) {
 			} else {
 				handled = 0;
 			}
+			break;
 		default:
 			handled = 0;
 			break;

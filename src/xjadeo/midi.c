@@ -309,8 +309,8 @@ static void process_midi(PtTimestamp timestamp, void *userData) {
 	do {
 		result = Pm_Poll(pm_midi);
 		if (result) {
-			int shift,data;
-			shift=data=0;
+			int shift, data;
+			data = 0;
 
 			if (Pm_Read(pm_midi, &buffer, 1) == pmBufferOverflow) continue;
 
