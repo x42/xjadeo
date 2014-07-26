@@ -1092,9 +1092,10 @@ int remote_read_h(void) {
 	DWORD bytesAvail = 0;
 	HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
 	do {
+		bytesAvail = 0;
 		PeekNamedPipe(h, 0, 0, 0, &bytesAvail, 0);
 		DWORD sr=0;
-		if (bytesAvail > 0 && ReadFile(h, buf, BUFSIZ, &sr, NULL) && sr>0) {
+		if (bytesAvail > 0 && ReadFile(h, buf, BUFSIZ, &sr, NULL) && sr > 0) {
 			buf[sr]=0;
 			char *start, *end;
 			start = buf;

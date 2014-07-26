@@ -650,8 +650,51 @@ void catchsig (int sig) {
 	exit(1);
 }
 
-int
-main (int argc, char **argv)
+#if defined PLATFORM_WINDOWS && defined USE_WINMAIN
+
+int xjadeo_main (int argc, char **argv);
+
+#include <fcntl.h>
+
+int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int nCmdShow) {
+
+	_fmode = O_BINARY;
+
+	LPWSTR *szArglist;
+	int nArgs;
+	int i;
+	int argc = 0;
+	char **argv = NULL;
+
+	szArglist = CommandLineToArgvW(GetCommandLineW(), &nArgs);
+	if (NULL == szArglist) {
+		return -1;
+	}
+	argv = alloca(sizeof(char*) * (nArgs + 2));
+
+	if (!argv) {
+		return -1;
+	}
+
+	for (i = 0; i < nArgs; ++i) {
+		int argChars = wcslen (szArglist[i]);
+		argv[argc] = alloca(sizeof(char) * (argChars + 1));
+		if (!argv[argc]) continue;
+		wcstombs (argv[argc++], szArglist[i], argChars + 1);
+	}
+	argv[argc] = 0;
+
+#ifdef HAVE_SDL
+	SDL_SetModuleHandle(hInst);
+#endif
+
+	return xjadeo_main (argc, argv);
+}
+
+int xjadeo_main (int argc, char **argv)
+#else
+int main (int argc, char **argv)
+#endif
 {
 	int i;
 	char *movie;
