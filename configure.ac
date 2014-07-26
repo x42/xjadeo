@@ -67,7 +67,7 @@ case $target_os in
 	*mingw32*|*win*)
 		AC_MSG_NOTICE([TARGET: WINDOWS])
 		PM_OS=win
-		AC_DEFINE([PLATFORM_WINDOWS], [], [windows SDL version])
+		AC_DEFINE([PLATFORM_WINDOWS], [], [Windows version])
 		PLATFORM_WINDOWS=1
 		LIBSUF=.dll
 		EXESUF=.exe
@@ -143,10 +143,12 @@ AH_TEMPLATE([COLOREQ], [enable XV and imlib2 color equalizer])
 AH_TEMPLATE([TIMEMAP], [enable dynamic time scaling])
 AH_TEMPLATE([CROPIMG], [enable frame cropping])
 AH_TEMPLATE([DRAW_CROSS], [paint a X on screen when unable to decode or display a frame.])
+AH_TEMPLATE([WINMENU], [enable xjadeo windows context-menu])
 
 dnl fixed configuration
 AC_DEFINE(CFG_WARN_ONLY)
 AC_DEFINE(DND)
+AC_DEFINE(WINMENU)
 AC_DEFINE(XDLG)
 AC_DEFINE(DRAW_CROSS)
 AC_DEFINE(COLOREQ)

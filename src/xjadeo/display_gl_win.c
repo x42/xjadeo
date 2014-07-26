@@ -20,12 +20,15 @@
 #include "display_gl_common.h"
 #if (defined HAVE_GL && defined PLATFORM_WINDOWS)
 
+#include <windowsx.h>
 #include "icons/xjadeo-color-ico.h"
 
 #ifndef WM_MOUSEWHEEL
 # define WM_MOUSEWHEEL 0x020A
 #endif
 #define XJ_CLOSE_MSG (WM_USER + 50)
+
+void xapi_open(void *d);
 
 static HWND  _gl_hwnd;
 static HDC   _gl_hdc;
@@ -45,6 +48,215 @@ static void gl_make_current() {
 static void gl_swap_buffers() {
 	SwapBuffers(_gl_hdc);
 }
+
+
+#ifdef WINMENU
+
+enum wMenuId {
+	mLoad = 1,
+
+	mSyncJack,
+	mSyncLTC,
+	mSyncMTCJACK,
+	mSyncMTCPort,
+	mSyncNone,
+
+	mSize50,
+	mSize100,
+	mSize150,
+	mSizeAspect,
+	mSizeLetterbox,
+	mWinOnTop,
+	mWinFullScreen,
+	mWinMouseVisible,
+
+	mOsdFN,
+	mOsdTC,
+	mOsdOffsetNone,
+	mOsdOffsetFN,
+	mOsdOffsetTC,
+	mOsdBox,
+
+	mJackPlayPause,
+	mJackPlay,
+	mJackStop,
+	mJackRewind,
+};
+
+static void open_context_menu(HWND hwnd, int x, int y) {
+	HMENU hMenu = CreatePopupMenu();
+	HMENU hSubMenuSync = CreatePopupMenu();
+	HMENU hSubMenuSize = CreatePopupMenu();
+	HMENU hSubMenuOSD  = CreatePopupMenu();
+	HMENU hSubMenuJack = CreatePopupMenu();
+
+	AppendMenu(hSubMenuSync, MF_STRING, mSyncJack, "Jack");
+	AppendMenu(hSubMenuSync, MF_STRING, mSyncLTC, "LTC");
+	AppendMenu(hSubMenuSync, MF_STRING, mSyncMTCJACK, "MTC (JACK)");
+	AppendMenu(hSubMenuSync, MF_STRING, mSyncMTCPort, "MTC (PortMidi)");
+	AppendMenu(hSubMenuSync, MF_STRING, mSyncNone, "None");
+
+	AppendMenu(hSubMenuSize, MF_STRING, mSize50, "50%");
+	AppendMenu(hSubMenuSize, MF_STRING, mSize100, "100%");
+	AppendMenu(hSubMenuSize, MF_STRING, mSize150, "150%");
+	AppendMenu(hSubMenuSize, MF_SEPARATOR, 0, NULL);
+	AppendMenu(hSubMenuSize, MF_STRING, mSizeAspect, "Reset Aspect");
+	AppendMenu(hSubMenuSize, MF_STRING, mSizeLetterbox, "Letterbox");
+	AppendMenu(hSubMenuSize, MF_SEPARATOR, 0, NULL);
+	AppendMenu(hSubMenuSize, MF_STRING, mWinFullScreen, "Full Screen");
+	AppendMenu(hSubMenuSize, MF_SEPARATOR, 0, NULL);
+	AppendMenu(hSubMenuSize, MF_STRING, mWinMouseVisible, "Mouse Cursor");
+
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdFN, "Frame Number");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdTC, "Timecode");
+	AppendMenu(hSubMenuOSD, MF_SEPARATOR, 0, NULL);
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetNone, "Offset Off");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetFN, "Offset FN");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetTC, "Offset TC");
+	AppendMenu(hSubMenuOSD, MF_SEPARATOR, 0, NULL);
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdBox, "Background");
+
+	AppendMenu(hSubMenuJack, MF_STRING, mJackPlayPause, "Play/Pause");
+	AppendMenu(hSubMenuJack, MF_STRING, mJackPlay, "Play");
+	AppendMenu(hSubMenuJack, MF_STRING, mJackStop, "Stop");
+	AppendMenu(hSubMenuJack, MF_STRING, mJackRewind, "Rewind");
+
+	/* update menu items */
+	switch (ui_syncsource()) {
+		case SYNC_JACK:
+			CheckMenuItem(hSubMenuSync, mSyncJack, MF_CHECKED | MF_BYCOMMAND);
+			break;
+		case SYNC_LTC:
+			CheckMenuItem(hSubMenuSync, mSyncLTC, MF_CHECKED | MF_BYCOMMAND);
+			break;
+		case SYNC_MTC_JACK:
+			CheckMenuItem(hSubMenuSync, mSyncMTCJACK, MF_CHECKED | MF_BYCOMMAND);
+			break;
+		case SYNC_MTC_PORTMIDI:
+			CheckMenuItem(hSubMenuSync, mSyncMTCPort, MF_CHECKED | MF_BYCOMMAND);
+			break;
+		default:
+			CheckMenuItem(hSubMenuSync, mSyncNone, MF_CHECKED | MF_BYCOMMAND);
+			break;
+	}
+
+	if (OSD_mode&OSD_FRAME) {
+		CheckMenuItem(hSubMenuOSD, mOsdFN, MF_CHECKED | MF_BYCOMMAND);
+	}
+	if (OSD_mode&OSD_SMPTE) {
+		CheckMenuItem(hSubMenuOSD, mOsdTC, MF_CHECKED | MF_BYCOMMAND);
+	}
+	if (!(OSD_mode&(OSD_OFFF|OSD_OFFS))) {
+		CheckMenuItem(hSubMenuOSD, mOsdOffsetNone, MF_CHECKED | MF_BYCOMMAND);
+	}
+	if (OSD_mode&OSD_OFFF) {
+		CheckMenuItem(hSubMenuOSD, mOsdOffsetFN, MF_CHECKED | MF_BYCOMMAND);
+	}
+	if (OSD_mode&OSD_OFFS) {
+		CheckMenuItem(hSubMenuOSD, mOsdOffsetTC, MF_CHECKED | MF_BYCOMMAND);
+	}
+	if (OSD_mode&OSD_BOX) {
+		CheckMenuItem(hSubMenuOSD, mOsdBox, MF_CHECKED | MF_BYCOMMAND);
+	}
+
+	if (Xgetletterbox()) {
+		CheckMenuItem(hSubMenuSize, mSizeLetterbox, MF_CHECKED | MF_BYCOMMAND);
+	}
+	if (Xgetontop()) {
+		CheckMenuItem(hSubMenuSize, mWinOnTop, MF_CHECKED | MF_BYCOMMAND);
+	}
+	if (Xgetfullscreen()) {
+		CheckMenuItem(hSubMenuSize, mWinFullScreen, MF_CHECKED | MF_BYCOMMAND);
+	}
+	if (!Xgetmousepointer()) {
+		CheckMenuItem(hSubMenuSize, mWinMouseVisible, MF_CHECKED | MF_BYCOMMAND);
+	}
+
+	// built top-level w/o ModifyMenu
+	unsigned int flags_load = 0;
+	unsigned int flags_sync = 0;
+	unsigned int flags_jack = 0;
+	if (ui_syncsource() != SYNC_JACK || (interaction_override&OVR_JCONTROL)) {
+		flags_jack = MF_DISABLED | MF_GRAYED;
+	}
+	if (interaction_override & OVR_MENUSYNC) {
+		flags_sync = MF_DISABLED | MF_GRAYED;
+	}
+	if (interaction_override & OVR_LOADFILE) {
+		flags_load = MF_DISABLED | MF_GRAYED;
+	}
+
+	AppendMenu(hMenu, MF_STRING | flags_load, mLoad, "Open Video");
+	AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
+	AppendMenu(hMenu, MF_STRING | MF_POPUP | flags_sync, (UINT_PTR)hSubMenuSync, "Sync");
+	AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hSubMenuSize, "Display");
+	AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hSubMenuOSD, "OSD");
+	AppendMenu(hMenu, MF_STRING | MF_POPUP | flags_jack, (UINT_PTR)hSubMenuJack, "Transport");
+
+	/* and go */
+	TrackPopupMenuEx(hMenu,
+			TPM_LEFTALIGN | TPM_LEFTBUTTON,
+			x, y, hwnd, NULL);
+
+	DestroyMenu (hSubMenuOSD);
+	DestroyMenu (hSubMenuJack);
+	DestroyMenu (hSubMenuSize);
+	DestroyMenu (hSubMenuSync);
+	DestroyMenu (hMenu);
+}
+
+static void win_load_file(HWND hwnd) {
+	char fn[1024] = "";
+	OPENFILENAME ofn;
+	ZeroMemory(&ofn, sizeof(OPENFILENAME));
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	ofn.hwndOwner = hwnd;
+	ofn.lpstrFile = fn;
+	ofn.nMaxFile = 1024;
+	ofn.lpstrTitle = "xjadeo - Load Video File";
+	ofn.lpstrFilter = "Video Files\0"
+		"*.avi;*.mov;*.mkv;*.mpg;*.vob;*.ogg;*.ogv;*.mp4;*.mpeg;*.webm;*.flv;*.asf;*.avs;*.dts;*.m4v;*.dv;*.dirac;*.h264;"
+		"*.wmv;*.mtsC;*.ts;*.264\0"
+		"All\0*.*\0";
+	ofn.nFilterIndex = 1;
+	ofn.Flags = OFN_ENABLESIZING | OFN_FILEMUSTEXIST | OFN_NONETWORKBUTTON | OFN_HIDEREADONLY | OFN_READONLY;
+	//ofn.lpstrInitialDir = ;
+
+	if (GetOpenFileName (&ofn)) {
+		printf("Load: '%s'\n", fn);
+		xapi_open(fn);
+	}
+}
+
+static void win_handle_menu(HWND hwnd, enum wMenuId id) {
+	switch(id) {
+		case mLoad:            win_load_file(hwnd); break;
+		case mSyncJack:        ui_sync_to_jack(); break;
+		case mSyncLTC:         ui_sync_to_jack(); break;
+		case mSyncMTCJACK:     ui_sync_to_mtc_jack(); break;
+		case mSyncMTCPort:     ui_sync_to_mtc_portmidi(); break;
+		case mSyncNone:        ui_sync_none(); break;
+		case mSize50:          XCresize_percent(50); break;
+		case mSize100:         XCresize_percent(100); break;
+		case mSize150:         XCresize_percent(150); break;
+		case mSizeAspect:      XCresize_aspect(0); break;
+		case mSizeLetterbox:   Xletterbox(2); break;
+		case mWinOnTop:        Xontop(2); break;
+		case mWinFullScreen:   Xfullscreen(2); break;
+		case mWinMouseVisible: Xmousepointer(2); break;
+		case mOsdFN:           ui_osd_fn(); break;
+		case mOsdTC:           ui_osd_tc(); break;
+		case mOsdOffsetNone:   ui_osd_offset_none(); break;
+		case mOsdOffsetFN:     ui_osd_offset_fn(); break;
+		case mOsdOffsetTC:     ui_osd_offset_tc(); break;
+		case mOsdBox:          ui_osd_box(); break;
+		case mJackPlayPause:   jackt_toggle(); break;
+		case mJackPlay:        jackt_start(); break;
+		case mJackStop:        jackt_stop(); break;
+		case mJackRewind:      jackt_rewind(); break;
+	}
+}
+#endif
 
 #if 0
 static int check_wgl_extention(const char *ext) {
@@ -120,8 +332,28 @@ handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
 		xjglButton(2);
 		break;
 	case WM_RBUTTONDOWN:
+#ifdef WINMENU
+		if (1) {
+			POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+			ClientToScreen(hwnd, &pt);
+			open_context_menu(hwnd, pt.x, pt.y);
+		}
+		else
+#endif
 		xjglButton(3);
 		break;
+#ifdef WINMENU
+	case WM_CONTEXTMENU:
+		{
+			int x0, y0;
+			gl_get_window_pos(&x0, &y0);
+			open_context_menu(hwnd, x0 + _gl_width * .25, y0 + _gl_height * .25);
+		}
+		break;
+	case WM_COMMAND:
+		win_handle_menu(hwnd, LOWORD(wParam));
+		break;
+#endif
 	case WM_MOUSEWHEEL:
 		xjglButton((short)HIWORD(wParam) > 0 ? 4 : 5);
 		break;

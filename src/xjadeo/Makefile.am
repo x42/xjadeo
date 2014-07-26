@@ -30,7 +30,7 @@ endif
 if TARGET_WIN32
 xjadeo_SOURCES+=display_gl_win.c
 xjadeo_CFLAGS+=-DUSE_WEAK_JACK
-xjadeo_LDADD+=-lws2_32 -lwinmm -lpthread
+xjadeo_LDADD+=-lws2_32 -lwinmm -lcomdlg32 -lpthread
 endif
 if TARGET_OSX
 xjadeo_SOURCES+=display_gl_osx.m
