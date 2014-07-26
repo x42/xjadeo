@@ -3,12 +3,12 @@ AC_MACRO_DIR = m4
 
 SUBDIRS = src @ac_contrib_dir@
 
-man_MANS = doc/xjadeo.1 doc/qjadeo.1 doc/xjremote.1
+man_MANS = doc/xjadeo.1 doc/xjremote.1
 
 EXTRA_DIST= \
- xjadeo.lsm.in doc/xjadeo.png \
- doc/xjadeo.xml doc/favicon.ico doc/Makefile doc/html.xsl doc/man.xsl \
- doc/xjadeo.1 doc/qjadeo.1 doc/xjremote.1 \
+ xjadeo.lsm.in \
+ doc/Makefile doc/xjadeo.1 doc/xjremote.1 \
+ doc/favicon.ico doc/xjadeo.png \
  src/xjadeo/icons/osd_bitmaps.h \
  src/xjadeo/icons/xjadeo-color.xpm \
  src/xjadeo/icons/splash.bitmap src/xjadeo/icons/splash_mask.xbm \

@@ -12,7 +12,7 @@ if test -z "$BINARYONLY"; then
 	make clean
 	sh autogen.sh
 	./configure --enable-contrib --enable-qtgui
-	make -C doc html xjadeo.pdf
+	make -C doc html man
 	make dist
 
 	VERSION=$(awk '/define VERSION /{print $3;}' config.h | sed 's/"//g')

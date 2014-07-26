@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <title>XJADEO - The X Jack Video Monitor</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="Author" content="Robin Gareus" />
+  <meta name="description" content="Video Monitor for jackaudio.org, ardour.org" />
+  <meta name="keywords" content="Linux, Audio, Video, LTC, MTC, Jack-transport, Soundtrack, Synchronization, JACK" />
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <meta name="viewport" content="width=560, initial-scale=.7"/>
+  <style type="text/css">
+  h1        {text-align: center;}
+  h2        {border-bottom: 1px solid #071419; margin-right:1em;}
+  body      {background-color:#9696A8; font-family:Lucida,Helvetica,sans-serif; font-size:14px; color: #000;}
+  p         {text-align:justify; padding-right:2em;}
+  hr        {color:#CCDDCC; background-color:#202020; border:0px; height:1px;}
+  img       {border:0px;}
+  table, table td, table tr
+            {border:0}
+  .large    {font-size:120%;}
+  .larger   {font-size:130%;}
+  .center   {text-align:center;}
+  .box      {padding: 1em; background: white; border-radius:12px; border:1.5px solid #071419;}
+  .content  {width: 50em; margin: 1em auto;}
+  .top      {height: 8em; font-variant:small-caps; font-weight:bolder;}
+  .linklist {padding-left:1em; list-style-type:none; margin:0; line-height:150%;}
+  .linklist a {text-decoration: none; color: #071419;}
+  </style>
+  </head>
+  <body>
+    <div class="content">
+      <div class="box top" style="float:left;width:30em;">
+        <a href="index.html"><img src="xjadeo_banner.png" alt="XJadeo!"/></a>
+      </div>
+      <div class="box top" style="float:right; width:15em;">
+        <ul class="linklist larger">
+          <li><a href="http://sourceforge.net/projects/xjadeo/files/">Download</a></li>
+          <li><a href="https://github.com/x42/xjadeo">Source Code</a></li>
+          <li><a href="https://github.com/x42/xjadeo/issues">Issue Tracker</a></li>
+          <li><a href="xjadeo.html">Manual</a></li>
+        </ul>
+      </div>
+      <div style="clear:both; height:1em;"></div>
+      <!-- END HEADER !-->
+      <div class="box">
+        <!-- MAIN PAGE !-->

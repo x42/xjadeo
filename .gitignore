@@ -59,8 +59,4 @@ Makefile.in
 
 # misc
 /doc/html/
-/doc/xjadeo.*
-/debian/files
-/debian/xjadeo/
-/debian/xjadeo.debhelper.log
-/debian/xjadeo.substvars
+/doc/old/

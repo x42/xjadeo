@@ -1,56 +1,33 @@
-#
-# the docbook is not inteded to be built automatically
-# as it requires an internet connection to get the xslt files.
-# and would introduce XML* dependencies...
-# 
-# precompiled manpages are in included in the distribution,
-# as is the docbook source.
-#
-# an HTML version of the docbook is available online:
-#  http://xjadeo.sourceforge.net/
-#
-
 .PHONY: all validate html clean man 
 
 all: html man
 
-dtdvalid:
-	xmllint --noout --valid -dtdvalid http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd  xjadeo.xml
-
-validate:
-	xmllint --noout --valid xjadeo.xml
-
-html: validate
+html: xjadeo.1 xjremote.1
 	mkdir -p html 
-	(cd html; xsltproc --encoding UTF-8 ../html.xsl ../xjadeo.xml)
-	cp -f style.css favicon.ico html/
-	cp -f xjadeo.png html/
-	cp -f qjadeo.png html/
-
-man: validate
-	xsltproc --encoding UTF-8 man.xsl xjadeo.xml
+	cp -f favicon.ico html/
+	cp -f xjadeo_banner.png html/
+	groff -m man -T xhtml -P -l xjadeo.1 | sed 's/cellspacing="0" cellpadding="0"//g;s/width="100%" border="0" rules="none" frame="void"//g;s/valign="top" align="left"//g;s/width="/style="width:/g;s/><\/col>/\/>/g' > pages/xjadeo.html
+	groff -m man -T xhtml -P -l xjremote.1 | sed 's/cellspacing="0" cellpadding="0"//g' > pages/xjremote.html
+	echo -e "/<body>\n1,.d\n/<hr\\>\n.d\n/<hr\\>\n.d\n/<\\/body>\n.,\$$d\nw\nq" | ed -s pages/xjadeo.html
+	echo -e "/<body>\n1,.d\n/<hr\\>\n.d\n/<hr\\>\n.d\n/<\\/body>\n.,\$$d\nw\nq" | ed -s pages/xjremote.html
+	for file in pages/*; do echo $$file; cat tpl/head $$file tpl/foot > html/`basename $$file`; done
+	rm -f pages/xjadeo.html pages/xjremote.html
 
 clean:
-	-rm -fr qjadeo.1 xjadeo.1 xjinfo.1 xjremote.1 html xjadeo.ps xjadeo.pdf
+	-rm -fr xjadeo.1 xjremote.1 html/
 
-.PHONY: xjadeo.ps xjadeo.pdf
+../src/xjadeo/xjremote:
+	$(MAKE) -C ../src/xjadeo/
 
-xjadeo.ps: xjadeo.xml
-	dblatex -tps -T native \
-	  -P newtbl.autowidth=default \
-	  -P latex.hyperparam=colorlinks,linkcolor=blue \
-	  -P doc.collab.show=0 \
-	  -P latex.output.revhistory=0 \
-	  -P make.year.ranges=1 \
-	  -P doc.lot.show="" \
-	  xjadeo.xml
+../src/xjadeo/xjadeo:
+	$(MAKE) -C ../src/xjadeo/
 
-xjadeo.pdf: xjadeo.xml
-	dblatex -T native \
-	  -P newtbl.autowidth=default \
-	  -P latex.hyperparam=colorlinks,linkcolor=blue \
-	  -P doc.collab.show=0 \
-	  -P latex.output.revhistory=0 \
-	  -P make.year.ranges=1 \
-	  -P doc.lot.show="" \
-	  xjadeo.xml
+xjadeo.1: ../src/xjadeo/xjadeo
+	help2man -N -n 'X Jack Video Monitor' -o xjadeo.1 ../src/xjadeo/xjadeo
+
+xjremote.1: ../src/xjadeo/xjremote
+	help2man -N -n 'X Jack Video Monitor Remote Control' -o xjremote.1 ../src/xjadeo/xjremote
+
+man: xjadeo.1 xjremote.1
+
+.PHONY: man all dist-clean html
