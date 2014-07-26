@@ -26,12 +26,12 @@ extern int want_quiet;
 extern int want_debug;
 extern int want_verbose;
 
+static jack_client_t *xj_jack_client = NULL;
+
 #ifdef JACK_SESSION
 #include <jack/session.h>
 extern char *jack_uuid;
 extern int	loop_flag;
-
-static jack_client_t *xj_jack_client = NULL;
 
 static void jack_session_cb (jack_session_event_t *event, void *arg) {
 	char filename[256];
