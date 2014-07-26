@@ -78,6 +78,10 @@ case $target_os in
 		AM_CONDITIONAL([TARGET_OSX], false)
 		AM_CONDITIONAL([TARGET_LINUX], false)
 		AM_CONDITIONAL([TARGET_WIN32], true)
+		AC_CHECK_TOOL(WINDRES, windres, false)
+		if test "$WINDRES" = "false"; then
+			AC_MSG_ERROR([Could not find an implementation of windres in PATH.])
+		fi
 		;;
 	*)
 		AC_MSG_WARN([*** unknown target OS ***])

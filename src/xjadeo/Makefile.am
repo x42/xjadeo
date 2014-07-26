@@ -28,7 +28,7 @@ xjadeo_SOURCES+=display_glx.c
 xjadeo_LDADD+=@JACK_LIBS@
 endif
 if TARGET_WIN32
-xjadeo_SOURCES+=display_gl_win.c
+xjadeo_SOURCES+=display_gl_win.c windows.rc
 xjadeo_CFLAGS+=-DUSE_WEAK_JACK
 xjadeo_LDADD+=-lws2_32 -lwinmm -lcomdlg32 -lpthread
 endif
@@ -51,8 +51,12 @@ xjadeo_DEPENDENCIES= \
 	icons/brightness.bitmap    icons/gamma.bitmap    icons/saturation.bitmap    icons/osd_bitmaps.h \
 	icons/brightness_mask.xbm  icons/gamma_mask.xbm  icons/saturation_mask.xbm  icons/xjadeo-color.xpm \
 	icons/contrast.bitmap      icons/hue.bitmap      icons/splash.bitmap        icons/xjadeo-color-ico.h \
-	icons/contrast_mask.xbm    icons/hue_mask.xbm    icons/splash_mask.xbm      paths.h
+	icons/contrast_mask.xbm    icons/hue_mask.xbm    icons/splash_mask.xbm      icons/xjadeo.ico \
+	paths.h
 
 paths.h: Makefile
 	@echo '#define BINDIR "$(DESTDIR)/$(bindir)/"' >$@
 	@echo '#define SYSCONFDIR "$(DESTDIR)/$(sysconfdir)/"' >>$@
+
+.rc.o:
+	$(WINDRES) -o $@ $<
