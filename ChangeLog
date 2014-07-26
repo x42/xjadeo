@@ -1,4 +1,4 @@
-2014-07-22 (unreleased)  Robin Gareus <robin@gareus.org>
+2014-07-27 (0.8.0-rc1)  Robin Gareus <robin@gareus.org>
 * v0.8 pre-release
 * add openGL display (Linux, Win32, OSX)
 * fix RGBA32 (imlib2, openGL) blank frame alpha.
