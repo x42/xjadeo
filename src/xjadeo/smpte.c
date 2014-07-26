@@ -220,10 +220,10 @@ long int smpte_to_frame(int type, int f, int s, int m, int h, int overflow) {
 	}
 
 	switch (midi_clkconvert) {
-		case 2: // force video fps
+		case 1: // force video fps
 			frame = f +  (int) floor(FPS * ( s + 60*m+ 3600*h));
 			break;
-		case 3: // 'convert' FPS.
+		case 2: // 'convert' FPS.
 			frame = (int) rint(frame * FPS / fps);
 			break;
 		default: // use MTC fps info

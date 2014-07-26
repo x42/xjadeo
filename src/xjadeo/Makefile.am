@@ -41,6 +41,8 @@ endif
 
 xjremote_SOURCES = xjremote.c
 
+xjremote_CFLAGS = "-DSUBVERSION=\"$(REV)\""
+
 xjremote_LDADD = @MQ_LIBS@
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -53,6 +55,9 @@ xjadeo_DEPENDENCIES= \
 	icons/brightness_mask.xbm  icons/gamma_mask.xbm  icons/saturation_mask.xbm  icons/xjadeo-color.xpm \
 	icons/contrast.bitmap      icons/hue.bitmap      icons/splash.bitmap        icons/xjadeo-color-ico.h \
 	icons/contrast_mask.xbm    icons/hue_mask.xbm    icons/splash_mask.xbm      icons/xjadeo.ico \
+	paths.h
+
+xjremote_DEPENDENCIES= \
 	paths.h
 
 paths.h: Makefile

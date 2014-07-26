@@ -161,9 +161,6 @@ int OSD_fy = 5; // percent
 int OSD_sy = 98; // percent
 int OSD_ty = 50; // percent
 
-/* The name the program was run with, stripped of any leading path. */
-static char *program_name;
-
 // prototypes .
 
 int init_weak_jack();
@@ -172,50 +169,52 @@ static void printversion (void);
 
 static struct option const long_options[] =
 {
-	{"quiet", no_argument, 0, 'q'},
-	{"silent", no_argument, 0, 'q'},
-	{"verbose", no_argument, 0, 'v'},
-	{"avverbose", no_argument, 0, 'A'},
-	{"genpts", no_argument, 0, 'P'},
-	{"ignorefileoffset", no_argument, 0, 'I'},
-	{"nofileoffset", no_argument, 0, 'I'},
-	{"nosplash", no_argument, 0, 'S'},
-	{"offset", no_argument, 0, 'o'},
-	{"fps", required_argument, 0, 'f'},
-	{"filefps", required_argument, 0, 'F'},
-	{"keyframe-limit", required_argument, 0, 'K'},
-	{"videomode", required_argument, 0, 'x'},
-	{"vo", required_argument, 0, 'x'},
-	{"remote", no_argument, 0, 'R'},
-	{"noinitialsync", no_argument, 0, 'J'},
-	{"mq", no_argument, 0, 'Q'},
-	{"ipc", required_argument, 0, 'W'},
-	{"help", no_argument, 0, 'h'},
-	{"version", no_argument, 0, 'V'},
-	{"info", no_argument, 0, 'i'},
-	{"ontop", no_argument, 0, 'a'},
-	{"fullscreen", no_argument, 0, 's'},
-	{"dropframes", no_argument, 0, 'N'},
-	{"nodropframes", no_argument, 0, 'n'},
-	{"letterbox", no_argument, 0, 'b'},
-	{"midi", required_argument, 0, 'm'},
-	{"midifps", required_argument, 0, 'M'},
-	{"midi-driver", required_argument, 0, 'd'},
-	{"midiclk", no_argument, 0, 'C'},
-	{"no-midiclk", no_argument, 0, 'c'},
-	{"ltc", no_argument, 0, 'l'},
-	{"ttf-font", required_argument, 0, 'T'},
-#ifdef JACK_SESSION
-	{"uuid", required_argument, 0, 'U'},
-	{"rc", required_argument, 0, 'r'},
-#endif
+	{"avverbose",           no_argument, 0,       'A'},
+	{"ontop",               no_argument, 0,       'a'},
+	{"letterbox",           no_argument, 0,       'b'},
+	{"midiclk",             no_argument, 0,       'C'},
+	{"no-midiclk",          no_argument, 0,       'c'},
+	{"debug",               no_argument, 0,       'D'},
+	{"midi-driver",         required_argument, 0, 'd'},
+	{"file-fps",            required_argument, 0, 'F'},
+	{"screen-fps",          required_argument, 0, 'f'},
+	{"help",                no_argument, 0,       'h'},
+	{"ignore-file-offset",  no_argument, 0,       'I'},
+	{"no-file-offset",      no_argument, 0,       'I'},
+	{"info",                required_argument, 0, 'i'},
+	{"no-initial-sync",     no_argument, 0,       'J'},
+	{"keyframe-limit",      required_argument, 0, 'K'},
+	{"ltc",                 no_argument, 0,       'l'},
+	{"midifps",             required_argument, 0, 'M'},
+	{"midi",                required_argument, 0, 'm'},
+	{"drop-frames",         no_argument, 0,       'N'},
+	{"no-drop-frames",      no_argument, 0,       'n'},
 #ifdef HAVE_LIBLO
-	{"osc", required_argument, 0, 'O'},
+	{"osc",                 required_argument, 0, 'O'},
 #endif
-	{"debug", no_argument, 0, 'D'},
+	{"offset",              required_argument, 0, 'o'},
+	{"genpts",              no_argument, 0,       'P'},
+	{"mq",                  no_argument, 0,       'Q'},
+	{"quiet",               no_argument, 0,       'q'},
+	{"silent",              no_argument, 0,       'q'},
+	{"remote",              no_argument, 0,       'R'},
+#ifdef JACK_SESSION
+	{"rc",                  required_argument, 0, 'r'},
+#endif
+	{"no-splash",           no_argument, 0,       'S'},
+	{"fullscreen",          no_argument, 0,       's'},
+	{"ttf-font",            required_argument, 0, 'T'},
+#ifdef JACK_SESSION
+	{"uuid",                required_argument, 0, 'U'},
+#endif
+	{"version",             no_argument, 0,       'V'},
+	{"verbose",             no_argument, 0,       'v'},
+
+	{"ipc",                 required_argument, 0, 'W'},
+	{"videomode",           required_argument, 0, 'x'},
+	{"vo",                  required_argument, 0, 'x'},
 	{NULL, 0, NULL, 0}
 };
-
 
 
 /* Set all the option flags according to the switches specified.
@@ -225,194 +224,198 @@ decode_switches (int argc, char **argv)
 {
 	int c;
 	while ((c = getopt_long (argc, argv,
-		"q"	/* quiet or silent */
-		"v"	/* verbose */
-		"A"	/* avverbose */
-		"P"	/* genpts */
-		"I"	/* ignorefileoffset */
-		"h"	/* help */
-		"S"	/* nosplash */
-		"K:"	/* keyframe limit */
-		"R"	/* stdio remote control */
-		"Q"	/* POSIX rt-message queues */
-		"W:"	/* IPC message queues */
-		"o:"	/* offset */
-		"T:"	/* ttf-font */
-		"f:"	/* fps */
-		"F:"	/* file FPS */
-		"x:"	/* video-mode */
-		"a"	/* always on top */
-		"s"	/* start in full-screen mode */
-		"i:"	/* info - OSD-mode */
-		"b"	/* letterbox */
-		"m:"	/* midi interface */
-		"M:"	/* midi clk convert */
-		"d:"	/* midi driver */
-		"C"	/* --midiclk */
-		"c"	/* --no-midiclk */
-		"l"	/* --ltc */
+		"A"  /* avverbose */
+		"a"  /* always on top */
+		"b"  /* letterbox */
+		"C"  /* --midiclk */
+		"c"  /* --no-midiclk */
+		"D"  /* debug */
+		"d:" /* midi driver */
+		"F:" /* file FPS */
+		"f:" /* screen fps */
+		"h"  /* help */
+		"I"  /* ignorefileoffset */
+		"i:" /* info - OSD-mode */
+		"J"  /* no jack / no-initial sync */
+		"K:" /* keyframe limit */
+		"l"  /* --ltc */
+		"M:" /* midi clk convert */
+		"m:" /* midi interface */
+		"N"  /* --dropframes */
+		"n"  /* --nodropframes */
+		"O:" /* --osc  */
+		"o:" /* offset */
+		"P"  /* genpts */
+		"Q"  /* POSIX rt-message queues */
+		"q"  /* quiet or silent */
+		"R"  /* stdio remote control */
+		"r:" /* --rc */
+		"S"  /* nosplash */
+		"s"  /* start in full-screen mode */
+		"T:" /* ttf-font */
 #ifdef JACK_SESSION
-		"r:"	/* --rc */
-		"U:"	/* --uuid */
+		"U:" /* --uuid */
 #endif
-		"N"	/* --dropframes */
-		"n"	/* --nodropframes */
-#ifdef HAVE_LIBLO
-		"O:"	/* --osc  */
-#endif
-		"D"	/* debug */
-		"J"	/* no jack / no-initial sync */
-		"V",	/* version */
-			long_options, (int *) 0)) != EOF)
+		"V"  /* version */
+		"v"  /* verbose */
+		"W:" /* IPC message queues */
+		"x:" /* video-mode */
+			, long_options, (int *) 0)) != EOF)
 	{
 		switch (c) {
-			case 'q':		/* --quiet, --silent */
+			case 'A':
+				want_avverbose = !remote_en;
+				break;
+			case 'a':
+				start_ontop = 1;
+				break;
+			case 'b':
+				want_letterbox = 1;
+				break;
+			case 'D':
+				want_debug = 1;
+				break;
+			case 'F':
+				filefps = atof(optarg);
+				if (filefps < 1) filefps = 1;
+				break;
+			case 'f':
+				if(atof(optarg) > 0) {
+					delay = 1.0 / atof(optarg);
+				} else {
+					delay = -1; // use file-framerate
+				}
+				break;
+			case 'h':
+				usage (0);
+				break;
+			case 'I':
+				want_ignstart = 1;
+				break;
+			case 'i':
+				OSD_mode = atoi(optarg) & (OSD_FRAME | OSD_SMPTE);
+				if (!want_quiet) printf("On screen display: [%s%s%s]\n",
+						(!OSD_mode) ? "off":
+						(OSD_mode & OSD_FRAME) ? "frames":"",
+						(OSD_mode & (OSD_FRAME | OSD_SMPTE)) == (OSD_FRAME | OSD_SMPTE) ? " " : "",
+						(OSD_mode & OSD_SMPTE) ? "SMPTE" : ""
+						);
+				break;
+			case 'J':
+				no_initial_sync = 1;
+				break;
+			case 'K':
+				keyframe_interval_limit = atoi(optarg);
+				if (keyframe_interval_limit < 10) keyframe_interval_limit = 10;
+				if (keyframe_interval_limit > 5000) keyframe_interval_limit = 5000;
+				if (!want_quiet) printf("Set Keyframe Limit to: %d\n", keyframe_interval_limit);
+				break;
+			case 'l':
+#ifdef HAVE_LTC
+				use_ltc = 1;
+#else
+				printf("This version of xjadeo is compiled without LTC support\n");
+#endif
+				break;
+			case 'N':
+				want_dropframes = 1;
+				break;
+			case 'n':
+				want_autodrop = 0;
+				break;
+			case 'O':
+#ifdef HAVE_LIBLO
+				osc_port = atoi(optarg);
+				if (osc_port < 0) osc_port = 0;
+				if (osc_port > 65535) osc_port = 65535;
+#else
+				printf("This version of xjadeo is compiled without OSC support\n");
+#endif
+				break;
+			case 'o':
+				smpte_offset = strdup(optarg);
+				break;
+			case 'P':
+				want_genpts = 1;
+				break;
+			case 'Q':
+				mq_en = 1;
+				break;
+			case 'q':
 				want_quiet = 1;
 				want_verbose = 0;
 				want_avverbose = 0;
 				break;
-			case 'D':		/* --debug */
-				want_debug = 1;
-				break;
-			case 'A':		/* --avverbose */
-				want_avverbose = !remote_en;
-				break;
-			case 'v':		/* --verbose */
-				want_verbose = !remote_en;
-				break;
-			case 'S':		/* --nosplash */
-				want_nosplash = 1;
-				break;
-			case 'I':		/* --ignorefileoffset */
-				want_ignstart++;
-				break;
-			case 'K':		/* --keyframe-limit */
-				keyframe_interval_limit = atoi(optarg);
-				if (keyframe_interval_limit < 10) keyframe_interval_limit = 10;
-				if (keyframe_interval_limit > 5000) keyframe_interval_limit = 5000;
-				break;
-			case 'P':		/* --avverbose */
-				want_genpts = 1;
-				break;
-			case 'R':		/* --remote */
+			case 'R':
 				remote_en = 1;
 				want_quiet = 1;
 				want_verbose = 0;
 				want_avverbose = 0;
 				break;
-			case 'Q':		/* --mq */
-				mq_en = 1;
+			case 'r':
+				if (load_rc) free(load_rc);
+				load_rc = strdup(optarg);
 				break;
-			case 'W':		/* --ipc */
-				if (ipc_queue) free(ipc_queue);
-				ipc_queue = strdup(optarg);
+			case 'S':
+				want_nosplash = 1;
 				break;
-			case 'O':		/* --avverbose */
-				osc_port=atoi(optarg);
+			case 's':
+				start_fullscreen = 1;
 				break;
-			case 'n':		/* --nodropframes */
-				want_autodrop = 0;
+			case 'T':
+				strcpy(OSD_fontfile, optarg);
 				break;
-			case 'N':		/* --dropframes */
-				want_dropframes = 1;
-				break;
-			case 'b':		/* --letterbox */
-				want_letterbox = 1;
-				break;
-			case 'i':		/* --info */
-				OSD_mode=atoi(optarg)&3;
-				if (!want_quiet) printf("On screen display: [%s%s%s] \n",
-						(!OSD_mode)?"off":
-						(OSD_mode&OSD_FRAME)?"frames":"",
-						(OSD_mode&(OSD_FRAME|OSD_SMPTE))==(OSD_FRAME|OSD_SMPTE)?" ":"",
-						(OSD_mode&OSD_SMPTE)?"SMPTE":""
-						);
-				break;
-			case 'o':		/* --offset */
-				// we don't know the file's framerate yet!
-				smpte_offset=strdup(optarg);
-				//ts_offset=smptestring_to_frame(optarg,0);
-				//printf("set time offset to %li frames\n",ts_offset);
-				break;
-			case 'F':		/* --filefps */
-				if(atof(optarg)>0)
-					filefps = atof(optarg); // TODO: use av_parse_video_frame_rate()
-				break;
-			case 'f':		/* --fps */
-				if(atof(optarg)>0)
-					delay = 1.0 / atof(optarg);
-				else delay = -1; // use file-framerate
-				break;
-			case 'x':		/* --vo --videomode */
-				videomode = atoi(optarg);
-				if (videomode == 0) videomode = parsevidoutname(optarg);
-				break;
-#ifdef HAVE_MIDI
-			case 'm':		/* --midi */
-				strncpy(midiid,optarg,sizeof(midiid));
-				midiid[(sizeof(midiid)-1)]=0;
-				break;
-			case 'd':		/* --midi-driver */
-				if (midi_driver) free(midi_driver);
-				midi_driver = strdup(optarg);
-				break;
-			case 'M':		/* --midifps */
-				midi_clkconvert = atoi(optarg);
-				break;
-			case 'C':		/* --midiclk */
-				midi_clkadj = 1;
-				break;
-			case 'c':		/* --no-midiclk */
-				midi_clkadj = 0;
-				break;
-#else
-			case 'm':		/* --midi */
-			case 'd':		/* --midi-driver */
-			case 'M':		/* --midifps */
-			case 'C':		/* --midiclk */
-			case 'c':		/* --no-midiclk */
-				printf("This version of xjadeo is compiled without MIDI support\n");
-				break;
-#endif
-#ifdef HAVE_LTC
-			case 'l':		/* --ltc */
-				use_ltc = 1;
-				break;
-#else
-			case 'l':		/* --ltc */
-				printf("This version of xjadeo is compiled without LTC support\n");
-				break;
-#endif
-			case 'U':		/* --uuid */
+			case 'U':
 #ifdef JACK_SESSION
 				if (jack_uuid) free(jack_uuid);
 				jack_uuid = strdup(optarg);
 				jack_autostart = 1;
 #endif
 				break;
-			case 'r':		/* --rc */
-				if (load_rc) free(load_rc);
-				load_rc = strdup(optarg);
-				break;
 			case 'V':
 				printversion();
 				exit(0);
-			case 's':
-				start_fullscreen=1;
+			case 'W':
+				if (ipc_queue) free(ipc_queue);
+				ipc_queue = strdup(optarg);
 				break;
-			case 'a':
-				start_ontop=1;
+			case 'v':
+				want_verbose = !remote_en;
 				break;
-			case 'T':
-				strcpy(OSD_fontfile, optarg);
+			case 'x':
+				videomode = atoi(optarg);
+				if (videomode == 0) videomode = parsevidoutname(optarg);
 				break;
-			case 'J':
-				no_initial_sync = 1;
+#ifdef HAVE_MIDI
+			case 'C':
+				midi_clkadj = 1;
 				break;
-			case 'h':
-				usage (0);
+			case 'c':
+				midi_clkadj = 0;
+				break;
+			case 'd':
+				if (midi_driver) free(midi_driver);
+				midi_driver = strdup(optarg);
+				break;
+			case 'M':
+				midi_clkconvert = atoi(optarg);
+				break;
+			case 'm':
+				strncpy(midiid,optarg,sizeof(midiid));
+				midiid[(sizeof(midiid)-1)]=0;
+				break;
+#else
+			case 'C':
+			case 'c':
+			case 'd':
+			case 'M':
+			case 'm':
+				printf("This version of xjadeo is compiled without MIDI support\n");
+				break;
+#endif
 			default:
 				usage (EXIT_FAILURE);
+				break;
 		}
 	}
 	return optind;
@@ -421,99 +424,255 @@ decode_switches (int argc, char **argv)
 static void
 usage (int status)
 {
-  printf ("%s - \
-jack video monitor\n", program_name);
-  printf ("usage: %s [Options] [video-file]\n", program_name);
-  printf ("       %s -R [Options] [<video-file>]\n", program_name);
+  printf ("xjadeo - the X Jack Video Monitor\n\n");
+  printf ("Usage: xjadeo [ OPTIONS ] [ video-file ]\n\n");
   printf (""
-"Options:\n"
-"  -h, --help                display this help and exit\n"
-"  -V, --version             print version information and exit\n"
-"  -q, --quiet, --silent     inhibit usual output\n"
-"  -v, --verbose             print more information\n"
 "\n"
-"  -A, --avverbose           dump ffmpeg messages.\n"
-"  -a, --ontop               stack xjadeo window on top of the desktop.\n"
-"                            requires x11 or xv videomode and EWMH.\n"
-"  -b, --letterbox           retain apect ratio when scaling (Xv only).\n"
-"  -c, --no-midiclk          ignore MTC quarter frames.\n"
-"  -d <name>,                specify midi-driver to use. run 'xjadeo -V' to\n"
-"     --midi-driver <name>   list supported driver(s). <name> is not case-\n"
-"                            sensitive and can be shortened to the first unique\n"
-"                            name. eg '-d j' for jack, '-d alsa-r' for alsa-raw\n"
-"  -f <val>, --fps <val>     display update freq. - default -1 use file's fps\n"
-"  -i <int>, --info <int>    render OnScreenDisplay info: 0:off, %i:frame,\n"
-"                            %i:smpte, %i:both. (use remote ctrl for more opts.)\n"
+"\n"
+"Xjadeo is a software video player that displays a video-clip in sync with an\n"
+"external time source (MTC, LTC, JACK-transport).\n"
+"\n"
+"Xjadeo is intended for soundtrack composition, video monitoring and useful for\n"
+"any task that requires to synchronizing movie frames with audio events.\n"
+"\n"
+/*-------------------------------------------------------------------------------|" */
+"Options:\n"
+" -A, --avverbose           Display verbose video decoder messages.\n"
+" -a, --ontop               Keep xjadeo window on top of other applications.\n"
+" -b, --letterbox           Retain aspect ratio when resizing the window.\n"
+#if 0 // hidden option
+" -C, --midiclk             Use MIDI quarter frames (default)\n"
+" -c, --no-midiclk          Ignore MTC quarter-frames.\n"
+#endif
+" -D, --debug               Print development related information.\n"
+" -d <name>, --midi-driver <name>\n"
+"                           Specify midi-driver to use. Run 'xjadeo -V' to\n"
+"                           list supported driver(s). <name> is not case-\n"
+"                           sensitive and can be shortened to the first unique\n"
+"                           name. eg '-d j' for jack, '-d alsa-r' for alsa-raw\n"
+" -F <val>, --file-fps <val>\n"
+"                           Override video file framerate auto detection\n"
+" -f <val>, --screen-fps <val>\n"
+"                           Desired refresh-rate of the video display in frames\n"
+"                           If this value is equal or less than zero, xjadeo\n"
+"                           will use the FPS of the video-file as its update\n"
+"                           frequency (which is the default).\n"
+"                           Note: This does not affect screen/vblank sync.\n"
+"                           Synchronization vertical refresh is hardware\n"
+"                           dependent (and always used if available)\n"
+/*-------------------------------------------------------------------------------|" */
+" -h, --help                Display this help and exit\n"
+" -I, --ignore-file-offset\n"
+"                           This option is only useful for video files with a\n"
+"                           start-offset, such as split vob files.\n"
+"                           Per default xjadeo honors offsets specified in the\n"
+"                           video-file header. This option allows one to\n"
+"                           override (and subtract) this offset to align the\n"
+"                           start of the file with timecode 00:00:00:00.\n"
+" -i <int>, --info <int>    Display time information using the OSD (on-screen-\n"
+"                           display.\n"
+"                           0:Off, %d: Frame-number, %d: Timecode, %d: both\n"
 "", OSD_FRAME,OSD_SMPTE,OSD_FRAME|OSD_SMPTE); // :)
   printf ("" /* take a breath */
-"  -I, --ignorefileoffset    set the beginning of the file to SMPTE zero.\n"
-"                            eg. override timestamps of split vob files.\n"
-"  -J, --noinitialsync       do not connect to JACK nor use a sync source\n"
-"                            at start. This only works with remote-control.\n"
-"  -l, --ltc                 sync to LinearTimeCode (audio-jack).\n"
-#ifdef JACK_SESSION
-"  -U, --uuid                specify JACK-SESSION UUID.\n"
+" -J, --no-initial-sync     Do not connect to JACK, nor use any other sync\n"
+"                           source at application start.\n"
+" -K <int>, --keyframe-limit <int>\n"
+"                           Specify a maximum key-frame interval limit.\n"
+"                           With most video-codecs, a video-frame is the sum\n"
+"                           of a key-frame plus differences from the closest\n"
+"                           key-frame.\n"
+"                           For non-continuous playback and random seeks\n"
+"                           xjadeo will have to go back to a key-frame and\n"
+"                           decode sequentially to the target frame.\n"
+"                           This can be quite CPU intense and hence the max.\n"
+"                           sequential decoding sequence is limited. By\n"
+"                           default to 100 frames\n"
+"                           For reliable frame-accurate seeks, it is highly\n"
+"                           recommended to transcode the video file using a\n"
+"                           codec where every frame is a keyframe. eg. mjpeg.\n"
+/*-------------------------------------------------------------------------------|" */
+" -l, --ltc                 Sync to Linear Time Code (audio-jack).\n"
+" -M <int>, --midifps <int>\n"
+"                           Specify MTC conversion mode:\n"
+"\n"
+"                           0:  use framerate from MTC clock (default)\n"
+"                           1:  use video file FPS\n"
+"                           2:  \"resample\" video-fps / MTC \n"
+" -m <port>, --midi <port>\n"
+"                           Use MTC as sync source\n"
+"                           The <port> argument is midi driver specific:\n"
+"\n"
+"                           jack-midi:  specify midi-port name to connect to\n"
+"                             or \"\" to not auto-connect.\n"
+"                           alsa-seq:  specify id to connect to. (-1: none)\n"
+"                             eg. -m ardour or -m 80 \n"
+"                           portmidi:  numeric-id; -1: autodetect\n"
+"                             a value > -1 specifies the port number to use.\n"
+"                             use '-v -m -1' to list midi-ports.\n"
+"                           alsa-raw:  specify device-name \n"
+"                             eg. -m hw:1,0 or -m 1 \n"
+#if 0 // - undocumented /hidden/ options
+" -N , --drop-frames        Force the SMPTE converter to use the drop-frames\n"
+"                           algorithm. (Frame dropping is only useful in \n"
+"                           combination with a 29fps MIDI time source.\n"
+"                           MTC in 29.97-frame-drop format is automatically\n"
+"                           detected and it is illegal to use this algorithm\n"
+"                           for other framerates.) DO NOT USE THIS OPTION,\n"
+"                           unless you really know what you are doing.\n"
+" -n , --no-drop-frames     Parse MTC as announced, but do not use frame-drop\n"
+"                           algorithm for OSD - useful for debugging\n"
 #endif
-"  -m <port>,                use MTC instead of jack-transport\n"
-"      --midi <port>         <port> argument is driver-specific:\n"
-"                            * jack-midi: specify midi-port name to connect to\n"
-"                              or \"\" to not auto-connect.\n"
-"                            * alsa-seq: specify id to connect to. (-1: none)\n"
-"                              eg. -m ardour or -m 80 \n"
-"                            * portmidi: numeric-id; -1: autodetect\n"
-"                            value > -1 specifies a (input) midi port to use\n"
-"                            use '-v -m -1' to list midi-ports.\n"
-"                            * alsa-raw: specify device-name \n"
-"                              eg. -m hw:1,0 or -m 1 \n"
-"  -M <int>,                 how to 'convert' MTC SMPTE to framenumber:\n"
-"      --midifps <int>       0: use framerate of MTC clock (default)\n"
-"                            2: use video file FPS\n"
-"                            3: \"resample\": videoFPS / MTC \n"
-/* - undocumented /hidden/ options
-"  -n , --nodropframes       parse MTC as announced, but do not use frame-drop\n"
-"                            algorithm for OSD - useful for debugging\n"
-"  -N , --dropframes         force the SMPTE converter to use the drop-frames\n"
-"                            algorithm. (Frame dropping is only useful in \n"
-"                            combination with a 29fps MIDI time source.\n"
-"                            MTC in 29.97-frame-drop format is automatically\n"
-"                            detected and it is illegal to use this algorithm\n"
-"                            for other framerates.) DO NOT USE THIS OPTION,\n"
-"                            unless you really know what you are doing.\n"
-*/
-"  -o <int>, --offset <int>  add/subtract <int> video-frames to/from timecode\n"
-#ifdef HAVE_LIBLO
-"  -O <port>, --osc <port>   listen for OSC messages on given port.\n"
+/*-------------------------------------------------------------------------------|" */
+" -O <port>, --osc <port>   Listen for OSC messages on the given port.\n"
+"                           Xjadeo can be remote-controlled using Open Sound\n"
+"                           Control. For a list of available commands, please\n"
+"                           see the source-code for now.\n"
+" -o <val>, --offset <val>\n"
+"                           Time offset video from timecode source.\n"
+"                           This allows to offset the video playback a certain\n"
+"                           number of (video) frames relative to the time\n"
+"                           source. Positive and negative values are permitted.\n"
+"                           The offset van be specified either as integer frame\n"
+"                           number of as colon separated timecode.\n"
+#if 0
+" -P , --genpts             This option passed on to ffmpeg. It can be used to\n"
+"                           generate "presentation timestamps" if they're\n"
+"                           missing or invalid in a given file.\n"
+"                           Note that this may requires parsing future frames\n"
+"                           and impact performance\n"
 #endif
-"  -P , --genpts             ffmpeg option - ignore timestamps in the file.\n"
-#ifdef HAVE_MQ
-"  -Q, --mq                  set-up RT message queues for xjremote\n"
+" -Q, --mq                  Enable POSIX realtime message queues.\n"
+"                           This sets up a communication channel for remote,\n"
+"                           intended to be used with `xjremote`.\n"
+" -q, --quiet, --silent     inhibit usual output.\n"
+" -R, --remote              Enable interactive remote control mode\n"
+"                           using standard I/O. This option implies non-verbose\n"
+"                           and quiet as the terminal is used for interaction.\n"
+" -r <file>, --rc <file>    Specify a custom configuration file to load.\n"
+" -S, --no-splash           Skip the on-screen-display startup sequence.\n"
+" -s, --fullscreen          Start xjadeo in full-screen mode.\n"
+" -T <file>, --ttf-file <file>\n"
+"                           path to .ttf font for on-screen-display\n"
+" -U, --uuid                specify JACK-SESSION UUID.\n"
+" -V, --version             Print version information and exit\n"
+" -W <rpc-id>, --ipc <rpc-id>\n"
+"                           Set-up IPC message queues for remote-control\n"
+"                           Inter-Process Communication is used by `xjremote`\n"
+"                           on OSX and other platforms that do not support\n"
+"                            realtime message queues\n"
+" -v, --verbose             print more information\n"
+" -x <int>, --vo <int>, --videomode <int>\n"
+"                           Select a video output mode (default: 0: autodetect)\n"
+"                           A value of -1 lists the available mode and exits\n"
+"\n");
+
+  printf (""
+"Synchronization Sources:\n"
+" JACK:  JACK-transport\n"
+" LTC:  Linear/Longitudinal Time Code - via JACK audio\n"
+" MTC:  MIDI Time Code via JACK-MIDI\n"
+" MTC:  MIDI Time Code via ALSA sequencer (Linux only)\n"
+" MTC:  MIDI Time Code via ALSA raw devices (Linux only)\n"
+" MTC:  MIDI Time Code via portmidi (OSX, Windows)\n"
+" Manual:  remote-control manual seeks (not really a sync source)\n"
+"\n"
+"If neither -m nor -l is given, xjadeo synchronizes to jack-transport\n"
+"by default.\n"
+"\n");
+/*-------------------------------------------------------------------------------|" */
+  printf (""
+"Xjadeo uses ffmpeg to decode video files, so a wide range of formats and codecs\n"
+"are supported. Note however that not all the codecs support reliable seeking.\n"
+"It is highly recommended to transcode the video file into a suitable\n"
+"format/codec. The recommend combination is avi/mjpeg.\n"
+"e.g. ffmpeg -i input-file.xxx -an -vcodec mjpeg output-file.avi\n"
+"This creates from your input-file.xxx an AVI mjpeg encoded video file without\n"
+"sound, and no compression between frames (motion jpeg - every frame is a\n"
+"keyframe). You may want also to shrink the size of the file by scaling down\n"
+"its geometry. This uses fewer system resources for decoding and display and\n"
+"leaves more space on the screen for your audio software.\n"
+"see ffmpeg -s <width>x<height> option and read up on the ffmpeg man-page\n"
+"for further options. e.g. -qscale 0 to retain image quality.\n"
+"\n");
+/*-------------------------------------------------------------------------------|" */
+  printf (""
+"Configuration Files:"
+"At startup xjadeo reads the following resource configuration files in the\n"
+"following order:\n"
+" system-wide:  /etc/xjadeorc or /usr/local/etc/xjadeorc\n"
+" old user config:  $HOME/.xjadeorc\n"
+" user config:  $PKG_CONFIG_PATH/xjadeo/xjadeorc (usually $HOME/.config/, but\n"
+"               on OSX $HOME/Library/Preferences/)\n"
+" project specific:  $PWD/xjadeorc\n"
+"Every line in the configuration file is a KEY=VALUE pair. If the first\n"
+"character on a line is either is a literal '#' or ';', the line is ignored.\n"
+"KEYS are case-insensitive. Boolean values are specified as 'yes' or 'no'.\n"
+"As for a list of available keys, please see the example configuration file,\n"
+"which is available in the documentation folder in the source-code.\n"
+"\n");
+/*-------------------------------------------------------------------------------|" */
+  printf (""
+"User Interaction:"
+"The xjadeo window offers a right-click context menu (except on OSX where the\n"
+"application has a main menu bar) which provides easy access to common\n"
+"functionality.\n"
+"On OSX and Windows this menu offers a file-open dialog to change the video file\n"
+"that is being monitored. On Linux new files can be loaded by dragging the file\n"
+"onto the window itself.\n"
+"In addition xjadeo reacts to key-presses. The following shortcuts are defined:\n"
+" 'Esc'        Close window and quit\n"
+" 'q'          Close window and quit\n"
+" 'a'          Toggle always-on-top mode\n"
+" 'f'          Toggle fullscreen mode\n"
+" 'l'          Toggle letterbox scaling\n"
+" 'm'          Toggle mouse-pointer visibility\n"
+" ','          Resize window to match aspect ratio\n"
+" '.'          Resize window to original video-file size\n"
+" '<'          Decrease window size by 20%%\n"
+" '>'          Increase window size by 20%%\n"
+" '\\'          Reset timecode offset to zero\n"
+" '+'          Increase timecode offset by one frame\n"
+" '-'          Decrease timecode offset by one frame\n"
+" '{'          Decrement timecode offset by one minute\n"
+" '}'          Increment timecode offset by one minute\n"
+" 's'          Toggle On-Screen timecode display\n"
+" 'v'          Toggle On-Screen frame-number display\n"
+" 'b'          Toggle On-Screen display black border\n"
+" 'o'          Cycle though offset display modes.\n"
+" 'Shift+C'    Clear all OSD display messages.\n"
+" 'backspace'  Return jack-transport to 00:00:00:00\n"
+" 'space'      Toggle jack-transport play/pause\n"
+#ifdef CROPIMG
+" '['          Shift cropped image 2px to the left.\n"
+" ']'          Shift cropped image 2px to the right.\n"
 #endif
-"  -r <file>, --rc <file>    .rc settings file to load.\n"
-"  -R, --remote              remote control (stdin) - implies non verbose&quiet\n"
-"  -S, --nosplash            do not display splash image on startup.\n"
-"  -s, --fullscreen          start xjadeo in fullscreen mode.\n"
-"                            requires x11 or xv videomode.\n"
-"  -T <file>,                \n"
-"      --ttf-file <file>     path to .ttf font for on-screen-display\n"
-#ifdef HAVE_IPCMSG
-"  -W, --ipc                 set-up IPC message queues for xjremote\n"
+#if 1
+" 'e'          Show color equalizer (x11/imblib and XV only)\n"
+" 'Shift+E'    Reset color equalizer (x11/imblib and XV only)\n"
+" '0-9'        Change color equalization (x11/imblib and XV only)\n"
+" 'Shift+1-4'  Fine tune color equalization (x11/imblib and XV only)\n"
+"              brightness:1+2, contrast:3+4, gamma:5+6, saturation:7+8\n"
+"              hue:9+0. XV color balance is hardware dependant.\n"
 #endif
-"  -x <int>, --vo <int>,     set the video output mode (default: 0 - autodetect\n"
-"      --videomode <int>     -1 prints a list of available modes.\n"
-"  \n"
-"  Check the docs to learn how the video should be encoded.\n"
+/*-------------------------------------------------------------------------------|" */
+"\n"
+"Report bugs to Robin Gareus <robin@gareus.org>\n"
+"Website: <https://github.com/x42/xjadeo>\n"
 );
   exit (status);
 }
 
 static void printversion (void) {
-	printf ("xjadeo ");
-	printf ("version %s ", VERSION);
+	printf ("xjadeo version %s\n\n", VERSION);
+
 #ifdef SUBVERSION
 	if (strlen(SUBVERSION)>0 && strcmp(SUBVERSION, "exported")) {
-		printf ("scm-%s ", SUBVERSION);
+		printf (" built from:     scm-%s\n", SUBVERSION);
 	}
 #endif
+	printf(" compiled with:  AVFORMAT=0x%x AVCODEC=0x%x AVUTIL:0x%x\n",
+			LIBAVFORMAT_VERSION_INT, LIBAVCODEC_VERSION_INT, LIBAVUTIL_VERSION_INT);
+	printf (" configuration:  ");
 	printf ("[ ");
 #ifdef HAVE_LTC
 	printf("LTC ");
@@ -529,12 +688,13 @@ static void printversion (void) {
 #ifdef HAVE_LIBLO
 	printf("OSC ");
 #endif
-	printf("]\n compiled with ffmpeg: AVFORMAT=0x%x AVCODEC=0x%x\n",
-			LIBAVFORMAT_BUILD, LIBAVCODEC_BUILD);
-	printf(" MTC-MIDI: ");
+	printf("]\n");
+
+	printf(" MTC/MIDI:       ");
 #ifndef HAVE_MIDI
-	printf("disabled.");
+	printf("*disabled*\n");
 #else /* have Midi */
+	printf("[ ");
 # ifdef HAVE_JACKMIDI
 	printf("jack-midi ");
 # endif
@@ -547,13 +707,10 @@ static void printversion (void) {
 # ifdef ALSA_RAW_MIDI
 	printf("alsa-raw ");
 # endif
-# if (defined ALSA_RAW_MIDI || defined HAVE_PORTMIDI || defined ALSA_SEQ_MIDI || defined HAVE_JACKMIDI)
-	printf("(first listed is default)");
-# else
-	printf("no midi-driver available.");
-# endif
+	printf("]\n");
 #endif /* HAVE_MIDI */
-	printf("\n displays: "
+
+	printf(" Display(s):     [ "
 #if HAVE_GL
 			"openGL "
 #endif
@@ -574,11 +731,13 @@ static void printversion (void) {
 #ifdef PLATFORM_OSX
 			"OSX/quartz "
 #endif
-#ifdef PLATFORM_OSX
-			"openGL "
-#endif
-			"\n"
+			"]\n"
 			);
+	printf ("\n"
+			"Copyright (C) GPL 2006-2014 Robin Gareus <robin@gareus.org>\n"
+			"Copyright (C) GPL Luis Garrido <luisgarrido@users.sourceforge.net>\n"
+			"This is free software; see the source for copying conditions.  There is NO\n"
+			"warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n");
 }
 
 static int stat_osd_fontfile(void) {
@@ -698,8 +857,6 @@ int main (int argc, char **argv)
 {
 	int i;
 	char *movie;
-
-	program_name = argv[0];
 
 	xjadeorc(); // read config files - default values before parsing cmd line.
 
