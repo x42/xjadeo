@@ -16,6 +16,13 @@
 * add override for sync and file changes (OSX menu, X11 DnD)
 * fix X11/GLX drag-drop
 * built-in X11/GLX context-menu
+* disable left/right mouse button scaling.
+* allow to start xjadeo without file (use DnD or Menu to load)
+* update seek-mechanism: create seek index table
+* remove -k option (no more seek-modes!) all indexed
+* -K option changed to specify max-continous-keyframe limit.
+* add native windows application support (openGL) and context-menu
+* decrease max possible OSD font-size (to accomodate messages)
 
 2014-07-13 (0.7.8)  Robin Gareus <robin@gareus.org>
 * document -J option in --help
