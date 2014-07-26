@@ -8,7 +8,8 @@ man_MANS = doc/xjadeo.1 doc/xjremote.1
 EXTRA_DIST= \
  xjadeo.lsm.in \
  doc/Makefile doc/xjadeo.1 doc/xjremote.1 \
- doc/favicon.ico doc/xjadeo.png \
+ doc/favicon.ico doc/xjadeo_banner.png \
+ doc/pages/index.html doc/tpl/head doc/tpl/foot \
  src/xjadeo/icons/osd_bitmaps.h \
  src/xjadeo/icons/xjadeo-color.xpm \
  src/xjadeo/icons/splash.bitmap src/xjadeo/icons/splash_mask.xbm \
@@ -18,6 +19,7 @@ EXTRA_DIST= \
  src/xjadeo/icons/hue.bitmap src/xjadeo/icons/hue_mask.xbm \
  src/xjadeo/icons/saturation.bitmap src/xjadeo/icons/saturation_mask.xbm \
  src/xjadeo/icons/xjadeo-color.ico src/xjadeo/icons/xjadeo-color-ico.h \
+ src/xjadeo/icons/xjadeo.ico \
  doc/xjadeorc \
  contrib/cli-remote/jadeo.c \
  contrib/cli-remote/Makefile.am \
