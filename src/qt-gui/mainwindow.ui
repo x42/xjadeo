@@ -258,14 +258,6 @@
     <addaction name="osdTextAction"/>
     <addaction name="osdBoxAction"/>
    </widget>
-   <widget class="QMenu" name="Seek">
-    <property name="title">
-     <string>&amp;Seek</string>
-    </property>
-    <addaction name="seekany_frameAction"/>
-    <addaction name="seekKeyFramesAction"/>
-    <addaction name="seekcontinuouslyAction"/>
-   </widget>
    <widget class="QMenu" name="helpMenu">
     <property name="title">
      <string>&amp;Help</string>
@@ -276,7 +268,6 @@
    <addaction name="Sync"/>
    <addaction name="Zoom"/>
    <addaction name="OSD"/>
-   <addaction name="Seek"/>
    <addaction name="helpMenu"/>
   </widget>
   <action name="fileOpenAction">
@@ -445,50 +436,6 @@
     <string>Resize to aspect-ratio</string>
    </property>
   </action>
-  <actiongroup name="seekAction">
-   <action name="seekany_frameAction">
-    <property name="checkable">
-     <bool>true</bool>
-    </property>
-    <property name="text">
-     <string>to any frame</string>
-    </property>
-    <property name="iconText">
-     <string>to any frame</string>
-    </property>
-    <property name="name" stdset="0">
-     <cstring>seekany_frameAction</cstring>
-    </property>
-   </action>
-   <action name="seekKeyFramesAction">
-    <property name="checkable">
-     <bool>true</bool>
-    </property>
-    <property name="text">
-     <string>keyframes only</string>
-    </property>
-    <property name="iconText">
-     <string>keyframes only</string>
-    </property>
-    <property name="name" stdset="0">
-     <cstring>seekKeyFramesAction</cstring>
-    </property>
-   </action>
-   <action name="seekcontinuouslyAction">
-    <property name="checkable">
-     <bool>true</bool>
-    </property>
-    <property name="text">
-     <string>continuously</string>
-    </property>
-    <property name="iconText">
-     <string>continuously</string>
-    </property>
-    <property name="name" stdset="0">
-     <cstring>seekcontinuouslyAction</cstring>
-    </property>
-   </action>
-  </actiongroup>
   <actiongroup name="syncAction">
    <action name="syncJackAction">
     <property name="checkable">
@@ -1009,54 +956,6 @@
    <signal>activated()</signal>
    <receiver>MainWindow</receiver>
    <slot>fileImport()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>20</x>
-     <y>20</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>seekany_frameAction</sender>
-   <signal>activated()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>seekAnyFrame()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>20</x>
-     <y>20</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>seekcontinuouslyAction</sender>
-   <signal>activated()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>seekContinuously()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>20</x>
-     <y>20</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>seekKeyFramesAction</sender>
-   <signal>activated()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>seekKeyFrames()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>

@@ -88,7 +88,6 @@ void QJadeo::initialize ()
   if (!m_osdfont.isEmpty()) {
     xjadeo->write(QString("osd font " + m_osdfont + "\n").toUtf8());
   }
-  xjadeo->write(QByteArray("set seekmode 1\n"));
   xjadeo->write(QByteArray("osd notext\n"));
   xjadeo->write(QByteArray("get width\n"));
   xjadeo->write(QByteArray("get height\n"));
@@ -99,7 +98,6 @@ void QJadeo::initialize ()
   xjadeo->write(QByteArray("midi driver\n"));
   xjadeo->write(QByteArray("get syncsource\n"));
   xjadeo->write(QByteArray("get position\n"));
-  xjadeo->write(QByteArray("get seekmode\n"));
   xjadeo->write(QByteArray("get letterbox\n"));
   xjadeo->write(QByteArray("notify frame\n"));
 }
@@ -289,23 +287,6 @@ void QJadeo::helpAbout()
     "(c) 2006-2010 Robin Gareus & Luis Garrido\n"
     "http://xjadeo.sf.net"
   );
-}
-
-void QJadeo::seekAnyFrame()
-{
-  xjadeo->write(QByteArray("set seekmode 2\n"));
-}
-
-
-void QJadeo::seekContinuously()
-{
-  xjadeo->write(QByteArray("set seekmode 1\n"));
-}
-
-
-void QJadeo::seekKeyFrames()
-{
-  xjadeo->write(QByteArray("set seekmode 3\n"));
 }
 
 void QJadeo::zoom50()
@@ -521,19 +502,6 @@ void QJadeo::readFromStdout()
           m_movie_width = value.toInt();
         else if(name == "movie_height")
           m_movie_height = value.toInt();
-        else if(name == "seekmode")
-	{
-	  seekany_frameAction->setChecked(FALSE);
-	  seekKeyFramesAction->setChecked(FALSE);
-	  seekcontinuouslyAction->setChecked(FALSE);
-	  if (value.toInt()==3) {  // key
-	    seekKeyFramesAction->setChecked(TRUE);
-	  } else if (value.toInt()==1) {  // cont
-	    seekcontinuouslyAction->setChecked(TRUE);
-	  } else {
-	    seekany_frameAction->setChecked(TRUE);
-	  }
-	}
         else if(name == "mididrv")
 	{
           m_mididrv = 0;

@@ -70,10 +70,6 @@ public slots:
   void syncMTCjack();
   void syncOff();
 
-  void seekContinuously();
-  void seekAnyFrame();
-  void seekKeyFrames();
-
   void setFPS(const QString &);
   void setOffset(const QString &);
 
