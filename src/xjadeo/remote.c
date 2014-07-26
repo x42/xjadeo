@@ -122,8 +122,6 @@ extern int  OSD_mode;
 
 extern int OSD_fx, OSD_tx, OSD_sx, OSD_fy, OSD_sy, OSD_ty;
 
-extern char jackid[16];
-
 #define REMOTE_RX (fileno(stdin))
 #define REMOTE_TX (fileno(stdout))
 
@@ -489,14 +487,15 @@ static void xapi_sframerate(void *d) {
 
 static void xapi_jack_status(void *d) {
 	if (jack_connected())
-		remote_printf(220,"jackclient=%s",jackid);
+		remote_printf(220,"jackclient=%s", xj_jack_client_name());
+
 	else
 		remote_printf(100,"not connected to jack server");
 }
 
 void xapi_ltc_status(void *d) {
 	if (ltcjack_connected())
-		remote_printf(220,"jackclient=%s",ltc_jack_client_name());
+		remote_printf(220,"jackclient=%s", xj_jack_client_name());
 	else
 		remote_printf(100,"no open LTC JACK source");
 }

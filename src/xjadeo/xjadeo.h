@@ -180,6 +180,13 @@ void override_fps (double fps);
 void init_moviebuffer(void);
 void event_loop(void);
 
+
+/* common_jack.c */
+int xj_init_jack(void *client_pointer, const char *client_name);
+void xj_close_jack (void *client_pointer);
+void xj_shutdown_jack ();
+const char *xj_jack_client_name();
+
 /* common.c */
 void ui_seek_cont ();
 void ui_seek_any ();
@@ -233,7 +240,6 @@ long ltc_poll_frame (void);
 void open_ltcjack(char *autoconnect);
 void close_ltcjack(void);
 int ltcjack_connected(void);
-const char *ltc_jack_client_name();
 
 /* smpte.c prototypes */
 long int smptestring_to_frame (char *str);

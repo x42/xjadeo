@@ -26,11 +26,6 @@
 
 #include "weak_libjack.h"
 
-#ifdef JACK_SESSION
-extern char *jack_uuid;
-void jack_session_cb( jack_session_event_t *event, void *arg );
-#endif
-
 #ifdef HAVE_MIDI
 
 extern int want_quiet;
@@ -52,9 +47,9 @@ typedef struct {
 } smpte;
 
 /* global Vars */
-smpte tc;
-smpte last_tc;
-int full_tc = 0;
+static smpte tc;
+static smpte last_tc;
+static int full_tc = 0;
 
 const char MTCTYPE[4][10] = {
 	"24fps",
@@ -452,9 +447,8 @@ static long pm_midi_poll_frame (void) {
  *
  */
 
-jack_client_t *jack_midi_client = NULL;
-jack_port_t   *jack_midi_port;
-extern int jack_autostart;
+static jack_client_t *jack_midi_client = NULL;
+static jack_port_t   *jack_midi_port;
 
 #define JACK_MIDI_QUEUE_SIZE (1024)
 typedef struct my_midi_event {
@@ -516,16 +510,13 @@ static int jack_midi_process(jack_nframes_t nframes, void *arg) {
 
 static void jack_midi_shutdown(void *arg) {
 	jack_midi_client=NULL;
-	fprintf (stderr, "jack server shutdown\n");
+	xj_shutdown_jack();
+	if (!want_quiet)
+		fprintf (stderr, "jack server shutdown\n");
 }
 
-
 static void jm_midi_close(void) {
-	if (jack_midi_client) {
-		WJACK_deactivate (jack_midi_client);
-		WJACK_client_close (jack_midi_client);
-	}
-	jack_midi_client = NULL;
+	xj_close_jack(&jack_midi_client);
 }
 
 static void jm_midi_open(char *midiid) {
@@ -534,26 +525,10 @@ static void jm_midi_open(char *midiid) {
 		return;
 	}
 
-	int i = 0;
-	char jackmidiid[16];
-	do {
-		snprintf(jackmidiid,16,"xjadeo-%i",i);
-#ifdef JACK_SESSION
-		if (jack_uuid)
-			jack_midi_client = WJACK_client_open2 (jackmidiid, JackUseExactName|JackSessionID|(jack_autostart ? 0 : JackNoStartServer), NULL, jack_uuid);
-		else
-#endif
-			jack_midi_client = WJACK_client_open1 (jackmidiid, JackUseExactName|(jack_autostart ? 0 : JackNoStartServer), NULL);
-	} while (jack_midi_client == NULL && i++<16);
-
-	if (!jack_midi_client) {
-		fprintf(stderr, "could not connect to jack server.\n");
+	if (xj_init_jack(&jack_midi_client, "xjadeo")) {
 		return;
 	}
 
-#ifdef JACK_SESSION
-	WJACK_set_session_callback (jack_midi_client, jack_session_cb, NULL);
-#endif
 #ifndef PLATFORM_WINDOWS
 	WJACK_on_shutdown (jack_midi_client, jack_midi_shutdown, 0);
 #endif

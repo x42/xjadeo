@@ -32,43 +32,14 @@ extern int jack_clkconvert;
 extern int interaction_override;
 extern int jack_autostart;
 
-jack_client_t *jack_client = NULL;
-char jackid[16];
-
-#ifdef JACK_SESSION
-#include <jack/session.h>
-extern char *jack_uuid;
-extern int	loop_flag;
-void jack_session_cb(jack_session_event_t *event, void *arg) {
-	char filename[256];
-	char command[256];
-	if (interaction_override&OVR_JSESSION) {
-		/* DO NOT SAVE SESSION
-		 * e.g. if xjadeo will be restored by wrapper-program
-		 * f.i. ardour3+videotimeline
-		 */
-		WJACK_session_reply(jack_client, event);
-		WJACK_session_event_free(event);
-		return;
-	}
-
-	snprintf(filename, sizeof(filename), "%sxjadeo.state", event->session_dir );
-	snprintf(command,  sizeof(command),  "xjadeo -U %s --rc ${SESSION_DIR}xjadeo.state", event->client_uuid );
-
-	saveconfig(filename);
-
-	event->command_line = strdup(command);
-	WJACK_session_reply( jack_client, event );
-	if(event->type == JackSessionSaveAndQuit)
-		loop_flag=0;
-	WJACK_session_event_free(event);
-}
-#endif
+static jack_client_t *jack_client = NULL;
 
 /* when jack shuts down... */
 static void jack_shutdown(void *arg) {
 	jack_client=NULL;
-	fprintf (stderr, "jack server shutdown\n");
+	xj_shutdown_jack();
+	if (!want_quiet)
+		fprintf (stderr, "jack server shutdown\n");
 }
 
 int jack_connected(void) {
@@ -81,31 +52,13 @@ void open_jack(void ) {
 		fprintf (stderr, "xjadeo is alredy connected to jack.\n");
 		return;
 	}
-
-	int i = 0;
-	do {
-		snprintf(jackid,16,"xjadeo-%i",i);
-#ifdef JACK_SESSION
-		if (jack_uuid)
-			jack_client = WJACK_client_open2 (jackid, JackUseExactName|JackSessionID|(jack_autostart ? 0 : JackNoStartServer), NULL, jack_uuid);
-		else
-#endif
-			jack_client = WJACK_client_open1 (jackid, JackUseExactName, NULL);
-	} while (jack_client == 0 && i++<16);
-
-	if (!jack_client) {
-		fprintf(stderr, "could not connect to jack server.\n");
-	} else {
-#ifdef JACK_SESSION
-		WJACK_set_session_callback (jack_client, jack_session_cb, NULL);
-#endif
+	if (xj_init_jack(&jack_client, "xjadeo")) {
+		return;
+	}
 #ifndef PLATFORM_WINDOWS
 		WJACK_on_shutdown (jack_client, jack_shutdown, 0);
 		WJACK_activate(jack_client);
 #endif
-		if (!want_quiet)
-			fprintf(stdout, "connected as jack client '%s'\n",jackid);
-	}
 }
 
 void jackt_rewind() {
@@ -129,7 +82,7 @@ void jackt_stop() {
 void jackt_toggle() {
 	if (jack_client) {
 		switch (WJACK_transport_query(jack_client, NULL)) {
-			case JackTransportRolling:	
+			case JackTransportRolling:
 				jackt_stop();
 				break;
 			case JackTransportStopped:
@@ -144,9 +97,9 @@ void jackt_toggle() {
 void close_jack(void) {
 	if (jack_client) {
 		jack_client_t *b = jack_client;
+		// prevent any timecode query while we're closing
 		jack_client=NULL;
-		WJACK_deactivate (b);
-		WJACK_client_close (b);
+		xj_close_jack(&b);
 	}
 	jack_client=NULL;
 }

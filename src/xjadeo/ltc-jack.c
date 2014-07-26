@@ -27,15 +27,11 @@
 #include <ltc.h>
 #include <math.h>
 
+#include "xjadeo.h"
 #include "weak_libjack.h"
 
-#ifdef JACK_SESSION
-extern char *jack_uuid;
-void jack_session_cb( jack_session_event_t *event, void *arg );
-#endif
-
+extern int want_quiet;
 extern double framerate;
-extern int jack_autostart;
 
 void close_ltcjack(void);
 
@@ -119,47 +115,11 @@ static int process (jack_nframes_t nframes, void *arg) {
  * decides to disconnect the client.
  */
 static void ltcjack_shutdown (void *arg) {
-	fprintf(stderr,"recv. shutdown request from jackd.\n");
+	j_client = NULL;
+	xj_shutdown_jack();
 	close_ltcjack();
-}
-
-/**
- * open a client connection to the JACK server
- */
-static int init_jack(const char *client_name) {
-	jack_status_t status;
-	jack_options_t options = jack_autostart ? JackNullOption : JackNoStartServer;
-#ifdef JACK_SESSION
-	if (jack_uuid)
-		j_client = WJACK_client_open2 (client_name, options|JackSessionID, &status, jack_uuid);
-	else
-#endif
-		j_client = WJACK_client_open1 (client_name, options, &status);
-	if (j_client == NULL) {
-		fprintf (stderr, "jack_client_open() failed, status = 0x%2.0x\n", status);
-		if (status & JackServerFailed) {
-			fprintf (stderr, "Unable to connect to JACK server\n");
-		}
-		return -1;
-	}
-
-	if (status & JackServerStarted) {
-		fprintf (stderr, "JACK server started\n");
-	}
-	if (status & JackNameNotUnique) {
-		client_name = WJACK_get_client_name(j_client);
-		fprintf (stderr, "unique name `%s' assigned\n", client_name);
-	}
-
-	WJACK_set_process_callback (j_client, process, 0);
-#ifdef JACK_SESSION
-	WJACK_set_session_callback (j_client, jack_session_cb, NULL);
-#endif
-#ifndef PLATFORM_WINDOWS
-	WJACK_on_shutdown (j_client, ltcjack_shutdown, 0);
-#endif
-	j_samplerate=WJACK_get_sample_rate (j_client);
-	return 0;
+	if (!want_quiet)
+		fprintf (stderr, "jack server shutdown\n");
 }
 
 static int jack_portsetup(void) {
@@ -185,16 +145,22 @@ long ltc_poll_frame (void) {
 }
 
 void open_ltcjack(char *autoconnect) {
-	char * client_name = "xjadeo-ltc";
-	if (init_jack(client_name)) {
-		close_ltcjack();
+
+	if (xj_init_jack (&j_client, "xjadeo")) {
 		return;
 	}
+
+	WJACK_set_process_callback (j_client, process, 0);
+#ifndef PLATFORM_WINDOWS
+	WJACK_on_shutdown (j_client, ltcjack_shutdown, 0);
+#endif
+	j_samplerate=WJACK_get_sample_rate (j_client);
+
 	if (jack_portsetup()) {
 		close_ltcjack();
 		return;
 	}
-	// TODO: autoconnect jack port ?!
+
 	if (WJACK_activate (j_client)) {
 		close_ltcjack();
 		return;
@@ -207,10 +173,8 @@ int ltcjack_connected(void) {
 }
 
 void close_ltcjack(void) {
-	if (j_client) {
-		WJACK_deactivate(j_client);
-		WJACK_client_close (j_client);
-	}
+	xj_close_jack(&j_client);
+
 	if (ltc_decoder) {
 		ltc_decoder_free(ltc_decoder);
 	}
@@ -219,16 +183,10 @@ void close_ltcjack(void) {
 	return;
 }
 
-const char *ltc_jack_client_name() {
-	return WJACK_get_client_name(j_client);
-}
-
 #else
 
 long ltc_poll_frame (void) { return 0;}
 void open_ltcjack(char *autoconnect) { ; }
 void close_ltcjack(void) { ; }
 int ltcjack_connected(void) { return 0;}
-const char *ltc_jack_client_name() { return "N/A";}
-
 #endif

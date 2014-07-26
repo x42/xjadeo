@@ -103,7 +103,7 @@ int want_dropframes =0; /* --dropframes -N  -- force using drop-frame timecode *
 int want_autodrop =1;   /* --nodropframes -n (hidden option) -- allow using drop-frame timecode */
 int remote_en =0;	/* --remote, -R */
 int no_initial_sync =0; /* --nosyncsource, -J */
-int jack_autostart =1; /* linked to no_initial_sync */
+int jack_autostart =0; /* linked to no_initial_sync */
 int osc_port =0;	/* --osc, -O */
 int mq_en =0;		/* --mq, -Q */
 char *ipc_queue = NULL; /* --ipc, -W */
@@ -387,6 +387,7 @@ decode_switches (int argc, char **argv)
 #ifdef JACK_SESSION
 				if (jack_uuid) free(jack_uuid);
 				jack_uuid = strdup(optarg);
+				jack_autostart = 1;
 #endif
 				break;
 			case 'r':		/* --rc */
@@ -407,7 +408,6 @@ decode_switches (int argc, char **argv)
 				break;
 			case 'J':
 				no_initial_sync = 1;
-				jack_autostart = 0;
 				break;
 			case 'h':
 				usage (0);
@@ -822,31 +822,40 @@ int main (int argc, char **argv)
 		if (atoi(midiid) == 0) midiid[0]='\0';
 	}
 #endif
+#endif
 
-	if (no_initial_sync) {
+	if (no_initial_sync
+#ifdef JACK_SESSION
+			&& !jack_uuid
+#endif
+			) {
 		if (!(remote_en || mq_en || ipc_queue || osc_port)) {
 			fprintf(stderr,
 					"Warning: There is no Initial sync-source, and no remote-control enbled to\n"
 					"change the sync source. Do not use '-J' option (unless you're testing).\n");
 		}
 	}
+#ifdef HAVE_MIDI
 	else if (atoi(midiid) >= -1 ) {
 		if (!want_quiet)
 			printf("using MTC as sync-source.\n");
 		midi_open(midiid);
 	} else
 #endif
-
 #ifdef HAVE_LTC
-	if (use_ltc) {
-		open_ltcjack(NULL);
-	} else
+		if (use_ltc) {
+			if (!want_quiet)
+				printf("using LTC as sync source.\n");
+			open_ltcjack(NULL);
+		} else
 #endif
-	{
+	if (use_jack) {
 		if (!want_quiet)
-			printf("using JACK-transport as sync source.\n");
-		if (use_jack)
+				printf("using JACK-transport as sync source.\n");
 			open_jack();
+	}
+	if (!no_initial_sync) {
+		jack_autostart = 1;
 	}
 
 #ifdef HAVE_MQ
