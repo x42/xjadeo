@@ -213,6 +213,8 @@ static struct option const long_options[] =
 	{"ipc",                 required_argument, 0, 'W'},
 	{"videomode",           required_argument, 0, 'x'},
 	{"vo",                  required_argument, 0, 'x'},
+
+	{"osc-doc",             no_argument, 0,       0x100},
 	{NULL, 0, NULL, 0}
 };
 
@@ -413,6 +415,10 @@ decode_switches (int argc, char **argv)
 				printf("This version of xjadeo is compiled without MIDI support\n");
 				break;
 #endif
+			case 0x100:
+				xjosc_documentation ();
+				exit (0);
+				break;
 			default:
 				usage (EXIT_FAILURE);
 				break;
@@ -776,7 +782,7 @@ static void clean_up (int status) {
 		free(ipc_queue);
 	}
 #endif
-	shutdown_osc();
+	xjosc_shutdown();
 
 	close_window();
 
@@ -936,7 +942,7 @@ int main (int argc, char **argv)
 	signal (SIGINT, catchsig);
 #endif
 
-	if (osc_port > 0) initialize_osc(osc_port);
+	if (osc_port > 0) xjosc_initialize(osc_port);
 
 	open_movie(movie);
 

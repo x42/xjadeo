@@ -66,7 +66,7 @@ lo_server_thread osc_server = NULL;
 
 #define PORTAINC 1
 
-int initialize_osc(int osc_port) {
+int xjosc_initialize(int osc_port) {
   char tmp[255];
   int j;
   uint32_t port = (osc_port>100 && osc_port< 60000)?osc_port:7000;
@@ -98,7 +98,7 @@ int initialize_osc(int osc_port) {
   return(1);
 }
 
-void shutdown_osc(void) {
+void xjosc_shutdown(void) {
   if (!osc_server) return;
   lo_server_thread_stop(osc_server);
   if(!want_verbose) fprintf(stderr, "OSC server shut down.\n");

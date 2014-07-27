@@ -257,9 +257,10 @@ int midi_choose_driver(const char *);
 #endif
 
 /* xjosc.c */
-int initialize_osc(int osc_port);
-void shutdown_osc(void);
-int process_osc(void);
+int xjosc_initialize(int osc_port);
+void xjosc_shutdown(void);
+int xjosc_process(void);
+void xjosc_documentation (void);
 
 /* configfile.c */
 void xjadeorc (void);

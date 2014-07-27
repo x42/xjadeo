@@ -169,7 +169,7 @@ static int select_sleep (const long usec) {
 	}
 #endif
 #ifdef HAVE_LIBLO
-	remote_activity |= process_osc();
+	remote_activity |= xjosc_process();
 #endif
 #ifndef PLATFORM_WINDOWS
 	if (remote_activity) {

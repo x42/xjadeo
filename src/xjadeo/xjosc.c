@@ -20,6 +20,11 @@
 # include <config.h>
 #endif
 
+#define OSC_DOC_ALL
+// xjadeo --osc-doc | sed 's%'\'' '\''%</code></td><td><code>%;s%'\'' '\''%</code></td><td>%;s%^'\''%<tr><td><code>%;s%'\''$%</td></tr>%'
+// or
+// xjadeo --osc-doc | sed 's%'\'' '\''%</code></td><td><code>%;s%'\'' '\''%</code></td><td><p>%;s%^'\''%<tr><td><code>%;s%'\''$%</p></td></tr>%'
+
 #ifdef HAVE_LIBLO
 
 #include <stdio.h>
@@ -104,83 +109,97 @@ static int oscb_jackdisconnect (const char *path, const char *types, lo_arg **ar
   return(0);
 }
 
-#ifdef HAVE_MIDI
+#if defined HAVE_LTC || defined OSC_DOC_ALL
+static int oscb_ltcconnect (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+  open_ltcjack(NULL);
+  return(0);
+}
+
+static int oscb_ltcdisconnect (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+  close_ltcjack();
+  return(0);
+}
+#endif
+
+#if defined HAVE_MIDI || defined OSC_DOC_ALL
 static int oscb_midiconnect (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+#ifdef HAVE_MIDI
   char *mp;
   if (&argv[0]->s && strlen(&argv[0]->s)>0) mp=&argv[0]->s;
   else mp="-1";
   midi_open(mp);
   if (midi_connected()) {
-    strncpy(midiid,mp,32);
+    strncpy(midiid,mp,32); // XXX we need a better idea for 'xapi_reopen_midi()
     midiid[31]=0;
   }
+#endif
   return(0);
 }
 
 static int oscb_mididisconnect (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+#ifdef HAVE_MIDI
   midi_close();
-  return(0);
-}
-
-static int oscb_midiquarterframes (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
-  if (want_verbose) fprintf(stderr, "OSC: %s <- i:%i\n", path, argv[0]->i);
-  midi_clkadj = argv[0]->i?1:0;
-  return(0);
-}
-
-static int oscb_midiclkconvert (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
-  if (want_verbose) fprintf(stderr, "OSC: %s <- i:%i\n", path, argv[0]->i);
-  midi_clkconvert = argv[0]->i;
+#endif
   return(0);
 }
 #endif
 
-#ifdef TIMEMAP
+#if defined TIMEMAP || defined OSC_DOC_ALL
 static int oscb_timescale (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+#ifdef TIMEMAP
   if (want_verbose) fprintf(stderr, "OSC: %s <- f:%f\n", path, argv[0]->f);
   timescale=argv[0]->f;
   force_redraw=1;
+#endif
   return(0);
 }
 
 static int oscb_timescale2 (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+#ifdef TIMEMAP
   if (want_verbose) fprintf(stderr, "OSC: %s <- f:%f i:%i\n", path, argv[0]->f, argv[1]->i);
   timescale=argv[0]->f;
   timeoffset=argv[1]->i;
   force_redraw=1;
+#endif
   return(0);
 }
 
 static int oscb_loop (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+#ifdef TIMEMAP
   if (want_verbose) fprintf(stderr, "OSC: %s <- i:%i\n", path, argv[0]->i);
   wraparound = argv[0]->i?1:0;
   return(0);
+#endif
 }
 
 static int oscb_reverse (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+#ifdef TIMEMAP
   if (want_verbose) fprintf(stderr, "OSC: %s\n", path);
   timescale *= -1.0;
   if (timescale<0)
     timeoffset = (-2.0*timescale) * dispFrame; // TODO: check file-offset and ts_offset. -> also in remote.c
   else
     timeoffset = 0; // TODO - applt diff dispFrame <> transport src
+#endif
   return(0);
 }
 #endif
 
-#ifdef CROPIMG
+#if defined CROPIMG || defined OSC_DOC_ALL
 static int oscb_pan (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+#ifdef CROPIMG
   if (want_verbose) fprintf(stderr, "OSC: %s <- i:%i\n", path, argv[0]->i);
   xoffset=argv[0]->i;
   if (xoffset<0) xoffset=0;
   if (xoffset>movie_width) xoffset=movie_width;
   force_redraw=1;
+#endif
   return(0);
 }
 #endif
 
 static int oscb_load (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
-  if (1 || want_verbose) fprintf(stderr, "OSC: %s <- s:%s\n", path, &argv[0]->s);
+  if (want_verbose) fprintf(stderr, "OSC: %s <- s:%s\n", path, &argv[0]->s);
   open_movie(&argv[0]->s);
   init_moviebuffer();
   newsourcebuffer();
@@ -189,7 +208,7 @@ static int oscb_load (const char *path, const char *types, lo_arg **argv, int ar
 }
 
 static int oscb_osdfont (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
-  if (1 || want_verbose) fprintf(stderr, "OSC: %s <- s:%s\n", path, &argv[0]->s);
+  if (want_verbose) fprintf(stderr, "OSC: %s <- s:%s\n", path, &argv[0]->s);
   snprintf(OSD_fontfile,1024,"%s",(char*) &argv[0]->s);
   return(0);
 }
@@ -261,15 +280,67 @@ static int oscb_quit (const char *path, const char *types, lo_arg **argv, int ar
   return(0);
 }
 
-static void oscb_error(int num, const char *m, const char *path) {
+static void oscb_error (int num, const char *m, const char *path) {
   fprintf(stderr, "liblo server error %d in path %s: %s\n", num, path, m);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
+struct osc_command {
+  const char *path;
+  const char *typespec;
+  lo_method_handler handler;
+  const char *documentation;
+};
+
+static struct osc_command OSCC[] = {
+  {"/jadeo/quit", "", &oscb_quit, "Terminate xjadeo."},
+  {"/jadeo/load", "s", &oscb_load, "Load a video file, replacing any previous one (load <filename>)"},
+  {"/jadeo/seek", "i", &oscb_seek, "Seek to given frame-number (seek <frame>) - Xjadeo needs to be disconnected from a sync-source"},
+  {"/jadeo/cmd", "s", &oscb_remotecmd, "Call a remote control command"},
+
+  {"/jadeo/fps", "f", &oscb_fps, "Set the screen update frequency (-f, set fps)"},
+  {"/jadeo/framerate", "f", &oscb_framerate, "Override video-files frame-rate (-F, set framerate)"},
+  {"/jadeo/offset", "i", &oscb_offset, "Set time-offset as frame-number (-o, set offset)"},
+  {"/jadeo/offset", "s", &oscb_offsetsmpte, "Set time-offset as timecode (-o, set offset)"},
+
+  {"/jadeo/osd/font", "s", &oscb_osdfont, "Specify a TrueType Font file to be used for rendering On-Screen-Display text (osd font)"},
+  {"/jadeo/osd/timecode", "i", &oscb_osdsmtpe, "If set to 1: render timecode on screen; set to 0 to disable (-i, osd smpte)"},
+  {"/jadeo/osd/framenumber", "i", &oscb_osdframe, "If set to 1: render frame-number on screen, set to 0 to disable (-i, osd frame)"},
+  {"/jadeo/osd/box", "i", &oscb_osdbox, "If set to 1: draw a black backround around OSD elements, set to 0 to disable (osd box, osd nobox)"},
+
+  {"/jadeo/jack/connect", "", &oscb_jackconnect, "Connect to JACK and sync to JACK-transport (jack connect)"},
+  {"/jadeo/jack/disconnect", "", &oscb_jackdisconnect, "Stop synchronization with JACK-transport (jack disconnect)"},
+
+#if defined HAVE_LTC || defined OSC_DOC_ALL
+  {"/jadeo/ltc/connect", "", &oscb_ltcconnect, "Synchronize to LTC from jack-audio port (ltc connect)"},
+  {"/jadeo/ltc/disconnect", "", &oscb_ltcdisconnect, "Close LTC/JACK client (ltc disconnect)"},
+#endif
+
+#if defined HAVE_MIDI || defined OSC_DOC_ALL
+  // HAVE_MIDI
+  {"/jadeo/midi/connect", "s", &oscb_midiconnect, "Get sync from MTC (MIDI Time Code). The parameter specifies the midi-port to connect to. (-m, -d, midi connect)"},
+  {"/jadeo/midi/disconnect", "", &oscb_mididisconnect, "Close the MIDI device (midi disconnect)"},
+#endif
+
+#if defined CROPIMG || defined OSC_DOC_ALL
+  {"/jadeo/art/pan", "i", &oscb_pan, "Set the x-offset to the value given in pixels. 0 ≤ val ≤ movie-width"},
+#endif
+
+#if defined TIMEMAP || defined OSC_DOC_ALL
+  {"/jadeo/art/timescale", "f", &oscb_timescale, "Set time-multiplier; default value: 1.0"},
+  {"/jadeo/art/timescale", "fi", &oscb_timescale2, "Set both time-multiplier and offset. default: 1.0, 0"},
+  {"/jadeo/art/loop", "i", &oscb_loop, "Enable wrap-around/loop video. If set to 1, multiples of the movie-length are added/subtracted if the current time-stamp is outside the file duration."},
+  {"/jadeo/art/reverse", "", &oscb_reverse, "Trigger reverse. This action multiplies the current time-scale with -1.0 and sets a time-offset so that the currently displayed frame is retained."},
+#endif
+};
+
+
+//////////////////////////////////////////////////////////////////////////////
+
 static lo_server osc_server = NULL;
 
-int initialize_osc(int osc_port) {
+int xjosc_initialize (int osc_port) {
   char tmp[8];
   uint32_t port = (osc_port>100 && osc_port< 60000)?osc_port:7000;
 
@@ -289,46 +360,16 @@ int initialize_osc(int osc_port) {
     fprintf(stderr, "OSC server name: %s\n",urlstr);
     free (urlstr);
   }
-
-  lo_server_add_method(osc_server, "/jadeo/seek", "i", &oscb_seek, NULL); // IFF no MIDI-TC and no JACK-TS - seek to this frame
-  lo_server_add_method(osc_server, "/jadeo/load", "S", &oscb_load, NULL);
-#ifdef CROPIMG
-  lo_server_add_method(osc_server, "/jadeo/pan", "i", &oscb_pan, NULL);
-#endif
-#ifdef TIMEMAP
-  lo_server_add_method(osc_server, "/jadeo/timescale", "f", &oscb_timescale, NULL);
-  lo_server_add_method(osc_server, "/jadeo/timescale", "fi", &oscb_timescale2, NULL);
-  lo_server_add_method(osc_server, "/jadeo/loop", "i", &oscb_loop, NULL);
-  lo_server_add_method(osc_server, "/jadeo/reverse", "", &oscb_reverse, NULL);
-#endif
-  lo_server_add_method(osc_server, "/jadeo/fps", "f", &oscb_fps, NULL); // set screen update fps
-  lo_server_add_method(osc_server, "/jadeo/framerate", "f", &oscb_framerate, NULL); //  override file's fps
-  lo_server_add_method(osc_server, "/jadeo/offset", "i", &oscb_offset, NULL); // set offset by frame-number
-  lo_server_add_method(osc_server, "/jadeo/offset", "s", &oscb_offsetsmpte, NULL); // set offset as SMPTE
-
-  lo_server_add_method(osc_server, "/jadeo/jack/connect", "", &oscb_jackconnect, NULL);
-  lo_server_add_method(osc_server, "/jadeo/jack/disconnect", "", &oscb_jackdisconnect, NULL);
-#ifdef HAVE_MIDI
-  lo_server_add_method(osc_server, "/jadeo/midi/connect", "s", &oscb_midiconnect, NULL);
-  lo_server_add_method(osc_server, "/jadeo/midi/disconnect", "", &oscb_mididisconnect, NULL);
-  lo_server_add_method(osc_server, "/jadeo/midi/quarterframes", "i", &oscb_midiquarterframes, NULL);
-  lo_server_add_method(osc_server, "/jadeo/midi/clkconvert", "i", &oscb_midiclkconvert, NULL);
-#endif
-
-  lo_server_add_method(osc_server, "/jadeo/osd/font", "s", &oscb_osdfont, NULL);
-  lo_server_add_method(osc_server, "/jadeo/osd/smtpe", "i", &oscb_osdsmtpe, NULL);
-  lo_server_add_method(osc_server, "/jadeo/osd/frame", "i", &oscb_osdframe, NULL);
-  lo_server_add_method(osc_server, "/jadeo/osd/box", "i", &oscb_osdbox, NULL);
-
-  lo_server_add_method(osc_server, "/jadeo/cmd", "s", &oscb_remotecmd, NULL);
-
-  lo_server_add_method(osc_server, "/jadeo/quit", "", &oscb_quit, NULL);
+  int i;
+  for (i = 0; i < sizeof(OSCC) / sizeof(struct osc_command); ++i) {
+    lo_server_add_method(osc_server, OSCC[i].path, OSCC[i].typespec, OSCC[i].handler, NULL);
+  }
 
   if(want_verbose) fprintf(stderr, "OSC server started on port %i\n",port);
   return (0);
 }
 
-int process_osc(void) {
+int xjosc_process (void) {
   int rv = 0;
   if (!osc_server) return 0;
   while (lo_server_recv_noblock(osc_server, 0) > 0) {
@@ -337,16 +378,27 @@ int process_osc(void) {
   return rv;
 }
 
-void shutdown_osc(void) {
+void xjosc_shutdown (void) {
   if (!osc_server) return;
   lo_server_free(osc_server);
   if(!want_verbose) fprintf(stderr, "OSC server shut down.\n");
 }
 
+void xjosc_documentation (void) {
+  printf("# available OSC methods\n");
+  int i;
+  for (i = 0; i < sizeof(OSCC) / sizeof(struct osc_command); ++i) {
+    printf("'%s' '%s' '%s'\n", OSCC[i].path, OSCC[i].typespec, OSCC[i].documentation);
+  }
+}
+
 #else
-int initialize_osc(int osc_port) {return(1);}
-void shutdown_osc(void) {;}
-int process_osc(void) {return(0);}
+int  xjosc_initialize(int osc_port) {return(1);}
+void xjosc_shutdown(void) {;}
+int  xjosc_process(void) {return(0);}
+void xjosc_documentation (void) {
+  printf("# This version of xjadeo is compiled without OSC support.\n");
+}
 #endif
 
 /* vi:set ts=8 sts=2 sw=2: */

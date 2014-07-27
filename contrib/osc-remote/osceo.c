@@ -36,8 +36,8 @@
 #include <string.h>
 #include <signal.h>
 
-int initialize_osc(int osc_port);
-void shutdown_osc(void);
+int xjosc_initialize(int osc_port);
+void xjosc_shutdown(void);
 
 char *program_name;
 int c_run = 1; //< keep running
@@ -101,7 +101,7 @@ int main (int argc, char **argv) {
 //	printf ("set fps %.0f\n",framerate);
 	fflush(stdout);
 
-	initialize_osc(port);	
+	xjosc_initialize(port);
 
 	struct timeval tv;
 	fd_set set;
@@ -129,7 +129,7 @@ int main (int argc, char **argv) {
 
 	}
 
-	shutdown_osc();	
+	xjosc_shutdown();
 	return (0);
 }
 /* vim:set ts=8 sts=8 sw=8: */
