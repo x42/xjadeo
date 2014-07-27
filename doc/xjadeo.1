@@ -176,7 +176,7 @@ print more information
 \fB\-x\fR <int>, \fB\-\-vo\fR <int>, \fB\-\-videomode\fR <int>
 Select a video output mode (default: 0: autodetect)
 A value of \fB\-1\fR lists the available mode and exits
-.SS "Synchronization Sources:"
+.SH "Synchronization Sources:"
 .TP
 JACK:
 JACK\-transport
@@ -202,6 +202,7 @@ remote\-control manual seeks (not really a sync source)
 If neither \fB\-m\fR nor \fB\-l\fR is given, xjadeo synchronizes to jack\-transport
 by default.
 .PP
+.SH "Video Codecs and Formats:"
 Xjadeo uses ffmpeg to decode video files, so a wide range of formats and codecs
 are supported. Note however that not all the codecs support reliable seeking.
 It is highly recommended to transcode the video file into a suitable
@@ -215,7 +216,8 @@ leaves more space on the screen for your audio software.
 see ffmpeg \fB\-s\fR <width>x<height> option and read up on the ffmpeg man\-page
 for further options. e.g. \fB\-qscale\fR 0 to retain image quality.
 .PP
-Configuration Files:At startup xjadeo reads the following resource configuration files in the
+.SH "Configuration Files:"
+At startup xjadeo reads the following resource configuration files in the
 following order:
 .TP
 system\-wide:
@@ -237,7 +239,8 @@ KEYS are case\-insensitive. Boolean values are specified as 'yes' or 'no'.
 As for a list of available keys, please see the example configuration file,
 which is available in the documentation folder in the source\-code.
 .PP
-User Interaction:The xjadeo window offers a right\-click context menu (except on OSX where the
+.SH "User Interaction:"
+The xjadeo window offers a right\-click context menu (except on OSX where the
 application has a main menu bar) which provides easy access to common
 functionality.
 On OSX and Windows this menu offers a file\-open dialog to change the video file

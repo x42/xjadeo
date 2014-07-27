@@ -24,6 +24,7 @@ clean:
 
 xjadeo.1: ../src/xjadeo/xjadeo
 	help2man -N -n 'X Jack Video Monitor' -o xjadeo.1 ../src/xjadeo/xjadeo
+	sed -i 's/^\.SS "/.SH "/;s/^Video Codecs and Formats:/.SH "Video Codecs and Formats:"/;s/^Configuration Files:/.SH "Configuration Files:"/;s/^User Interaction:/.SH "User Interaction:"/' xjadeo.1
 
 xjremote.1: ../src/xjadeo/xjremote
 	help2man -N -n 'X Jack Video Monitor Remote Control' -o xjremote.1 ../src/xjadeo/xjremote

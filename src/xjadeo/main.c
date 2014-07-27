@@ -581,6 +581,7 @@ usage (int status)
 "\n");
 /*-------------------------------------------------------------------------------|" */
   printf (""
+"Video Codecs and Formats:\n"
 "Xjadeo uses ffmpeg to decode video files, so a wide range of formats and codecs\n"
 "are supported. Note however that not all the codecs support reliable seeking.\n"
 "It is highly recommended to transcode the video file into a suitable\n"
@@ -596,7 +597,7 @@ usage (int status)
 "\n");
 /*-------------------------------------------------------------------------------|" */
   printf (""
-"Configuration Files:"
+"Configuration Files:\n"
 "At startup xjadeo reads the following resource configuration files in the\n"
 "following order:\n"
 " system-wide:  /etc/xjadeorc or /usr/local/etc/xjadeorc\n"
@@ -612,7 +613,7 @@ usage (int status)
 "\n");
 /*-------------------------------------------------------------------------------|" */
   printf (""
-"User Interaction:"
+"User Interaction:\n"
 "The xjadeo window offers a right-click context menu (except on OSX where the\n"
 "application has a main menu bar) which provides easy access to common\n"
 "functionality.\n"
