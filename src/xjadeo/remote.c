@@ -847,43 +847,38 @@ typedef struct _command {
 	int sticky;  // unused
 } Dcommand;
 
-Dcommand cmd_test[] = {
-	{"load ", "<filename>: replace current video file.", NULL , xapi_open, 0 },
-	{"seek ", "<int>: seek to this frame - if jack and midi are offline", NULL, xapi_seek , 0 },
-	{NULL, NULL, NULL , NULL, 0}
-};
 
-Dcommand cmd_midi[] = {
+static Dcommand cmd_midi[] = {
 /*	{"autoconnect", ": discover and connect to midi time source", NULL, xapi_detect_midi, 0 }, */
 	{"connect ", "<port>: connect to midi time source (-1: discover)", NULL, xapi_open_midi, 0 },
 	{"disconnect", ": unconect from midi device", NULL, xapi_close_midi, 0 },
 	{"reconnect", ": connect to last specified midi port", NULL, xapi_reopen_midi, 0 },
-	{"status", ": display status of midi connection.", NULL, xapi_midi_status, 0 },
-	{"driver ", "<name>: select midi driver.", NULL, xapi_smididriver, 0 },
+	{"status", ": display status of midi connection", NULL, xapi_midi_status, 0 },
+	{"driver ", "<name>: select midi driver", NULL, xapi_smididriver, 0 },
 	{"driver", ": display the used midi driver", NULL, xapi_pmidilibrary, 0 },
 	{"library", ": alias for 'midi driver' (deprecated)", NULL, xapi_pmidilibrary, 0 },
 	{"sync ", "<int>: set MTC smpte conversion. 0:MTC 2:Video 3:resample", NULL, xapi_smidisync, 0 },
-	{"clk ", "[1|0]: use MTC quarter frames.", NULL, xapi_smidiclk, 0 },
+	{"clk ", "[1|0]: use MTC quarter frames", NULL, xapi_smidiclk, 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 
-Dcommand cmd_jack[] = {
+static Dcommand cmd_jack[] = {
 	{"connect", ": connect and sync to jack server", NULL, xapi_open_jack , 0 },
 	{"disconnect", ": disconnect from jack server", NULL, xapi_close_jack , 0 },
 	{"status", ": get status of jack connection", NULL, xapi_jack_status , 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 
-Dcommand cmd_ltc[] = {
-	{"connect", ": connect and sync to jack server", NULL, xapi_open_ltc , 0 },
-	{"disconnect", ": disconnect from jack server", NULL, xapi_close_ltc , 0 },
+static Dcommand cmd_ltc[] = {
+	{"connect", ": connect and sync to LTC server", NULL, xapi_open_ltc , 0 },
+	{"disconnect", ": disconnect from LTC", NULL, xapi_close_ltc , 0 },
 	{"status", ": get status of jack connection", NULL, xapi_ltc_status , 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 
-Dcommand cmd_osd[] = {
-	{"frame " , "<ypos>: render current framenumber. y=0..100 (<0 disable)", NULL, xapi_osd_frame, 0 },
-	{"smpte " , "<ypos>: render smpte. y=0..100 (<0 disable)", NULL, xapi_osd_smpte, 0 },
+static Dcommand cmd_osd[] = {
+	{"frame " , "<ypos>: render current framenumber. y=0..100 (negative integer: disable)", NULL, xapi_osd_frame, 0 },
+	{"smpte " , "<ypos>: render smpte. y=0..100 (negative integer: disable)", NULL, xapi_osd_smpte, 0 },
 	{"text " , "<text>: render <text> on screen", NULL, xapi_osd_text, 0 },
 	{"text" , ": display prev. OSD text", NULL, xapi_osd_on, 0 },
 	{"notext" , ": clear text OSD", NULL, xapi_osd_off, 0 },
@@ -893,12 +888,12 @@ Dcommand cmd_osd[] = {
 	{"available" , ": return 100 if freetype OSD is available", NULL, xapi_osd_avail, 0 },
 	{"font " , "<filename>: use this TTF font file", NULL, xapi_osd_font, 0 },
 	{"box" , ": forces a black box around the OSD", NULL, xapi_osd_box, 0 },
-	{"nobox" , ": make OSD backgroung transparent", NULL, xapi_osd_nobox, 0 },
-	{"mode" , ":<int>: restore OSD as returned by 'get osdcfg'", NULL, xapi_osd_mode, 0 },
+	{"nobox" , ": transparent OSD background", NULL, xapi_osd_nobox, 0 },
+	{"mode" , "<int>: restore OSD as returned by 'get osdcfg'", NULL, xapi_osd_mode, 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 
-Dcommand cmd_get[] = {
+static Dcommand cmd_get[] = {
 	{"position", ": return current frame position", NULL, xapi_pposition , 0 },
 	{"smpte", ": return current frame position", NULL, xapi_psmpte , 0 },
 	{"fps", ": display current update frequency", NULL, xapi_pfps , 0 },
@@ -913,7 +908,7 @@ Dcommand cmd_get[] = {
 	{"width", ": query width of video source buffer", NULL, xapi_pmwidth , 0 },
 	{"height", ": query width of video source buffer", NULL, xapi_pmheight , 0 },
 
-	{"seekmode", ": [deprecated] ", NULL, xapi_pseekmode, 0 },
+	{"seekmode", ": deprecated - no returnvalue", NULL, xapi_pseekmode, 0 },
 	{"windowsize" , ": show current window size", NULL, xapi_pwinsize, 0 },
 	{"windowpos" , ": show current window position", NULL, xapi_pwinpos, 0 },
 	{"videomode" , ": display current video mode", NULL, xapi_pvideomode, 0 },
@@ -929,71 +924,71 @@ Dcommand cmd_get[] = {
 	{NULL, NULL, NULL , NULL, 0}
 };
 
-Dcommand cmd_notify[] = {
+static Dcommand cmd_notify[] = {
 	{"disable" , ": disable async messages", NULL, xapi_bidir_alloff, 0 },
-	{"frame" , ": enable async frame-update messages", NULL, xapi_bidir_frame, 0 },
-	{"keyboard" , ": enable async keypress messages", NULL, xapi_bidir_keyboard, 0 },
+	{"off" , ": alias for 'disable'", NULL, xapi_bidir_alloff, 0 },
+	{"frame" , ": subscribe to async frame-update messages", NULL, xapi_bidir_frame, 0 },
+	{"keyboard" , ": subscribe to async keypress notificaions", NULL, xapi_bidir_keyboard, 0 },
 	{"loop" , ": enable continuous frame position messages", NULL, xapi_bidir_loop, 0 },
+	{"settings" , ": receive a dump of current settings when xjadeo shuts down", NULL, xapi_bidir_settings, 0 },
+	{"noframe" , ": stop frame-update message subscription", NULL, xapi_bidir_noframe, 0 },
+	{"noloop" , ": disable continuous frame position messages", NULL, xapi_bidir_noloop, 0 },
+	{"nokeyboard" , ": disable async keypress notification messages", NULL, xapi_bidir_nokeyboard, 0 },
 	{"nosettings" , ": disable async settings dump on shutdown", NULL, xapi_bidir_nosettings, 0 },
-	{"nokeyboard" , ": disable async keypress messages", NULL, xapi_bidir_nokeyboard, 0 },
-	{"noframe" , ": enable async frame-update messages", NULL, xapi_bidir_noframe, 0 },
-	{"noloop" , ": enable continuous frame position messages", NULL, xapi_bidir_noloop, 0 },
-	{"off" , ": disable all async messages", NULL, xapi_bidir_alloff, 0 },
-	{"settings" , ": enable async settings dump on shutdown", NULL, xapi_bidir_settings, 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 
-Dcommand cmd_window[] = {
+static Dcommand cmd_window[] = {
 	{"close", ": close window", NULL, xapi_close_window, 0 },
 	{"open", ": open window", NULL, xapi_open_window, 0 },
 	{"mode " , "<int>: change video mode and open window", NULL, xapi_set_videomode, 0 },
-	{"resize " , "<int>|<int>x<int>: resize window (percent of movie or abs)", NULL, xapi_swinsize, 0 },
+	{"resize " , "<int>|<int>x<int>: resize window (percent of movie or absolute size)", NULL, xapi_swinsize, 0 },
 	{"size " , "<int>|<int>x<int>: alias for resize", NULL, xapi_swinsize, 0 },
-	{"position " , "<int>x<int>: move window to absolute position", NULL, xapi_swinpos, 0 },
+	{"position " , "<int>x<int>: move window to given position (top-left coordinates)", NULL, xapi_swinpos, 0 },
 	{"pos " , "<int>x<int>: alias for 'window position'", NULL, xapi_swinpos, 0 },
 	{"xy " , "<int>x<int>: alias for 'window position'", NULL, xapi_swinpos, 0 },
-	{"fullscreen " , "[on|off|toggle]: en/disable fullscreen (only XV/x11/OSX)", NULL, xapi_fullscreen, 0 },
+	{"fullscreen " , "[on|off|toggle]: en/disable fullscreen", NULL, xapi_fullscreen, 0 },
 	{"zoom " , "[on|off|toggle]: alias for 'window fullscreen'", NULL, xapi_fullscreen, 0 },
-	{"letterbox " , "[on|off|toggle]: don't break aspect ratio (only XV/x11-imlib2)", NULL, xapi_sletterbox, 0 },
-	{"mouse " , "[on|off|toggle]: en/disable mouse cursor display (only XV/x11)", NULL, xapi_mousepointer, 0 },
-	{"ontop " , "[on|off|toggle]: en/disable 'on top' (only XV/x11)", NULL, xapi_ontop, 0 },
-	{"fixaspect" , ": scale window to match aspect ration (same as mouse btn 3)", NULL, xapi_saspect, 0 },
+	{"letterbox " , "[on|off|toggle]: don't break aspect ratio", NULL, xapi_sletterbox, 0 },
+	{"mouse " , "[on|off|toggle]: en/disable mouse cursor display", NULL, xapi_mousepointer, 0 },
+	{"ontop " , "[on|off|toggle]: en/disable 'on top'", NULL, xapi_ontop, 0 },
+	{"fixaspect" , ": scale window to match aspect ration", NULL, xapi_saspect, 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 
-Dcommand cmd_set[] = {
-	{"fps ", "<float>: set current update frequency", NULL, xapi_sfps , 0 },
-	{"offset ", "<int>: set current frame offset", NULL, xapi_soffset , 0 },
-	{"timescale ", "<float> <int>: set timescale and offset", NULL, xapi_stimescale , 0 },
-	{"loop ", "<int>: 0: normal, 1:wrap around", NULL, xapi_sloop , 0 },
-	{"seekmode ", "[deprecated]", NULL, xapi_sseekmode, 0 },
+static Dcommand cmd_set[] = {
+	{"offset ", "<int>: set timecode offset in frames", NULL, xapi_soffset , 0 },
+	{"fps ", "<float>: set screen update frequency", NULL, xapi_sfps , 0 },
 	{"framerate ", "<float>: override frame rate of video file", NULL, xapi_sframerate , 0 },
-	{"override ", "<int>: disable window events", NULL, xapi_soverride , 0 },
+	{"override ", "<int>: disable user-interaction (bitmask)", NULL, xapi_soverride , 0 },
+	{"seekmode ", ": deprecated - no operation", NULL, xapi_sseekmode, 0 },
+	{"timescale ", "<float> <int>: set timescale and offset (*)", NULL, xapi_stimescale , 0 },
+	{"loop ", "<int>: 0: normal, 1:wrap around (*)", NULL, xapi_sloop , 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 
-Dcommand cmd_root[] = {
+static Dcommand cmd_root[] = {
 	// note: keep 'seek' on top of the list - if an external app wants seek a lot, xjadeo will
 	// not spend time comparing command strings - OTOH I/O takes much longer than this anyway :X
 	{"seek ", "<int>: seek to this frame - if jack and midi are offline", NULL, xapi_seek , 0 },
-	{"load ", "<filename>: replace current video file.", NULL , xapi_open, 0 },
-	{"unload", ": close video file.", NULL , xapi_close, 0 },
+	{"load ", "<filename>: replace current video file", NULL , xapi_open, 0 },
+	{"unload", ": close video file", NULL , xapi_close, 0 },
 
 	{"window", " .. : monitor window functions", cmd_window, NULL, 0 },
-	{"notify", " .. : async remote info messages", cmd_notify, NULL, 0 },
-	{"get", " .. : query xjadeo variables or state", cmd_get, NULL, 0 },
-	{"set", " .. : set xjadeo variables", cmd_set, NULL, 0 },
 	{"osd", " .. : on screen display commands", cmd_osd, NULL, 0 },
 	{"jack", " .. : jack sync commands", cmd_jack, NULL, 0 },
 	{"midi", " .. : midi sync commands", cmd_midi, NULL, 0 },
 	{"ltc", " ..  : LTC sync commands", cmd_ltc, NULL, 0 },
-	{"reverse", ": set timescale to reverse playback from now", NULL , xapi_sreverse, 0 },
+	{"notify", " .. : async remote info messages", cmd_notify, NULL, 0 },
+	{"get", " .. : query xjadeo variables or state", cmd_get, NULL, 0 },
+	{"set", " .. : set xjadeo variables", cmd_set, NULL, 0 },
+	{"reverse", ": set timescale to reverse playback (*)", NULL , xapi_sreverse, 0 },
 
-	{"list videomodes" , ": displays a list of possible video modes", NULL, xapi_lvideomodes, 0 },
+	{"list videomodes" , ": displays a list of available video modes", NULL, xapi_lvideomodes, 0 },
 	{"ping", ": claim a pong", NULL , xapi_ping, 0 },
-	{"exit", ": [close MQ-session]", NULL , xapi_exit, 0 },
-	{"help", ": show a quick help", NULL , api_help, 0 },
-	{"quit", ": terminate  xjadeo", NULL , xapi_quit, 0 },
+	{"help", ": generate this remote-control API documentation", NULL , api_help, 0 },
+	{"exit", ": close remote-session (keep xjadeo running, with MQ and IPC)", NULL , xapi_exit, 0 },
+	{"quit", ": terminate xjadeo", NULL , xapi_quit, 0 },
 	{NULL, NULL, NULL , NULL, 0},
 };
 
