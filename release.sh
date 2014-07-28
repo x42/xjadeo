@@ -133,7 +133,7 @@ cd v${VERSION}
 put /tmp/jadeo_installer_v${WINVERS}.exe
 put /tmp/xjadeo-i386-linux-gnu-v${VERSION}.tgz
 put /tmp/xjadeo-x86_64-linux-gnu-v${VERSION}.tgz
-put /tmp/jadeo-${VERSION}.dmg
+put /tmp/Jadeo-${VERSION}.dmg
 EOF
 
 # custom upload hook
