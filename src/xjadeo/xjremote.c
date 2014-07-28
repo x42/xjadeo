@@ -138,7 +138,14 @@ static int decode_switches (int argc, char **argv) {
 static void usage (int status) {
 	printf ("xjremote - jack video monitor remote control utility\n\n");
 	printf ("Usage: xjremote[ OPTIONS ]\n\n");
-	printf (""
+  printf ("\n\n"
+"Xjremote opens a connection to a running instance of xjadeo or launches a new\n"
+"instance ready for remote-control.\n"
+"\n"
+"Interaction with xjremote takes place via standard input/output mechanism,\n"
+"while xjremote itself communicate with xjadeo out-of-band using platform\n"
+"specific operations (e.g. POSIX message queues, IPC or OSC).\n"
+"\n"
 /*-------------------------------------------------------------------------------|" */
 "Options:\n"
 " -h, --help                display this help and exit\n"

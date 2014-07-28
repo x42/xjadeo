@@ -426,9 +426,7 @@ usage (int status)
 {
   printf ("xjadeo - the X Jack Video Monitor\n\n");
   printf ("Usage: xjadeo [ OPTIONS ] [ video-file ]\n\n");
-  printf (""
-"\n"
-"\n"
+  printf ("\n\n"
 "Xjadeo is a software video player that displays a video-clip in sync with an\n"
 "external time source (MTC, LTC, JACK-transport).\n"
 "\n"
@@ -458,10 +456,10 @@ usage (int status)
 "                           will use the FPS of the video-file as its update\n"
 "                           frequency (which is the default).\n"
 "                           Note: This does not affect screen/vblank sync.\n"
-"                           Synchronization vertical refresh is hardware\n"
-"                           dependent (and always used if available)\n"
+"                           Synchronizing to the screen's vertical refresh is\n"
+"                           hardware dependent (and always used if available).\n"
 /*-------------------------------------------------------------------------------|" */
-" -h, --help                Display this help and exit\n"
+" -h, --help                Display this help and exit.\n"
 " -I, --ignore-file-offset\n"
 "                           This option is only useful for video files with a\n"
 "                           start-offset, such as split vob files.\n"
@@ -470,8 +468,8 @@ usage (int status)
 "                           override (and subtract) this offset to align the\n"
 "                           start of the file with timecode 00:00:00:00.\n"
 " -i <int>, --info <int>    Display time information using the OSD (on-screen-\n"
-"                           display.\n"
-"                           0:Off, %d: Frame-number, %d: Timecode, %d: both\n"
+"                           display).\n"
+"                           0:Off, %d: Frame-number, %d: Timecode, %d: both.\n"
 "", OSD_FRAME,OSD_SMPTE,OSD_FRAME|OSD_SMPTE); // :)
   printf ("" /* take a breath */
 " -J, --no-initial-sync     Do not connect to JACK, nor use any other sync\n"
@@ -496,21 +494,21 @@ usage (int status)
 "                           Specify MTC conversion mode:\n"
 "\n"
 "                           0:  use framerate from MTC clock (default)\n"
-"                           1:  use video file FPS\n"
-"                           2:  \"resample\" video-fps / MTC \n"
+"                           1:  use video file's fps\n"
+"                           2:  \"resample\" file's fps / MTC \n"
 " -m <port>, --midi <port>\n"
 "                           Use MTC as sync source\n"
 "                           The <port> argument is midi driver specific:\n"
 "\n"
-"                           jack-midi:  specify midi-port name to connect to\n"
+"                           jack-midi:  specify a midi-port name to connect to,\n"
 "                             or \"\" to not auto-connect.\n"
-"                           alsa-seq:  specify id to connect to. (-1: none)\n"
+"                           alsa-seq:  specify ID to connect to (-1: none)\n"
 "                             eg. -m ardour or -m 80 \n"
+"                           alsa-raw:  specify hardware device\n"
+"                             eg. -m hw:1,0 or -m 1 \n"
 "                           portmidi:  numeric-id; -1: autodetect\n"
 "                             a value > -1 specifies the port number to use.\n"
 "                             use '-v -m -1' to list midi-ports.\n"
-"                           alsa-raw:  specify device-name \n"
-"                             eg. -m hw:1,0 or -m 1 \n"
 #if 0 // - undocumented /hidden/ options
 " -N , --drop-frames        Force the SMPTE converter to use the drop-frames\n"
 "                           algorithm. (Frame dropping is only useful in \n"
@@ -526,7 +524,7 @@ usage (int status)
 " -O <port>, --osc <port>   Listen for OSC messages on the given port.\n"
 "                           Xjadeo can be remote-controlled using Open Sound\n"
 "                           Control. For a list of available commands, please\n"
-"                           see the source-code for now.\n"
+"                           see the source-code or online documentation.\n"
 " -o <val>, --offset <val>\n"
 "                           Time offset video from timecode source.\n"
 "                           This allows to offset the video playback a certain\n"
@@ -554,7 +552,7 @@ usage (int status)
 " -T <file>, --ttf-file <file>\n"
 "                           path to .ttf font for on-screen-display\n"
 " -U, --uuid                specify JACK-SESSION UUID.\n"
-" -V, --version             Print version information and exit\n"
+" -V, --version             Print version information and exit.\n"
 " -W <rpc-id>, --ipc <rpc-id>\n"
 "                           Set-up IPC message queues for remote-control\n"
 "                           Inter-Process Communication is used by `xjremote`\n"
@@ -574,9 +572,9 @@ usage (int status)
 " MTC:  MIDI Time Code via ALSA sequencer (Linux only)\n"
 " MTC:  MIDI Time Code via ALSA raw devices (Linux only)\n"
 " MTC:  MIDI Time Code via portmidi (OSX, Windows)\n"
-" Manual:  remote-control manual seeks (not really a sync source)\n"
+" Manual:  Remote-controlled manual seeks.\n"
 "\n"
-"If neither -m nor -l is given, xjadeo synchronizes to jack-transport\n"
+"If neither -m nor -l options are given, xjadeo synchronizes to jack-transport\n"
 "by default.\n"
 "\n");
 /*-------------------------------------------------------------------------------|" */
@@ -602,14 +600,17 @@ usage (int status)
 "following order:\n"
 " system-wide:  /etc/xjadeorc or /usr/local/etc/xjadeorc\n"
 " old user config:  $HOME/.xjadeorc\n"
-" user config:  $PKG_CONFIG_PATH/xjadeo/xjadeorc (usually $HOME/.config/, but\n"
+" user config:  $PKG_CONFIG_PATH/xjadeo/xjadeorc (usually $HOME/.config/,n"
 "               on OSX $HOME/Library/Preferences/)\n"
 " project specific:  $PWD/xjadeorc\n"
 "Every line in the configuration file is a KEY=VALUE pair. If the first\n"
 "character on a line is either is a literal '#' or ';', the line is ignored.\n"
 "KEYS are case-insensitive. Boolean values are specified as 'yes' or 'no'.\n"
 "As for a list of available keys, please see the example configuration file,\n"
-"which is available in the documentation folder in the source-code.\n"
+"which is available in the documentation folder of the source-code.\n"
+"\n"
+"If xjadeo is compiled with jack-session support, it will save its current\n"
+"state as config file and pass it as handle to the jack session manager.\n"
 "\n");
 /*-------------------------------------------------------------------------------|" */
   printf (""
@@ -654,11 +655,15 @@ usage (int status)
 " 'Shift+1-4'  Fine tune color equalization (x11/imblib and XV only)\n"
 "              brightness:1+2, contrast:3+4, gamma:5+6, saturation:7+8\n"
 "              hue:9+0. XV color balance is hardware dependant.\n"
+"\n"
+"Note that it is possible to disable certain features using the remote control.\n"
+"A Host can take control of certain aspects e.g. offset or disallow closing the\n"
+"video monitor, except by host-provided means.\n"
 #endif
 /*-------------------------------------------------------------------------------|" */
 "\n"
-"Report bugs to Robin Gareus <robin@gareus.org>\n"
-"Website: <https://github.com/x42/xjadeo>\n"
+"Report bugs at <https://github.com/x42/xjadeo/issues>\n"
+"Website: <http://xjadeo.sf.net/>\n"
 );
   exit (status);
 }
@@ -736,7 +741,7 @@ static void printversion (void) {
 			);
 	printf ("\n"
 			"Copyright (C) GPL 2006-2014 Robin Gareus <robin@gareus.org>\n"
-			"Copyright (C) GPL Luis Garrido <luisgarrido@users.sourceforge.net>\n"
+			"Copyright (C) GPL 2006-2011 Luis Garrido <luisgarrido@users.sourceforge.net>\n"
 			"This is free software; see the source for copying conditions.  There is NO\n"
 			"warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n");
 }
