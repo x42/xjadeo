@@ -1,5 +1,5 @@
 <div class="box frontpage" style="padding:0; overflow:hidden;">
-<a href="main.html" style="text-decoration:none;">
+<a id="frontlink" href="main.html" style="text-decoration:none;">
 <div class="maxed">
 <div id="frontimg" class="center">
 	First Choice For<br/>Software Video Monitoring.

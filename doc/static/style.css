@@ -2,13 +2,14 @@
   .top, .frontpage
               {display:none;}
 }
+
 @media screen {
   body        {background-color:#333333;}
-  #content    {width: 50em; margin: 1em auto;}
+  #content    {max-width: 50em; margin: 1em auto;}
   .box        {padding: 1em; background: white; border-radius:12px; border:1.5px solid #071419; overflow:hidden;}
 }
 
-@media screen, print {
+@media all {
   body        {font-family:Lucida,Helvetica,sans-serif; font-size:14px; color: #000;}
   h1          {text-align: center; font-variant:small-caps;}
   h2          {border-bottom: 1px solid #071419; margin-top:2em;}
@@ -26,8 +27,10 @@
               {width:25%; margin:.5em 2%; border: 1px solid transparent; border-radius:12px; overflow:hidden; }
   pre.screen  {margin:.5em; border:1.5px solid #071419; border-radius:12px; padding:.5em; background-color:#323; color:#4f4;}
   div.downlo  {padding:1em; border:3px double #071419; border-radius:12px;}
-  a, a:hover, a:visited, a:active, a:link
+  a, a:visited, a:link
               {color: #071419; border:0px;}
+  a:hover, a:active
+              {color: #771419; border:0px;}
   table, table td, table tr
               {border:0; border-collapse:collapse;}
   .oscdoc td, .oscdoc th, .actiondoc td, .actiondoc th
@@ -41,11 +44,36 @@
   .middle     {margin-left:auto; margin-right:auto;}
   .main       {padding:1em 2em !important;}
   .top        {height: 9em; font-variant:small-caps; font-weight:bolder;}
-  .linklist   {padding-left:1em; list-style-type:none; margin:0; line-height:150%;}
+  .linklist   {padding-left:1.2em; list-style-type:none; margin:0; line-height:150%;}
   .linklist a, .larger a
-              {text-decoration: none; color: #071419;}
-  #topleft    {float:left; width:30em; background:white url(xjadeo_banner.png) no-repeat scroll center center;}
-  #topright   {float:right; width:15em;}
-  #frontimg   {font-size:300%; line-height:1.5em; padding:2.0em 1em; font-variant:small-caps; text-shadow: 0px 0px 6px #ffffff; background:url(firstchoice.jpg) no-repeat scroll center center; background-size: 100% auto}
+              {text-decoration: none;}
+  .linklist li
+              {height:1.8em;}
+  .linklist img
+              {padding-right:.2em; vertical-align:baseline;}
+  #topleft    {background:white url(xjadeo_banner.png) no-repeat scroll center center;}
+  #topright   {min-width:15em;}
+  #frontlink  {color: #071419;}
+  #frontimg   {font-size:300%; line-height:1.5em; min-height:98px; padding:2.0em 1em; font-variant:small-caps; text-shadow: 0px 0px 6px #ffffff; background:url(firstchoice.jpg) no-repeat scroll center center; background-size: 100% auto}
   div.clear   {clear:both; height:1em;}
+}
+
+@media screen and (min-width: 720px) {
+  #content    {width: 50em;}
+  #topleft    {float:left; width:30em;}
+  #topright   {float:right; width:15em;}
+}
+
+@media screen and (max-width: 720px) {
+  #topleft    {min-width:30em;}
+  #topright   {margin-top:1em;}
+  #topright li  {width:10em;margin:0 auto;}
+  #content    {min-width: 18em;}
+  #frontimg   {font-size:200%; font-weight:bold; padding:1.5em 1em;}
+}
+
+@media screen and (max-width: 483px) {
+  #topleft    {min-width:16em;}
+  #topleft    {background-size: 90% auto;}
+  #frontimg   {font-size:175%; font-weight:bolder; padding:.5em 1em;}
 }

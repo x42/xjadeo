@@ -8,14 +8,14 @@
   <meta name="keywords" content="Linux, Audio, Video, LTC, MTC, Jack-transport, Soundtrack, Synchronization, JACK" />
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
-	<meta name="viewport" content="width=560, initial-scale=.8"/>
-	<link rel="stylesheet" href="static/style.css" type="text/css"/>
-	<link rel="stylesheet" href="static/lightbox.css" type="text/css"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="static/style.css" type="text/css"/>
+  <link rel="stylesheet" href="static/lightbox.css" type="text/css"/>
   </head>
   <body>
     <div id="content">
       <div class="box top" id="topleft">
-				<a href="index.html"><div class="maxed"></div></a>
+        <a href="index.html"><div class="maxed"></div></a>
       </div>
       <div class="box top" id="topright">
         <ul class="linklist larger">
