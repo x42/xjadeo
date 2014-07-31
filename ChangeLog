@@ -1,3 +1,9 @@
+2014-07-31 (unreleased)  Robin Gareus <robin@gareus.org>
+* update usage() help text
+* add --osc-doc option
+* rearrange remote-control commands and improve their doc.
+* re-do website and documentation
+
 2014-07-27 (0.8.0-rc1)  Robin Gareus <robin@gareus.org>
 * v0.8 pre-release
 * add openGL display (Linux, Win32, OSX)
