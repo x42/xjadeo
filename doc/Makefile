@@ -9,7 +9,7 @@ all: html man
 html: xjadeo.1 xjremote.1
 	mkdir -p html/static
 	cp -f favicon.ico html/
-	cp -f static/* html/static/
+	cp -a static/* html/static/
 	groff -m man -T xhtml -P -l xjadeo.1 | sed 's/cellspacing="0" cellpadding="0"//g;s/width="100%" border="0" rules="none" frame="void"//g;s/valign="top" align="left"//g;s/width="/style="width:/g;s/><\/col>/\/>/g' > pages/xjadeo.html
 	groff -m man -T xhtml -P -l xjremote.1 | sed 's/cellspacing="0" cellpadding="0"//g' > pages/xjremote.html
 	echo -e "/<body>\n1,.d\n/<hr\\>\n.d\n/<hr\\>\n.d\n/<\\/body>\n.,\$$d\nw\nq" | ed -s pages/xjadeo.html

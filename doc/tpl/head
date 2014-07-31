@@ -10,6 +10,7 @@
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
 	<meta name="viewport" content="width=560, initial-scale=.8"/>
 	<link rel="stylesheet" href="static/style.css" type="text/css"/>
+	<link rel="stylesheet" href="static/lightbox.css" type="text/css"/>
   </head>
   <body>
     <div id="content">
@@ -20,7 +21,7 @@
         <ul class="linklist larger">
           <li><a href="main.html"><img src="static/srcn.png" alt=""/>Introduction</a></li>
           <li><a href="download.html"><img src="static/download.png" alt=""/>Download</a></li>
-          <li><a href="https://github.com/x42/xjadeo/issues"><img src="static/bug.gif" alt=""/>Issue Tracker</a></li>
+          <li><a href="https://github.com/x42/xjadeo/issues" class="hover"><img src="static/bug.png" alt="" data-hover="static/bug.gif" />Issue Tracker</a></li>
           <li><a href="xjadeo.html"><img src="static/manual.png" alt=""/>Manual</a></li>
         </ul>
       </div>
