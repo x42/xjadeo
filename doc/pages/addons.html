@@ -1,0 +1,75 @@
+<h1>Advanced Features - Artistic Add-ons</h1>
+
+<p>
+Xjadeo's core functionality - to display a given video frame at a certain point in time - is not only useful for post-production but has applications in media-art installations.
+</p>
+
+<p>
+There are two major features which are not enabled by default:
+</p>
+
+<dl>
+	<dt>time-scale</dt><dd>operations to modify the time-code: multiply (slow-down/speed-up), offset and wrap-around/loop.</dd>
+	<dt>Panorama/frame-cropping</dt><dd> allows to display a sub-section of the image.</dd>
+</dl>
+
+<h2>Time-scaling</h2>
+<p>
+Time-scaling adds three additional parameters to modify the displayed frame. They are applied in the following order:
+</p>
+
+<ol>
+	<li>scale - multiply frame-number (default: 1.0)</li>
+	<li>offset - add integer to frame-number (default: 0)</li>
+	<li>wraparound - add/subtract (multiples) of movie-length if the current time-stamp is less/above the movie-duration (default: off)</li>
+</ol>
+
+<p>
+These parameters can be set via the remote-control described in the section &laquo;<a href="remote.html">Remote Control Interface</a>&raquo; or by as OSC documented in &laquo;<a href="osc.html#osc3">Open Sound Control Interface</a>&raquo;.
+</p>
+
+<h2>Cave/Panorama mode</h2>
+
+<p>
+The Panorama mode needs be enabled at compile-time using <code>./configure --enable-framecrop</code>. When enabled Xjadeo will crop the image width to 50%. The x-offset can be modified with the keyboard, remote control or OSC commands - see the section called &laquo;<a ref="osc.html#osc3">Open Sound Control Interface</a>&raquo; and &laquo;User Interaction&raquo; in the <a href="xjadeo.html">manual</a>.
+</p>
+
+<p>
+It is intended to be used with two neighboring movies stitched together:
+</p>
+
+<pre class="center">
+  A B C D
+AB BC CD DA
+</pre>
+<p>
+To panning across boundaries, the files have to be re-loaded (using OSC or remote-control).
+</p>
+
+<h2>Action Override</h2>
+<p>
+Using the <code>set override</code> <a href="remote.html">remote-control</a> command, it is possible to disable certain key-bindings or window-events. and limit user interaction with the monitor window. The value is a bitwise combination of flags:
+</p>
+<div>
+	<a id="osc1"></a>
+	<table class="actiondoc middle">
+		<colgroup><col/><col/><col/></colgroup>
+		<thead>
+			<tr><th>Bit</th><th>Value</th><th>Description</th></tr>
+		</thead>
+		<tbody>
+			<!-- DOC START !-->
+			<tr><td>1</td><td>1</td><td>ignore 'q', ESC  / quit</td></tr>
+			<tr><td>2</td><td>2</td><td>ignore "window closed by WM" / quit</td></tr>
+			<tr><td>3</td><td>4</td><td>(osx only) menu-exit / quit</td></tr>
+			<tr><td>4</td><td>8</td><td>ignore mouse-button 1 -- resize</td></tr>
+			<tr><td>5</td><td>16</td><td>no A/V offset control with keyboard</td></tr>
+			<tr><td>6</td><td>32</td><td>don't use jack-session</td></tr>
+			<tr><td>7</td><td>64</td><td>disable jack transport control</td></tr>
+			<tr><td>8</td><td>128</td><td>disallow sync source change (OSX menu)</td></tr>
+			<tr><td>9</td><td>256</td><td>disallow file open (OSX menu, X11 DnD)</td></tr>
+			<!-- DOC END !-->
+		</tbody>
+	</table>
+	<div class="center"><strong>Table 4. Interaction Override</strong></div>
+</div>

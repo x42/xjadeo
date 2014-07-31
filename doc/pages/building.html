@@ -1,0 +1,50 @@
+<h1>Building XJadeo from source</h1>
+
+<div class="larger center">Here be dragons.</div>
+
+<h2>Basic building</h2>
+
+<p>The usual autotools spell applies:</p>
+<pre class="screen">
+./configure
+make
+sudo make install
+</pre>
+
+<p>However xjadeo requires quite a few build dependencies:</p>
+
+<p>Development packages for the following software <strong>must</strong> be available to compile xjadeo:</p>
+<ul>
+	<li><code>ffmpeg</code> (various libraries from <a href="http://ffmpeg.org/">ffmpeg.org</a>, at least version 1.0)</li>
+	<li><code>jack-audio-connection-kit</code> (<a href="http://jackaudio.org/">jackaudio.org</a>)</li>
+	<li><code>libX11</code> (on Linux only, <a href="http://x.org/">X.org</a>)</li>
+	<li><code>glu</code> (mandatory on OSX and Windows only, highly recommended on GNU/Linux, <a href="https://www.opengl.org/">opengl.org</a>)</li>
+</ul>
+
+<p>Recommended optional dependencies:</p>
+<ul>
+	<li><code>glu</code> (opengl display, if you don't have it already)</li>
+	<li><code>freetype2</code> (on-screen-display, <a href="http://www.freetype.org/">freetype.org</a>)</li>
+	<li><code>asound</code> (ALSA MIDI [MTC] support, <a href="http://www.alsa-project.org/">alsa-project.org</a>)</li>
+	<li><code>portmidi, porttime</code> (windows/OSX MIDI [MTC] support, <a href="http://portmedia.sf.net/">portmedia.sf.net</a>)</li>
+	<li><code>libltc</code> (LTC synchronization, <a href="https://x42.github.io/libltc/">x42.github.io/libltc</a>)</li>
+	<li><code>liblo</code> (OSC remote control, <a href="http://liblo.sf.net/">liblo.sf.net</a>)</li>
+</ul>
+
+<p>Options: (fall-back and legacy video outputs)</p>
+<ul>
+	<li><code>libXv</code> (on Linux, X11-video acceleration, <a href="http://x.org/">X.org</a>)</li>
+	<li><code>imlib2</code> (Linux RGB display, <a href="http://docs.enlightenment.org/api/imlib2/html/">enlightenment.org</a>)</li>
+	<li><code>SDL-1.2</code> (meant for windows only, really - but works on Linux, OSX too, <a href="http://libsdl.org/">libsdl.org</a>)</li>
+</ul>
+
+<p>Deprecated:<p>
+<ul>
+	<li>QT3 or QT4 (for external remote-control GUI)</li>
+</ul>
+
+<h2>Cross compilation, static binaries and bundles</h2>
+<p>
+Please see the variety of <code>x-*.sh</code> scripts in the source's root folder
+in the <a href="https://github.com/x42/xjadeo">git repository</a>. 
+</p>

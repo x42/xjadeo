@@ -1,0 +1,118 @@
+<h1>XJADEO - Open Sound Control Interface</h1>
+
+<h2>Open Sound Control Interface</h2>
+
+<p>
+An alternative to the remote-control described in
+the section &laquo;<a href="remote.html">Remote Control Interface</a>&raquo;
+is to use <a href="http://opensoundcontrol.org/">Open-sound-control</a>.
+The drawback with OSC however is that there is no feedback. It is a one-way method of
+communication. Furthermore OSC usually has more latency compared to POSIX
+real-time messages, although it is quite possible to play a video sending
+'seek' commands. On the upside OSC offers a control interface that works
+via Network. It is easy to use and ubiquitous. There is support to
+transmit OSC messages for nearly every programming language and even some
+hardware controllers - be it arduiuno, iPhone or mixing-desks.
+</p>
+<p>
+To enable xjadeo's OSC interface it needs
+to be started with the
+<code>-O <em><code>port</code></em></code>
+option where <em><code>port</code></em> is the UDP port number
+xjadeo listens on for messages. e.g.
+</p>
+
+<pre class="screen">xjadeo -O 7890</pre>
+
+<p>
+A simple example to control xjadeo using <code>oscsend</code> from liblo-tools looks like this:
+</p>
+<pre class="screen">
+oscsend localhost 7890 /jadeo/load s '/tmp/test.avi'
+oscsend localhost 7890 /jadeo/quit
+</pre>
+
+
+<h2>OSC commands</h2>
+
+<div>
+	<a id="osc1"></a>
+	<table class="oscdoc middle">
+		<colgroup><col/><col/><col/></colgroup>
+		<thead>
+			<tr><th>Address Pattern</th><th>Type Tags</th><th>Description - notes in brackes are corresponding remote-ctl commands or commandline-options</th></tr>
+		</thead>
+		<tbody>
+			<!-- AUTO-GENERATED DOC START !-->
+<tr><td><code>/jadeo/quit</code></td><td><code></code></td><td>Terminate xjadeo.</td></tr>
+<tr><td><code>/jadeo/load</code></td><td><code>s</code></td><td>Load a video file, replacing any previous one (load <code><em>filename</em></code>)</td></tr>
+<tr><td><code>/jadeo/seek</code></td><td><code>i</code></td><td>Seek to given frame-number (seek <frame>) - xjadeo needs to be disconnected from a sync-source</td></tr>
+<tr><td><code>/jadeo/cmd</code></td><td><code>s</code></td><td>Call a remote control command</td></tr>
+<tr><td><code>/jadeo/fps</code></td><td><code>f</code></td><td>Set the screen update frequency (-f, set fps)</td></tr>
+<tr><td><code>/jadeo/framerate</code></td><td><code>f</code></td><td>Override video-files frame-rate (-F, set framerate)</td></tr>
+<tr><td><code>/jadeo/offset</code></td><td><code>i</code></td><td>Set time-offset as frame-number (-o, set offset)</td></tr>
+<tr><td><code>/jadeo/offset</code></td><td><code>s</code></td><td>Set time-offset as timecode (-o, set offset)</td></tr>
+<tr><td><code>/jadeo/osd/font</code></td><td><code>s</code></td><td>Specify a TrueType Font file to be used for rendering On-Screen-Display text (osd font)</td></tr>
+<tr><td><code>/jadeo/osd/timecode</code></td><td><code>i</code></td><td>If set to 1: render timecode on screen; set to 0 to disable (-i, osd smpte)</td></tr>
+<tr><td><code>/jadeo/osd/framenumber</code></td><td><code>i</code></td><td>If set to 1: render frame-number on screen, set to 0 to disable (-i, osd frame)</td></tr>
+<tr><td><code>/jadeo/osd/box</code></td><td><code>i</code></td><td>If set to 1: draw a black backround around OSD elements, set to 0 to disable (osd box, osd nobox)</td></tr>
+			<!-- AUTO-GENERATED DOC END !-->
+		</tbody>
+	</table>
+	<div class="center"><strong>Table 1. OSC Commands</strong></div>
+	<div class="vsep"></div>
+</div>
+
+
+<div>
+	<a id="osc2"></a>
+	<table class="oscdoc middle">
+		<colgroup><col/><col/><col/></colgroup>
+		<thead>
+			<tr><th>Address Pattern</th><th>Type Tags</th><th>Description - notes in brackes are corresponding remote-ctl
+					commands or commandline-options</th></tr>
+		</thead>
+		<tbody>
+<tr><td><code>/jadeo/jack/connect</code></td><td><code></code></td><td>Connect to JACK and sync to JACK-transport (jack connect)</td></tr>
+<tr><td><code>/jadeo/jack/disconnect</code></td><td><code></code></td><td>Stop synchronization with JACK-transport (jack disconnect)</td></tr>
+			<tr><td colspan="3" class="center"><em>The following commands are only available if MIDI is supported.</em></td></tr>
+			<!-- AUTO-GENERATED DOC START !-->
+<tr><td><code>/jadeo/midi/connect</code></td><td><code>s</code></td><td>Get sync from MTC (MIDI Time Code). The parameter specifies the midi-port to connect to. (-m, -d, midi connect)</td></tr>
+<tr><td><code>/jadeo/midi/disconnect</code></td><td><code></code></td><td>Close the MIDI device (midi disconnect)</td></tr>
+			<!-- AUTO-GENERATED DOC END !-->
+			<tr><td colspan="3" class="center"><em>The following commands are only available if LTC is supported.</em></td></tr>
+			<!-- AUTO-GENERATED DOC START !-->
+<tr><td><code>/jadeo/ltc/connect</code></td><td><code></code></td><td>Synchronize to LTC from jack-audio port (ltc connect)</td></tr>
+<tr><td><code>/jadeo/ltc/disconnect</code></td><td><code></code></td><td>Close LTC/JACK client (ltc disconnect)</td></tr>
+			<!-- AUTO-GENERATED DOC END !-->
+		</tbody>
+	</table>
+	<div class="center"><strong>Table 2. OSC Commands to configure synchronization</strong></div>
+	<div class="vsep"></div>
+</div>
+
+<div>
+	<a id="osc3"></a>
+	<table class="oscdoc middle">
+		<colgroup><col/><col/><col/></colgroup>
+		<thead>
+			<tr><th>Address Pattern</th><th>Type Tags</th><th>Description - notes in brackes are corresponding remote-ctl
+					commands or commandline-options</th></tr>
+		</thead>
+		<tbody>
+			<tr><td colspan="3" class="center"><em>The following command is only available if "panorama mode" is enabled.</em></td></tr>
+			<!-- AUTO-GENERATED DOC START !-->
+<tr><td><code>/jadeo/art/pan</code></td><td><code>i</code></td><td>Set the x-offset to the value given in pixels. 0 ≤ val ≤ movie-width</td></tr>
+			<!-- AUTO-GENERATED DOC END !-->
+
+			<tr><td colspan="3" class="center"><em>The following commands are only available if "timescale mode" is enabled.</em></td></tr>
+			<!-- AUTO-GENERATED DOC START !-->
+<tr><td><code>/jadeo/art/timescale</code></td><td><code>f</code></td><td>Set time-multiplier; default value: 1.0</td></tr>
+<tr><td><code>/jadeo/art/timescale</code></td><td><code>fi</code></td><td>Set both time-multiplier and offset. default: 1.0, 0</td></tr>
+<tr><td><code>/jadeo/art/loop</code></td><td><code>i</code></td><td>Enable wrap-around/loop video. If set to 1, multiples of the movie-length are added/subtracted if the current time-stamp is outside the file duration.</td></tr>
+<tr><td><code>/jadeo/art/reverse</code></td><td><code></code></td><td>Trigger reverse. This action multiplies the current time-scale with -1.0 and sets a time-offset so that the currently displayed frame is retained.</td></tr>
+			<!-- AUTO-GENERATED DOC END !-->
+		</tbody>
+	</table>
+	<div class="center"><strong>Table 3. non-standard OSC Commands</strong></div>
+</div>

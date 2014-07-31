@@ -1,0 +1,14 @@
+<div class="box frontpage" style="padding:0; overflow:hidden;">
+<a href="main.html" style="text-decoration:none;">
+<div class="maxed">
+<div id="frontimg" class="center">
+	First Choice For<br/>Software Video Monitoring.
+</div>
+</div></a>
+<!-- END FRONT PAGE Banner !-->
+</div>
+<div class="clear"></div>
+<a id="about"></a>
+<div class="box main">
+<!-- FRONT PAGE !-->
+<div class="center"><a href="main.html"><div class="maxed">Discover More</div></a></div>

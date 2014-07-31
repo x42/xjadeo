@@ -1,0 +1,153 @@
+<h1>XJADEO - The X Jack Video Monitor</h1>
+<div class="larger center"><a href="http://xjadeo.sf.net/">http://xjadeo.sf.net/</a></div>
+<p>
+Xjadeo is a software video player that displays a video-clip in sync with an external time source (MTC, LTC, JACK-transport).
+Xjadeo is useful in soundtrack composition, video monitoring or any task that requires to synchronizing movie frames with external events.
+</p>
+
+<h2>About</h2>
+<p>
+Xjadeo is the de-facto standard for video-monitoring with the <a href="http://ardour.org">Ardour Digital Audio Workstation</a> and used
+by a variety of projects, predominantly on the GNU/Linux platform.
+</p>
+<p>
+...
+</p>
+
+<h2>Getting XJadeo</h2>
+<p>
+To acquire xjadeo, please go over to the <a href="download.html">Download Section</a>.
+</p>
+
+<h2>Screenshots</h2>
+<p>
+Not much to see, really. Xjadeo is at its best when you don't see it! A full-screen display of your movie, or a window with nothing but the asset that you're working with.
+</p>
+<div class="screenshots">
+	<a class="thumbnail" href="static/ss1.jpg"><img src="static/tn1.jpg" alt=""/></a>
+	<a class="thumbnail" href="static/ss2.jpg"><img src="static/tn2.jpg" alt=""/></a>
+	<a class="thumbnail" href="static/ss3.jpg"><img src="static/tn3.jpg" alt=""/></a>
+</div>
+
+<h2>Features</h2>
+<ul>
+	<li>Full-screen or windowed video-display:
+	<p>The default on all platforms is openGL hardware-accelerated display which is screen vertical refresh synchronous. Various fall-back video drivers exist: Xvideo/X11, imlib2/X11, SDL, carbon/quartz.</p></li>
+	<li>Video decoding via <a href="http://ffmpeg.org">FFMPEG</a>:
+	<p>Thanks to ffmpeg, xjadeo supports a multitude of file-formats, video codecs and protocols. It is possible to directly read remote files (e.g. via http or rtmp) and dupported formats include avi, mpeg, mpegts, mov, mp4, ogg, webm (and at least 200 more). Among the 300+ supported codecs there are mjpeg, mpeg2, mpeg4, h264, vpx8, theora.</p></li>
+	<li>Sync sources:
+	<ul>
+		<li><a href="http://jackaudio.org/files/docs/html/transport-design.html">JACK Transport</a></li>
+		<li><a href="http://en.wikipedia.org/wiki/MIDI_timecode">Midi Timecode</a> (MTC) via ALSA-MIDI, JACK-MIDI or portmidi</li>
+		<li><a href="http://en.wikipedia.org/wiki/Linear_timecode">Linear (or Longitudinal) Timecode</a> (LTC) using JACK-audio</li>
+	</ul>
+	<p></p>
+	</li>
+	<li>Frame accuracy:
+	<p>Tested with 23.976, 24, 24.976, 25, 29.97df, 30, 59.94 and 60 fps video-files, xjadeo provides for frame accurate playback and random access seeking. Xjadeo also features optional timecode conversion and offset calculation mechanisms.</p></li>
+	<li>Remote-control interface:
+	<p>This allows for seamless integration into larger projects and custom <em>artisic</em> use-cases. It is possible to query and modify all settings and parameters of a running instance and override user-interaction.</li>
+</ul>
+
+<p>Xjadeo does <strong>not</strong> play any audio, nor display more than one file at a given time.</p>
+
+<h2>Using XJadeo</h2>
+<p>
+Just launch xjadeo the same way as any other application on your system (double-click or choose from 'applications' menu).
+</p>
+<p>
+By default it comes up without a video-file and only connects to jack (sync-source) if jackd is already running.
+To interact with xjadeo, right-click on the window (Windows, Linux) or use the system-wide menu-bar (OSX).
+For details see section &laquo;User Interaction&raquo; in the <a href="xjadeo.html">manual</a>.
+</p>
+<p>
+From the commandline you can simply launch <code>xjadeo</code>, optionally specify a video-file as argument. The complete set of
+options is documented on the <a href="xjadeo.html">man page</a>.
+</p>
+
+<h2>Made With XJadeo</h2>
+<ul>
+	<li>&laquo;<a href="http://marzipanmovie.com/">Marzipan</a>&raquo; was the first project ever realized using xjadeo. The movie won a special jury award at the Venice Film Festival in 2006 and the 1st price at the NOFF 2007, in Utrecht, Netherlands.</li>
+	<li>&laquo;<a href="http://libregraphicsworld.org/blog/entry/cronopios-famas-animation-trailer-released">Cronopios and Famas</a>&raquo; by Juan Pablo Bouza is the first full feature movie that we know about which used and credited xjadeo.</li>
+	<li><a href="http://harrisonconsoles.com/">Harrison</a> used xjadeo as part of a large-format audio/video playback system for trade show setup.</li>
+	<li>xjadeo was used for a 8 screen cave performance/installation at the <a href="http://www.fondazionecosso.com/">Fondazione Cosso</a> by Autistici.org.</li>
+	<li>xjadeo is the engine behind the <a href="http://nimk.nl/eng/lilia-perez-romero-frontera-v2">Frontera Project</a>.</li>
+	<li>...</li>
+</ul>
+
+<p>Various Post-Prod Houses and Studio use xjadeo as part of their workflow, mainly via integration in the
+<a href="http://manual.ardour.org/video-timeline/">Ardour Video Timeline</a>.
+</p>
+
+<h2>Community</h2>
+<p>
+Xjadeo is under the umbrella of the <a href="http://linuxaudio.org">linux audio</a> consortium.
+The easiest way to get in touch with fellow users is the
+<a href="http://lists.linuxaudio.org/listinfo/linux-audio-user">LAU</a> (Linux Audio Users) email list.
+A lot of people with experience including developers are also online on the
+<a href="http://webchat.freenode.net/?channels=ardour">#ardour</a>
+and
+<a href="http://webchat.freenode.net/?channels=jack">#jack</a>
+IRC live chat on freenode.org.
+</p>
+<p>
+You can email the developers personally, but note that the chances of getting a reply
+quickly is greater if you ask the community at large.
+</p>
+<p>
+Feature request and bug reports belong on the <a href="https://github.com/x42/xjadeo/issues">Issue Tracker</a> which is hosted on github.
+</p>
+
+<h2>Troubleshoot &amp; Support</h2>
+<p>
+In case Xjadeo does not work out of the box..
+</p>
+<ul>
+	<li>Try to play the video-file with another video-player. Check if you can seek that file</li>
+	<li>run <code>xjadeo -v filename</code> - look for warning and error messages, verify that the detected duration and offset (override with <code>-I</code> is correct. In verbose-more (<code>-v</code>) xjadeo also prints information about the displayed frame and the timecode-source which might provide a clue to what is going on.</li>
+	<li>Try the example video from <a href="https://github.com/x42/xjadeo/blob/master/contrib/xjadeo-example.avi?raw=true">source-code/contrib/xjadeo-example.avi</a> or validate time-accuracy using time-stamped test videos:
+	<ul>
+		<li><a href="http://download.linuxaudio.org/bt/tsmm_mjpeg-avi_10mins/">HTTP</a></li>
+		<li><a href="http://tux.gareus.org/torrents/tsmm_mjpeg-avi_10mins.torrent">Bittorrent</a></li>
+	</ul>
+	<li>Ask for help and share your experience: report the issue that you are having. Please don't hesitate and don't be shy! We do require your feedback to improve xjadeo. Please include the output of xjadeo --version.
+	You can find the issue-tracker at <a href="https://github.com/x42/xjadeo/issues">https://github.com/x42/xjadeo/issues</a>.
+	</li>
+</ul>
+
+<p>
+Some video codecs are known not to work properly on some systems. This is mostly due to different ffmpeg versions, available codecs, etc usually caused by 3rd party builds that have not been rigorously tested. There is little we can do about it. You might be able to work around by transcoding the video into a different format/codec (avi/mjpeg is a good candidate).
+</p>
+
+<p>
+To mitigate this issue we provide binary versions with a good, <em>known to work</em>, version of ffmpeg.org.
+Prefer one of these to distribution provided packages where we can take no responsibility for. (<small>In case you are worried about running untrusted binaries: the source-code includes the complete built-chain to create those binaries in a clean-room (pbuilder) environment from scratch.)</small>
+</p>
+
+<h2>Developer Information</h2>
+<ul>
+	<li><a href="remote.html">Remote Control Interface Documentation</a></li>
+	<li><a href="osc.html">Open Sound Control Interface Documentation</a></li>
+	<li><a href="building.html">Building Xjadeo From Source</a></li>
+	<li><a href="addons.html">Advanced Features and Artistic Add-ons</a></li>
+	<li><a href="xjremote.html">Man page for the remote-control tool</a></li>
+</ul>
+
+<h2>License</h2>
+<p>
+Xjadeo is licensed in terms of the
+<a href="https://www.gnu.org/licenses/gpl-2.0.html">GNU General Public License</a> as published by the Free Software Foundation; either version 2, or (at your option) any later version.
+</p>
+<p>
+&copy; 2006&minus;2014 Robin Gareus &lt;robin@gareus.org&gt; <br/>
+&copy; 2006&minus;2011 Luis Garrido &lt;luisgarrido@users.sourceforge.net&gt;
+</p>
+<p>
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+</p>
+<p>
+The Windows, Apple and Linux names and logos visible on this site are trademarks or registered trademarks in the USA and other countries, respectively of Microsoft, Inc., Apple, Inc., and Linus Torvalds.
+</p>

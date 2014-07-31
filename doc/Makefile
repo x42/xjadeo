@@ -1,16 +1,22 @@
 .PHONY: all validate html clean man 
 
+VERSION=$(shell awk '/define VERSION /{print $$3;}' ../config.h | sed 's/"//g')
+WINVERS=$(shell grep " VERSION " ../config.h | cut -d ' ' -f3 | sed 's/"//g'| sed 's/\./_/g')
+RELDATE=$(shell date '+%B %Y')
+
 all: html man
 
 html: xjadeo.1 xjremote.1
-	mkdir -p html 
+	mkdir -p html/static
 	cp -f favicon.ico html/
-	cp -f xjadeo_banner.png html/
+	cp -f static/* html/static/
 	groff -m man -T xhtml -P -l xjadeo.1 | sed 's/cellspacing="0" cellpadding="0"//g;s/width="100%" border="0" rules="none" frame="void"//g;s/valign="top" align="left"//g;s/width="/style="width:/g;s/><\/col>/\/>/g' > pages/xjadeo.html
 	groff -m man -T xhtml -P -l xjremote.1 | sed 's/cellspacing="0" cellpadding="0"//g' > pages/xjremote.html
 	echo -e "/<body>\n1,.d\n/<hr\\>\n.d\n/<hr\\>\n.d\n/<\\/body>\n.,\$$d\nw\nq" | ed -s pages/xjadeo.html
 	echo -e "/<body>\n1,.d\n/<hr\\>\n.d\n/<hr\\>\n.d\n/<\\/body>\n.,\$$d\nw\nq" | ed -s pages/xjremote.html
-	for file in pages/*; do echo $$file; cat tpl/head $$file tpl/foot > html/`basename $$file`; done
+	for file in pages/*; do echo $$file; cat tpl/head tpl/page $$file tpl/epage tpl/foot > html/`basename $$file`; done
+	cat tpl/head tpl/front tpl/foot > html/index.html
+	sed -i 's/@VERSION@/$(VERSION)/g;s/@WINVERSION@/$(WINVERS)/g;s/@DATE@/$(RELDATE)/g' html/download.html
 	rm -f pages/xjadeo.html pages/xjremote.html
 
 clean:
