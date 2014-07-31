@@ -21,9 +21,14 @@
 #endif
 
 #define OSC_DOC_ALL
-// xjadeo --osc-doc | sed 's%'\'' '\''%</code></td><td><code>%;s%'\'' '\''%</code></td><td>%;s%^'\''%<tr><td><code>%;s%'\''$%</td></tr>%'
-// or
-// xjadeo --osc-doc | sed 's%'\'' '\''%</code></td><td><code>%;s%'\'' '\''%</code></td><td><p>%;s%^'\''%<tr><td><code>%;s%'\''$%</p></td></tr>%'
+
+/* extract doc for website, doc/pages/osc.html table:
+ *
+ * xjadeo --osc-doc \
+ * | grep -ve '^#' \
+ * | sed 's% %</code></td><td><code>%;s% %</code></td><td>%;s%^%<tr><td><code>%;s%$%</td></tr>%'
+ *
+ */
 
 #ifdef HAVE_LIBLO
 
@@ -385,10 +390,12 @@ void xjosc_shutdown (void) {
 }
 
 void xjosc_documentation (void) {
-  printf("# available OSC methods\n");
+  printf("# Xjadeo OSC methods. Format:\n");
+  printf("# Path <space> Typespec <space> Documentation <newline>\n");
+  printf("#######################################################\n");
   int i;
   for (i = 0; i < sizeof(OSCC) / sizeof(struct osc_command); ++i) {
-    printf("'%s' '%s' '%s'\n", OSCC[i].path, OSCC[i].typespec, OSCC[i].documentation);
+    printf("%s %s %s\n", OSCC[i].path, OSCC[i].typespec, OSCC[i].documentation);
   }
 }
 
