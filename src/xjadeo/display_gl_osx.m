@@ -21,8 +21,12 @@
 #if (defined HAVE_GL && defined PLATFORM_OSX)
 
 void xapi_open(void *d);
+extern double framerate;
 
 #import <Cocoa/Cocoa.h>
+
+//forward declaration, need for 64bit apps on 10.5
+OSErr UpdateSystemActivity(UInt8 d);
 
 __attribute__ ((visibility ("hidden")))
 @interface XjadeoWindow : NSWindow
@@ -611,8 +615,13 @@ void gl_handle_events () {
 
 	static int periodic_sync = 5;
 	if (--periodic_sync == 0) {
+		periodic_sync = framerate * 50;
 		update_sync_menu();
-		periodic_sync = 50;
+		UpdateSystemActivity(1 /*UsrActivity*/);
+		// TODO use a one time call
+		// IOPMAssertionCreateWithName() NoDisplaySleepAssertion etc.
+	} else if (periodic_sync % (int)(2 * framerate) == 0) {
+		update_sync_menu();
 	}
 }
 

@@ -534,6 +534,9 @@ int gl_open_window () {
 	}
 #endif
 
+	// disable screensaver
+	SetThreadExecutionState (ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED | ES_CONTINUOUS);
+
 	//ShowWindow(_gl_hwnd, SW_HIDE);
 	//ShowWindow(_gl_hwnd, SW_SHOW);
 	ShowWindow(_gl_hwnd, WS_VISIBLE);

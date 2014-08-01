@@ -32,6 +32,8 @@ static int        _gl_screen;
 static Window     _gl_win;
 static GLXContext _gl_ctx;
 
+extern double framerate;  // used for screensaver
+
 static void gl_make_current() {
 	glXMakeCurrent(_gl_display, _gl_win, _gl_ctx);
 }
@@ -333,6 +335,13 @@ void gl_handle_events () {
 	if (_gl_reexpose) {
 		_gl_reexpose = false;
 		xjglExpose();
+	}
+
+	static int periodic = 10;
+	if (--periodic == 0) {
+		periodic = 50 * framerate; // we should use 1/delay if delay > 0
+		XResetScreenSaver(_gl_display);
+		// ..or spawn `xdg-screensaver`
 	}
 }
 
