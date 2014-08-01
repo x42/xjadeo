@@ -655,10 +655,10 @@ usage (int status)
 " ']'          Shift cropped image 2px to the right.\n"
 #endif
 #if 1
-" 'e'          Show color equalizer (x11/imblib and XV only)\n"
-" 'Shift+E'    Reset color equalizer (x11/imblib and XV only)\n"
-" '0-9'        Change color equalization (x11/imblib and XV only)\n"
-" 'Shift+1-4'  Fine tune color equalization (x11/imblib and XV only)\n"
+" 'e'          Show color equalizer (x11/imlib and XV only)\n"
+" 'Shift+E'    Reset color equalizer (x11/imlib and XV only)\n"
+" '0-9'        Change color equalization (x11/imlib and XV only)\n"
+" 'Shift+1-4'  Fine tune color equalization (x11/imlib and XV only)\n"
 "              brightness:1+2, contrast:3+4, gamma:5+6, saturation:7+8\n"
 "              hue:9+0. XV color balance is hardware dependant.\n"
 "\n"
