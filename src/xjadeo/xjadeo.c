@@ -622,6 +622,8 @@ static int index_frames () {
 
 	int max_keyframe_interval = 0;
 	int keyframe_interval = 0;
+	uint64_t keyframe_byte_pos = 0;
+	uint64_t keyframe_byte_distance = 0;
 
 	AVRational tb = pFormatCtx->streams[videoStream]->time_base;
 
@@ -674,12 +676,26 @@ static int index_frames () {
 		if (add_idx (ts, packet.pos, key, packet.duration, tb)) {
 			break;
 		}
+		if (key) {
+			int byte_distance =  packet.pos - keyframe_byte_pos;
+			keyframe_byte_pos = packet.pos;
+			if (keyframe_byte_distance < byte_distance) {
+				keyframe_byte_distance = byte_distance;
+			}
+#if 0
+				printf("KFD: %.1f kB max: %.1f kB \n",
+						byte_distance / 1024.0,
+						keyframe_byte_distance / 1024.0);
+#endif
+		}
 		av_free_packet(&packet);
 
 		if (++keyframe_interval > max_keyframe_interval) {
 			max_keyframe_interval = keyframe_interval;
 		}
-		if (max_keyframe_interval > keyframe_interval_limit) {
+		if (max_keyframe_interval > keyframe_interval_limit
+				&& keyframe_byte_distance > 0
+				&& keyframe_byte_distance > 5242880 /* 5 MB */) {
 			error |=4;
 			break;
 		}
@@ -690,11 +706,18 @@ static int index_frames () {
 			break;
 		}
 #endif
-		if (key) keyframe_interval = 0;
+		if (key) {
+			keyframe_interval = 0;
+		}
 	}
 
 	seek_threshold = max_keyframe_interval - 1;
-	if (seek_threshold >= keyframe_interval_limit) {
+	if (seek_threshold >= keyframe_interval_limit
+			// TODO: relax the filter to use 'current'
+			//  byte distance instead of global max
+			// may be appropriate (for most files)
+			&& keyframe_byte_distance > 5242880 /* 5 MB */)
+	{
 		error |= 4;
 		if (!want_quiet)
 			fprintf(stderr,
@@ -708,6 +731,8 @@ static int index_frames () {
 		printf("Scan complete err: %d use-dts: %s\n", error, use_dts ? "yes" : "no");
 		printf("scanned %"PRId64" of %"PRId64" frames, key-int: %d seek-thresh: %d\n",
 				fcnt, frames, max_keyframe_interval, seek_threshold);
+		printf("max keyframe distance: %.1f kBytes\n",
+				keyframe_byte_distance / 1024.f);
 	}
 
 	av_seek_frame(pFormatCtx, videoStream, 0, AVSEEK_FLAG_BACKWARD);
