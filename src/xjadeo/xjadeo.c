@@ -418,10 +418,6 @@ static void reset_video_head (AVPacket *packet) {
 static int seek_keyframe (AVPacket *packet, int64_t timestamp) {
 	AVStream *v_stream = pFormatCtx->streams[videoStream];
 
-	if (want_ignstart) {
-		timestamp += file_frame_offset;
-	}
-
 	if (filefps > 0) {
 		timestamp *= tpf;
 	} else {
@@ -469,21 +465,11 @@ static int seek_indexed (AVPacket *packet, int64_t ts) {
 	int64_t sframe;
 	int need_seek = 1;
 
-	if (!want_ignstart) {
-		ts -= file_frame_offset;
-	}
-
 	if (filefps > 0) {
 		ts *= framerate * av_q2d(fr_Q);
 	}
 
 	sframe = ts;
-
-	if (sframe < 0 || sframe >= frames) {
-		if (!want_quiet)
-			fprintf(stderr, "SEEK OUT OF BOUNDS frame: %"PRId64"\n", sframe);
-		return -2;
-	}
 
 	const int64_t cts = ts;
 	// check if we can just continue without seeking
@@ -921,7 +907,7 @@ int open_movie(char* file_name) {
 	}
 
 	tpf = 1.0 / (av_q2d(pFormatCtx->streams[videoStream]->time_base) * framerate);
-	if (!want_ignstart && pFormatCtx->start_time != AV_NOPTS_VALUE) {
+	if (pFormatCtx->start_time != AV_NOPTS_VALUE) {
 		file_frame_offset = (int64_t) floor(framerate * (double) pFormatCtx->start_time / (double) AV_TIME_BASE);
 	}
 
@@ -1155,10 +1141,18 @@ void display_frame(int64_t timestamp, int force_update, int do_render) {
 		return;
 	}
 
-	if (timestamp - file_frame_offset < 0) timestamp=0;
-	else if(timestamp - file_frame_offset >= frames) timestamp = frames - 1;
+	if (want_ignstart) {
+		timestamp -= file_frame_offset;
+	}
 
 	if (!force_update && dispFrame == timestamp) return;
+
+	if (timestamp < 0 || timestamp >= frames) {
+		OSD_frame[0] = '\0';
+		OSD_smpte[0] = '\0';
+		render_empty_frame(do_render);
+		return;
+	}
 
 	if(want_verbose)
 		fprintf(stdout, "\t\t\t\tdisplay:%07"PRId64"  \r", timestamp);
