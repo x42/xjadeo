@@ -370,19 +370,46 @@ void avinit (void) {
 
 static void reset_video_head (AVPacket *packet) {
 	int frameFinished=0;
-	int seek = av_seek_frame (pFormatCtx, videoStream, 0, AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_ANY);
+	int seek;
+	if (prefer_pts)
+		seek = av_seek_frame (pFormatCtx, videoStream, pFormatCtx->start_time, AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_ANY);
+	else
+		seek = av_seek_frame (pFormatCtx, videoStream, 0, AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_BYTE);
+	if (!seek) {
+		prefer_pts = prefer_pts ? 0 : 1;
+		if (!want_quiet)
+			printf("RESET: switch %s.\n", prefer_pts ? "to PTS" : "to Byte");
+		if (prefer_pts)
+			seek = av_seek_frame (pFormatCtx, videoStream, pFormatCtx->start_time, AVSEEK_FLAG_BACKWARD);
+		else
+			seek = av_seek_frame (pFormatCtx, videoStream, 0, AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_BYTE);
+	}
 	if (pCodecCtx->codec->flush) {
 		avcodec_flush_buffers(pCodecCtx);
 	}
+	if (!seek && !want_quiet) {
+		printf("RESET: Seek failed.\n");
+	}
 
 	while (seek >= 0 && !frameFinished) {
-		av_read_frame(pFormatCtx, packet);
-		if(packet->stream_index==videoStream)
+		if (av_read_frame(pFormatCtx, packet) < 0) {
+			if (!want_quiet)
+				printf("RESET: Read failed.\n");
+			break;
+		}
+#ifdef USE_DUP_PACKET
+		if (av_dup_packet (packet) < 0) {
+			fprintf(stderr, "Error: Cannot allocate video packet.\n");
+			break;
+		}
+#endif
+		if(packet->stream_index==videoStream) {
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 21, 0)
 			avcodec_decode_video(pCodecCtx, pFrame, &frameFinished, packet->data, packet->size);
 #else
 			avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, packet);
 #endif
+		}
 		if(packet->data) av_free_packet(packet);
 	}
 	last_decoded_frame = -1;
@@ -480,9 +507,15 @@ static int seek_indexed (AVPacket *packet, int64_t ts) {
 	if (need_seek) {
 		int rv = -1;
 		if (prefer_pts || fidx[sframe].pos < 0) {
+#if 0 // DEBUG
+			printf("SEEK PTS: FN: %"PRId64" %"PRId64"\n",sframe,  fidx[sframe].pts);
+#endif
 			rv = av_seek_frame(pFormatCtx, videoStream, fidx[sframe].pts, AVSEEK_FLAG_BACKWARD);
 		}
 		if (rv < 0 && fidx[sframe].pos >= 0) {
+#if 0 // DEBUG
+			printf("SEEK BYTE: FN: %"PRI64d"\n",sframe);
+#endif
 			rv = av_seek_frame(pFormatCtx, videoStream, fidx[sframe].pos, AVSEEK_FLAG_BYTE | AVSEEK_FLAG_BACKWARD);
 		}
 		if (rv < 0) {
@@ -578,7 +611,7 @@ static int add_idx (int64_t ts, int64_t pos, int key, int duration, AVRational t
 	// TODO use duration delta if both ts and pos are unset
 	// -> write ts from prev ts + duration * ts
 #if 0 // DEBUG
-	printf("IDX; %"PRId64" %"PRId64" %"PRId64" %s\n",
+	printf("IDX: %"PRId64" PTS:%"PRId64" byte:%"PRId64" %s\n",
 			fcnt, ts, pos, key ? "K" : " ");
 #endif
 	fidx[fcnt].pts = ts;
@@ -615,6 +648,12 @@ static int index_frames () {
 			if (!want_quiet) fprintf(stderr, "Indexing aborted.\n");
 			break;
 		}
+#ifdef USE_DUP_PACKET
+		if (av_dup_packet (&packet) < 0) {
+			fprintf(stderr, "Error: Cannot allocate video packet.\n");
+			break;
+		}
+#endif
 		if(packet.stream_index != videoStream) {
 			av_free_packet(&packet);
 			continue;
