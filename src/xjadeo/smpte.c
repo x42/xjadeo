@@ -178,10 +178,11 @@ void frame_to_smptestring(char *smptestring, long int frame) {
 
 	parse_int(&s, (int) frames);
 
-	snprintf(smptestring,13,"%02i%c%02i%c%02i%c%02i",
-			s.v[SMPTE_HOUR], sep,
-			s.v[SMPTE_MIN],  sep,
-			s.v[SMPTE_SEC],  sep,
+	snprintf(smptestring,13,"%02i:%02i:%02i%c%02i",
+			s.v[SMPTE_HOUR],
+			s.v[SMPTE_MIN],
+			s.v[SMPTE_SEC],
+			sep,
 			s.v[SMPTE_FRAME]);
 }
 
