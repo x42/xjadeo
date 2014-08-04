@@ -13,7 +13,17 @@ Xjadeo is the de-facto standard for video-monitoring with the <a href="http://ar
 by a variety of projects, predominantly on the GNU/Linux platform.
 </p>
 <p>
-...
+Xjadeo supports all standard A/V synchronization methods that are feasible to implement in software without dedicated hardware support.
+</p>
+<p>
+It features frame-accurate seeking for a large variety of video formats and codecs, only limited by CPU and graphics hardware. For professional use, xjadeo honors presentation timecode stamps (PTS) and offsets.
+</p>
+<p>
+Since monitoring a video is usually an indirect non-interactive task, xjadeo is designed for with remote-control in mind.
+An Audio Workstation can launch and control the video-monitor. A standalone appliance, for example a projector, can
+<em>hide</em> xjadeo under the hood, exposing only relevant controls to the user.
+Nonetheless, <a href="xjadeo#heading8">direct user-interaction</a> is quite elaborate, but can be disabled or overridden dynamically by
+a controlling application.
 </p>
 
 <h2>Getting XJadeo</h2>
@@ -36,7 +46,7 @@ Not much to see, really. Xjadeo is at its best when you don't see it! A full-scr
 	<li>Full-screen or windowed video-display:
 	<p>The default on all platforms is openGL hardware-accelerated display which is screen vertical refresh synchronous. Various fall-back video drivers exist: Xvideo/X11, imlib2/X11, SDL, carbon/quartz.</p></li>
 	<li>Video decoding via <a href="http://ffmpeg.org">FFMPEG</a>:
-	<p>Thanks to ffmpeg, xjadeo supports a multitude of file-formats, video codecs and protocols. It is possible to directly read remote files (e.g. via http or rtmp) and dupported formats include avi, mpeg, mpegts, mov, mp4, ogg, webm (and at least 200 more). Among the 300+ supported codecs there are mjpeg, mpeg2, mpeg4, h264, vpx8, theora.</p></li>
+	<p>Thanks to ffmpeg, xjadeo supports a multitude of file-formats, video codecs and protocols. It is possible to directly read remote files (e.g. via http or rtmp) and supported formats include avi, mpeg, mpegts, mov, mp4, ogg, webm (and at least 200 more). Among the 300+ supported codecs there are mjpeg, mpeg2, mpeg4, h264, vpx8 and theora.</p></li>
 	<li>Sync sources:
 	<ul>
 		<li><a href="http://jackaudio.org/files/docs/html/transport-design.html">JACK Transport</a></li>
@@ -48,7 +58,7 @@ Not much to see, really. Xjadeo is at its best when you don't see it! A full-scr
 	<li>Frame accuracy:
 	<p>Tested with 23.976, 24, 24.976, 25, 29.97df, 30, 59.94 and 60 fps video-files, xjadeo provides for frame accurate playback and random access seeking. Xjadeo also features optional timecode conversion and offset calculation mechanisms.</p></li>
 	<li>Remote-control interface:
-	<p>This allows for seamless integration into larger projects and custom <em>artisic</em> use-cases. It is possible to query and modify all settings and parameters of a running instance and override user-interaction.</li>
+	<p>This allows for seamless integration into larger projects and custom <em>artistic</em> use-cases. It is possible to query and modify all settings and parameters of a running instance and override user-interaction.</li>
 </ul>
 
 <p>Xjadeo does <strong>not</strong> play any audio, nor display more than one file at a given time.</p>
