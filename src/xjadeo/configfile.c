@@ -355,6 +355,16 @@ void xjadeorc (void) {
 	}
 #ifdef PLATFORM_WINDOWS
 	// out of luck with CSIDL_LOCAL_APPDATA
+	const char * homedrive = getenv("HOMEDRIVE");
+	const char * homepath = getenv("HOMEPATH");
+	if (homedrive && homepath && (strlen(homedrive) + strlen(homepath) + strlen(XJADEORC) + 16) < PATH_MAX) {
+		sprintf(filename, "%s%s" PATHSEP "Local Settings" PATHSEP "%s", homedrive, homepath, XJADEORC);
+		if (testfile(filename)) readconfig(filename);
+	}
+	if (homedrive && homepath && (strlen(homedrive) + strlen(homepath) + strlen(XJADEORC) + 1) < PATH_MAX) {
+		sprintf(filename, "%s%s" PATHSEP "%s", homedrive, homepath, XJADEORC);
+		if (testfile(filename)) readconfig(filename);
+	}
 #else
 	// unices - use XDG_CONFIG_HOME
 	const char *xdg = getenv("XDG_CONFIG_HOME");
