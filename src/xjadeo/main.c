@@ -907,7 +907,15 @@ int main (int argc, char **argv)
 
 	if (want_verbose) printf ("xjadeo %s\n", VERSION);
 
-	if (stat_osd_fontfile()) {
+	if (stat_osd_fontfile()
+#ifdef PLATFORM_WINDOWS
+			// we need an absolute path including drive-letter
+			// otherwise drive changes (video file on a different partition)
+			// will screw things up on windows.
+			|| !strchr(OSD_fontfile, ':')
+#endif
+		 )
+	{
 #ifdef PLATFORM_WINDOWS
 		HKEY key;
 		DWORD size = PATH_MAX;
