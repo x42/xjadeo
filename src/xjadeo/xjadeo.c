@@ -115,6 +115,8 @@ static int abort_indexing = 0;
 static int scan_complete = 0;
 static int thread_active = 0;
 static int prefer_pts = 0;
+static int switchcnt = 0;
+static int nonmonitonic = 0;
 static int pos_mismatch = 0;
 
 static pthread_t index_thread;
@@ -378,7 +380,7 @@ static void reset_video_head (AVPacket *packet) {
 	if (!seek) {
 		prefer_pts = prefer_pts ? 0 : 1;
 		if (!want_quiet)
-			printf("RESET: switch %s.\n", prefer_pts ? "to PTS" : "to Byte");
+			fprintf(stderr, "RESET: switch %s.\n", prefer_pts ? "to PTS" : "to Byte");
 		if (prefer_pts)
 			seek = av_seek_frame (pFormatCtx, videoStream, pFormatCtx->start_time, AVSEEK_FLAG_BACKWARD);
 		else
@@ -388,13 +390,13 @@ static void reset_video_head (AVPacket *packet) {
 		avcodec_flush_buffers(pCodecCtx);
 	}
 	if (!seek && !want_quiet) {
-		printf("RESET: Seek failed.\n");
+		fprintf(stderr, "RESET: Seek failed.\n");
 	}
 
 	while (seek >= 0 && !frameFinished) {
 		if (av_read_frame(pFormatCtx, packet) < 0) {
 			if (!want_quiet)
-				printf("RESET: Read failed.\n");
+				fprintf(stderr, "RESET: Read failed.\n");
 			break;
 		}
 #ifdef USE_DUP_PACKET
@@ -455,11 +457,13 @@ static void reset_index () {
 	abort_indexing = 0;
 	scan_complete = 0;
 	prefer_pts = 0;
+	switchcnt = 0;
+	nonmonitonic = 0;
 	pos_mismatch = 0;
 }
 
 static int seek_indexed (AVPacket *packet, int64_t ts) {
-#if 0 // seek byte ~bckward hack
+#if 0 // seek byte ~backward hack
 	static int64_t did_contd = 0;
 #endif
 	int64_t sframe;
@@ -473,8 +477,9 @@ static int seek_indexed (AVPacket *packet, int64_t ts) {
 
 	const int64_t cts = ts;
 	// check if we can just continue without seeking
-	if (last_decoded_frame > 0 && ts > last_decoded_frame && ts - last_decoded_frame < seek_threshold) {
+	if (!nonmonitonic && last_decoded_frame > 0 && ts > last_decoded_frame && ts - last_decoded_frame < seek_threshold) {
 		need_seek = 0;
+		printf("NO SEEK\n");
 		sframe = last_decoded_frame + 1;
 #if 0 // seek byte ~bckward hack
 		did_contd = 1;
@@ -494,13 +499,13 @@ static int seek_indexed (AVPacket *packet, int64_t ts) {
 		int rv = -1;
 		if (prefer_pts || fidx[sframe].pos < 0) {
 #if 0 // DEBUG
-			printf("SEEK PTS: FN: %"PRId64" %"PRId64"\n",sframe,  fidx[sframe].pts);
+			printf("SEEK frame: %"PRId64" PTS: %"PRId64"\n", sframe, fidx[sframe].pts);
 #endif
 			rv = av_seek_frame(pFormatCtx, videoStream, fidx[sframe].pts, AVSEEK_FLAG_BACKWARD);
 		}
 		if (rv < 0 && fidx[sframe].pos >= 0) {
 #if 0 // DEBUG
-			printf("SEEK BYTE: FN: %"PRI64d"\n",sframe);
+			printf("SEEK frame: %"PRId64" BYTE: %"PRId64"\n", sframe, fidx[sframe].pos);
 #endif
 			rv = av_seek_frame(pFormatCtx, videoStream, fidx[sframe].pos, AVSEEK_FLAG_BYTE | AVSEEK_FLAG_BACKWARD);
 		}
@@ -535,7 +540,6 @@ static int seek_indexed (AVPacket *packet, int64_t ts) {
 
 		if (sframe == ts) {
 			// found the frame that we're looking for
-			last_decoded_frame = cts;
 #if 0 // DEBUG
 			printf("IDX %"PRId64" %"PRId64" %"PRId64" || PK %"PRId64" %"PRId64"\n",
 					sframe, fidx[sframe].pts, fidx[sframe].pos, packet->pts, packet->pos);
@@ -545,12 +549,20 @@ static int seek_indexed (AVPacket *packet, int64_t ts) {
 				++pos_mismatch;
 			} else {
 				pos_mismatch = 0;
+				last_decoded_frame = cts;
 			}
-			if (!prefer_pts && pos_mismatch > 3) {
-				prefer_pts = 1;
+			if (pos_mismatch > 3 && switchcnt < 4) {
+				++switchcnt;
+				prefer_pts = prefer_pts ? 0 : 1;
+				if (!want_quiet) {
+					fprintf(stderr, "Seek: Switch to prefer %s.\n", prefer_pts ? "to PTS" : "to Byte");
+				}
+			} else if (pos_mismatch > 3 && !nonmonitonic) {
+				nonmonitonic = 1;
 				if (!want_quiet)
-					fprintf(stderr, "Switched to prefer PTS over byte seek.\n");
+					fprintf(stderr, "switched to non-monotonic seek mode\n");
 			}
+			//last_decoded_frame = cts;
 			return 0; // OK
 		}
 
@@ -603,6 +615,21 @@ static int add_idx (int64_t ts, int64_t pos, int key, int duration, AVRational t
 	fidx[fcnt].pts = ts;
 	fidx[fcnt].pos = pos;
 	fidx[fcnt].key = key;
+#if 0 // DEBUG
+	uint64_t timestamp = av_rescale_q(fcnt + file_frame_offset, fr_Q, tb);
+#endif
+	if (fcnt > 0) {
+		if (fidx[fcnt-1].pts > ts && !nonmonitonic) {
+			prefer_pts = 1;
+			nonmonitonic = 1;
+			if (!want_quiet)
+				fprintf(stderr, "PTS in file are not monotonic\n");
+#if 0 // DEBUG
+		} else if (ts != timestamp) {
+			printf("PTS mismatch %lld <> %lld\n", timestamp, ts);
+#endif
+		}
+	}
 	++fcnt;
 	return 0;
 }
@@ -693,9 +720,14 @@ static int index_frames () {
 		if (++keyframe_interval > max_keyframe_interval) {
 			max_keyframe_interval = keyframe_interval;
 		}
-		if (max_keyframe_interval > keyframe_interval_limit
-				&& keyframe_byte_distance > 0
-				&& keyframe_byte_distance > 5242880 /* 5 MB */) {
+		if (max_keyframe_interval > keyframe_interval_limit &&
+				(
+				 nonmonitonic
+				 ||
+				 (keyframe_byte_distance > 0 && keyframe_byte_distance > 5242880 /* 5 MB */)
+				)
+			 )
+		{
 			error |=4;
 			break;
 		}
@@ -712,11 +744,15 @@ static int index_frames () {
 	}
 
 	seek_threshold = max_keyframe_interval - 1;
-	if (seek_threshold >= keyframe_interval_limit
-			// TODO: relax the filter to use 'current'
-			//  byte distance instead of global max
-			// may be appropriate (for most files)
-			&& keyframe_byte_distance > 5242880 /* 5 MB */)
+	if (seek_threshold >= keyframe_interval_limit &&
+			(
+			 nonmonitonic
+			 ||
+			 // TODO: relax the filter to use 'current'
+			 //  byte distance instead of global max
+			 // may be appropriate (for most files)
+			 keyframe_byte_distance > 5242880 /* 5 MB */)
+		 )
 	{
 		error |= 4;
 		if (!want_quiet)
