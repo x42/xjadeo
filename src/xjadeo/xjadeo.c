@@ -1127,7 +1127,7 @@ void display_frame(int64_t timestamp, int force_update, int do_render) {
 	dispFrame = timestamp;
 
 	if (OSD_mode&OSD_FRAME)
-		snprintf(OSD_frame, 48, "Frame: %"PRId64, dispFrame);
+		snprintf(OSD_frame, 48, "Frame: %6"PRId64, dispFrame);
 	if (OSD_mode&OSD_SMPTE)
 		frame_to_smptestring(OSD_smpte, dispFrame - ts_offset);
 
@@ -1245,5 +1245,7 @@ int close_movie() {
 	pCodecCtx = NULL;
 	pFormatCtx = NULL;
 	framerate = 5;
+	OSD_frame[0] = '\0';
+	OSD_smpte[0] = '\0';
 	return (0);
 }

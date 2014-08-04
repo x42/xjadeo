@@ -30,7 +30,8 @@
 #include <xjadeo.h>
 
 #define MIN(A,B) (((A)<(B)) ? (A) : (B))
-
+extern int ST_height;
+extern int ST_top;
 
 char *program_name;
 /* hardcoded settings */
@@ -86,7 +87,7 @@ void set_positions(int *xalign, int *yalign, int w, int h, int xpos, int yperc) 
 		else *xalign=(w-ST_rightend)/2; // center
 	}
 	if (yalign) {
-		int fh = MIN(ST_HEIGHT, h/15);
+		int fh = MIN(ST_HEIGHT, h/12);
 		*yalign= (h - fh) * yperc /100.0;
 	}
 
@@ -107,7 +108,7 @@ int render_frame (char *filename, int w, int h, text_element *te)  {
 
 	if (!te) return(1);
 	out = TIFFOpen(filename, "w");
-	if (!out ) { printf("could not open output file\n"); return 1; }
+	if (!out) { printf("could not open output file\n"); return 1; }
 
 	rps=w; spp=3; bps=8;
 
@@ -139,13 +140,13 @@ int render_frame (char *filename, int w, int h, text_element *te)  {
 	buf = _TIFFmalloc(imageStripsize);
 	memset(buf,0,imageStripsize);
 	ii=0;
-	const int fh = MIN(ST_HEIGHT, h/15);
-	const int fo = ST_HEIGHT - fh;
 	while (te[ii].text) {
 		int x,y;
 		if (want_verbose)
 			printf("rendering text: %s\n",te[ii].text);
-		if ( render_font(OSD_fontfile, te[ii].text, h/15) ) return(1);
+		if ( render_font(OSD_fontfile, te[ii].text, h/12, 0) ) return(1);
+		const int fh = ST_height;
+		const int fo = ST_HEIGHT - 8 - ST_top;
 		set_positions(&xalign, &yalign, w, h, te[ii].xpos, te[ii].yperc);
 		for (x=0; x<ST_rightend && (x+xalign) < w ;x++) {
 			for (y=0; y < fh && (y+yalign) < h;y++) {
@@ -223,9 +224,9 @@ int main (int argc, char **argv) {
 	sleep(3);
 
 	te[0].xpos=OSD_CENTER;
-	te[0].yperc=5;
+	te[0].yperc=15;
 	te[1].xpos=OSD_CENTER;
-	te[1].yperc=98;
+	te[1].yperc=88;
 
   // first frame
 	snprintf(filename,MAX_PATH,"%s/frame_%07i.tif",filepath,0);

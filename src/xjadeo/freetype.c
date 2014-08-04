@@ -29,6 +29,7 @@
 unsigned char ST_image[ST_HEIGHT][ST_WIDTH];
 int ST_rightend=0;
 int ST_height=0;
+int ST_top = 0;
 
 static void draw_bitmap(FT_Bitmap*  bitmap,
     FT_Int x,
@@ -56,7 +57,7 @@ static int   initialized = 0;
 static FT_Library    library;
 static FT_Face       face;
 
-int render_font (char *fontfile, char *text, int px)
+int render_font (char *fontfile, char *text, int px, int dx)
 {
   static int pxx = 0;
   FT_GlyphSlot  slot;
@@ -106,12 +107,13 @@ int render_font (char *fontfile, char *text, int px)
   pen.y = 10 * 64;
 
   num_chars     = strlen(text);
-  target_height = ST_HEIGHT;
+  target_height = ST_HEIGHT - 8;
   slot = face->glyph;
 
   memset(&(ST_image[0][0]),0,ST_WIDTH*ST_HEIGHT);
   ST_rightend=0;
   ST_height = 0;
+  ST_top = 0;
 
   for (n = 0; n < num_chars; n++)
   {
@@ -127,16 +129,15 @@ int render_font (char *fontfile, char *text, int px)
 	slot->bitmap_left,
 	target_height - slot->bitmap_top);
 
-    const int height = slot->bitmap_top + (slot->bitmap_top - slot->bitmap.rows)/2.0;
-    if (height > ST_height) {
-      ST_height = height;
-      if (ST_height > ST_HEIGHT) ST_height = ST_HEIGHT;
-    }
+		const int bottom = slot->bitmap_top - slot->bitmap.rows;
+		if (slot->bitmap_top > ST_top) ST_top = slot->bitmap_top;
+		if (bottom < ST_top - ST_height) ST_height = ST_top - bottom;
+
     if ((slot->bitmap_left + slot->bitmap.width) > ST_WIDTH)
       break;
 
     /* increment pen position */
-    pen.x += slot->advance.x;
+    pen.x += dx > 0 ? dx *64 : slot->advance.x;
     pen.y += slot->advance.y;
 
     ST_rightend=pen.x/64;
@@ -161,7 +162,8 @@ void free_freetype () {
 unsigned char ST_image[1][1];
 int ST_rightend = 0;
 int ST_height = 0;
-int render_font (char *fontfile, char *text, int px) {return -1;}
+int ST_top = 0;
+int render_font (char *fontfile, char *text, int px, int dx) {return -1;}
 void free_freetype () { ; }
 
 #endif /* HAVE_FT*/

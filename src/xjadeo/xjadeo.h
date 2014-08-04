@@ -269,7 +269,7 @@ int saveconfig (const char *filename);
 int readconfig (char *fn);
 
 /* freetype - On screen display */
-int render_font (char *fontfile, char *text, int px);
+int render_font (char *fontfile, char *text, int px, int dx);
 void free_freetype ();
 
 #endif

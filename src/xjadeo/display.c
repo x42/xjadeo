@@ -36,6 +36,9 @@ extern int64_t ts_offset; // display on screen
 extern int    want_nosplash;
 extern double framerate;
 
+static int minw_frame = 0;
+static int minw_smpte = 0;
+
 /*******************************************************************************
  * NULL Video Output
  */
@@ -303,6 +306,7 @@ int vidoutmode(int user_req) {
 extern unsigned char ST_image[][ST_WIDTH];
 extern int ST_rightend;
 extern int ST_height;
+extern int ST_top;
 
 #define PB_H (20)
 #define PB_X (10)
@@ -389,7 +393,13 @@ static void OSD_bar(int rfmt, uint8_t *mybuffer, int yperc, double min,double ma
 }
 #endif
 
-static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int yperc) {
+static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int yperc, int minw) {
+	static int OSD_movieheight = -1;
+	static int OSD_fonty0 = -1;
+	static int OSD_fonty1 = -1;
+	static int OSD_fontsize = -1;
+	static int OSD_monospace = 0;
+
 	int x,y, xalign, yalign;
 	rendervars rv;
 	void (*_render)(uint8_t *mybuffer, rendervars *rv, int dx, int dy, int val);
@@ -400,17 +410,54 @@ static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int y
 
 	SET_RFMT(rfmt,_render,rv,render);
 
-	const int fontsize = MIN(MAX(16, movie_height / 18), 56);
+	if (OSD_movieheight != movie_height) {
+		OSD_movieheight = movie_height;
+	  OSD_fontsize = MIN(MAX(16, movie_height / 18), 56);
+		render_font(OSD_fontfile, "Frame1234567890:.", OSD_fontsize, 0);
+	  OSD_fonty0 = ST_top;
+	  OSD_fonty1 = ST_height;
+		minw_smpte = 0;
+		render_font(OSD_fontfile, "00000000000", OSD_fontsize, 0);
+		minw_smpte = MAX(minw_smpte,ST_rightend);
+		render_font(OSD_fontfile, "Frame:0000000", OSD_fontsize, 0);
+		minw_frame = ST_rightend;
+		render_font(OSD_fontfile, "0", OSD_fontsize, 0);
+		OSD_monospace = ST_rightend;
+		if (want_verbose)
+			printf("Set Fontsize to %d\n", OSD_fontsize);
+	}
 
-	if ( render_font(OSD_fontfile, text, fontsize) ) return;
+	if ( render_font(OSD_fontfile, text, OSD_fontsize, minw > 0 ? OSD_monospace : 0) ) return;
+	ST_rightend = MAX(minw,ST_rightend);
 
 	if (xpos == OSD_LEFT) xalign=ST_PADDING; // left
 	else if (xpos == OSD_RIGHT) xalign=movie_width-ST_PADDING-ST_rightend; // right
-	else xalign=(movie_width-ST_rightend)/2; // center
-	const int fh = MIN(ST_HEIGHT, ST_height);
-	const int fo = ST_HEIGHT - fh;
+	else xalign=(movie_width- ST_rightend)/2; // center
+
+	const int fh = (minw > 0 ? OSD_fonty1 : ST_height);
+	const int fo = ST_HEIGHT - 8 - (minw > 0 ? OSD_fonty0 : ST_top);
 	yalign= (movie_height - fh) * yperc /100.0;
 
+	if (!ST_BG) {
+		for (y=0; y < fh && (y+yalign) < movie_height;y++) {
+			for (x = -4; x < 0; ++x) {
+				if (x + xalign >= 0)
+					_render(mybuffer,&rv,(x+xalign),(y+yalign),0);
+				if (ST_rightend + xalign - x -1 < movie_width)
+					_render(mybuffer,&rv,(ST_rightend+xalign-x-1),(y+yalign),0);
+			}
+		}
+		for (x = xalign -4; x < xalign + ST_rightend + 4; ++x) {
+			if (x < 0 || x >= movie_width)
+				continue;
+			for (y = 0; y < 4; ++y) {
+				if (yalign - 1 - y >=0 && yalign - 1 - y < movie_height)
+					_render(mybuffer,&rv,x,(yalign - 1 - y),0);
+				if (yalign + fh + y >=0 && yalign +fh + y < movie_height)
+					_render(mybuffer,&rv,x,(y+fh+yalign),0);
+			}
+		}
+	}
 	int donext =0;
 	for (y=0; y < fh && (y+yalign) < movie_height;y++) {
 		donext=0;
@@ -457,8 +504,8 @@ void render_buffer (uint8_t *mybuffer) {
 	if (!mybuffer) return;
 
 	// render OSD on buffer
-	if (OSD_mode&OSD_FRAME) OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_frame, OSD_fx, OSD_fy);
-	if (OSD_mode&OSD_SMPTE) OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_smpte, OSD_sx, OSD_sy);
+	if (OSD_mode&OSD_FRAME) OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_frame, OSD_fx, OSD_fy, minw_frame);
+	if (OSD_mode&OSD_SMPTE) OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_smpte, OSD_sx, OSD_sy, minw_smpte);
 
 #if (HAVE_LIBXV || HAVE_IMLIB2)
 	if (OSD_mode&OSD_EQ) {
@@ -482,19 +529,19 @@ void render_buffer (uint8_t *mybuffer) {
 #endif
 	{
 		if (OSD_mode&OSD_TEXT)
-			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_text, OSD_tx, OSD_ty);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_text, OSD_tx, OSD_ty, 0);
 		if (OSD_mode&OSD_MSG)
-			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_msg, 50, 85);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_msg, 50, 85, 0);
 
 		if (OSD_mode&OSD_OFFF) {
 			char tempoff[30];
 			snprintf(tempoff,30,"off: %"PRId64, ts_offset);
-			OSD_render (VO[VOutput].render_fmt, mybuffer, tempoff, OSD_CENTER, 50);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, tempoff, OSD_CENTER, 50, 0);
 		} else if (OSD_mode&OSD_OFFS ) {
 			char tempsmpte[30];
 			sprintf(tempsmpte,"off: ");
 			frame_to_smptestring(tempsmpte+4, ts_offset);
-			OSD_render (VO[VOutput].render_fmt, mybuffer, tempsmpte, OSD_CENTER, 50);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, tempsmpte, OSD_CENTER, 50, 0);
 		}
 	}
 	VO[VOutput].render(buffer); // buffer = mybuffer (so far no share mem or sth)
