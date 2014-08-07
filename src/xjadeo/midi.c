@@ -200,7 +200,7 @@ static int parse_sysex_urtm (int data, int state, int type) {
 	return (rv);
 }
 
-static long convert_smpte_to_frame (smpte now) {
+static int64_t convert_smpte_to_frame (smpte now) {
 	return(smpte_to_frame(
 		now.type,
 		now.frame,
@@ -396,10 +396,10 @@ static int pm_midi_connected(void) {
 	return (0);
 }
 
-static long pm_midi_poll_frame (void) {
+static int64_t pm_midi_poll_frame (void) {
 	int spin;
-	long frame;
-	static long lastframe = -1 ;
+	int64_t frame;
+	static int64_t lastframe = -1 ;
 	static int stopcnt = 0;
 	smpte now;
 	if (!pm_midi) return (0);
@@ -431,7 +431,7 @@ static long pm_midi_poll_frame (void) {
 			if (want_verbose)
 				printf("\r\t\t\t\t\t\t        -?-\r");
 		}
-		frame += (long) rint(diff);
+		frame += (int64_t) rint(diff);
 		if (want_verbose)
 			// subtract 7 quarter frames latency when running..
 			printf("\r\t\t\t\t\t\t  |+%g/8\r",diff<0?rint(4.0*(1.75-diff)):diff<2.0?0:rint(4.0*(diff-1.75)));
@@ -575,9 +575,9 @@ static int jm_midi_connected(void) {
 	return (0);
 }
 
-static long jm_midi_poll_frame (void) {
-	long frame =0 ;
-	static long lastframe = -1 ;
+static int64_t jm_midi_poll_frame (void) {
+	int64_t frame =0 ;
+	static int64_t lastframe = -1 ;
 	static int stopcnt = 0;
 
 	dequeue_jmidi_events(WJACK_frames_since_cycle_start(jack_midi_client));
@@ -602,7 +602,7 @@ static long jm_midi_poll_frame (void) {
 		if (want_verbose)
 			// subtract 7 quarter frames latency when running..
 			printf("\r\t\t\t\t\t\t  |+%g/8\r",diff<0?rint(4.0*(1.75-diff)):diff<2.0?0:rint(4.0*(diff-1.75)));
-		frame += (long) rint(diff);
+		frame += (int64_t) rint(diff);
 	}
 	return(frame);
 }
@@ -687,7 +687,7 @@ static void amidi_event(void) {
 	}
 }
 
-static long ar_midi_poll_frame (void) {
+static int64_t ar_midi_poll_frame (void) {
 	if (!amidi) return (0);
 	amidi_event(); // process midi buffers - get most recent timecode
 	return(convert_smpte_to_frame(last_tc));
@@ -805,9 +805,9 @@ static void process_seq_event(const snd_seq_event_t *ev) {
 	}
 }
 
-static long as_midi_poll_frame (void) {
-	long frame =0 ;
-	static long lastframe = -1 ;
+static int64_t as_midi_poll_frame (void) {
+	int64_t frame =0 ;
+	static int64_t lastframe = -1 ;
 	static int stopcnt = 0;
 	if (!seq) return (0);
 
@@ -836,7 +836,7 @@ static long as_midi_poll_frame (void) {
 		if (want_verbose)
 			// subtract 7 quarter frames latency when running..
 			printf("\r\t\t\t\t\t\t  |+%g/8\r",diff<0?rint(4.0*(1.75-diff)):diff<2.0?0:rint(4.0*(diff-1.75)));
-		frame += (long) rint(diff);
+		frame += (int64_t) rint(diff);
 	}
 	return(frame);
 }
@@ -942,7 +942,7 @@ static int as_midi_connected(void) {
 static int  null_midi_connected(void) { return 0;}
 static void null_midi_open(char *midiid) {;}
 static void null_midi_close(void) {;}
-static long null_midi_poll_frame (void) { return 0L;}
+static int64_t null_midi_poll_frame (void) { return 0L;}
 
 #define NULLMIDI 0, &null_midi_open, &null_midi_close, &null_midi_connected, &null_midi_poll_frame
 
@@ -952,7 +952,7 @@ typedef struct {
 	void (*midi_open)(char *);
 	void (*midi_close)(void);
 	int (*midi_connected)(void);
-	long (*midi_poll_frame) (void);
+	int64_t (*midi_poll_frame) (void);
 }midiapi;
 
 const midiapi MA[] = {
@@ -1012,7 +1012,7 @@ const char *midi_driver_name() {
 int  midi_connected(void) { return (MA[current_midi_driver].midi_connected());}
 void midi_open(char *midiid) {MA[current_midi_driver].midi_open(midiid);}
 void midi_close(void) {MA[current_midi_driver].midi_close();}
-long midi_poll_frame (void) { return (MA[current_midi_driver].midi_poll_frame());}
+int64_t midi_poll_frame (void) { return (MA[current_midi_driver].midi_poll_frame());}
 
 #else /* HAVE_MIDI */
 

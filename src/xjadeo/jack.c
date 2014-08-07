@@ -104,21 +104,21 @@ void close_jack(void) {
 	jack_client=NULL;
 }
 
-long jack_poll_frame (void) {
+int64_t jack_poll_frame (void) {
 	jack_position_t	jack_position;
-	long frame = 0;
+	int64_t frame = 0;
 
 	if (!jack_client) return (-1);
 	WJACK_transport_query(jack_client, &jack_position);
 
 #ifdef JACK_DEBUG
-	fprintf(stdout, "jack position: %lu %lu/ \n", (long unsigned) jack_position.frame, (long unsigned) jack_position.frame_rate);
+	fprintf(stdout, "jack position: %u %u/ \n", (unsigned int) jack_position.frame, (unsigned int) jack_position.frame_rate);
 	fprintf(stdout, "jack frame position time: %g sec %g sec\n", jack_position.frame_time , jack_position.next_time);
 #endif
 
 #ifdef HAVE_JACK_VIDEO
 	if ((jack_position.valid & JackAudioVideoRatio) && jack_clkconvert == 0 ) {
-		frame = (long ) floor(jack_position.audio_frames_per_video_frame * jack_position.frame / (double) jack_position.frame_rate);
+		frame = (int64_t)floor (jack_position.audio_frames_per_video_frame * jack_position.frame / (double) jack_position.frame_rate);
 # ifdef JACK_DEBUG
 		fprintf(stdout, "jack calculated frame: %li\n", frame);
 # endif
@@ -127,7 +127,7 @@ long jack_poll_frame (void) {
 	{
 		double jack_time = 0;
 		jack_time = jack_position.frame / (double) jack_position.frame_rate;
-		frame = floor(framerate * jack_time);
+		frame = (int64_t)floor (framerate * jack_time);
 #ifdef JACK_DEBUG
 		fprintf(stdout, "jack calculated time: %lf sec - frame: %li\n", jack_time, frame);
 #endif

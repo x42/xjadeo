@@ -42,7 +42,7 @@ static jack_nframes_t j_latency = 0;
 static jack_client_t *j_client = NULL;
 
 static double ltc_position = 0;
-static long long int monotonic_fcnt = 0;
+static uint64_t monotonic_fcnt = 0;
 static LTCDecoder *ltc_decoder = NULL;
 
 static int myProcess(LTCDecoder *d, double *jt)  {
@@ -104,7 +104,7 @@ static int process (jack_nframes_t nframes, void *arg) {
 	  sound[i] = (unsigned char) (snd&0xff);
 	}
 
-	ltc_decoder_write(ltc_decoder, sound, nframes, monotonic_fcnt-j_latency);
+	ltc_decoder_write(ltc_decoder, sound, nframes, monotonic_fcnt - j_latency);
 	myProcess(ltc_decoder, &ltc_position);
 	monotonic_fcnt += nframes;
 	return 0;
@@ -140,8 +140,8 @@ static int jack_portsetup(void) {
 
 /* API */
 
-long ltc_poll_frame (void) {
-	return (long) floor(ltc_position * framerate / (double)j_samplerate);
+int64_t ltc_poll_frame (void) {
+	return (int64_t) floor(ltc_position * framerate / (double)j_samplerate);
 }
 
 void open_ltcjack(char *autoconnect) {
@@ -185,7 +185,7 @@ void close_ltcjack(void) {
 
 #else
 
-long ltc_poll_frame (void) { return 0;}
+int64_t ltc_poll_frame (void) { return 0;}
 void open_ltcjack(char *autoconnect) { ; }
 void close_ltcjack(void) { ; }
 int ltcjack_connected(void) { return 0;}

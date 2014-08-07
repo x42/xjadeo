@@ -225,7 +225,7 @@ enum SyncSource {
 enum SyncSource ui_syncsource();
 
 /* jack.c function prototypes */
-long jack_poll_frame (void);
+int64_t jack_poll_frame (void);
 void open_jack(void );
 void close_jack(void);
 int jack_connected(void);
@@ -236,21 +236,21 @@ void jackt_stop();
 void jackt_toggle();
 
 /* ltc-jack.c function prototypes */
-long ltc_poll_frame (void);
+int64_t ltc_poll_frame (void);
 void open_ltcjack(char *autoconnect);
 void close_ltcjack(void);
 int ltcjack_connected(void);
 
 /* smpte.c prototypes */
-long int smptestring_to_frame (char *str);
-void frame_to_smptestring(char *smptestring, long int frame);
-long int smpte_to_frame(int type, int f, int s, int m, int h, int overflow);
+int64_t smptestring_to_frame (char *str);
+void frame_to_smptestring(char *smptestring, int64_t frame);
+int64_t smpte_to_frame(int type, int f, int s, int m, int h, int overflow);
 
 /* midi.c function prototype */
 int midi_connected(void);
 const char *midi_driver_name();
 #ifdef HAVE_MIDI
-long midi_poll_frame (void);
+int64_t midi_poll_frame (void);
 void midi_open(char *midiid);
 void midi_close(void);
 int midi_choose_driver(const char *);

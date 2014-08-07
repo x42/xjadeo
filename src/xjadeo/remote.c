@@ -28,7 +28,7 @@
  *
  * more detailed:
  *  100: <text>
- *  101: var=<int> // long int
+ *  101: var=<int>
  *  124: vmode=<int> : <string> (list of avail video modes)
  *
  *  201: var=<int>  // long int
@@ -447,7 +447,7 @@ void xapi_sreverse(void *d) {
 }
 
 void xapi_pposition(void *d) {
-	remote_printf(201,"position=%li",dispFrame);
+	remote_printf(201,"position=%"PRId64, dispFrame);
 }
 
 void xapi_psmpte(void *d) {
@@ -458,7 +458,7 @@ void xapi_psmpte(void *d) {
 
 void xapi_seek(void *d) {
 	userFrame = smptestring_to_frame((char*)d);
-	remote_printf(101,"defaultseek=%li",userFrame);
+	remote_printf(101,"defaultseek=%"PRId64, userFrame);
 }
 
 void xapi_pfps(void *d) {
