@@ -96,6 +96,7 @@ int want_avverbose =0;	/* --avverbose */
 int want_genpts =0;	/* --genpts */
 int want_ignstart =0;	/* --ignorefileoffset */
 int want_nosplash =0;	/* --nosplash */
+int want_noindex =0;	/* --noindex */
 int start_ontop =0;	/* --ontop // -a */
 int start_fullscreen =0;/* --fullscreen // -s */
 int want_letterbox =0;  /* --letterbox -b */
@@ -213,6 +214,7 @@ static struct option const long_options[] =
 	{"vo",                  required_argument, 0, 'x'},
 
 	{"osc-doc",             no_argument, 0,       0x100},
+	{"no-index",            no_argument, 0,       0x101},
 	{NULL, 0, NULL, 0}
 };
 
@@ -412,6 +414,9 @@ decode_switches (int argc, char **argv)
 			case 0x100:
 				xjosc_documentation ();
 				exit (0);
+				break;
+			case 0x101:
+				want_noindex = 1;
 				break;
 			default:
 				usage (EXIT_FAILURE);

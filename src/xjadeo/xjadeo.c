@@ -86,6 +86,7 @@ extern int      mq_en;
 extern char    *ipc_queue;
 extern double   delay;
 extern int      keyframe_interval_limit;
+extern int      want_noindex;
 #ifdef HAVE_LTC
 extern int  use_ltc;
 #endif
@@ -681,7 +682,7 @@ static int index_frames () {
 
 	AVRational const tb = pFormatCtx->streams[videoStream]->time_base;
 
-	if (want_verbose) {
+	if (!want_noindex && want_verbose) {
 		printf("Indexing Video...\n");
 	}
 
@@ -692,7 +693,7 @@ static int index_frames () {
 	 * -> discover max. keyframe distance
 	 * -> get PTS/DTS of every *packet*
 	 */
-	while (av_read_frame (pFormatCtx, &packet) >= 0) {
+	while (!want_noindex && av_read_frame (pFormatCtx, &packet) >= 0) {
 		if (abort_indexing) {
 			if (!want_quiet) fprintf(stderr, "Indexing aborted.\n");
 			av_free_packet (&packet);
@@ -776,8 +777,11 @@ static int index_frames () {
 	int64_t i;
 	int64_t keyframecount = 0; // debug, info only.
 
-	if ((fcnt == 500 || fcnt == frames) && max_keyframe_interval == 1 &&
-			file_frame_offset == av_rescale_q (fidx[0].pkt_pts, tb, fr_Q)
+	if (want_noindex ||
+			(
+			 (fcnt == 500 || fcnt == frames) && max_keyframe_interval == 1 &&
+			 file_frame_offset == av_rescale_q (fidx[0].pkt_pts, tb, fr_Q)
+			)
 		 )
 	{
 		const int64_t pts_offset = fidx[0].pkt_pts;
@@ -1048,6 +1052,9 @@ static int index_frames () {
 	}
 #endif
 
+	if (want_noindex) {
+		max_keyframe_interval = keyframe_interval_limit;
+	}
 	seek_threshold = MAX(2, max_keyframe_interval - 1);
 	if (seek_threshold >= keyframe_interval_limit &&
 			// TODO: relax the filter to use 'current'
