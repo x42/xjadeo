@@ -46,7 +46,6 @@ extern int      movie_width;
 extern int64_t  userFrame;
 extern int64_t  dispFrame;
 extern double   delay;
-extern double   filefps;
 extern int64_t  ts_offset;
 
 #ifdef HAVE_MIDI
@@ -82,13 +81,6 @@ static int oscb_fps (const char *path, const char *types, lo_arg **argv, int arg
   if (want_verbose) fprintf(stderr, "OSC: %s <- f:%f\n", path, argv[0]->f);
   if (argv[0]->f>0) delay= 1.0 / argv[0]->f;
   else delay = -1; // use file-framerate
-  return(0);
-}
-
-static int oscb_framerate (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
-  if (want_verbose) fprintf(stderr, "OSC: %s <- f:%f\n", path, argv[0]->f);
-  filefps=argv[0]->f;
-  override_fps(filefps);
   return(0);
 }
 
@@ -305,7 +297,6 @@ static struct osc_command OSCC[] = {
   {"/jadeo/cmd", "s", &oscb_remotecmd, "Call a remote control command"},
 
   {"/jadeo/fps", "f", &oscb_fps, "Set the screen update frequency (-f, set fps)"},
-  {"/jadeo/framerate", "f", &oscb_framerate, "Override video-files frame-rate (-F, set framerate)"},
   {"/jadeo/offset", "i", &oscb_offset, "Set time-offset as frame-number (-o, set offset)"},
   {"/jadeo/offset", "s", &oscb_offsetsmpte, "Set time-offset as timecode (-o, set offset)"},
 

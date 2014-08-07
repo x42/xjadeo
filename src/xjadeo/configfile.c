@@ -80,7 +80,6 @@ extern int midi_clkadj;    /* 0|1 */
 extern int64_t userFrame;
 extern char  *smpte_offset;
 extern char  *load_movie;
-extern double filefps;
 extern int    osc_port;
 extern int    want_dropframes;
 extern int    want_autodrop;
@@ -264,7 +263,7 @@ int parseoption (char *item, char *value) {
 	} else if (!strncasecmp(item,"USERFRAME",9)) {
 		userFrame=atoll(value); rv=1;
 	} else if (!strncasecmp(item,"FILEFPS",7)) {
-		filefps = atof(value); rv=1;
+		rv=1; // legacy -- ignore
 	} else if (!strncasecmp(item,"OSCPORT",7)) {
 		osc_port=atoi(value); rv=1;
 	} else if (!strncasecmp(item,"OSDMODE",7)) {
@@ -426,7 +425,6 @@ int saveconfig (const char *fn) {
 	fprintf(fp, "MIDICLK=%s\n", BOOL(midi_clkadj));
 #endif
 	fprintf(fp, "USERFRAME=%"PRId64"\n", userFrame);
-	fprintf(fp, "FILEFPS=%f\n", filefps);
 	fprintf(fp, "SMPTEOFFSET=%s\n", smpte_offset?smpte_offset:"0");
 	// use current setting and connection -- not commandline
 	int ss =0;

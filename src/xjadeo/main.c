@@ -140,7 +140,6 @@ int js_winh = -1;
 #endif
 
 int    midi_clkadj =1;	/* --midiclk  */
-double filefps = -1.0; // if > 0 override autodetected video file frame rate
 int    videomode = 0; // --vo <int>  - default: autodetect
 double delay = -1; // use file's FPS
 int keyframe_interval_limit = 100;
@@ -176,7 +175,6 @@ static struct option const long_options[] =
 	{"no-midiclk",          no_argument, 0,       'c'},
 	{"debug",               no_argument, 0,       'D'},
 	{"midi-driver",         required_argument, 0, 'd'},
-	{"file-fps",            required_argument, 0, 'F'},
 	{"screen-fps",          required_argument, 0, 'f'},
 	{"help",                no_argument, 0,       'h'},
 	{"ignore-file-offset",  no_argument, 0,       'I'},
@@ -276,10 +274,6 @@ decode_switches (int argc, char **argv)
 				break;
 			case 'D':
 				want_debug = 1;
-				break;
-			case 'F':
-				filefps = atof(optarg);
-				if (filefps < 1) filefps = 1;
 				break;
 			case 'f':
 				if(atof(optarg) > 0) {
@@ -454,8 +448,6 @@ usage (int status)
 "                           list supported driver(s). <name> is not case-\n"
 "                           sensitive and can be shortened to the first unique\n"
 "                           name. eg '-d j' for jack, '-d alsa-r' for alsa-raw\n"
-" -F <val>, --file-fps <val>\n"
-"                           Override video file framerate auto detection\n"
 " -f <val>, --screen-fps <val>\n"
 "                           Desired refresh-rate of the video display in frames\n"
 "                           If this value is equal or less than zero, xjadeo\n"

@@ -68,7 +68,6 @@ extern int have_dropframes;
 
 /* Option flags and variables */
 extern char    *current_file;
-extern double   filefps;
 extern int64_t  ts_offset;
 extern char    *smpte_offset;
 extern int64_t  userFrame;
@@ -461,19 +460,7 @@ static int seek_frame (AVPacket *packet, int64_t framenumber) {
 		return -1;
 	}
 
-#if 0 // TODO during index
-	int64_t timestamp;
-	if (filefps > 0) {
-		timestamp = framenumber * tpf; // user-set fps
-	} else {
-		timestamp = av_rescale_q (framenumber, fr_Q, v_stream->time_base);
-	}
-#elif 1 // DEBUG
-	const int64_t timestamp = av_rescale_q (framenumber, fr_Q, v_stream->time_base);
-	assert(fidx[framenumber].timestamp == timestamp);
-#else
 	const int64_t timestamp = fidx[framenumber].timestamp;
-#endif
 
 	if (timestamp < 0 || framenumber >= frames) {
 		return -1;
@@ -1263,10 +1250,6 @@ int open_movie (char* file_name) {
 		framerate = 25;
 		fr_Q.den = 25;
 		fr_Q.num = 1;
-	}
-
-	if (filefps > 0) {
-		framerate = filefps;
 	}
 
 	// detect drop frame timecode

@@ -111,7 +111,6 @@ extern int     wraparound;
 #endif
 
 extern double delay;
-extern double filefps;
 extern int    videomode;
 extern int    interaction_override;
 
@@ -475,14 +474,7 @@ void xapi_sfps(void *d) {
 }
 
 static void xapi_sframerate(void *d) {
-	char *off= (char*)d;
-	if (!(atof(off)>0)) {
-		remote_printf(423,"invalid argument (range >0)");
-		return;
-	}
-	filefps= atof(off);
-	override_fps(filefps);
-	remote_printf(202, "framerate=%g", framerate);
+	remote_printf(899,"file framerate is deprecated.");
 }
 
 static void xapi_jack_status(void *d) {
@@ -959,7 +951,7 @@ static Dcommand cmd_window[] = {
 static Dcommand cmd_set[] = {
 	{"offset ", "<int>: set timecode offset in frames", NULL, xapi_soffset , 0 },
 	{"fps ", "<float>: set screen update frequency", NULL, xapi_sfps , 0 },
-	{"framerate ", "<float>: override frame rate of video file", NULL, xapi_sframerate , 0 },
+	{"framerate ", ": deprecated - no operation", NULL, xapi_sframerate , 0 },
 	{"override ", "<int>: disable user-interaction (bitmask)", NULL, xapi_soverride , 0 },
 	{"seekmode ", ": deprecated - no operation", NULL, xapi_sseekmode, 0 },
 	{"timescale ", "<float> <int>: set timescale and offset (*)", NULL, xapi_stimescale , 0 },
