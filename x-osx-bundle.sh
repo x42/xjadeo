@@ -23,7 +23,7 @@ CPPFLAGS="-I${XJSTACK}/include" \
 CFLAGS="${XJARCH} ${OSXCOMPAT}" \
 OBJCFLAGS="${XJARCH} ${OSXCOMPAT}" \
 LDFLAGS="${XJARCH} ${OSXCOMPAT} -headerpad_max_install_names -L${XJSTACK}/lib" \
-./configure --disable-xv --disable-qtgui --disable-sdl --with-fontfile=../Resources/VeraMono.ttf --disable-dependency-tracking $@ || exit 1
+./configure --disable-xv --disable-qtgui --disable-sdl --with-fontfile=../Resources/ArdourMono.ttf --disable-dependency-tracking $@ || exit 1
 make clean
 make
 

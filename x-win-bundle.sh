@@ -20,7 +20,7 @@ if test -z "$NORECONF"; then
 	LDFLAGS="-L$WINPREFIX/lib/ -L$WINLIB" \
 	./configure --host=i686-w64-mingw32 --build=i386-linux --prefix="" \
 		--disable-xv --disable-imlib2 --disable-mq --disable-ipc --disable-osc --enable-qtgui \
-		--with-fontfile=FreeMonoBold.ttf \
+		--with-fontfile=ArdourMono.ttf \
 		--with-qmakeargs="-spec ${QTSPECPATH} -config release" \
 		$@
 fi
@@ -42,7 +42,7 @@ cp -v $WINLIB/zlib1.dll "$NSIDIR"
 cp -v $WINLIB/pthreadVSE2.dll "$NSIDIR"
 cp -v $WINLIB/libltc-11.dll "$NSIDIR"
 
-cp -v contrib/Jadeo.app/Contents/Resources/FreeMonoBold.ttf "$NSIDIR"
+cp -v contrib/Jadeo.app/Contents/Resources/ArdourMono.ttf "$NSIDIR"
 
 make -C src/qt-gui
 cp -v src/qt-gui/release/qjadeo.exe "$NSIDIR"

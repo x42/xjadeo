@@ -43,7 +43,7 @@ Section "jadeo (required)"
 	File "libltc-11.dll"
 	File "zlib1.dll"
 	File "pthreadVSE2.dll"
-	File "FreeMonoBold.ttf"
+	File "ArdourMono.ttf"
   File "xjadeo.nsi"
 
   File "qjadeo.exe"
@@ -113,7 +113,7 @@ Section "Uninstall"
   Delete $INSTDIR\libltc-11.dll
   Delete $INSTDIR\zlib1.dll
   Delete $INSTDIR\pthreadVSE2.dll
-  Delete $INSTDIR\FreeMonoBold.ttf
+  Delete $INSTDIR\ArdourMono.ttf
   Delete $INSTDIR\xjadeo.nsi
   Delete $INSTDIR\qjadeo.exe
   Delete $INSTDIR\qjadeo_fr.qm
