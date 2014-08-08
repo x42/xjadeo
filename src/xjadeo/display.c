@@ -479,7 +479,6 @@ void splash (uint8_t *mybuffer) {
 	if (movie_width >= xj_splash_height && movie_height >= xj_splash_width)
 		OSD_bitmap(VO[VOutput].render_fmt, mybuffer,45,0,
 				xj_splash_width, xj_splash_height, xj_splash_bits, NULL);
-	render_buffer(mybuffer);
 }
 
 static void update_smptestring() {

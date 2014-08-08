@@ -1039,9 +1039,6 @@ int main (int argc, char **argv)
 #endif
 	if(remote_en) open_remote_ctrl();
 
-	display_frame(0LL,1,1);
-	splash(buffer);
-
 	/* MAIN LOOP */
 	event_loop();
 

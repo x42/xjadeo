@@ -206,6 +206,7 @@ static int select_sleep (const long usec) {
 // main event loop
 //--------------------------------------------
 static void cancel_index_thread (void);
+static uint8_t splashed = 0;
 
 void event_loop (void) {
 	double  elapsed_time;
@@ -213,7 +214,9 @@ void event_loop (void) {
 	int64_t newFrame, offFrame;
 	float   nominal_delay;
 	int64_t splash_timeout;
-	int     splashed = want_nosplash;
+
+	splashed = want_nosplash;
+	force_redraw = 1;
 
 	if (want_verbose) printf("\nentering video update loop @%.2f fps.\n",delay>0?(1.0/delay):framerate);
 	clock1 = xj_get_monotonic_time();
@@ -266,7 +269,7 @@ void event_loop (void) {
 		int64_t curFrame = dispFrame;
 		const int fd = force_redraw;
 		force_redraw = 0;
-		display_frame (offFrame, fd, splashed || want_nosplash);
+		display_frame (offFrame, fd);
 
 		if ((remote_en||mq_en||ipc_queue)
 				&& ( (remote_mode&NTY_FRAMELOOP) || ((remote_mode&NTY_FRAMECHANGE) && curFrame != dispFrame))
@@ -281,9 +284,7 @@ void event_loop (void) {
 		nominal_delay = delay > 0 ? delay : (1.0/framerate);
 
 		if (!splashed) {
-			if (splash_timeout > clock1) {
-				splash (buffer);
-			} else {
+			if (splash_timeout <= clock1) {
 				splashed = 1;
 				force_redraw = 1;
 			}
@@ -324,9 +325,6 @@ void event_loop (void) {
 		}
 		else {
 			clock1 = clock2;
-			if (!splashed) {
-				force_redraw = 1;
-			}
 #if 0 // debug timing
 			printf("@@ %7.1f ms [%"PRId64"]\n", (nominal_delay - elapsed_time) / 1e3, offFrame);
 #endif
@@ -352,6 +350,7 @@ void event_loop (void) {
 //--------------------------------------------
 
 static void render_empty_frame (int blit);
+static uint8_t displaying_valid_frame = 0;
 
 static int vbufsize = 0;
 
@@ -1486,11 +1485,14 @@ static void render_empty_frame (int blit) {
 			buffer[yoff+3]=255;
 		}
 #endif
+	if (!splashed) {
+		splash(buffer);
+	}
 	if (blit)
 		render_buffer (buffer);
 }
 
-void display_frame (int64_t timestamp, int force_update, int do_render) {
+void display_frame (int64_t timestamp, int force_update) {
 	static AVPacket packet;
 
 	if (!buffer) {
@@ -1507,7 +1509,7 @@ void display_frame (int64_t timestamp, int force_update, int do_render) {
 #endif
 
 	if (!scan_complete || !current_file) {
-		render_empty_frame (do_render);
+		render_empty_frame (force_update);
 		return;
 	}
 
@@ -1516,7 +1518,8 @@ void display_frame (int64_t timestamp, int force_update, int do_render) {
 	if (timestamp < 0 || timestamp >= frames) {
 		OSD_frame[0] = '\0';
 		OSD_smpte[0] = '\0';
-		render_empty_frame (do_render);
+		render_empty_frame (force_update || displaying_valid_frame);
+		displaying_valid_frame = 0;
 		return;
 	}
 
@@ -1568,15 +1571,19 @@ void display_frame (int64_t timestamp, int force_update, int do_render) {
 				dstStride[2] = movie_width/2;
 		}
 		sws_scale (pSWSCtx, (const uint8_t * const*)pFrame->data, pFrame->linesize, 0, pCodecCtx->height, pFrameFMT->data, dstStride);
-		if (do_render)
-			render_buffer (buffer);
+		displaying_valid_frame = 1;
+		if (!splashed) {
+			splash(buffer);
+		}
+		render_buffer (buffer);
 	}
 	else
 	{
 		// seek failed of no format
 		if (pFrameFMT && want_debug)
 			printf("DEBUG: frame seek unsucessful.\n");
-		render_empty_frame (do_render);
+		render_empty_frame (force_update || displaying_valid_frame);
+		displaying_valid_frame = 0;
 		last_decoded_pts = -1;
 		last_decoded_frameno = -1;
 	}
