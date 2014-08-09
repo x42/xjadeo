@@ -179,6 +179,7 @@ void avinit (void);
 void override_fps (double fps);
 void init_moviebuffer(void);
 void event_loop(void);
+size_t video_buffer_size();
 
 
 /* common_jack.c */

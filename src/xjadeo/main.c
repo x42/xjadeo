@@ -950,6 +950,7 @@ int main (int argc, char **argv)
 	if (osc_port > 0) xjosc_initialize(osc_port);
 
 	open_movie(movie);
+	init_moviebuffer();
 
 	open_window();
 
@@ -983,8 +984,6 @@ int main (int argc, char **argv)
 			exit(1);
 		}
 	}
-
-	init_moviebuffer();
 
 	/* setup sync source */
 #ifdef HAVE_MIDI

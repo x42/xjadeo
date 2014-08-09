@@ -353,18 +353,23 @@ void event_loop (void) {
 
 static void render_empty_frame (int blit);
 
+static int vbufsize = 0;
+
+size_t video_buffer_size() {
+	return vbufsize;
+}
+
 void init_moviebuffer (void) {
-	int numBytes;
 	if (buffer) free (buffer);
 	if (want_debug)
 		printf("DEBUG: init_moviebuffer - render_fmt: %i\n",render_fmt);
 	/* Determine required buffer size and allocate buffer */
 #ifdef CROPIMG
-	numBytes = avpicture_get_size (render_fmt, movie_width*2, movie_height);
+	vbufsize = avpicture_get_size (render_fmt, movie_width*2, movie_height);
 #else
-	numBytes = avpicture_get_size (render_fmt, movie_width, movie_height);
+	vbufsize = avpicture_get_size (render_fmt, movie_width, movie_height);
 #endif
-	buffer = (uint8_t *)calloc (1, numBytes);
+	buffer = (uint8_t *)calloc (1, vbufsize);
 
 	// Assign appropriate parts of buffer to image planes in pFrameFMT
 	if (pFrameFMT) {
