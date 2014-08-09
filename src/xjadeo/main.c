@@ -99,7 +99,7 @@ int want_nosplash =0;	/* --nosplash */
 int want_noindex =0;	/* --noindex */
 int start_ontop =0;	/* --ontop // -a */
 int start_fullscreen =0;/* --fullscreen // -s */
-int want_letterbox =0;  /* --letterbox -b */
+int want_letterbox =1;  /* --letterbox -b */
 int want_dropframes =0; /* --dropframes -N  -- force using drop-frame timecode */
 int want_autodrop =1;   /* --nodropframes -n (hidden option) -- allow using drop-frame timecode */
 int remote_en =0;	/* --remote, -R */
@@ -171,7 +171,7 @@ static struct option const long_options[] =
 {
 	{"avverbose",           no_argument, 0,       'A'},
 	{"ontop",               no_argument, 0,       'a'},
-	{"letterbox",           no_argument, 0,       'b'},
+	{"no-letterbox",        no_argument, 0,       'b'},
 	{"midiclk",             no_argument, 0,       'C'},
 	{"no-midiclk",          no_argument, 0,       'c'},
 	{"debug",               no_argument, 0,       'D'},
@@ -272,7 +272,7 @@ decode_switches (int argc, char **argv)
 				start_ontop = 1;
 				break;
 			case 'b':
-				want_letterbox = 1;
+				want_letterbox = 0;
 				break;
 			case 'D':
 				want_debug = 1;
@@ -442,7 +442,8 @@ usage (int status)
 "Options:\n"
 " -A, --avverbose           Display verbose video decoder messages.\n"
 " -a, --ontop               Keep xjadeo window on top of other applications.\n"
-" -b, --letterbox           Retain aspect ratio when resizing the window.\n"
+" -b, --no-letterbox        Scale movie to fit window. Without this option a\n"
+"                           letterbox is used to retain the movie's aspect ratio.\n"
 #if 0 // hidden option
 " -C, --midiclk             Use MIDI quarter frames (default)\n"
 " -c, --no-midiclk          Ignore MTC quarter-frames.\n"

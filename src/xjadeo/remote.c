@@ -143,8 +143,8 @@ void xapi_open(void *d) {
 	else	remote_printf(129, "opened file: '%s'",fn);
 	init_moviebuffer();
 	newsourcebuffer();
+	Xletterbox(Xgetletterbox());
 	force_redraw=1;
-	//display_frame((int64_t)(dispFrame),1); // update screen
 }
 
 void xapi_close(void *d) {
