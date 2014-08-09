@@ -1,8 +1,15 @@
-2014-07-31 (unreleased)  Robin Gareus <robin@gareus.org>
+2014-07-31 (0.8.0-rc2)  Robin Gareus <robin@gareus.org>
 * update usage() help text
 * add --osc-doc option
 * rearrange remote-control commands and improve their doc.
 * re-do website and documentation
+* amend seek-index, create table for PTS
+* disable screensaver
+* overhaul windows UI (threading, draw while resize, fullscreen screen)
+* proper monospace for timecode + framenumber OSD
+* complete migration to 64 bit timecode
+* enable letterbox by default
+* update expose strategy and OSD + splash rendering
 
 2014-07-27 (0.8.0-rc1)  Robin Gareus <robin@gareus.org>
 * v0.8 pre-release
