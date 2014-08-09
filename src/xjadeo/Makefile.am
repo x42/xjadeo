@@ -3,6 +3,9 @@ REV = $(shell test -d ../../.git && git describe --always --tags HEAD 2>/dev/nul
 
 bin_PROGRAMS=xjadeo xjremote
 
+xjadeo_DATA=fonts/ArdourMono.ttf
+xjadeodir=$(datadir)/xjadeo
+
 xjadeo_SOURCES=main.c ../../aclocal.m4 ../../config.h \
 	xjadeo.c xjadeo.h ffcompat.h \
 	remote.c remote.h mqueue.c xjosc.c \
@@ -19,7 +22,7 @@ xjadeo_SOURCES=main.c ../../aclocal.m4 ../../config.h \
 xjadeo_LDADD = @MQ_LIBS@ @FFMPEG_LIBS@ @XV_LIBS@ @MIDI_LIBS@ @FREETYPE_LIBS@ @IMLIB2_LIBS@ @XPM_LIBS@ @LIBLO_LIBS@ @SDL_LIBS@ @LTC_LIBS@ @GL_LIBS@ -lm
 
 xjadeo_CFLAGS = -Wall -g -O3 \
-	@FFMPEG_CFLAGS@ @XV_CFLAGS@ @MIDI_CFLAGS@ @FREETYPE_CFLAGS@ @IMLIB2_CFLAGS@ @XPM_CFLAGS@ @LIBLO_CFLAGS@ @SDL_CFLAGS@ @LTC_CFLAGS@ @GL_CFLAGS@ @JACK_CFLAGS@ "-DSUBVERSION=\"$(REV)\""
+	@FFMPEG_CFLAGS@ @XV_CFLAGS@ @MIDI_CFLAGS@ @FREETYPE_CFLAGS@ @IMLIB2_CFLAGS@ @XPM_CFLAGS@ @LIBLO_CFLAGS@ @SDL_CFLAGS@ @LTC_CFLAGS@ @GL_CFLAGS@ @JACK_CFLAGS@ "-DSUBVERSION=\"$(REV)\"" "-DSHAREDIR=\"$(datadir)\""
 xjadeo_OBJCFLAGS = -Wall -g -O3 \
 	@FFMPEG_CFLAGS@ @XV_CFLAGS@ @MIDI_CFLAGS@ @FREETYPE_CFLAGS@ @IMLIB2_CFLAGS@ @XPM_CFLAGS@ @LIBLO_CFLAGS@ @SDL_CFLAGS@ @LTC_CFLAGS@ @GL_CFLAGS@ @JACK_CFLAGS@ "-DSUBVERSION=\"$(REV)\""
 
@@ -55,7 +58,7 @@ xjadeo_DEPENDENCIES= \
 	icons/brightness_mask.xbm  icons/gamma_mask.xbm  icons/saturation_mask.xbm  icons/xjadeo-color.xpm \
 	icons/contrast.bitmap      icons/hue.bitmap      icons/splash.bitmap        icons/xjadeo-color-ico.h \
 	icons/contrast_mask.xbm    icons/hue_mask.xbm    icons/splash_mask.xbm      icons/xjadeo.ico \
-	paths.h
+	paths.h fonts/ArdourMono.ttf
 
 xjremote_DEPENDENCIES= \
 	paths.h

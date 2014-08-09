@@ -48,6 +48,7 @@ rm -f ${TARGET_CONTENTS}MacOS/Jadeo-bin
 rm -f ${TARGET_CONTENTS}MacOS/xjremote
 cp src/xjadeo/xjadeo ${TARGET_CONTENTS}MacOS/${PRODUCT_NAME}-bin
 cp src/xjadeo/xjremote ${TARGET_CONTENTS}MacOS/xjremote
+cp src/xjadeo/fonts/ArdourMono.ttf ${TARGET_CONTENTS}Resources/ArdourMono.ttf
 
 strip -SXx ${TARGET_CONTENTS}MacOS/${PRODUCT_NAME}-bin
 strip -SXx ${TARGET_CONTENTS}MacOS/xjremote

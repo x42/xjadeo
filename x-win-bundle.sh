@@ -42,7 +42,7 @@ cp -v $WINLIB/zlib1.dll "$NSIDIR"
 cp -v $WINLIB/pthreadVSE2.dll "$NSIDIR"
 cp -v $WINLIB/libltc-11.dll "$NSIDIR"
 
-cp -v contrib/Jadeo.app/Contents/Resources/ArdourMono.ttf "$NSIDIR"
+cp -v src/xjadeo/fonts/ArdourMono.ttf "$NSIDIR"
 
 make -C src/qt-gui
 cp -v src/qt-gui/release/qjadeo.exe "$NSIDIR"

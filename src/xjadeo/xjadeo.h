@@ -98,7 +98,7 @@ enum {
 #ifdef TTFFONTFILE
 # define FONT_FILE TTFFONTFILE
 #else
-# define FONT_FILE "/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf"
+# define FONT_FILE SHAREDIR "/xjadeo/ArdourMono.ttf"
 #endif
 
 /* define maximum size for OSD in pixel */
