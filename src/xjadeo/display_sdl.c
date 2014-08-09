@@ -419,6 +419,8 @@ void handle_X_events_sdl (void) {
 					XCresize_aspect(0);
 				} else if(ev.key.keysym.sym==SDLK_o) {
 					ui_osd_offset_cycle();
+				} else if(ev.key.keysym.sym==SDLK_p) {
+					ui_osd_permute();
 				} else if(ev.key.keysym.sym== SDLK_BACKSLASH) {
 					XCtimeoffset(0, (unsigned int) key);
 				} else if(ev.key.keysym.sym== SDLK_EQUALS && ev.key.keysym.mod&KMOD_SHIFT) { // '+' SDLK_PLUS does not work :/

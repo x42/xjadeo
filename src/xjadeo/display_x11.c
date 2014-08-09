@@ -348,6 +348,8 @@ static void xj_handle_X_events (void) {
 						force_redraw=1;
 					} else if   (key == XK_o ) { //'o' // OSD - offset in frames
 						ui_osd_offset_cycle();
+					} else if   (key == XK_p ) { //'p' // OSD - position toggle
+						ui_osd_permute();
 					} else if (key == XK_s ) { //'s' // OSD - current smpte
 						ui_osd_tc();
 					} else if (key == XK_l ) { //'l' // OSD - letterbox

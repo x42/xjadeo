@@ -157,7 +157,7 @@ int OSD_mode = 0;
 int OSD_fx = OSD_CENTER;
 int OSD_tx = OSD_CENTER;
 int OSD_sx = OSD_CENTER;
-int OSD_fy = 5; // percent
+int OSD_fy = 2; // percent
 int OSD_sy = 98; // percent
 int OSD_ty = 50; // percent
 
@@ -645,6 +645,7 @@ usage (int status)
 " 'v'          Toggle On-Screen frame-number display\n"
 " 'b'          Toggle On-Screen display black border\n"
 " 'o'          Cycle though offset display modes.\n"
+" 'p'          Swap OSD timecode/frame-number position.\n"
 " 'Shift+C'    Clear all OSD display messages.\n"
 " 'backspace'  Return jack-transport to 00:00:00:00\n"
 " 'space'      Toggle jack-transport play/pause\n"

@@ -23,6 +23,9 @@
 extern int interaction_override;
 extern int force_redraw;
 extern int OSD_mode; // change via keystroke
+extern int OSD_fx, OSD_fy;
+extern int OSD_sx, OSD_sy;
+extern int OSD_tx, OSD_ty;
 
 void INT_sync_to_jack (int remote_msg) {
 #ifdef HAVE_MIDI
@@ -188,5 +191,12 @@ void ui_osd_fn () {
 
 void ui_osd_box () {
 	OSD_mode ^= OSD_BOX;
+	force_redraw = 1;
+}
+
+void ui_osd_permute () {
+	const int t1 = OSD_sy;
+	OSD_sy = OSD_fy;
+	OSD_fy = t1;
 	force_redraw = 1;
 }

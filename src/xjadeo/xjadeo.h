@@ -212,6 +212,7 @@ void ui_osd_offset_none();
 void ui_osd_tc();
 void ui_osd_fn();
 void ui_osd_box();
+void ui_osd_permute ();
 
 enum SyncSource {
 	SYNC_JACK = 0, // used in display_x_dialog.c

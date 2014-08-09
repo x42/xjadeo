@@ -1361,6 +1361,9 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
     case 'o':
       ui_osd_offset_cycle();
       break;
+    case 'p':
+      ui_osd_permute();
+      break;
     case 's':
       ui_osd_tc();
       break;
