@@ -27,6 +27,7 @@ AC_ARG_ENABLE(ltc,         AC_HELP_STRING([--disable-ltc], [disable LTC sync sup
 AC_ARG_ENABLE(midi,        AC_HELP_STRING([--disable-midi], [Do not build any of the MIDI drivers (default:on)]))
 AC_ARG_ENABLE(portmidi,    AC_HELP_STRING([--disable-portmidi], [disable portmidi support (default:auto)]))
 AC_ARG_ENABLE(alsamidi,    AC_HELP_STRING([--disable-alsamidi], [disable alsamidi support (default:auto)]))
+AC_ARG_ENABLE(embed-font,  AC_HELP_STRING([--embed-font], [include OnScreenDisplay font in binary (default: off)]))
 AC_ARG_ENABLE(qtgui,       AC_HELP_STRING([--enable-qtgui],[Build the Qt GUI controller (default:off)]))
 AC_ARG_WITH(qt4prefix,     AS_HELP_STRING([--with-qt4prefix], [prefix for Qt4 installation, e.g. "/usr/lib/qt4"]), qt4prefix="$withval", qt4prefix="")
 AC_ARG_WITH(qmakeargs,     AS_HELP_STRING([--with-qmakeargs], [specify custom qmake arguments]), qmakeargs="$withval", qmakeargs="")
@@ -88,6 +89,12 @@ case $target_os in
 		AC_MSG_WARN([*** unknown target OS ***])
 		;;
 esac
+
+if test "x$enable_embed_font" == "xyes"; then
+	AM_CONDITIONAL([EMBED_FONT], true)
+else
+	AM_CONDITIONAL([EMBED_FONT], false)
+fi
 
 dnl AC_SUBST(DISPLAY_OPENGL)
 AC_SUBST(VERSION)
@@ -472,11 +479,18 @@ if test -z "$HAVE_FT"; then
 else
 	OSDREPORT="
    - freetype:       yes
-   - default font:   "
+   - custom font:    "
 	if test -n "$fontfile" ; then
 		OSDREPORT="${OSDREPORT}$fontfile";
 	else
 		OSDREPORT="${OSDREPORT}-"
+	fi
+	if test "x$enable_embed_font" == "xyes"; then
+		OSDREPORT="${OSDREPORT}
+   - embed font:     yes"
+	 else
+		OSDREPORT="${OSDREPORT}
+   - embed font:     no"
 	fi
 fi
 

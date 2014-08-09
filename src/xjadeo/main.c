@@ -754,11 +754,13 @@ static void printversion (void) {
 static int stat_osd_fontfile(void) {
 #ifdef HAVE_FT
 	struct stat s;
-	if (stat(OSD_fontfile, &s) ==0) {
+	if (stat(OSD_fontfile, &s) == 0) {
 		if (want_verbose)
-			fprintf(stdout,"OSD font file: %s\n",OSD_fontfile);
+			fprintf(stdout,"OSD font file: %s\n", OSD_fontfile);
 		return 0;
 	} else {
+		if (want_verbose)
+			fprintf(stdout,"font: '%s' was not found.\n", OSD_fontfile);
 		return 1;
 	}
 #else
@@ -934,8 +936,18 @@ int main (int argc, char **argv)
 		}
 		if (stat_osd_fontfile())
 #endif
-		if (!want_quiet)
-			fprintf(stderr,"no TTF font found. OSD will not be available until you set one.\n");
+		{
+			OSD_fontfile[0] = '\0';
+#ifdef WITH_EMBEDDED_FONT
+			if (want_verbose) {
+				fprintf(stderr,"TTF font file was not found. Using built-in font for OSD.\n");
+			}
+#else
+			if (!want_quiet) {
+				fprintf(stderr,"no TTF font found. OSD will not be available until you set one.\n");
+			}
+#endif
+		}
 	}
 
 	/* do the work */

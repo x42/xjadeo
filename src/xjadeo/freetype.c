@@ -31,6 +31,42 @@ int ST_rightend=0;
 int ST_height=0;
 int ST_top = 0;
 
+#ifdef WITH_EMBEDDED_FONT
+// osdfont.o, embedded .ttf
+
+#ifdef PLATFORM_OSX
+#include <mach-o/getsect.h>
+
+#define EXTLD(NAME) \
+  extern const unsigned char _section$__DATA__ ## NAME [];
+#define LDVAR(NAME) _section$__DATA__ ## NAME
+#define LDLEN(NAME) (getsectbyname("__DATA", "__" #NAME)->size)
+
+#elif defined PLATFORM_WINDOWS  /* mingw */
+
+#define EXTLD(NAME) \
+  extern const unsigned char binary_ ## NAME ## _start[]; \
+  extern const unsigned char binary_ ## NAME ## _end[];
+#define LDVAR(NAME) \
+  binary_ ## NAME ## _start
+#define LDLEN(NAME) \
+  ((binary_ ## NAME ## _end) - (binary_ ## NAME ## _start))
+
+#else /* gnu ld */
+
+#define EXTLD(NAME) \
+  extern const unsigned char _binary_ ## NAME ## _start[]; \
+  extern const unsigned char _binary_ ## NAME ## _end[];
+#define LDVAR(NAME) \
+  _binary_ ## NAME ## _start
+#define LDLEN(NAME) \
+  ((_binary_ ## NAME ## _end) - (_binary_ ## NAME ## _start))
+#endif
+
+EXTLD(fonts_ArdourMono_ttf)
+
+#endif // embedded font file
+
 static void draw_bitmap(FT_Bitmap*  bitmap,
     FT_Int x,
     FT_Int y)
@@ -74,6 +110,10 @@ int render_font (char *fontfile, char *text, int px, int dx)
   matrix.yy = (FT_Fixed)(0x10000L);
 
   if (!ff || strcmp(fontfile, ff) || pxx != px || !initialized) {
+#ifndef WITH_EMBEDDED_FONT
+		if (strlen(fontfile) == 0)
+			return -1;
+#endif
     pxx = px;
     free(ff);
     ff = strdup(fontfile);
@@ -86,7 +126,16 @@ int render_font (char *fontfile, char *text, int px, int dx)
     error = FT_Init_FreeType(&library);              /* initialize library */
     if (error) return(-1);
 
-    error = FT_New_Face(library, fontfile, 0, &face); /* create face object */
+		/* create face object */
+#ifdef WITH_EMBEDDED_FONT
+		if (strlen(fontfile) == 0)
+			error = FT_New_Memory_Face(library,
+					LDVAR(fonts_ArdourMono_ttf), LDLEN(fonts_ArdourMono_ttf),
+					0, &face);
+		else
+#endif
+		error = FT_New_Face(library, fontfile, 0, &face);
+
     if (error) {
       FT_Done_FreeType(library);
       return(-1);
@@ -150,6 +199,7 @@ int render_font (char *fontfile, char *text, int px, int dx)
 
 void free_freetype () {
   free(ff);
+	ff = NULL;
   if (initialized) {
     FT_Done_Face    (face);
     FT_Done_FreeType(library);

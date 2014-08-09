@@ -60,12 +60,21 @@ xjadeo_DEPENDENCIES= \
 	icons/contrast_mask.xbm    icons/hue_mask.xbm    icons/splash_mask.xbm      icons/xjadeo.ico \
 	paths.h fonts/ArdourMono.ttf
 
+if EMBED_FONT
+xjadeo_LDADD+=osdfont.o
+xjadeo_CFLAGS+=-DWITH_EMBEDDED_FONT
+xjadeo_DEPENDENCIES+=osdfont.o
+endif
+
 xjremote_DEPENDENCIES= \
 	paths.h
 
 paths.h: Makefile
 	@echo '#define BINDIR "$(DESTDIR)/$(bindir)/"' >$@
 	@echo '#define SYSCONFDIR "$(DESTDIR)/$(sysconfdir)/"' >>$@
+
+osdfont.o: fonts/ArdourMono.ttf
+	$(LD) -r -b binary -o osdfont.o fonts/ArdourMono.ttf
 
 .rc.o:
 	$(WINDRES) -o $@ $<

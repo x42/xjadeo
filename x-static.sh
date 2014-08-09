@@ -12,7 +12,7 @@ export PKG_CONFIG_PATH=${LIBF}/pkgconfig
 
 if test -z "$NORECONF"; then
 	./configure \
-		--disable-mq --disable-ipc \
+		--disable-mq --disable-ipc --enable-embed-font \
 		--disable-qtgui --disable-jacksession --disable-portmidi --disable-alsamidi \
 	  --with-fontfile=/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf \
 	|| exit
@@ -85,7 +85,7 @@ gcc -Wall -O3 \
  -DHAVE_CONFIG_H \
 	"-DSUBVERSION=\"$SRCVERSION\"" \
 	`pkg-config --cflags freetype2 jack` \
-	xjadeo-*.o \
+	xjadeo-*.o osdfont.o \
 	${LIBF}/libavformat.a \
 	${LIBF}/libavcodec.a \
 	${LIBF}/libswscale.a \
