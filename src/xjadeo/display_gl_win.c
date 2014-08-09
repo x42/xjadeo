@@ -277,7 +277,7 @@ static void win_handle_menu(HWND hwnd, enum wMenuId id) {
 	switch(id) {
 		case mLoad:            win_load_file(hwnd); break;
 		case mSyncJack:        PTLL; ui_sync_to_jack(); PTUL; break;
-		case mSyncLTC:         PTLL; ui_sync_to_jack(); PTUL; break;
+		case mSyncLTC:         PTLL; ui_sync_to_ltc(); PTUL; break;
 		case mSyncMTCJACK:     PTLL; ui_sync_to_mtc_jack(); PTUL; break;
 		case mSyncMTCPort:     PTLL; ui_sync_to_mtc_portmidi(); PTUL; break;
 		case mSyncNone:        PTLL; ui_sync_none(); PTUL; break;
