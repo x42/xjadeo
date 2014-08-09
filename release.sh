@@ -12,7 +12,9 @@ if test -z "$BINARYONLY"; then
 	make clean
 	sh autogen.sh
 	./configure --enable-contrib --enable-qtgui
-	make -C doc html man
+	make # update binaries for help2man.
+	make -C doc man html
+	make clean
 	make dist
 
 	VERSION=$(awk '/define VERSION /{print $3;}' config.h | sed 's/"//g')
@@ -39,10 +41,8 @@ if test -z "$BINARYONLY"; then
 	sftp $SFUSER,xjadeo@web.sourceforge.net << EOF
 cd htdocs/
 rm *
-lcd doc/
-put -P xjadeo.pdf
-lcd html
-put -P *
+lcd doc/html
+put -Pr *
 chmod 0664 *.*
 EOF
 	#upload source to sourceforge

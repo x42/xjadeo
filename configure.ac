@@ -57,6 +57,7 @@ case $target_os in
 		;;
 	*linux*)
 		AC_DEFINE([PLATFORM_LINUX], [], [GNU/Linux version])
+		PLATFORM_LINUX=1
 		AC_MSG_NOTICE([TARGET: LINUX])
 		PM_OS="linux";
 		AC_DEFINE([IMLIB2RGBA], [], [use native RGB32 ffmpeg -> imlib.])
@@ -541,7 +542,22 @@ if test "x$enable_contrib" = "xyes"; then
 AC_MSG_NOTICE([
  Note for Packagers: --enable-contrib does not make a difference when packaging
  all Programs in contrib are noinst targets. They are intended for advanced
- users, developers or testing only.
+ users, developers and testing only.
+])
+fi
+
+if test -n "$PLATFORM_LINUX" -a -n "$HAVE_PORTMIDI"; then
+AC_MSG_NOTICE([
+ PortMidi is intended for non Linux Platforms only.
+ On Linux, please use JACK, ALSA-seq or ALSA-raw.
+])
+fi
+
+if test -n "$PLATFORM_LINUX$PLATFORM_OSX" -a -n "$HAVE_QT4"; then
+AC_MSG_WARN([
+ qjadeo is deprecated an not intended to be used. Xjadeo now
+ features a complete built-in user interface. Do not use
+ --enable-qtgui unless you really know what you are doing.
 ])
 fi
 

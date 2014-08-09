@@ -4,7 +4,7 @@ VERSION=$(shell awk '/define VERSION /{print $$3;}' ../config.h | sed 's/"//g')
 WINVERS=$(shell grep " VERSION " ../config.h | cut -d ' ' -f3 | sed 's/"//g'| sed 's/\./_/g')
 RELDATE=$(shell date '+%B %Y')
 
-all: html man
+all: man
 
 html: xjadeo.1 xjremote.1
 	mkdir -p html/static
