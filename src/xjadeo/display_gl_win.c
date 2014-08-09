@@ -79,8 +79,8 @@ void gl_newsrc () {
 #define PTUL pthread_mutex_unlock(&wingui_sync)
 
 static volatile uint8_t sync_sem;
-static void gl_sync_lock() { sync_sem = 1; PTLL; sync_sem = 0;}
-static void gl_sync_unlock() { PTUL; }
+static void gl_sync_lock()   { sync_sem = 1; PTLL; }
+static void gl_sync_unlock() { sync_sem = 0; PTUL; }
 
 static uint8_t context_menu_visible = 0;
 

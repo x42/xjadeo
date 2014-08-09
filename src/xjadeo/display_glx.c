@@ -341,7 +341,7 @@ void gl_handle_events () {
 	}
 	if (_gl_reexpose) {
 		_gl_reexpose = false;
-		xjglExpose(NULL);
+		force_redraw = true;
 	}
 
 	static int periodic = 10;
