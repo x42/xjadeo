@@ -413,13 +413,13 @@ static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int y
 	if (OSD_movieheight != movie_height) {
 		OSD_movieheight = movie_height;
 	  OSD_fontsize = MIN(MAX(16, movie_height / 18), 56);
-		render_font(OSD_fontfile, "Frame1234567890:.", OSD_fontsize, 0);
+		render_font(OSD_fontfile, "+1234567890:.", OSD_fontsize, 0);
 	  OSD_fonty0 = ST_top;
 	  OSD_fonty1 = ST_height;
 		minw_smpte = 0;
 		render_font(OSD_fontfile, "00000000000", OSD_fontsize, 0);
 		minw_smpte = MAX(minw_smpte,ST_rightend);
-		render_font(OSD_fontfile, "Frame:0000000", OSD_fontsize, 0);
+		render_font(OSD_fontfile, "F:00000000 ", OSD_fontsize, 0);
 		minw_frame = ST_rightend;
 		render_font(OSD_fontfile, "0", OSD_fontsize, 0);
 		OSD_monospace = ST_rightend;
@@ -434,8 +434,8 @@ static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int y
 	else if (xpos == OSD_RIGHT) xalign=movie_width-ST_PADDING-ST_rightend; // right
 	else xalign=(movie_width- ST_rightend)/2; // center
 
-	const int fh = (minw > 0 ? OSD_fonty1 : ST_height);
-	const int fo = ST_HEIGHT - 8 - (minw > 0 ? OSD_fonty0 : ST_top);
+	const int fh = (minw != 0 ? OSD_fonty1 : ST_height);
+	const int fo = ST_HEIGHT - 8 - (minw != 0 ? OSD_fonty0 : ST_top);
 	yalign= (movie_height - fh) * yperc /100.0;
 
 	if (!ST_BG) {
@@ -534,13 +534,13 @@ void render_buffer (uint8_t *mybuffer) {
 
 		if (OSD_mode&OSD_OFFF) {
 			char tempoff[30];
-			snprintf(tempoff,30,"off: %"PRId64, ts_offset);
-			OSD_render (VO[VOutput].render_fmt, mybuffer, tempoff, OSD_CENTER, 50, 0);
+			snprintf(tempoff,30,"O: %"PRId64, ts_offset);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, tempoff, OSD_CENTER, 50, -1);
 		} else if (OSD_mode&OSD_OFFS ) {
 			char tempsmpte[30];
-			sprintf(tempsmpte,"off: ");
-			frame_to_smptestring(tempsmpte+4, ts_offset);
-			OSD_render (VO[VOutput].render_fmt, mybuffer, tempsmpte, OSD_CENTER, 50, 0);
+			sprintf(tempsmpte,"O: ");
+			frame_to_smptestring(tempsmpte+3, ts_offset);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, tempsmpte, OSD_CENTER, 50, -1);
 		}
 	}
 	VO[VOutput].render(buffer); // buffer = mybuffer (so far no share mem or sth)

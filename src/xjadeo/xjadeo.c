@@ -1532,9 +1532,9 @@ void display_frame (int64_t timestamp, int force_update) {
 
 	if (OSD_mode&OSD_FRAME) {
 		if (want_ignstart) {
-			snprintf(OSD_frame, 48, "Frame: %6"PRId64, dispFrame);
+			snprintf(OSD_frame, 48, "F:%8"PRId64" ", dispFrame);
 		} else {
-			snprintf(OSD_frame, 48, "Frame: %6"PRId64, dispFrame - file_frame_offset);
+			snprintf(OSD_frame, 48, "F:%8"PRId64" ", dispFrame - file_frame_offset);
 		}
 	}
 	if (OSD_mode&OSD_SMPTE)
