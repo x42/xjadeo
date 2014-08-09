@@ -109,6 +109,7 @@ static struct XjxMenuItem submenu_size[] = {
 static struct XjxMenuItem submenu_osd[] = {
 	{"Frame Number", "v", NULL, &ui_osd_fn, 0, 1},
 	{"Timecode",     "s", NULL, &ui_osd_tc, 0, 1},
+	{"Swap Position","p", NULL, &ui_osd_permute, 0, 1},
 	{"",             "",  NULL, NULL, 0, 0},
 	{"Offset Off",   "o", NULL, &ui_osd_offset_none, 0, 1},
 	{"Offset FN",    "",  NULL, &ui_osd_offset_fn, 0, 1},
@@ -185,16 +186,16 @@ static void update_menus () {
 		submenu_osd[1].enabled = 1;
 	}
 	if (!(OSD_mode&(OSD_OFFF|OSD_OFFS))) {
-		submenu_osd[3].enabled = 1;
-	}
-	if (OSD_mode&OSD_OFFF) {
 		submenu_osd[4].enabled = 1;
 	}
-	if (OSD_mode&OSD_OFFS) {
+	if (OSD_mode&OSD_OFFF) {
 		submenu_osd[5].enabled = 1;
 	}
+	if (OSD_mode&OSD_OFFS) {
+		submenu_osd[6].enabled = 1;
+	}
 	if (OSD_mode&OSD_BOX) {
-		submenu_osd[7].enabled = 1;
+		submenu_osd[8].enabled = 1;
 	}
 
 	if (Xgetletterbox()) {

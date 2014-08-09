@@ -106,6 +106,7 @@ enum wMenuId {
 
 	mOsdFN,
 	mOsdTC,
+	mOsdPosition,
 	mOsdOffsetNone,
 	mOsdOffsetFN,
 	mOsdOffsetTC,
@@ -144,6 +145,7 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 
 	AppendMenu(hSubMenuOSD, MF_STRING, mOsdFN, "Frame Number\t v");
 	AppendMenu(hSubMenuOSD, MF_STRING, mOsdTC, "Timecode\t s");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdPosition, "Swap Position\t p");
 	AppendMenu(hSubMenuOSD, MF_SEPARATOR, 0, NULL);
 	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetNone, "Offset Off\t o");
 	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetFN, "Offset FN\t o");
@@ -289,6 +291,7 @@ static void win_handle_menu(HWND hwnd, enum wMenuId id) {
 		case mWinMouseVisible: Xmousepointer(2); break;
 		case mOsdFN:           PTLL; ui_osd_fn(); PTUL; break;
 		case mOsdTC:           PTLL; ui_osd_tc(); PTUL; break;
+		case mOsdPosition:     PTLL; ui_osd_permute(); PTUL; break;
 		case mOsdOffsetNone:   PTLL; ui_osd_offset_none(); PTUL; break;
 		case mOsdOffsetFN:     PTLL; ui_osd_offset_fn(); PTUL; break;
 		case mOsdOffsetTC:     PTLL; ui_osd_offset_tc(); PTUL; break;
