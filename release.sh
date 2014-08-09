@@ -5,7 +5,8 @@
 # - ChangeLog
 
 : ${SFUSER:=x42}
-: ${OSXMACHINE:=ardour@priroda.local}
+: ${OSXUSER:=ardour@}
+: ${OSXMACHINE:=priroda.local}
 : ${COWBUILDER:=opendaw.local}
 
 if test -z "$BINARYONLY"; then
@@ -42,8 +43,11 @@ if test -z "$BINARYONLY"; then
 cd htdocs/
 rm *
 lcd doc/html
-put -Pr *
+mput -P -r *
 chmod 0664 *.*
+chmod 0664 static/*.*
+chmod 0664 static/lb/*.*
+chmod 0664 static/js/*.*
 EOF
 	#upload source to sourceforge
 	sftp $SFUSER,xjadeo@frs.sourceforge.net << EOF
@@ -88,15 +92,7 @@ if test "$ok" != 0; then
 	exit
 fi
 
-# TODO: build the 3 in parallel, OSX, win and linux
-# idea: use a makefile with concurrency
-echo "building win32 ..."
-# TODO use x-win-pbuild on $COWBUILDER
-./x-win-bundle.sh || exit
-#clean up build system
-./configure --enable-contrib --enable-qtgui
-
-echo "building linux static ..."
+echo "building linux static and windows versions"
 rm -f /tmp/xjadeo-*.tgz
 ssh $COWBUILDER ~/bin/build-xjadeo.sh
 
@@ -107,7 +103,7 @@ if test "$ok" != 0; then
 fi
 
 echo "building osx package ..."
-ssh $OSXMACHINE << EOF
+ssh ${OSXUSER}${OSXMACHINE} << EOF
 exec /bin/bash -l
 curl -L -o /tmp/xjadeo-x-pbuildstatic.sh https://raw.github.com/x42/xjadeo/master/x-osx-buildstack.sh
 chmod +x /tmp/xjadeo-x-pbuildstatic.sh
@@ -123,7 +119,8 @@ fi
 # collect binaries from build-hosts
 rsync -Pa $COWBUILDER:/tmp/xjadeo-i386-linux-gnu-v${VERSION}.tgz /tmp/ || exit
 rsync -Pa $COWBUILDER:/tmp/xjadeo-x86_64-linux-gnu-v${VERSION}.tgz /tmp/ || exit
-rsync -Pa $OSXMACHINE:/tmp/jadeo-${VERSION}.dmg /tmp/ || exit
+rsync -Pa $COWBUILDER:/tmp/jadeo_installer_v${WINVERS}.exe /tmp/ || exit
+rsync -Pa ${OSXUSER}${OSXMACHINE}:/tmp/jadeo-${VERSION}.dmg /tmp/ || exit
 
 #upload files to sourceforge
 sftp $SFUSER,xjadeo@frs.sourceforge.net << EOF
@@ -133,7 +130,7 @@ cd v${VERSION}
 put /tmp/jadeo_installer_v${WINVERS}.exe
 put /tmp/xjadeo-i386-linux-gnu-v${VERSION}.tgz
 put /tmp/xjadeo-x86_64-linux-gnu-v${VERSION}.tgz
-put /tmp/Jadeo-${VERSION}.dmg
+put /tmp/jadeo-${VERSION}.dmg
 EOF
 
 # custom upload hook
