@@ -131,29 +131,30 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 	AppendMenu(hSubMenuSync, MF_STRING, mSyncNone, "None");
 
 	AppendMenu(hSubMenuSize, MF_STRING, mSize50, "50%");
-	AppendMenu(hSubMenuSize, MF_STRING, mSize100, "100%");
+	AppendMenu(hSubMenuSize, MF_STRING, mSize100, "100%\t .");
 	AppendMenu(hSubMenuSize, MF_STRING, mSize150, "150%");
 	AppendMenu(hSubMenuSize, MF_SEPARATOR, 0, NULL);
-	AppendMenu(hSubMenuSize, MF_STRING, mSizeAspect, "Reset Aspect");
-	AppendMenu(hSubMenuSize, MF_STRING, mSizeLetterbox, "Letterbox");
+	AppendMenu(hSubMenuSize, MF_STRING, mSizeAspect, "Reset Aspect\t ,");
+	AppendMenu(hSubMenuSize, MF_STRING, mSizeLetterbox, "Retain Aspect (Letterbox)\t l");
 	AppendMenu(hSubMenuSize, MF_SEPARATOR, 0, NULL);
-	AppendMenu(hSubMenuSize, MF_STRING, mWinFullScreen, "Full Screen");
+	AppendMenu(hSubMenuSize, MF_STRING, mWinOnTop, "On Top\t a");
+	AppendMenu(hSubMenuSize, MF_STRING, mWinFullScreen, "Full Screen\t f");
 	AppendMenu(hSubMenuSize, MF_SEPARATOR, 0, NULL);
-	AppendMenu(hSubMenuSize, MF_STRING, mWinMouseVisible, "Mouse Cursor");
+	AppendMenu(hSubMenuSize, MF_STRING, mWinMouseVisible, "Mouse Cursor\t m");
 
-	AppendMenu(hSubMenuOSD, MF_STRING, mOsdFN, "Frame Number");
-	AppendMenu(hSubMenuOSD, MF_STRING, mOsdTC, "Timecode");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdFN, "Frame Number\t v");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdTC, "Timecode\t s");
 	AppendMenu(hSubMenuOSD, MF_SEPARATOR, 0, NULL);
-	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetNone, "Offset Off");
-	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetFN, "Offset FN");
-	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetTC, "Offset TC");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetNone, "Offset Off\t o");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetFN, "Offset FN\t o");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetTC, "Offset TC\t o");
 	AppendMenu(hSubMenuOSD, MF_SEPARATOR, 0, NULL);
-	AppendMenu(hSubMenuOSD, MF_STRING, mOsdBox, "Background");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdBox, "Background\t b");
 
-	AppendMenu(hSubMenuJack, MF_STRING, mJackPlayPause, "Play/Pause");
+	AppendMenu(hSubMenuJack, MF_STRING, mJackPlayPause, "Play/Pause\t<space>");
 	AppendMenu(hSubMenuJack, MF_STRING, mJackPlay, "Play");
 	AppendMenu(hSubMenuJack, MF_STRING, mJackStop, "Stop");
-	AppendMenu(hSubMenuJack, MF_STRING, mJackRewind, "Rewind");
+	AppendMenu(hSubMenuJack, MF_STRING, mJackRewind, "Rewind\t<backspace>");
 
 	/* update menu items */
 	switch (ui_syncsource()) {
