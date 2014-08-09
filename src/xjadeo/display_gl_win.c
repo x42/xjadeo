@@ -20,13 +20,28 @@
 #include "display_gl_common.h"
 #if (defined HAVE_GL && defined PLATFORM_WINDOWS)
 
+#include <pthread.h>
 #include <windowsx.h>
 #include "icons/xjadeo-color-ico.h"
 
 #ifndef WM_MOUSEWHEEL
 # define WM_MOUSEWHEEL 0x020A
 #endif
-#define XJ_CLOSE_MSG (WM_USER + 50)
+#ifndef TPM_NOANIMATION
+static const UINT TPM_NOANIMATION = 0x4000L;
+#endif
+
+#define XJ_CLOSE_MSG  (WM_USER + 50)
+#define XJ_CLOSE_WIN  (WM_USER + 49)
+#define XJ_FULLSCREEN (WM_USER + 10)
+
+static pthread_t wingui_thread;
+static pthread_mutex_t wingui_sync = PTHREAD_MUTEX_INITIALIZER;
+volatile int wingui_thread_status = 0;
+
+static pthread_mutex_t win_vbuf_lock = PTHREAD_MUTEX_INITIALIZER;
+static size_t          win_vbuf_size = 0;
+static uint8_t        *win_vbuf = NULL;
 
 void xapi_open(void *d);
 
@@ -42,13 +57,32 @@ static HICON xjadeo_icon = NULL;
 static int winFlags;
 
 static void gl_make_current() {
-	wglMakeCurrent(_gl_hdc, _gl_hglrc);
+	; //wglMakeCurrent(_gl_hdc, _gl_hglrc);
 }
 
 static void gl_swap_buffers() {
 	SwapBuffers(_gl_hdc);
 }
 
+void gl_newsrc () {
+	pthread_mutex_lock(&win_vbuf_lock);
+	free(win_vbuf);
+	win_vbuf_size = video_buffer_size();
+	if (win_vbuf_size > 0) {
+		win_vbuf = malloc(win_vbuf_size * sizeof(uint8_t));
+		gl_reallocate_texture(movie_width, movie_height);
+	}
+	pthread_mutex_unlock(&win_vbuf_lock);
+}
+
+#define PTLL pthread_mutex_lock(&wingui_sync)
+#define PTUL pthread_mutex_unlock(&wingui_sync)
+
+static volatile uint8_t sync_sem;
+static void gl_sync_lock() { sync_sem = 1; PTLL; sync_sem = 0;}
+static void gl_sync_unlock() { PTUL; }
+
+static uint8_t context_menu_visible = 0;
 
 #ifdef WINMENU
 
@@ -196,9 +230,11 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 	AppendMenu(hMenu, MF_STRING | MF_POPUP | flags_jack, (UINT_PTR)hSubMenuJack, "Transport");
 
 	/* and go */
+	context_menu_visible = 1;
 	TrackPopupMenuEx(hMenu,
-			TPM_LEFTALIGN | TPM_LEFTBUTTON,
+			TPM_LEFTALIGN | TPM_TOPALIGN | TPM_LEFTBUTTON | TPM_NOANIMATION,
 			x, y, hwnd, NULL);
+	context_menu_visible = 0;
 
 	DestroyMenu (hSubMenuOSD);
 	DestroyMenu (hSubMenuJack);
@@ -225,19 +261,23 @@ static void win_load_file(HWND hwnd) {
 	//ofn.lpstrInitialDir = ;
 
 	if (GetOpenFileName (&ofn)) {
+#if 0
 		printf("Load: '%s'\n", fn);
+#endif
+		PTLL;
 		xapi_open(fn);
+		PTUL;
 	}
 }
 
 static void win_handle_menu(HWND hwnd, enum wMenuId id) {
 	switch(id) {
 		case mLoad:            win_load_file(hwnd); break;
-		case mSyncJack:        ui_sync_to_jack(); break;
-		case mSyncLTC:         ui_sync_to_jack(); break;
-		case mSyncMTCJACK:     ui_sync_to_mtc_jack(); break;
-		case mSyncMTCPort:     ui_sync_to_mtc_portmidi(); break;
-		case mSyncNone:        ui_sync_none(); break;
+		case mSyncJack:        PTLL; ui_sync_to_jack(); PTUL; break;
+		case mSyncLTC:         PTLL; ui_sync_to_jack(); PTUL; break;
+		case mSyncMTCJACK:     PTLL; ui_sync_to_mtc_jack(); PTUL; break;
+		case mSyncMTCPort:     PTLL; ui_sync_to_mtc_portmidi(); PTUL; break;
+		case mSyncNone:        PTLL; ui_sync_none(); PTUL; break;
 		case mSize50:          XCresize_percent(50); break;
 		case mSize100:         XCresize_percent(100); break;
 		case mSize150:         XCresize_percent(150); break;
@@ -246,12 +286,12 @@ static void win_handle_menu(HWND hwnd, enum wMenuId id) {
 		case mWinOnTop:        Xontop(2); break;
 		case mWinFullScreen:   Xfullscreen(2); break;
 		case mWinMouseVisible: Xmousepointer(2); break;
-		case mOsdFN:           ui_osd_fn(); break;
-		case mOsdTC:           ui_osd_tc(); break;
-		case mOsdOffsetNone:   ui_osd_offset_none(); break;
-		case mOsdOffsetFN:     ui_osd_offset_fn(); break;
-		case mOsdOffsetTC:     ui_osd_offset_tc(); break;
-		case mOsdBox:          ui_osd_box(); break;
+		case mOsdFN:           PTLL; ui_osd_fn(); PTUL; break;
+		case mOsdTC:           PTLL; ui_osd_tc(); PTUL; break;
+		case mOsdOffsetNone:   PTLL; ui_osd_offset_none(); PTUL; break;
+		case mOsdOffsetFN:     PTLL; ui_osd_offset_fn(); PTUL; break;
+		case mOsdOffsetTC:     PTLL; ui_osd_offset_tc(); PTUL; break;
+		case mOsdBox:          PTLL; ui_osd_box(); PTUL; break;
 		case mJackPlayPause:   jackt_toggle(); break;
 		case mJackPlay:        jackt_start(); break;
 		case mJackStop:        jackt_stop(); break;
@@ -259,6 +299,54 @@ static void win_handle_menu(HWND hwnd, enum wMenuId id) {
 	}
 }
 #endif
+
+static void win_set_fullscreen () {
+	if (_gl_fullscreen) {
+		MONITORINFO mi = { sizeof(mi) };
+		GetWindowRect(_gl_hwnd, &fs_rect);
+#if 0
+		printf("GR %d %d %d %d: %dx%d\n", fs_rect.top, fs_rect.left, fs_rect.bottom, fs_rect.right,
+				fs_rect.bottom - fs_rect.top, fs_rect.right - fs_rect.left);
+#endif
+		winFlags = WS_SYSMENU | WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE;
+		SetWindowLongPtr(_gl_hwnd, GWL_STYLE, winFlags);
+
+		if (GetMonitorInfo(MonitorFromWindow(_gl_hwnd, MONITOR_DEFAULTTOPRIMARY), &mi)) {
+			SetWindowPos (_gl_hwnd,
+					HWND_TOPMOST,
+					mi.rcMonitor.left, mi.rcMonitor.top,
+					mi.rcMonitor.right - mi.rcMonitor.left,
+					mi.rcMonitor.bottom - mi.rcMonitor.top,
+					SWP_ASYNCWINDOWPOS | SWP_FRAMECHANGED);
+			if (mi.dwFlags & MONITORINFOF_PRIMARY) {
+				ChangeDisplaySettings(NULL, CDS_FULLSCREEN);
+			}
+		} else {
+			SetWindowPos (_gl_hwnd,
+					HWND_TOPMOST,
+					0, 0,
+					GetSystemMetrics(SM_CXSCREEN /*SM_CXFULLSCREEN*/),
+					GetSystemMetrics(SM_CYSCREEN /*SM_CYFULLSCREEN*/),
+					SWP_ASYNCWINDOWPOS | SWP_FRAMECHANGED);
+			ChangeDisplaySettings(NULL, CDS_FULLSCREEN);
+		}
+	} else {
+		winFlags = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
+		SetWindowPos (_gl_hwnd,
+				_gl_ontop ? HWND_TOPMOST : HWND_NOTOPMOST,
+				fs_rect.left, fs_rect.top, 0, 0,
+				SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOREDRAW | SWP_NOCOPYBITS);
+		SetWindowLongPtr(_gl_hwnd, GWL_STYLE, winFlags);
+		SetWindowPos (_gl_hwnd,
+				_gl_ontop ? HWND_TOPMOST : HWND_NOTOPMOST,
+				fs_rect.left, fs_rect.top,
+				fs_rect.right - fs_rect.left, fs_rect.bottom - fs_rect.top,
+				SWP_ASYNCWINDOWPOS | SWP_FRAMECHANGED);
+		ChangeDisplaySettings(NULL, CDS_RESET);
+	}
+	ShowWindow (_gl_hwnd, SW_SHOW);
+	force_redraw = 1;
+}
 
 #if 0
 static int check_wgl_extention(const char *ext) {
@@ -308,80 +396,115 @@ static void *win_glGetProcAddress(const char* proc) {
 
 static LRESULT
 handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
+#if 0
+	if (message != 0x0200 && message != 0x0113 && message != 0x0020 && message != 0x0084 && message != 0x0121)
+	printf("MSG: %04X  @ %p\n", message, (void*)hwnd);
+#endif
 	switch (message) {
 		case WM_CREATE:
 		case WM_SHOWWINDOW:
 		case WM_SIZE:
+			if (hwnd == _gl_hwnd)
 			{
 				RECT rect;
 				GetClientRect(_gl_hwnd, &rect);
 				gl_reshape (rect.right - rect.left, rect.bottom - rect.top);
-				force_redraw = 1;
+				InvalidateRect(_gl_hwnd, NULL, 0);
 			}
-		break;
-	case WM_PAINT:
-		{
-			PAINTSTRUCT ps;
-			BeginPaint(_gl_hwnd, &ps);
-			xjglExpose();
-			EndPaint(_gl_hwnd, &ps);
-		}
-		break;
-	case WM_LBUTTONDOWN:
-		xjglButton(1);
-		break;
-	case WM_MBUTTONDOWN:
-		xjglButton(2);
-		break;
-	case WM_RBUTTONDOWN:
-#ifdef WINMENU
-		if (1) {
-			POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-			ClientToScreen(hwnd, &pt);
-			open_context_menu(hwnd, pt.x, pt.y);
-		}
-		else
+		case WM_SIZING:
+			xjglExpose(win_vbuf);
+			break;
+		case WM_PAINT:
+			if (hwnd != _gl_hwnd)
+				return DefWindowProc(hwnd, message, wParam, lParam);
+			else
+			{
+				pthread_mutex_lock(&win_vbuf_lock);
+				xjglExpose(win_vbuf);
+				pthread_mutex_unlock(&win_vbuf_lock);
+			}
+			ValidateRect(hwnd, NULL);
+			break;
+#if 0
+		case WM_ERASEBKGND:
+			if (hwnd != _gl_hwnd)
+				return DefWindowProc(hwnd, message, wParam, lParam);
+			break;
 #endif
-		xjglButton(3);
-		break;
+		case WM_LBUTTONDOWN:
+			xjglButton(1);
+			break;
+		case WM_MBUTTONDOWN:
+			xjglButton(2);
+			break;
+		case WM_RBUTTONDOWN:
 #ifdef WINMENU
-	case WM_CONTEXTMENU:
-		{
-			int x0, y0;
-			gl_get_window_pos(&x0, &y0);
-			open_context_menu(hwnd, x0 + _gl_width * .25, y0 + _gl_height * .25);
-		}
-		break;
-	case WM_COMMAND:
-		win_handle_menu(hwnd, LOWORD(wParam));
-		break;
+			if (1) {
+				POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+				ClientToScreen(hwnd, &pt);
+				open_context_menu(hwnd, pt.x, pt.y);
+			}
+			else
 #endif
-	case WM_MOUSEWHEEL:
-		xjglButton((short)HIWORD(wParam) > 0 ? 4 : 5);
-		break;
-	case WM_KEYDOWN:
-		{
-			static BYTE kbs[256];
-			if (GetKeyboardState(kbs) != FALSE) {
-				char lb[2];
-				UINT scanCode = (lParam >> 8) & 0xFFFFFF00;
-				if ( 1 == ToAscii(wParam, scanCode, kbs, (LPWORD)lb, 0)) {
-					const char buf [2] = {(char)lb[0] , 0};
-					xjglKeyPress((char)lb[0], buf);
+				xjglButton(3);
+			break;
+#ifdef WINMENU
+		case WM_CONTEXTMENU:
+			{
+				int x0, y0;
+				gl_get_window_pos(&x0, &y0);
+				open_context_menu(hwnd, x0 + _gl_width * .25, y0 + _gl_height * .25);
+			}
+			break;
+		case WM_COMMAND:
+			win_handle_menu(hwnd, LOWORD(wParam));
+			break;
+#endif
+		case WM_MOUSEWHEEL:
+			gl_sync_lock();
+			xjglButton((short)HIWORD(wParam) > 0 ? 4 : 5);
+			gl_sync_unlock();
+			break;
+		case WM_KEYDOWN:
+			{
+				static BYTE kbs[256];
+				if (GetKeyboardState(kbs) != FALSE) {
+					char lb[2];
+					UINT scanCode = (lParam >> 8) & 0xFFFFFF00;
+					if ( 1 == ToAscii(wParam, scanCode, kbs, (LPWORD)lb, 0)) {
+						const char buf [2] = {(char)lb[0] , 0};
+						if (!strcmp(buf, "f")) {
+							_gl_fullscreen^=1;
+							win_set_fullscreen();
+						} else {
+							xjglKeyPress((char)lb[0], buf);
+						}
+					}
 				}
 			}
-		}
-		break;
-	case WM_KEYUP:
-		break;
-	case WM_QUIT:
-	case XJ_CLOSE_MSG:
-		if ((interaction_override&OVR_QUIT_WMG) == 0) {
-			loop_flag = 0;
-		}
-		break;
-	default:
-		return DefWindowProc(hwnd, message, wParam, lParam);
+			break;
+		case XJ_FULLSCREEN:
+			win_set_fullscreen();
+			break;
+		case WM_KEYUP:
+			break;
+		case WM_QUIT:
+		case XJ_CLOSE_MSG:
+			gl_sync_lock();
+			if ((interaction_override&OVR_QUIT_WMG) == 0) {
+				loop_flag = 0;
+			}
+			gl_sync_unlock();
+			break;
+		case WM_ENTERIDLE:
+			if (context_menu_visible)
+				xjglExpose(win_vbuf);
+			return DefWindowProc(hwnd, message, wParam, lParam);
+			break;
+		case WM_EXITSIZEMOVE:
+			force_redraw = 1;
+		default:
+			return DefWindowProc(hwnd, message, wParam, lParam);
 	}
 	return 0;
 }
@@ -401,7 +524,17 @@ wndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	}
 }
 
-int gl_open_window () {
+void win_close_window() {
+	wglMakeCurrent(NULL, NULL);
+	wglDeleteContext(_gl_hglrc);
+	ReleaseDC(_gl_hwnd, _gl_hdc);
+	DestroyWindow(_gl_hwnd);
+	DestroyCursor(hCurs_none);
+	UnregisterClass(_gl_wc.lpszClassName, NULL);
+	DestroyIcon(xjadeo_icon);
+}
+
+static void *win_open_window (void *arg) {
 	LPCTSTR MainWndClass = TEXT("xjadeo");
 	int offset = LookupIconIdFromDirectory ((BYTE*)xjadeo_win_ico, TRUE);
 	if (offset > 0) {
@@ -425,7 +558,7 @@ int gl_open_window () {
 	_gl_wc.hInstance     = NULL;
 	_gl_wc.hIcon         = xjadeo_icon ? xjadeo_icon : LoadIcon(NULL, IDI_APPLICATION);
 	_gl_wc.hCursor       = hCurs_dflt;
-	_gl_wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+	_gl_wc.hbrBackground = NULL; // (HBRUSH)GetStockObject(BLACK_BRUSH);
 	_gl_wc.lpszMenuName  = NULL;
 	_gl_wc.lpszClassName = MainWndClass;
 	_gl_wc.hIconSm       = 0; // 16x16
@@ -433,7 +566,9 @@ int gl_open_window () {
 	if (!RegisterClassEx(&_gl_wc)) {
 		fprintf(stderr, "cannot regiser window class\n");
 		MessageBox(NULL, TEXT("Error registering window class."), TEXT("Error"), MB_ICONERROR | MB_OK);
-		return 1;
+		wingui_thread_status = -1;
+		pthread_exit (NULL);
+		return (NULL);
 	}
 
 	_gl_width = ffctv_width;
@@ -442,6 +577,10 @@ int gl_open_window () {
 	winFlags = start_fullscreen ? (WS_POPUP | WS_CLIPCHILDREN) : WS_OVERLAPPEDWINDOW;
 	RECT wr = { 0, 0, (long)_gl_width, (long)_gl_height };
 	AdjustWindowRectEx(&wr, winFlags, FALSE, WS_EX_TOPMOST);
+
+	SystemParametersInfo(SPI_SETDROPSHADOW, 0, FALSE, 0);
+	SystemParametersInfo(SPI_SETMENUFADE, 0, FALSE, 0);
+	SystemParametersInfo(SPI_SETMENUANIMATION, 0, FALSE, 0);
 
 	_gl_hwnd = CreateWindowEx (
 			0,
@@ -456,7 +595,9 @@ int gl_open_window () {
 		MessageBox(NULL, TEXT("Error creating main window."), TEXT("Error"), MB_ICONERROR | MB_OK);
 		UnregisterClass(_gl_wc.lpszClassName, NULL);
 		DestroyIcon(xjadeo_icon);
-		return 1;
+		wingui_thread_status = -1;
+		pthread_exit (NULL);
+		return (NULL);
 	}
 
 	_gl_hdc = GetDC(_gl_hwnd);
@@ -464,7 +605,9 @@ int gl_open_window () {
 		DestroyWindow(_gl_hwnd);
 		UnregisterClass(_gl_wc.lpszClassName, NULL);
 		DestroyIcon(xjadeo_icon);
-		return 1;
+		wingui_thread_status = -1;
+		pthread_exit (NULL);
+		return (NULL);
 	}
 
 	PIXELFORMATDESCRIPTOR pfd;
@@ -484,7 +627,9 @@ int gl_open_window () {
 		DestroyWindow(_gl_hwnd);
 		UnregisterClass(_gl_wc.lpszClassName, NULL);
 		DestroyIcon(xjadeo_icon);
-		return -1;
+		wingui_thread_status = -1;
+		pthread_exit (NULL);
+		return (NULL);
 	}
 	SetPixelFormat(_gl_hdc, format, &pfd);
 
@@ -495,13 +640,18 @@ int gl_open_window () {
 		DestroyWindow(_gl_hwnd);
 		UnregisterClass(_gl_wc.lpszClassName, NULL);
 		DestroyIcon(xjadeo_icon);
-		return -1;
+		wingui_thread_status = -1;
+		pthread_exit (NULL);
+		return (NULL);
 	}
 
 	wglMakeCurrent(_gl_hdc, _gl_hglrc);
 
-	if (start_fullscreen) { gl_set_fullscreen(1); }
 	if (start_ontop) { gl_set_ontop(1); }
+	if (start_fullscreen) {
+		_gl_fullscreen = 1;
+		win_set_fullscreen();
+	}
 
 	BYTE ANDmaskCursor[16];
 	BYTE XORmaskCursor[16];
@@ -516,9 +666,12 @@ int gl_open_window () {
 	gl_init();
 
 	if (gl_reallocate_texture(movie_width, movie_height)) {
-		gl_close_window ();
-		return 1;
+		win_close_window ();
+		wingui_thread_status = -1;
+		pthread_exit (NULL);
+		return (NULL);
 	}
+	gl_newsrc();
 
 #if 0 // check for VBlank sync
 	if (check_wgl_extention("WGL_EXT_swap_control")) {
@@ -542,32 +695,78 @@ int gl_open_window () {
 	ShowWindow(_gl_hwnd, WS_VISIBLE);
 	ShowWindow(_gl_hwnd, SW_RESTORE);
 	UpdateWindow(_gl_hwnd);
-	return 0;
+
+	wingui_thread_status = 1;
+
+	MSG msg;
+	while (wingui_thread_status) {
+		if(GetMessage (&msg, 0, 0, 0) < 0) {
+			break; // error
+		}
+		handleMessage(_gl_hwnd, msg.message, msg.wParam, msg.lParam);
+		if (_gl_reexpose) {
+			pthread_mutex_lock(&win_vbuf_lock);
+			_gl_reexpose = false;
+			xjglExpose(win_vbuf);
+			pthread_mutex_unlock(&win_vbuf_lock);
+		}
+	}
+
+	if (wingui_thread_status) {
+		// This can't really happen, can it?
+		MessageBox(NULL, TEXT("The Windows application event loop was terminated unexpectedly."),
+				TEXT("Error"), MB_ICONERROR | MB_OK);
+		loop_flag = 0; // Irregular exit
+	}
+
+	win_close_window();
+	pthread_exit (NULL);
+	return (NULL);
+}
+
+int gl_open_window () {
+	// use a dedicated thread for the windows UI
+	// to work around blocking behaviour on window
+	// resize and context-menu access.
+	if (wingui_thread_status) return -1;
+	if (pthread_create (&wingui_thread, NULL, win_open_window, NULL)) {
+		return -1;
+	}
+	while (wingui_thread_status == 0) {
+		Sleep(1);
+	}
+	if (wingui_thread_status < 0) {
+		wingui_thread_status = 0;
+		pthread_join (wingui_thread, NULL);
+	}
+	return wingui_thread_status > 0 ? 0 : -1;
 }
 
 void gl_close_window() {
-	wglMakeCurrent(NULL, NULL);
-	wglDeleteContext(_gl_hglrc);
-	ReleaseDC(_gl_hwnd, _gl_hdc);
-	DestroyWindow(_gl_hwnd);
-	DestroyCursor(hCurs_none);
-	UnregisterClass(_gl_wc.lpszClassName, NULL);
-	DestroyIcon(xjadeo_icon);
+	if (wingui_thread_status == 0) return;
+	wingui_thread_status = 0;
+	PostMessage(_gl_hwnd, XJ_CLOSE_WIN, 0, 0); // wake up GetMessage
+	pthread_join (wingui_thread, NULL);
+
+	free(win_vbuf); win_vbuf = NULL;
+	win_vbuf_size = 0;
 }
 
 void gl_handle_events () {
-	MSG msg;
-	while (PeekMessage(&msg, _gl_hwnd, 0, 0, PM_REMOVE)) {
-		handleMessage(_gl_hwnd, msg.message, msg.wParam, msg.lParam);
+	pthread_mutex_unlock(&wingui_sync); // XXX TODO first-time lock
+	while (sync_sem) {
+		sched_yield();
 	}
-	if (_gl_reexpose) {
-		_gl_reexpose = false;
-		xjglExpose();
-	}
+	// TODO explicitly wake up potential lock-holders
+	pthread_mutex_lock(&wingui_sync);
 }
 
-void gl_render (uint8_t *mybuffer) {
-	xjglExpose();
+void gl_render (uint8_t *buffer) {
+	if (!win_vbuf) return;
+	pthread_mutex_lock(&win_vbuf_lock);
+	memcpy(win_vbuf, buffer, win_vbuf_size * sizeof(uint8_t));
+	pthread_mutex_unlock(&win_vbuf_lock);
+	InvalidateRect(_gl_hwnd, NULL, 0);
 }
 
 void gl_resize (unsigned int x, unsigned int y) {
@@ -609,39 +808,11 @@ void gl_set_ontop (int action) {
 			0, 0, 0, 0, (_gl_ontop ? 0 : SWP_NOACTIVATE) | SWP_ASYNCWINDOWPOS | SWP_NOMOVE | SWP_NOSIZE);
 }
 
+
 void gl_set_fullscreen (int action) {
 	if (action==2) _gl_fullscreen^=1;
 	else _gl_fullscreen = action ? 1 : 0;
-	if (_gl_fullscreen) {
-		GetWindowRect(_gl_hwnd, &fs_rect);
-#if 0
-		printf("GR %d %d %d %d: %dx%d\n", fs_rect.top, fs_rect.left, fs_rect.bottom, fs_rect.right,
-				fs_rect.bottom - fs_rect.top, fs_rect.right - fs_rect.left);
-#endif
-		ChangeDisplaySettings(NULL, CDS_FULLSCREEN);
-		winFlags = WS_SYSMENU | WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE;
-		SetWindowLongPtr(_gl_hwnd, GWL_STYLE, winFlags);
-		SetWindowPos (_gl_hwnd,
-				HWND_TOPMOST,
-				0, 0,
-				GetSystemMetrics(SM_CXSCREEN /*SM_CXFULLSCREEN*/),
-				GetSystemMetrics(SM_CYSCREEN /*SM_CYFULLSCREEN*/),
-				SWP_ASYNCWINDOWPOS);
-	} else {
-		winFlags = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
-		SetWindowPos (_gl_hwnd,
-				_gl_ontop ? HWND_TOPMOST : HWND_NOTOPMOST,
-				fs_rect.left, fs_rect.top, 0, 0,
-				SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOREDRAW | SWP_NOCOPYBITS);
-		SetWindowLongPtr(_gl_hwnd, GWL_STYLE, winFlags);
-		SetWindowPos (_gl_hwnd,
-				_gl_ontop ? HWND_TOPMOST : HWND_NOTOPMOST,
-				fs_rect.left, fs_rect.top,
-				fs_rect.right - fs_rect.left, fs_rect.bottom - fs_rect.top,
-				SWP_ASYNCWINDOWPOS);
-		ChangeDisplaySettings(NULL, CDS_RESET);
-	}
-	ShowWindow (_gl_hwnd, SW_SHOW);
+	PostMessage(_gl_hwnd, XJ_FULLSCREEN, 0, 0);
 }
 
 void gl_mousepointer (int action) {

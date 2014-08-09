@@ -57,6 +57,9 @@ static int          _gl_vblank_sync = 0;
 static void gl_make_current();
 static void gl_swap_buffers();
 
+static void gl_sync_lock();
+static void gl_sync_unlock();
+
 static void gl_reshape(int width, int height) {
 	gl_make_current();
 
@@ -110,10 +113,6 @@ static void gl_init () {
 	glEnable (GL_TEXTURE_RECTANGLE_ARB);
 }
 
-void gl_newsrc () {
-	gl_reallocate_texture(movie_width, movie_height);
-}
-
 static void opengl_draw (int width, int height, unsigned char* surf_data) {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -147,10 +146,11 @@ static void opengl_draw (int width, int height, unsigned char* surf_data) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void xjglExpose() {
-	if (!buffer) return;
+static void xjglExpose(uint8_t *buf) {
+	if (!buf) buf = buffer;
+	if (!buf) return;
 	gl_make_current();
-	opengl_draw (movie_width, movie_height, buffer);
+	opengl_draw (movie_width, movie_height, buf);
 	glFlush();
 	gl_swap_buffers();
 	if (_gl_vblank_sync) {
@@ -186,27 +186,40 @@ static void xjglKeyPress(const unsigned int sym, const char *key) {
 		gl_set_ontop(2);
 	}
 	else if (!strcmp(key, "f")) {
+		//NB. gl_win handles this directly.
 		gl_set_fullscreen(2);
 	}
 	else if (!strcmp(key, "o")) {
+		gl_sync_lock();
 		ui_osd_offset_cycle();
+		gl_sync_unlock();
 	}
 	else if (!strcmp(key, "l")) {
+		gl_sync_lock();
 		want_letterbox=!want_letterbox;
 		gl_letterbox_change();
 		_gl_reexpose = 1;
+		gl_sync_unlock();
 	}
 	else if (!strcmp(key, "s")) {
+		gl_sync_lock();
 		ui_osd_tc();
+		gl_sync_unlock();
 	}
 	else if (!strcmp(key, "v")) {
+		gl_sync_lock();
 		ui_osd_fn();
+		gl_sync_unlock();
 	}
 	else if (!strcmp(key, "b")) {
+		gl_sync_lock();
 		ui_osd_box();
+		gl_sync_unlock();
 	}
 	else if (!strcmp(key, "C")) {
+		gl_sync_lock();
 		ui_osd_clear();
+		gl_sync_unlock();
 	}
 	else if (!strcmp(key, ".")) {
 		XCresize_percent(100);
@@ -221,19 +234,29 @@ static void xjglKeyPress(const unsigned int sym, const char *key) {
 		XCresize_scale(1);
 	}
 	else if (!strcmp(key, "\\")) {
+		gl_sync_lock();
 		XCtimeoffset(0, sym);
+		gl_sync_unlock();
 	}
 	else if (!strcmp(key, "+")) {
+		gl_sync_lock();
 		XCtimeoffset(1, sym);
+		gl_sync_unlock();
 	}
 	else if (!strcmp(key, "-")) {
+		gl_sync_lock();
 		XCtimeoffset(-1, sym);
+		gl_sync_unlock();
 	}
 	else if (!strcmp(key, "}")) {
+		gl_sync_lock();
 		XCtimeoffset(2, sym);
+		gl_sync_unlock();
 	}
 	else if (!strcmp(key, "{")) {
+		gl_sync_lock();
 		XCtimeoffset(-2, sym);
+		gl_sync_unlock();
 	}
 	else if (!strcmp(key, "m")) {
 		gl_mousepointer(2);
@@ -259,7 +282,9 @@ static void xjglKeyPress(const unsigned int sym, const char *key) {
 			}
 			printf("]\n");
 		}
+		gl_sync_lock();
 		remote_notify(NTY_KEYBOARD, 310, "keypress=%d", sym);
+		gl_sync_unlock();
 	}
 }
 

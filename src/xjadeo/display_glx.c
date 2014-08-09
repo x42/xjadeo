@@ -34,12 +34,19 @@ static GLXContext _gl_ctx;
 
 extern double framerate;  // used for screensaver
 
+static void gl_sync_lock() { }
+static void gl_sync_unlock() { }
+
 static void gl_make_current() {
 	glXMakeCurrent(_gl_display, _gl_win, _gl_ctx);
 }
 
 static void gl_swap_buffers() {
 	glXSwapBuffers(_gl_display, _gl_win);
+}
+
+void gl_newsrc () {
+	gl_reallocate_texture(movie_width, movie_height);
 }
 
 static void glx_netwm(const char *atom, const int onoff) {
@@ -334,7 +341,7 @@ void gl_handle_events () {
 	}
 	if (_gl_reexpose) {
 		_gl_reexpose = false;
-		xjglExpose();
+		xjglExpose(NULL);
 	}
 
 	static int periodic = 10;
@@ -346,7 +353,7 @@ void gl_handle_events () {
 }
 
 void gl_render (uint8_t *mybuffer) {
-	xjglExpose();
+	xjglExpose(NULL);
 }
 
 void gl_resize (unsigned int x, unsigned int y) {

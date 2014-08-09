@@ -167,7 +167,7 @@ __attribute__ ((visibility ("hidden")))
 
 - (void) drawRect:(NSRect)rect
 {
-	xjglExpose();
+	xjglExpose(NULL);
 }
 
 -(void)updateTrackingAreas
@@ -439,6 +439,9 @@ static void update_sync_menu() {
 
 @end
 
+static void gl_sync_lock() { }
+static void gl_sync_unlock() { }
+
 static void gl_make_current() {
 	NSOpenGLContext* context = [osx_glview openGLContext];
 	[context makeCurrentContext];
@@ -446,6 +449,10 @@ static void gl_make_current() {
 
 static void gl_swap_buffers() {
 	glSwapAPPLE();
+}
+
+void gl_newsrc () {
+	gl_reallocate_texture(movie_width, movie_height);
 }
 
 static void makeAppMenu(void) {
@@ -627,7 +634,7 @@ void gl_handle_events () {
 
 void gl_render (uint8_t *mybuffer) {
 	[osx_glview setNeedsDisplay: YES];
-	xjglExpose();
+	xjglExpose(NULL);
 }
 
 void gl_resize (unsigned int x, unsigned int y) {
