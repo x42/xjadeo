@@ -20,6 +20,8 @@
 # include <config.h>
 #endif
 
+#include <stdio.h>
+
 #define OSC_DOC_ALL
 
 /* extract doc for website, doc/pages/osc.html table:
@@ -32,7 +34,6 @@
 
 #ifdef HAVE_LIBLO
 
-#include <stdio.h>
 #include <unistd.h>
 #include <lo/lo_lowlevel.h>
 #include "xjadeo.h"

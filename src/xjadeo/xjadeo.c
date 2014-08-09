@@ -544,7 +544,9 @@ static int seek_frame (AVPacket *packet, int64_t framenumber) {
 			}
 #endif
 
+#if 0 // DEBUG
 		const int key = (packet->flags & AV_PKT_FLAG_KEY) ? 1 : 0;
+#endif
 
 		int frameFinished = 0;
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 21, 0)
