@@ -264,7 +264,7 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 
 	AppendMenu(hMenu, MF_STRING | MF_DISABLED, 0, "XJadeo " VERSION);
 	AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
-	AppendMenu(hMenu, MF_STRING | flags_load, mLoad, "Open Video");
+	AppendMenu(hMenu, MF_STRING | flags_load, mLoad, "Open Video\t Ctrl+O");
 	AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
 	AppendMenu(hMenu, MF_STRING | MF_POPUP | flags_sync, (UINT_PTR)hSubMenuSync, "Sync");
 	AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hSubMenuSize, "Display");
@@ -527,9 +527,20 @@ handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
 				if (GetKeyboardState(kbs) != FALSE) {
 					char lb[2];
 					UINT scanCode = (lParam >> 8) & 0xFFFFFF00;
+
 					if ( 1 == ToAscii(wParam, scanCode, kbs, (LPWORD)lb, 0)) {
 						const char buf [2] = {(char)lb[0] , 0};
-						if (!strcmp(buf, "f")) {
+						if (GetKeyState(VK_CONTROL) & GetKeyState('O') & 0x8000) {
+							// Ctrl + O
+							win_load_file(hwnd);
+						}
+						else if ((GetKeyState(VK_CONTROL) & GetKeyState('Q') & 0x8000)
+								&& (interaction_override&OVR_QUIT_KEY) == 0) {
+							// Ctrl + Q
+							loop_flag=0;
+						}
+						else if (!strcmp(buf, "f")) {
+							// direct fullscreen handling
 							_gl_fullscreen^=1;
 							win_set_fullscreen();
 						} else {
