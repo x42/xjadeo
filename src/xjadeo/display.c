@@ -417,9 +417,9 @@ static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int y
 	  OSD_fonty0 = ST_top;
 	  OSD_fonty1 = ST_height;
 		minw_smpte = 0;
-		render_font(OSD_fontfile, "00000000000", OSD_fontsize, 0);
+		render_font(OSD_fontfile, "000000000000000", OSD_fontsize, 0);
 		minw_smpte = MAX(minw_smpte,ST_rightend);
-		render_font(OSD_fontfile, "F:00000000 ", OSD_fontsize, 0);
+		render_font(OSD_fontfile, "00000000000", OSD_fontsize, 0);
 		minw_frame = ST_rightend;
 		render_font(OSD_fontfile, "0", OSD_fontsize, 0);
 		OSD_monospace = ST_rightend;
@@ -503,7 +503,7 @@ void render_buffer (uint8_t *mybuffer) {
 	if (!mybuffer) return;
 
 	// render OSD on buffer
-	if (OSD_mode&OSD_FRAME) OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_frame, OSD_fx, OSD_fy, minw_frame);
+	if (OSD_mode&(OSD_FRAME|OSD_VTC)) OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_frame, OSD_fx, OSD_fy, minw_frame);
 	if (OSD_mode&OSD_SMPTE) OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_smpte, OSD_sx, OSD_sy, minw_smpte);
 
 #if (HAVE_LIBXV || HAVE_IMLIB2)
@@ -534,12 +534,22 @@ void render_buffer (uint8_t *mybuffer) {
 
 		if (OSD_mode&OSD_OFFF) {
 			char tempoff[30];
-			snprintf(tempoff,30,"O: %"PRId64, ts_offset);
+			snprintf(tempoff,30,"O:  %"PRId64, ts_offset);
 			OSD_render (VO[VOutput].render_fmt, mybuffer, tempoff, OSD_CENTER, 50, -1);
 		} else if (OSD_mode&OSD_OFFS ) {
 			char tempsmpte[30];
-			sprintf(tempsmpte,"O: ");
-			frame_to_smptestring(tempsmpte+3, ts_offset);
+			if (ts_offset < 0) {
+				sprintf(tempsmpte,"O: -");
+				if (frame_to_smptestring(tempsmpte+4, -ts_offset)) {
+					strcat(tempsmpte," +d");
+				}
+			} else {
+				sprintf(tempsmpte,"O:  ");
+				frame_to_smptestring(tempsmpte+4, ts_offset);
+				if (frame_to_smptestring(tempsmpte+4, ts_offset)) {
+					strcat(tempsmpte," +d");
+				}
+			}
 			OSD_render (VO[VOutput].render_fmt, mybuffer, tempsmpte, OSD_CENTER, 50, -1);
 		}
 	}

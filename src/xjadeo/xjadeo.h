@@ -87,6 +87,7 @@ enum {
 
 #define OSD_FRAME (1)
 #define OSD_SMPTE (2)
+#define OSD_VTC (512)
 
 #define OSD_EQ    (8)
 #define OSD_OFFS (16)
@@ -213,6 +214,9 @@ void ui_osd_tc();
 void ui_osd_fn();
 void ui_osd_box();
 void ui_osd_permute ();
+void ui_osd_vtc_fn ();
+void ui_osd_vtc_tc ();
+void ui_osd_vtc_off ();
 
 enum SyncSource {
 	SYNC_JACK = 0, // used in display_x_dialog.c
@@ -245,7 +249,7 @@ int ltcjack_connected(void);
 
 /* smpte.c prototypes */
 int64_t smptestring_to_frame (char *str);
-void frame_to_smptestring(char *smptestring, int64_t frame);
+int frame_to_smptestring(char *smptestring, int64_t frame);
 int64_t smpte_to_frame(int type, int f, int s, int m, int h, int overflow);
 
 /* midi.c function prototype */

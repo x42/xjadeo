@@ -157,8 +157,8 @@ int OSD_mode = 0;
 int OSD_fx = OSD_CENTER;
 int OSD_tx = OSD_CENTER;
 int OSD_sx = OSD_CENTER;
-int OSD_fy = 2; // percent
-int OSD_sy = 98; // percent
+int OSD_fy = 98; // percent
+int OSD_sy =  2; // percent
 int OSD_ty = 50; // percent
 
 // prototypes .

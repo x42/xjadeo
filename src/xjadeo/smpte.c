@@ -173,7 +173,7 @@ int64_t smptestring_to_frame (char *str) { // TODO int64
 }
 
 /* any smpte output (verbose and OSD) */
-void frame_to_smptestring(char *smptestring, int64_t frame) {
+int frame_to_smptestring(char *smptestring, int64_t frame) {
 	bcd s;
 	if (!smptestring) return;
 
@@ -182,7 +182,7 @@ void frame_to_smptestring(char *smptestring, int64_t frame) {
 
 	if ((have_dropframes && want_autodrop)||want_dropframes) {
 		frames = insert_drop_frames(frames);
-		sep = '.';
+		sep = ';';
 	}
 
 	parse_int(&s, (int) frames);
@@ -193,6 +193,7 @@ void frame_to_smptestring(char *smptestring, int64_t frame) {
 			s.v[SMPTE_SEC],
 			sep,
 			s.v[SMPTE_FRAME]);
+	return s.v[SMPTE_OVERFLOW];
 }
 
 int64_t smpte_to_frame(int type, const int f, const int s, const int m, const int h, const int overflow) {

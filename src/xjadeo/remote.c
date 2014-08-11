@@ -599,13 +599,26 @@ void xapi_osd_mode(void *d) {
 	if (m&2) OSD_mode|=OSD_SMPTE; else OSD_mode&=~OSD_SMPTE;
 	if (m&4) OSD_mode|=OSD_TEXT;  else OSD_mode&=~OSD_TEXT;
 	if (m&8) OSD_mode|=OSD_BOX;   else OSD_mode&=~OSD_BOX;
-	remote_printf(100,"set osdmode=%i", (OSD_mode&OSD_FRAME?1:0)|(OSD_mode&OSD_SMPTE?2:0)|(OSD_mode&OSD_TEXT?4:0)|(OSD_mode&OSD_BOX?8:0));
+	if (m&16) OSD_mode|=OSD_VTC;   else OSD_mode&=~OSD_VTC;
+	remote_printf(100,"set osdmode=%i",
+			 (OSD_mode&OSD_FRAME ?1:0)
+			|(OSD_mode&OSD_SMPTE ?2:0)
+			|(OSD_mode&OSD_TEXT  ?4:0)
+			|(OSD_mode&OSD_BOX   ?8:0)
+			|(OSD_mode&OSD_VTC   ?16:0)
+			);
 	force_redraw=1;
 }
 
 void xapi_posd(void *d) {
 #ifdef HAVE_FT
-	remote_printf(201,"osdmode=%i", (OSD_mode&OSD_FRAME?1:0)|(OSD_mode&OSD_SMPTE?2:0)|(OSD_mode&OSD_TEXT?4:0)|(OSD_mode&OSD_BOX?8:0));
+	remote_printf(201,"osdmode=%i",
+			 (OSD_mode&OSD_FRAME ?1:0)
+			|(OSD_mode&OSD_SMPTE ?2:0)
+			|(OSD_mode&OSD_TEXT  ?4:0)
+			|(OSD_mode&OSD_BOX   ?8:0)
+			|(OSD_mode&OSD_VTC   ?16:0)
+			);
 	remote_printf(220,"osdfont=%s", OSD_fontfile);
 	remote_printf(220,"osdtext=%s", OSD_text);
 #else

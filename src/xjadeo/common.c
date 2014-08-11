@@ -150,13 +150,14 @@ void ui_osd_clear () {
 
 void ui_osd_offset_cycle () {
 	if (OSD_mode & OSD_OFFF) {
-		OSD_mode &= ~OSD_OFFF;
-		OSD_mode |= OSD_OFFS;
+		OSD_mode &= ~(OSD_OFFF | OSD_OFFS);
 	}
 	else if (OSD_mode & OSD_OFFS) {
-		OSD_mode^=OSD_OFFS;
+		OSD_mode &= ~OSD_OFFS;
+		OSD_mode |= OSD_OFFF;
 	} else {
-		OSD_mode^=OSD_OFFF;
+		OSD_mode &= ~OSD_OFFF;
+		OSD_mode |= OSD_OFFS;
 	}
 	force_redraw = 1;
 }
@@ -185,7 +186,32 @@ void ui_osd_tc () {
 }
 
 void ui_osd_fn () {
-	OSD_mode ^= OSD_FRAME;
+	if (OSD_mode & OSD_FRAME) {
+		OSD_mode &= ~(OSD_VTC | OSD_FRAME);
+	} else if (OSD_mode & OSD_VTC) {
+		OSD_mode &= ~OSD_VTC;
+		OSD_mode |= OSD_FRAME;
+	} else {
+		OSD_mode &= ~OSD_FRAME;
+		OSD_mode |= OSD_VTC;
+	}
+	force_redraw = 1;
+}
+
+void ui_osd_vtc_fn () {
+	OSD_mode &= ~OSD_VTC;
+	OSD_mode |= OSD_FRAME;
+	force_redraw = 1;
+}
+
+void ui_osd_vtc_tc () {
+	OSD_mode &= ~OSD_FRAME;
+	OSD_mode |= OSD_VTC;
+	force_redraw = 1;
+}
+
+void ui_osd_vtc_off () {
+	OSD_mode &= ~(OSD_VTC | OSD_FRAME);
 	force_redraw = 1;
 }
 

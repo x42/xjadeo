@@ -104,8 +104,10 @@ enum wMenuId {
 	mWinFullScreen,
 	mWinMouseVisible,
 
-	mOsdFN,
 	mOsdTC,
+	mOsdVtcNone,
+	mOsdVtcTc,
+	mOsdVtcFn,
 	mOsdPosition,
 	mOsdOffsetNone,
 	mOsdOffsetFN,
@@ -143,15 +145,18 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 	AppendMenu(hSubMenuSize, MF_SEPARATOR, 0, NULL);
 	AppendMenu(hSubMenuSize, MF_STRING, mWinMouseVisible, "Mouse Cursor\t m");
 
-	AppendMenu(hSubMenuOSD, MF_STRING, mOsdFN, "Frame Number\t v");
-	AppendMenu(hSubMenuOSD, MF_STRING, mOsdTC, "Timecode\t s");
-	AppendMenu(hSubMenuOSD, MF_STRING, mOsdPosition, "Swap Position\t p");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdTC, "External TC\t s");
+	AppendMenu(hSubMenuOSD, MF_SEPARATOR, 0, NULL);
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdVtcNone, "VTC Off\t v");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdVtcTc, "VTC Timecode");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdVtcFn, "Frame number");
 	AppendMenu(hSubMenuOSD, MF_SEPARATOR, 0, NULL);
 	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetNone, "Offset Off\t o");
-	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetFN, "Offset FN\t o");
-	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetTC, "Offset TC\t o");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetTC, "Offset TC");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetFN, "Offset FN");
 	AppendMenu(hSubMenuOSD, MF_SEPARATOR, 0, NULL);
 	AppendMenu(hSubMenuOSD, MF_STRING, mOsdBox, "Background\t b");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdPosition, "Swap Position\t p");
 
 	AppendMenu(hSubMenuJack, MF_STRING, mJackPlayPause, "Play/Pause\t<space>");
 	AppendMenu(hSubMenuJack, MF_STRING, mJackPlay, "Play");
@@ -177,11 +182,17 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 			break;
 	}
 
-	if (OSD_mode&OSD_FRAME) {
-		CheckMenuItem(hSubMenuOSD, mOsdFN, MF_CHECKED | MF_BYCOMMAND);
-	}
 	if (OSD_mode&OSD_SMPTE) {
 		CheckMenuItem(hSubMenuOSD, mOsdTC, MF_CHECKED | MF_BYCOMMAND);
+	}
+	if (OSD_mode&OSD_FRAME) {
+		CheckMenuItem(hSubMenuOSD, mOsdVtcFn, MF_CHECKED | MF_BYCOMMAND);
+	}
+	if (OSD_mode&OSD_VTC) {
+		CheckMenuItem(hSubMenuOSD, mOsdVtcTc, MF_CHECKED | MF_BYCOMMAND);
+	}
+	if (!(OSD_mode&(OSD_FRAME|OSD_VTC))) {
+		CheckMenuItem(hSubMenuOSD, mOsdVtcNone, MF_CHECKED | MF_BYCOMMAND);
 	}
 	if (!(OSD_mode&(OSD_OFFF|OSD_OFFS))) {
 		CheckMenuItem(hSubMenuOSD, mOsdOffsetNone, MF_CHECKED | MF_BYCOMMAND);
@@ -289,7 +300,9 @@ static void win_handle_menu(HWND hwnd, enum wMenuId id) {
 		case mWinOnTop:        Xontop(2); break;
 		case mWinFullScreen:   Xfullscreen(2); break;
 		case mWinMouseVisible: Xmousepointer(2); break;
-		case mOsdFN:           PTLL; ui_osd_fn(); PTUL; break;
+		case mOsdVtcNone:      PTLL; ui_osd_vtc_off(); PTUL; break;
+		case mOsdVtcTc:        PTLL; ui_osd_vtc_tc(); PTUL; break;
+		case mOsdVtcFn:        PTLL; ui_osd_vtc_fn(); PTUL; break;
 		case mOsdTC:           PTLL; ui_osd_tc(); PTUL; break;
 		case mOsdPosition:     PTLL; ui_osd_permute(); PTUL; break;
 		case mOsdOffsetNone:   PTLL; ui_osd_offset_none(); PTUL; break;

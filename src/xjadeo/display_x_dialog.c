@@ -107,15 +107,18 @@ static struct XjxMenuItem submenu_size[] = {
 };
 
 static struct XjxMenuItem submenu_osd[] = {
-	{"Frame Number", "v", NULL, &ui_osd_fn, 0, 1},
-	{"Timecode",     "s", NULL, &ui_osd_tc, 0, 1},
-	{"Swap Position","p", NULL, &ui_osd_permute, 0, 1},
+	{"External TC",  "s", NULL, &ui_osd_tc, 0, 1},
+	{"",             "",  NULL, NULL, 0, 0},
+	{"VTC off",      "v", NULL, &ui_osd_vtc_off, 0, 1},
+	{"VTC Timecode", "",  NULL, &ui_osd_vtc_tc, 0, 1},
+	{"Frame Number", "",  NULL, &ui_osd_vtc_fn, 0, 1},
 	{"",             "",  NULL, NULL, 0, 0},
 	{"Offset Off",   "o", NULL, &ui_osd_offset_none, 0, 1},
-	{"Offset FN",    "",  NULL, &ui_osd_offset_fn, 0, 1},
 	{"Offset TC",    "",  NULL, &ui_osd_offset_tc, 0, 1},
+	{"Offset FN",    "",  NULL, &ui_osd_offset_fn, 0, 1},
 	{"",             "",  NULL, NULL, 0, 0},
 	{"Background",   "b", NULL, &ui_osd_box, 0, 1},
+	{"Swap Position","p", NULL, &ui_osd_permute, 0, 1},
 	{NULL, NULL, NULL, NULL, 0, 0},
 };
 
@@ -179,23 +182,29 @@ static void update_menus () {
 
 	submenu_sync[ui_syncsource()].enabled = 1;
 
-	if (OSD_mode&OSD_FRAME) {
+	if (OSD_mode&OSD_SMPTE) {
 		submenu_osd[0].enabled = 1;
 	}
-	if (OSD_mode&OSD_SMPTE) {
-		submenu_osd[1].enabled = 1;
+	if (!(OSD_mode&(OSD_FRAME|OSD_VTC))) {
+		submenu_osd[2].enabled = 1;
 	}
-	if (!(OSD_mode&(OSD_OFFF|OSD_OFFS))) {
+	if (OSD_mode&OSD_VTC) {
+		submenu_osd[3].enabled = 1;
+	}
+	if (OSD_mode&OSD_FRAME) {
 		submenu_osd[4].enabled = 1;
 	}
-	if (OSD_mode&OSD_OFFF) {
-		submenu_osd[5].enabled = 1;
-	}
-	if (OSD_mode&OSD_OFFS) {
+	if (!(OSD_mode&(OSD_OFFF|OSD_OFFS))) {
 		submenu_osd[6].enabled = 1;
 	}
-	if (OSD_mode&OSD_BOX) {
+	if (OSD_mode&OSD_OFFS) {
+		submenu_osd[7].enabled = 1;
+	}
+	if (OSD_mode&OSD_OFFF) {
 		submenu_osd[8].enabled = 1;
+	}
+	if (OSD_mode&OSD_BOX) {
+		submenu_osd[10].enabled = 1;
 	}
 
 	if (Xgetletterbox()) {

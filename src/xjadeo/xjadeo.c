@@ -135,6 +135,14 @@ static pthread_t index_thread;
 
 static AVRational fr_Q = { 1, 1 };
 static int        fFirstTime=1;
+static uint8_t    syncnidx = 0;
+static const char syncname[4][5] =
+{
+	"CTL ",
+	"JCK ",
+	"LTC ",
+	"MTC "
+};
 
 
 #ifdef JACK_SESSION
@@ -235,16 +243,22 @@ void event_loop (void) {
 		}
 
 #ifdef HAVE_MIDI
-		if (midi_connected()) newFrame = midi_poll_frame();
+		if (midi_connected()) { newFrame = midi_poll_frame(); syncnidx = 3; }
 		else
 #endif
 #ifdef HAVE_LTC
-		if (ltcjack_connected()) newFrame = ltc_poll_frame();
+		if (ltcjack_connected()) { newFrame = ltc_poll_frame(); syncnidx = 2; }
 		else
 #endif
-		newFrame = jack_poll_frame();
+		{
+			newFrame = jack_poll_frame();
+			syncnidx = 1;
+		}
 
-		if (newFrame < 0) newFrame = userFrame;
+		if (newFrame < 0) {
+			syncnidx = 0;
+			newFrame = userFrame;
+		}
 
 #if 0 // DEBUG
 		static int64_t oldFrame = 0;
@@ -1530,15 +1544,23 @@ void display_frame (int64_t timestamp, int force_update) {
 
 	dispFrame = timestamp;
 
-	if (OSD_mode&OSD_FRAME) {
+	if (OSD_mode & (OSD_FRAME | OSD_VTC)) {
+		int64_t dfn;
 		if (want_ignstart) {
-			snprintf(OSD_frame, 48, "F:%8"PRId64" ", dispFrame);
+			dfn = dispFrame;
 		} else {
-			snprintf(OSD_frame, 48, "F:%8"PRId64" ", dispFrame - file_frame_offset);
+			dfn = dispFrame - file_frame_offset;
+		}
+		if (OSD_mode&OSD_VTC) {
+			frame_to_smptestring (&OSD_frame[0], dfn);
+		} else {
+			snprintf(OSD_frame, 48, "F:%8"PRId64" ", dfn);
 		}
 	}
-	if (OSD_mode&OSD_SMPTE)
-		frame_to_smptestring (OSD_smpte, dispFrame - ts_offset);
+	if (OSD_mode&OSD_SMPTE) {
+		strcpy(OSD_smpte, syncname[syncnidx]);
+		frame_to_smptestring (&OSD_smpte[4], dispFrame - ts_offset);
+	}
 
 	if (fFirstTime) {
 		fFirstTime=0;
