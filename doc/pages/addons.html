@@ -43,12 +43,12 @@ It is intended to be used with two neighboring movies stitched together:
 AB BC CD DA
 </pre>
 <p>
-To panning across boundaries, the files have to be re-loaded (using OSC or remote-control).
+To pan across boundaries, the files have to be re-loaded (using OSC or remote-control).
 </p>
 
 <h2>Action Override</h2>
 <p>
-Using the <code>set override</code> <a href="remote.html">remote-control</a> command, it is possible to disable certain key-bindings or window-events. and limit user interaction with the monitor window. The value is a bitwise combination of flags:
+Using the <code>set override</code> <a href="remote.html">remote-control</a> command, it is possible to disable certain key-bindings or window-events and limit user interaction with the monitor window. The value is a bitwise combination of flags:
 </p>
 <div>
 	<a id="osc1"></a>
@@ -59,15 +59,15 @@ Using the <code>set override</code> <a href="remote.html">remote-control</a> com
 		</thead>
 		<tbody>
 			<!-- DOC START !-->
-			<tr><td>1</td><td>1</td><td>ignore 'q', ESC  / quit</td></tr>
+			<tr><td>1</td><td>1</td><td>ignore 'Esc' keypress / quit</td></tr>
 			<tr><td>2</td><td>2</td><td>ignore "window closed by WM" / quit</td></tr>
 			<tr><td>3</td><td>4</td><td>(osx only) menu-exit / quit</td></tr>
-			<tr><td>4</td><td>8</td><td>ignore mouse-button 1 -- resize</td></tr>
-			<tr><td>5</td><td>16</td><td>no A/V offset control with keyboard</td></tr>
+			<tr><td>4</td><td>8</td><td>deprecated - unused (was: button 1 / resize)</td></tr>
+			<tr><td>5</td><td>16</td><td>disable A/V offset control</td></tr>
 			<tr><td>6</td><td>32</td><td>don't use jack-session</td></tr>
 			<tr><td>7</td><td>64</td><td>disable jack transport control</td></tr>
-			<tr><td>8</td><td>128</td><td>disallow sync source change (OSX menu)</td></tr>
-			<tr><td>9</td><td>256</td><td>disallow file open (OSX menu, X11 DnD)</td></tr>
+			<tr><td>8</td><td>128</td><td>disallow sync source change</td></tr>
+			<tr><td>9</td><td>256</td><td>disallow file open</td></tr>
 			<!-- DOC END !-->
 		</tbody>
 	</table>
