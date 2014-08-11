@@ -24,6 +24,22 @@ void xapi_open(void *d);
 extern double framerate;
 
 #import <Cocoa/Cocoa.h>
+#include <pthread.h>
+
+static pthread_mutex_t osx_vbuf_lock = PTHREAD_MUTEX_INITIALIZER;
+static size_t          osx_vbuf_size = 0;
+static uint8_t        *osx_vbuf = NULL;
+
+static int osxgui_status = -1000;
+static NSAutoreleasePool *pool = nil;
+
+static pthread_mutex_t osxgui_sync = PTHREAD_MUTEX_INITIALIZER;
+static volatile uint8_t sync_sem;
+static void gl_sync_lock()   { if (osxgui_status > 0) { sync_sem = 1; pthread_mutex_lock(&osxgui_sync); }}
+static void gl_sync_unlock() { if (osxgui_status > 0) { sync_sem = 0; pthread_mutex_unlock(&osxgui_sync); }}
+
+#define PTLL gl_sync_lock()
+#define PTUL gl_sync_unlock()
 
 //forward declaration, need for 64bit apps on 10.5
 OSErr UpdateSystemActivity(UInt8 d);
@@ -55,8 +71,8 @@ __attribute__ ((visibility ("hidden")))
 {
 	@try {
 		NSWindow* w = [super initWithContentRect:contentRect
-																	 styleMask:(NSClosableWindowMask | NSTitledWindowMask | NSResizableWindowMask | NSMiniaturizableWindowMask)
-																		 backing:NSBackingStoreBuffered defer:NO];
+		                               styleMask:(NSClosableWindowMask | NSTitledWindowMask | NSMiniaturizableWindowMask)
+		                                 backing:NSBackingStoreBuffered defer:NO];
 
 		[w setAcceptsMouseMovedEvents:YES];
 		[w setLevel:NSNormalWindowLevel];
@@ -106,6 +122,7 @@ __attribute__ ((visibility ("hidden")))
 {
 	int colorBits;
 	int depthBits;
+	BOOL resizing;
 @public
 	NSTrackingArea* trackingArea;
 }
@@ -130,6 +147,7 @@ __attribute__ ((visibility ("hidden")))
 {
 	colorBits = numColorBits;
 	depthBits = numDepthBits;
+	resizing  = FALSE;
 
 	NSOpenGLPixelFormatAttribute pixelAttribs[16] = {
 		NSOpenGLPFADoubleBuffer,
@@ -141,8 +159,7 @@ __attribute__ ((visibility ("hidden")))
 		0
 	};
 
-	NSOpenGLPixelFormat* pixelFormat = [[NSOpenGLPixelFormat alloc]
-		initWithAttributes:pixelAttribs];
+	NSOpenGLPixelFormat* pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:pixelAttribs];
 
 	if (pixelFormat) {
 		self = [super initWithFrame:frame pixelFormat:pixelFormat];
@@ -167,7 +184,9 @@ __attribute__ ((visibility ("hidden")))
 
 - (void) drawRect:(NSRect)rect
 {
-	xjglExpose(NULL);
+	pthread_mutex_lock(&osx_vbuf_lock);
+	xjglExpose(osx_vbuf);
+	pthread_mutex_unlock(&osx_vbuf_lock);
 }
 
 -(void)updateTrackingAreas
@@ -196,9 +215,38 @@ __attribute__ ((visibility ("hidden")))
 	CGDisplayShowCursor(kCGDirectMainDisplay);
 }
 
+- (void) mouseDragged:(NSEvent*)event
+{
+	NSRect frame = [[self window] frame];
+	NSPoint mp   = [self convertPoint: [event locationInWindow] fromView: self];
+	if (!resizing && (frame.size.width - mp.x > 16 || mp.y > 16)) return;
+	resizing = TRUE;
+
+	// TODO use absolute mouse position, clamp to window edge
+	CGFloat originY = frame.origin.y;
+	CGFloat deltaY  = [event deltaY];
+
+	frame.origin.y = (originY + frame.size.height) - (frame.size.height + deltaY);
+	frame.size.width  += [event deltaX];
+	frame.size.height += deltaY;
+
+	if (frame.size.width < 80)
+		frame.size.width = 80;
+
+	if (frame.size.height < 60) {
+		frame.size.height = 60;
+		frame.origin.y = originY;
+	}
+	[[self window] setFrame: frame display: YES animate: NO];
+}
 - (void) mouseDown:(NSEvent*)event
 {
 	xjglButton(1);
+}
+
+- (void) mouseUp:(NSEvent*)event
+{
+	resizing = FALSE;
 }
 
 - (void) rightMouseDown:(NSEvent*)event
@@ -361,6 +409,7 @@ static void update_sync_menu() {
 @end
 
 @implementation NSApplication (XJ)
+
 /* Invoked from the Quit menu item */
 - (void)terminate:(id)sender
 {
@@ -401,46 +450,45 @@ static void update_sync_menu() {
 			if (![url isFileURL]) continue;
 			NSLog(@"%@", url.path);
 			const char *fn= [url.path UTF8String];
-			xapi_open((void*)fn);
+			PTLL; xapi_open((void*)fn); PTUL;
 			break;
 		}
 	}
-	[osx_window makeKeyAndOrderFront:osx_window];
+	if (osx_window) {
+		[osx_window makeKeyAndOrderFront:osx_window];
+	}
 }
 
 - (void)syncToJack:(id)sender
 {
-	ui_sync_to_jack();
+	PTLL; ui_sync_to_jack(); PTUL;
 	update_sync_menu();
 }
 
 - (void)syncToLTC:(id)sender
 {
-	ui_sync_to_ltc();
+	PTLL; ui_sync_to_ltc(); PTUL;
 	update_sync_menu();
 }
 
 - (void)syncToMTCJ:(id)sender
 {
-	ui_sync_to_mtc_jack();
+	PTLL; ui_sync_to_mtc_jack(); PTUL;
 	update_sync_menu();
 }
 
 - (void)syncToMTCP:(id)sender
 {
-	ui_sync_to_mtc_portmidi();
+	PTLL; ui_sync_to_mtc_portmidi(); PTUL;
 	update_sync_menu();
 }
 
 - (void)syncToNone:(id)sender
 {
-	ui_sync_none();
+	PTLL; ui_sync_none(); PTUL;
 }
 
 @end
-
-static void gl_sync_lock() { }
-static void gl_sync_unlock() { }
 
 static void gl_make_current() {
 	NSOpenGLContext* context = [osx_glview openGLContext];
@@ -452,7 +500,14 @@ static void gl_swap_buffers() {
 }
 
 void gl_newsrc () {
-	gl_reallocate_texture(movie_width, movie_height);
+	pthread_mutex_lock(&osx_vbuf_lock);
+	free(osx_vbuf);
+	osx_vbuf_size = video_buffer_size();
+	if (osx_vbuf_size > 0) {
+		osx_vbuf = malloc(osx_vbuf_size * sizeof(uint8_t));
+		gl_reallocate_texture(movie_width, movie_height);
+	}
+	pthread_mutex_unlock(&osx_vbuf_lock);
 }
 
 static void makeAppMenu(void) {
@@ -555,13 +610,17 @@ static void makeAppMenu(void) {
 	[windowMenuItem release];
 }
 
-int gl_open_window () {
-	[NSAutoreleasePool new];
-	[NSApplication sharedApplication];
-	//[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-	const char *title = "xjadeo";
+static void osx_close_window() {
+	[NSApp removeWindowsItem:osx_window];
+	[osx_window setIsVisible:NO];
+	[osx_window close];
+	[osx_glview release];
+	[osx_window release];
+	osx_window = nil;
+}
 
-	makeAppMenu();
+static int osx_open_window () {
+	const char *title = "xjadeo";
 
 	NSString* titleString = [[NSString alloc]
 		initWithBytes:title
@@ -578,8 +637,7 @@ int gl_open_window () {
 	osx_glview = [XjadeoOpenGLView new];
 	if (!osx_glview) {
 		[window release];
-		[NSAutoreleasePool release];
-		return 1;
+		return -1;
 	}
 	osx_window = window;
 
@@ -592,50 +650,152 @@ int gl_open_window () {
 	gl_init();
 	gl_resize(ffctv_width, ffctv_height);
 	if (gl_reallocate_texture(movie_width, movie_height)) {
-		gl_close_window();
+		osx_close_window();
+		return -1;
 	}
+	gl_newsrc();
 
 	[window setIsVisible:YES];
-	[NSApp finishLaunching];
 
 	if (start_fullscreen) { gl_set_fullscreen(1); }
 	if (start_ontop) { gl_set_ontop(1); }
 	return 0;
 }
 
+static void osx_post_event(int data1) {
+    NSEvent* event = [NSEvent otherEventWithType:NSApplicationDefined
+                                        location:NSMakePoint(0,0)
+                                   modifierFlags:0
+                                       timestamp:0.0
+                                    windowNumber:0
+                                         context:nil
+                                         subtype:0
+                                           data1:data1
+                                           data2:0];
+    [NSApp postEvent:event atStart:NO];
+}
+
+
+int gl_open_window () {
+	while (osxgui_status == -1000) {
+		usleep(10000);
+	}
+	if (!pool) pool = [[NSAutoreleasePool alloc] init];
+	if (osxgui_status > 0) return 0; // already open
+	osx_post_event(1);
+	while (osxgui_status == 0) {
+		usleep(10000);
+	}
+	return osxgui_status > 0 ? 0 : -1;
+}
+
+void osx_shutdown() {
+	if (pool && osxgui_status != -1000) {
+		osx_post_event(0);
+	}
+	if (pool) {
+		[pool release]; pool = NULL;
+	}
+}
+
 void gl_close_window() {
-	[osx_window setIsVisible:NO];
-	[osx_window close];
-	[osx_glview release];
-	[osx_window release];
-	[NSAutoreleasePool release];
+	if (osxgui_status <= 0) {
+		return;
+	}
+	osx_post_event(2);
+	while (osxgui_status) {
+		usleep(10000);
+	}
+	free(osx_vbuf); osx_vbuf = NULL;
+	osx_vbuf_size = 0;
 }
 
 void gl_handle_events () {
-	NSEvent * event;
-	do
-	{
-		event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantPast] inMode:NSDefaultRunLoopMode dequeue:YES];
-		[NSApp sendEvent: event];
+	pthread_mutex_unlock(&osxgui_sync); // XXX TODO first-time lock
+	while (sync_sem) {
+		sched_yield();
 	}
-	while(event != nil);
-
-	static int periodic_sync = 5;
-	if (--periodic_sync == 0) {
-		periodic_sync = framerate * 50;
-		update_sync_menu();
-		UpdateSystemActivity(1 /*UsrActivity*/);
-		// TODO use a one time call
-		// IOPMAssertionCreateWithName() NoDisplaySleepAssertion etc.
-	} else if (periodic_sync % (int)(2 * framerate) == 0) {
-		update_sync_menu();
-	}
+	pthread_mutex_lock(&osxgui_sync);
+	osx_post_event(0); // TODO only on remote msg or similar event
 }
 
-void gl_render (uint8_t *mybuffer) {
+void osx_main () {
+	[NSAutoreleasePool new];
+	[NSApplication sharedApplication];
+	makeAppMenu();
+	[NSApp finishLaunching];
+
+	osxgui_status = 0;
+
+	while (loop_flag) {
+		NSEvent * event;
+		do
+		{
+			event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantFuture] inMode:NSDefaultRunLoopMode dequeue:YES];
+			if (event.type == NSApplicationDefined) {
+				switch(event.data1) {
+					case 1:
+						if (osxgui_status == 0) {
+							if (osx_open_window()) {
+								osxgui_status = -1;
+							} else {
+								osxgui_status = 1;
+							}
+						}
+						break;
+					case 2:
+						if (osxgui_status > 0) {
+							osx_close_window();
+							osxgui_status = 0;
+						}
+						break;
+					case 3:
+						pthread_mutex_lock(&osx_vbuf_lock);
+						xjglExpose(osx_vbuf);
+						pthread_mutex_unlock(&osx_vbuf_lock);
+						[osx_glview setNeedsDisplay: YES];
+						break;
+					default:
+						break;
+				}
+				break;
+			}
+
+			[NSApp sendEvent: event];
+		}
+		while(event != nil && loop_flag);
+
+		// TODO: use a timer, and callbacks,
+		// currently triggered by osx_post_event() from gl_handle_events()
+		static int periodic_sync = 5;
+		if (--periodic_sync == 0) {
+			periodic_sync = framerate * 50;
+			update_sync_menu();
+			UpdateSystemActivity(1 /*UsrActivity*/);
+			// TODO use a one time call
+			// IOPMAssertionCreateWithName() NoDisplaySleepAssertion etc.
+		} else if (periodic_sync % (int)(2 * framerate) == 0) {
+			update_sync_menu();
+		}
+	}
+	if (osxgui_status > 0) {
+		osx_close_window();
+		osxgui_status = 0;
+	}
+	[NSAutoreleasePool release];
+	osxgui_status = -1000;
+}
+
+
+void gl_render (uint8_t *buffer) {
+	if (!osx_vbuf) return;
+	pthread_mutex_lock(&osx_vbuf_lock);
+	memcpy(osx_vbuf, buffer, osx_vbuf_size * sizeof(uint8_t));
+	pthread_mutex_unlock(&osx_vbuf_lock);
 	[osx_glview setNeedsDisplay: YES];
-	xjglExpose(NULL);
+	//osx_post_event(3); // explicit expose, blocks
 }
+
 
 void gl_resize (unsigned int x, unsigned int y) {
 	[osx_window setContentSize:NSMakeSize(x, y) ];
@@ -673,6 +833,7 @@ void gl_set_ontop (int action) {
 static NSRect nofs_frame;
 
 void gl_set_fullscreen (int action) {
+	// TODO check if we need performSelectorOnMainThread
 	if (action==2) _gl_fullscreen^=1;
 	else _gl_fullscreen = action ? 1 : 0;
 	if (_gl_fullscreen) {

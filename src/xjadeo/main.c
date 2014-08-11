@@ -33,6 +33,12 @@
 #define EXIT_FAILURE 1
 #endif
 
+#ifdef PLATFORM_OSX
+#include <pthread.h>
+void osx_main ();
+void osx_shutdown();
+#endif
+
 //------------------------------------------------
 // Globals
 //------------------------------------------------
@@ -821,6 +827,105 @@ void catchsig (int sig) {
 	exit(1);
 }
 
+static void *xjadeo (void *arg) {
+
+	open_window();
+
+	// try fallbacks if window open failed in autodetect mode
+	if (videomode==0 && getvidmode() == VO_AUTO) { // re-use cmd-option variable as counter.
+		if (want_verbose) printf("trying video driver fallbacks.\n");
+		while (getvidmode() == VO_AUTO) { // check if window is open.
+			videomode++;
+			int tv=try_next_vidoutmode(videomode);
+			if (tv<0) break; // no videomode found!
+			if (want_verbose) printf("trying videomode: %i: %s\n",videomode,vidoutname(videomode));
+			if (tv==0) continue; // this mode is not available
+			render_fmt = vidoutmode(videomode);
+			open_window();
+		}
+	}
+
+	if (getvidmode() == VO_AUTO) {
+		fprintf(stderr,"Could not open display.\n");
+		if(!remote_en) { // && !mq_en && !ipc_queue) /* TODO: allow windowless startup with MQ ?! */
+#ifdef HAVE_MIDI
+			if (midi_driver) free(midi_driver);
+			if (midi_connected()) midi_close();
+			else
+#endif
+#ifdef HAVE_LTC
+				if (ltcjack_connected()) close_ltcjack();
+				else
+#endif
+					close_jack();
+			exit(1);
+		}
+	}
+
+	/* setup sync source */
+#ifdef HAVE_MIDI
+	midi_choose_driver(midi_driver);
+
+#ifdef JACK_SESSION
+	if (jack_uuid && !strcmp(midi_driver_name(), "JACK-MIDI")) {
+		// don't auto-connect jack-midi on session restore.
+		if (atoi(midiid) == 0) midiid[0]='\0';
+	}
+#endif
+#endif
+
+	if (no_initial_sync
+#ifdef JACK_SESSION
+			&& !jack_uuid
+#endif
+		 ) {
+		if (!(remote_en || mq_en || ipc_queue || osc_port)) {
+			fprintf(stderr,
+					"Warning: There is no Initial sync-source, and no remote-control enbled to\n"
+					"change the sync source. Do not use '-J' option (unless you're testing).\n");
+		}
+	}
+#ifdef HAVE_MIDI
+	else if (atoi(midiid) >= -1 ) {
+		if (!want_quiet)
+			printf("using MTC as sync-source.\n");
+		midi_open(midiid);
+	} else
+#endif
+#ifdef HAVE_LTC
+		if (use_ltc) {
+			if (!want_quiet)
+				printf("using LTC as sync source.\n");
+			open_ltcjack(NULL);
+		} else
+#endif
+			if (use_jack) {
+				if (!want_quiet)
+					printf("using JACK-transport as sync source.\n");
+				open_jack();
+			}
+	if (!no_initial_sync) {
+		jack_autostart = 1;
+	}
+
+#ifdef HAVE_MQ
+	if(mq_en) open_mq_ctrl();
+#elif defined HAVE_IPCMSG
+	if(ipc_queue) open_ipcmsg_ctrl(ipc_queue);
+#endif
+	if(remote_en) open_remote_ctrl();
+
+	/* MAIN LOOP */
+	event_loop();
+
+#ifdef PLATFORM_OSX
+	osx_shutdown();
+#endif
+
+	return NULL;
+}
+
+
 #if defined PLATFORM_WINDOWS && defined USE_WINMAIN
 
 #ifdef HAVE_SDL
@@ -969,94 +1074,19 @@ int main (int argc, char **argv)
 	open_movie(movie);
 	init_moviebuffer();
 
-	open_window();
-
-	// try fallbacks if window open failed in autodetect mode
-	if (videomode==0 && getvidmode() == VO_AUTO) { // re-use cmd-option variable as counter.
-		if (want_verbose) printf("trying video driver fallbacks.\n");
-		while (getvidmode() == VO_AUTO) { // check if window is open.
-			videomode++;
-			int tv=try_next_vidoutmode(videomode);
-			if (tv<0) break; // no videomode found!
-			if (want_verbose) printf("trying videomode: %i: %s\n",videomode,vidoutname(videomode));
-			if (tv==0) continue; // this mode is not available
-			render_fmt = vidoutmode(videomode);
-			open_window();
-		}
+#ifdef PLATFORM_OSX
+	// Cocoa can only handle UI events in the main thread since
+	// various OSX Frameworks hardcode pthread_main_np for their use.
+	// Oh well, fight hacks with hacks.
+	pthread_t xjadeo_thread;
+	if (pthread_create (&xjadeo_thread, NULL, xjadeo, NULL)) {
+		return -1;
 	}
-
-	if (getvidmode() == VO_AUTO) {
-		fprintf(stderr,"Could not open display.\n");
-		if(!remote_en) { // && !mq_en && !ipc_queue) /* TODO: allow windowless startup with MQ ?! */
-#ifdef HAVE_MIDI
-			if (midi_driver) free(midi_driver);
-			if (midi_connected()) midi_close();
-			else
+	osx_main();
+	pthread_join (xjadeo_thread, NULL);
+#else
+	xjadeo(NULL);
 #endif
-#ifdef HAVE_LTC
-				if (ltcjack_connected()) close_ltcjack();
-				else
-#endif
-					close_jack();
-			exit(1);
-		}
-	}
-
-	/* setup sync source */
-#ifdef HAVE_MIDI
-	midi_choose_driver(midi_driver);
-
-#ifdef JACK_SESSION
-	if (jack_uuid && !strcmp(midi_driver_name(), "JACK-MIDI")) {
-		// don't auto-connect jack-midi on session restore.
-		if (atoi(midiid) == 0) midiid[0]='\0';
-	}
-#endif
-#endif
-
-	if (no_initial_sync
-#ifdef JACK_SESSION
-			&& !jack_uuid
-#endif
-			) {
-		if (!(remote_en || mq_en || ipc_queue || osc_port)) {
-			fprintf(stderr,
-					"Warning: There is no Initial sync-source, and no remote-control enbled to\n"
-					"change the sync source. Do not use '-J' option (unless you're testing).\n");
-		}
-	}
-#ifdef HAVE_MIDI
-	else if (atoi(midiid) >= -1 ) {
-		if (!want_quiet)
-			printf("using MTC as sync-source.\n");
-		midi_open(midiid);
-	} else
-#endif
-#ifdef HAVE_LTC
-		if (use_ltc) {
-			if (!want_quiet)
-				printf("using LTC as sync source.\n");
-			open_ltcjack(NULL);
-		} else
-#endif
-	if (use_jack) {
-		if (!want_quiet)
-				printf("using JACK-transport as sync source.\n");
-			open_jack();
-	}
-	if (!no_initial_sync) {
-		jack_autostart = 1;
-	}
-
-#ifdef HAVE_MQ
-	if(mq_en) open_mq_ctrl();
-#elif defined HAVE_IPCMSG
-	if(ipc_queue) open_ipcmsg_ctrl(ipc_queue);
-#endif
-	if(remote_en) open_remote_ctrl();
-
-	/* MAIN LOOP */
-	event_loop();
 
 	clean_up(0);
 	return (0);
