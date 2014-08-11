@@ -141,7 +141,7 @@ static int jack_portsetup(void) {
 /* API */
 
 int64_t ltc_poll_frame (void) {
-	return (int64_t) floor(ltc_position * framerate / (double)j_samplerate);
+	return (int64_t) rint(ltc_position * framerate / (double)j_samplerate);
 }
 
 void open_ltcjack(char *autoconnect) {
