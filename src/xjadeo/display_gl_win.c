@@ -75,12 +75,12 @@ void gl_newsrc () {
 	pthread_mutex_unlock(&win_vbuf_lock);
 }
 
-#define PTLL pthread_mutex_lock(&wingui_sync)
-#define PTUL pthread_mutex_unlock(&wingui_sync)
-
 static volatile uint8_t sync_sem;
-static void gl_sync_lock()   { sync_sem = 1; PTLL; }
-static void gl_sync_unlock() { sync_sem = 0; PTUL; }
+static void gl_sync_lock()   { sync_sem = 1; pthread_mutex_lock(&wingui_sync); }
+static void gl_sync_unlock() { sync_sem = 0; pthread_mutex_unlock(&wingui_sync); }
+
+#define PTLL gl_sync_lock()
+#define PTUL gl_sync_unlock();
 
 static uint8_t context_menu_visible = 0;
 

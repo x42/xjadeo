@@ -823,6 +823,10 @@ void catchsig (int sig) {
 
 #if defined PLATFORM_WINDOWS && defined USE_WINMAIN
 
+#ifdef HAVE_SDL
+#include <SDL/SDL.h>
+#endif
+
 int xjadeo_main (int argc, char **argv);
 
 #include <fcntl.h>
