@@ -14,15 +14,14 @@ Description:	jack video monitor
 		allows to modify settings of a running instance.
 		see http://xjadeo.sourceforge.net/ for further information.
 		@configure_input@
-Authors: luisgarrido@users.sourceforge.net, robin@gareus.org
+Author:		robin@gareus.org
 Keywords:	jack video monitor
-Author: 	luisgarrido@users.sourceforge.net, robin@gareus.org
 Maintained-by:	robin@gareus.org 
 Primary-site:	http://xjadeo.sourceforge.net/ 
 		212K xjadeo-@VERSION@.tar.gz
 		500  xjadeo.lsm
-Alternate-site: https://sourceforge.net/projects/xjadeo/
+Alternate-site: https://github.com/x42/xjadeo
 Original-site:
-Platforms:      
-Copying-policy:	Gnu General Public License (GPL) 2.0
+Platforms:	any
+Copying-policy:	GPL v2
 End
