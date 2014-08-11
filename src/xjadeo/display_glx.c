@@ -25,7 +25,7 @@
 #include <X11/Xlib.h>
 #include <X11/xpm.h>
 
-#include "icons/xjadeo-color.xpm"
+#include "icons/xjadeo8.xpm"
 
 static Display*   _gl_display;
 static int        _gl_screen;
@@ -89,7 +89,7 @@ static void setup_window_hints_and_icon(Display* dpy, Window win, Window parent,
 	hints.max_height = maxsize;
 
 	wmhints.input = True;
-	XpmCreatePixmapFromData(dpy, parent, xjadeo_color_xpm, &wmhints.icon_pixmap, &wmhints.icon_mask, NULL);
+	XpmCreatePixmapFromData(dpy, parent, xjadeo8_xpm, &wmhints.icon_pixmap, &wmhints.icon_mask, NULL);
 	wmhints.flags = InputHint | IconPixmapHint | IconMaskHint;
 
 	if (XStringListToTextProperty (&w_name, 1, &x_wname) &&

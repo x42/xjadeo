@@ -8,22 +8,25 @@ man_MANS = doc/xjadeo.1 doc/xjremote.1
 EXTRA_DIST= \
  xjadeo.lsm.in \
  doc/Makefile doc/xjadeo.1 doc/xjremote.1 \
+ doc/xjadeorc \
+ \
  src/xjadeo/icons/osd_bitmaps.h \
- src/xjadeo/icons/xjadeo-color.xpm \
- src/xjadeo/icons/splash.bitmap src/xjadeo/icons/splash_mask.xbm \
  src/xjadeo/icons/brightness.bitmap src/xjadeo/icons/brightness_mask.xbm \
  src/xjadeo/icons/contrast.bitmap src/xjadeo/icons/contrast_mask.xbm \
  src/xjadeo/icons/gamma.bitmap src/xjadeo/icons/gamma_mask.xbm \
  src/xjadeo/icons/hue.bitmap src/xjadeo/icons/hue_mask.xbm \
  src/xjadeo/icons/saturation.bitmap src/xjadeo/icons/saturation_mask.xbm \
- src/xjadeo/icons/xjadeo-color.ico src/xjadeo/icons/xjadeo-color-ico.h \
- src/xjadeo/icons/xjadeo.ico \
- doc/xjadeorc \
+ \
+ src/xjadeo/icons/xjadeo8.ico src/xjadeo/icons/xjadeo8_ico.h \
+ src/xjadeo/icons/xjadeoH.ico src/xjadeo/icons/xjadeoH.h \
+ src/xjadeo/icons/xjadeo8.xpm src/xjadeo/icons/xjadeoH128.png \
+ src/xjadeo/icons/xjadeo_win.ico \
+ src/xjadeo/fonts/ArdourMono.ttf \
+ \
  contrib/cli-remote/jadeo.c \
  contrib/cli-remote/Makefile.am \
  contrib/cli-remote/README \
- contrib/xjadeo-example.avi \
- contrib/README
+ contrib/xjadeo-example.avi
 
 MAINTAINERCLEANFILES = \
  Makefile.in \

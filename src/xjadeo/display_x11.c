@@ -31,7 +31,7 @@ int xoffset = 0;
 #if (HAVE_LIBXV || HAVE_IMLIB2)
 
 #include <X11/xpm.h>
-#include "icons/xjadeo-color.xpm"
+#include "icons/xjadeo8.xpm"
 
 extern const  vidout VO[];
 extern int    OSD_mode; // change via keystroke
@@ -97,7 +97,7 @@ static void xj_set_hints (void) {
 	hints.max_height = 2048;
 
 	wmhints.input = True;
-	XpmCreatePixmapFromData(xj_dpy, xj_rwin, xjadeo_color_xpm, &wmhints.icon_pixmap, &wmhints.icon_mask, NULL);
+	XpmCreatePixmapFromData(xj_dpy, xj_rwin, xjadeo8_xpm, &wmhints.icon_pixmap, &wmhints.icon_mask, NULL);
 	wmhints.flags = InputHint | IconPixmapHint | IconMaskHint ;// | StateHint
 
 	if (XStringListToTextProperty (&w_name, 1, &x_wname) &&

@@ -1167,8 +1167,8 @@ int open_movie (char* file_name) {
 	fFirstTime   = 1;
 	pFrameFMT    = NULL;
 	pFormatCtx   = NULL;
-	movie_width  = ffctv_width = 320;
-	movie_height = ffctv_height = 180;
+	movie_width  = ffctv_width = 640;
+	movie_height = ffctv_height = 320;
 	movie_aspect = (float)movie_width / (float) movie_height;
 	duration     = 1;
 	frames       = 1;

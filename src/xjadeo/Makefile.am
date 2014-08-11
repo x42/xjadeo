@@ -54,11 +54,13 @@ CLEANFILES = paths.h
 BUILT_SOURCES = paths.h
 
 xjadeo_DEPENDENCIES= \
-	icons/brightness.bitmap    icons/gamma.bitmap    icons/saturation.bitmap    icons/osd_bitmaps.h \
-	icons/brightness_mask.xbm  icons/gamma_mask.xbm  icons/saturation_mask.xbm  icons/xjadeo-color.xpm \
-	icons/contrast.bitmap      icons/hue.bitmap      icons/splash.bitmap        icons/xjadeo-color-ico.h \
-	icons/contrast_mask.xbm    icons/hue_mask.xbm    icons/splash_mask.xbm      icons/xjadeo.ico \
-	paths.h fonts/ArdourMono.ttf
+	icons/brightness.bitmap    icons/gamma.bitmap    icons/osd_bitmaps.h \
+	icons/brightness_mask.xbm  icons/gamma_mask.xbm                      \
+	icons/contrast.bitmap      icons/hue.bitmap      icons/xjadeo8_ico.h \
+	icons/contrast_mask.xbm    icons/hue_mask.xbm    icons/xjadeo8.ico   \
+	icons/saturation_mask.xbm                        icons/xjadeo8.xpm   \
+	icons/saturation_mask.xbm                        icons/xjadeoH.ico   \
+	fonts/ArdourMono.ttf       paths.h               icons/xjadeoH.h
 
 if EMBED_FONT
 xjadeo_LDADD+=osdfont.o

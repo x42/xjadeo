@@ -1,6 +1,6 @@
 # quick hack - else make dist won't include these files.
 EXTRA_DIST= qjadeo.cpp qjadeo.pro.in mainwindow.ui qjadeo.h\
-	images/fileopen.png images/info.png images/qjadeo.png images/qjadeo.ico\
+	images/qjadeo.png images/qjadeo.ico\
 	importdialog.ui prefdialog.ui importprogress.ui \
 	importdialog.h importprogress.h prefdialog.h \
 	importdialog.cpp importprogress.cpp prefdialog.cpp \

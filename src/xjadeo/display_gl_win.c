@@ -22,7 +22,7 @@
 
 #include <pthread.h>
 #include <windowsx.h>
-#include "icons/xjadeo-color-ico.h"
+#include "icons/xjadeo8_ico.h"
 
 #ifndef WM_MOUSEWHEEL
 # define WM_MOUSEWHEEL 0x020A

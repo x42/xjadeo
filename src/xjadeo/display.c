@@ -102,7 +102,7 @@ static void _overlay_RGB (uint8_t *mybuffer, rendervars *rv, int dx, int dy, int
 	mybuffer[pos+2]= 255-(mybuffer[pos+2]+val)/2;
 }
 
-static void _render_YUV422 (uint8_t *mybuffer, rendervars *rv, int dx, int dy, int val) {
+static void _render_YUV422 (uint8_t *mybuffer, rendervars *rv, int dx, int dy, uint8_t val) {
 	int yoff=(2*dx+movie_width*dy*2);
 	mybuffer[yoff+0]=0x80;
 	mybuffer[yoff+1]=val;
@@ -110,7 +110,7 @@ static void _render_YUV422 (uint8_t *mybuffer, rendervars *rv, int dx, int dy, i
 	mybuffer[yoff+3]=val;
 }
 
-static void _render_YUV (uint8_t *mybuffer, rendervars *rv, int dx, int dy, int val) {
+static void _render_YUV (uint8_t *mybuffer, rendervars *rv, int dx, int dy, uint8_t val) {
 	int yoff=(dx+movie_width*dy);
 	int uvoff=((dx/2)+movie_width/2*(dy/2));
 	mybuffer[yoff]=val;
@@ -118,7 +118,7 @@ static void _render_YUV (uint8_t *mybuffer, rendervars *rv, int dx, int dy, int 
 	mybuffer[rv->Voff+uvoff]=0x80;
 }
 
-static void _render_RGB (uint8_t *mybuffer, rendervars *rv, int dx, int dy, int val) {
+static void _render_RGB (uint8_t *mybuffer, rendervars *rv, int dx, int dy, uint8_t val) {
 	int pos=rv->bpp*(dx+movie_width*dy);
 	mybuffer[pos]=val;
 	mybuffer[pos+1]=val;
@@ -329,10 +329,9 @@ extern int ST_top;
 	} else return ;
 
 static void OSD_bitmap(int rfmt, uint8_t *mybuffer, int yperc, int xoff, int w, int h, uint8_t *src, uint8_t *mask) {
-
 	int x,y, xalign, yalign;
 	rendervars rv;
-	void (*_render)(uint8_t *mybuffer, rendervars *rv, int dx, int dy, int val);
+	void (*_render)(uint8_t *mybuffer, rendervars *rv, int dx, int dy, uint8_t val);
 
 	rv.Uoff  = movie_width * movie_height;
 	rv.Voff = rv.Uoff + movie_width * movie_height/4;
@@ -351,6 +350,33 @@ static void OSD_bitmap(int rfmt, uint8_t *mybuffer, int yperc, int xoff, int w, 
 			int val = src[byte] & 1<<(x%8);
 			if (!mask || mask[byte] &  1<<(x%8))
 				_render(mybuffer,&rv,(x+xalign),(y+yalign),val?0xee:0x11);
+		}
+	}
+}
+
+static void OSD_cmap(int rfmt, uint8_t *mybuffer, int yperc, int xoff, const int w, const int h,
+		uint8_t const * const img, uint8_t const * const map) {
+	int x,y, xalign, yalign;
+	rendervars rv;
+	void (*_render)(uint8_t *mybuffer, rendervars *rv, int dx, int dy, uint8_t val);
+
+	rv.Uoff  = movie_width * movie_height;
+	rv.Voff = rv.Uoff + movie_width * movie_height/4;
+	rv.bpp = 0;
+
+	xalign= (movie_width - w)/2;
+	yalign= (movie_height - h) * yperc /100.0;
+	if (xalign < 0 ) xalign=0;
+	if (yalign < 0 ) yalign=0;
+
+	SET_RFMT(rfmt, _render, rv, render); // TODO once per window, and rather make _render fn's inline, include LOOP in fn pointer.
+
+	for (y = 0; y < h && (y + yalign) < movie_height; ++y) {
+		const int y0 = w * y;
+		for (x = 0; x < w && (x + xalign) < movie_width; ++x) {
+			const int pos = y0 + x;
+			uint8_t val = map[(uint8_t)img[pos]];
+			_render(mybuffer, &rv, (x+xalign), (y+yalign), val);
 		}
 	}
 }
@@ -402,7 +428,7 @@ static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int y
 
 	int x,y, xalign, yalign;
 	rendervars rv;
-	void (*_render)(uint8_t *mybuffer, rendervars *rv, int dx, int dy, int val);
+	void (*_render)(uint8_t *mybuffer, rendervars *rv, int dx, int dy, uint8_t val);
 
 	rv.Uoff  = movie_width * movie_height;
 	rv.Voff = rv.Uoff + movie_width * movie_height/4;
@@ -472,13 +498,13 @@ static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int y
 	}
 }
 
-#include "icons/splash.bitmap"
+#include "icons/xjadeoH.h"
 
 void splash (uint8_t *mybuffer) {
 	if (want_nosplash) return;
-	if (movie_width >= xj_splash_height && movie_height >= xj_splash_width)
-		OSD_bitmap(VO[VOutput].render_fmt, mybuffer,45,0,
-				xj_splash_width, xj_splash_height, xj_splash_bits, NULL);
+	if (movie_width >= xjadeo_splash_height && movie_height >= xjadeo_splash_width)
+		OSD_cmap(VO[VOutput].render_fmt, mybuffer,50,0,
+				xjadeo_splash_width, xjadeo_splash_height, xjadeo_splash, xjadeo_splash_cmap);
 }
 
 static void update_smptestring() {

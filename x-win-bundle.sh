@@ -29,7 +29,7 @@ fi
 make -C src/xjadeo paths.h
 make -C src/xjadeo xjadeo.exe
 cp -v src/xjadeo/xjadeo.exe "$NSIDIR"
-cp -v src/xjadeo/icons/xjadeo-color.ico "$NSIDIR"/xjadeo.ico
+cp -v src/xjadeo/icons/xjadeo_win.ico "$NSIDIR"/xjadeo.ico
 
 cp -v $WINLIB/avcodec-54.dll "$NSIDIR"
 cp -v $WINLIB/avformat-54.dll "$NSIDIR"

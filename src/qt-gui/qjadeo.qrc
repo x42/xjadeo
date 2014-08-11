@@ -1,7 +1,5 @@
 <RCC>
   <qresource>
     <file>images/qjadeo.png</file>
-    <file>images/fileopen.png</file>
-    <file>images/info.png</file>
   </qresource>
 </RCC>
