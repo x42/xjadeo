@@ -175,7 +175,7 @@ static void xjglButton(int btn) {
 }
 
 static void xjglKeyPress(const unsigned int sym, const char *key) {
-	if (!strcmp(key, "q") || sym == 0xff1b || sym == 0x1b) {
+	if (sym == 0xff1b || sym == 0x1b) {
 		if ((interaction_override&OVR_QUIT_KEY) == 0) {
 			loop_flag=0;
 		} else {

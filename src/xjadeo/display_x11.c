@@ -331,13 +331,6 @@ static void xj_handle_X_events (void) {
 							remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
 						}
 					}
-					else if   (key == XK_q ) { // 'q'
-						if ((interaction_override&OVR_QUIT_KEY) == 0) {
-							loop_flag=0;
-						} else {
-							remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
-						}
-					}
 					else if   (key == XK_a ) //'a' // always-on-top
 						xj_set_ontop(xj_ontop^=1);
 					else if   (key == XK_f ) //'f' // fullscreen

@@ -82,7 +82,7 @@ int   force_redraw = 0;
 int   hide_mouse = 0;
 
 int   interaction_override = 0; // disable some options.
-/* 1 (bit 0) : ignore 'q' and 'ESC' quit key
+/* 1 (bit 0) : ignore 'ESC' quit key
  * 2 (bit 1) : igore window-manager close button
  * 4 (bit 2) : ignore OSX-Menu QUIT
  * 8 (bit 3) : ignore left-mouse click
@@ -627,7 +627,6 @@ usage (int status)
 "onto the window itself.\n"
 "In addition xjadeo reacts to key-presses. The following shortcuts are defined:\n"
 " 'Esc'        Close window and quit\n"
-" 'q'          Close window and quit\n"
 " 'a'          Toggle always-on-top mode\n"
 " 'f'          Toggle fullscreen mode\n"
 " 'l'          Toggle letterbox scaling\n"

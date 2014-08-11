@@ -385,12 +385,6 @@ void handle_X_events_sdl (void) {
 					} else {
 						remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
 					}
-				} else if(ev.key.keysym.sym==SDLK_q) {
-					if ((interaction_override&OVR_QUIT_KEY) == 0) {
-						loop_flag=0;
-					} else {
-						remote_notify(NTY_KEYBOARD, 310, "keypress=%d", (unsigned int) key);
-					}
 				} else if(ev.key.keysym.sym==SDLK_s) {
 					ui_osd_tc();
 				} else if(ev.key.keysym.sym==SDLK_a) {

@@ -1351,7 +1351,6 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
     default: c= (char) charcode;
   }
   switch (c) {
-    case 'q': if ((interaction_override&OVR_QUIT_KEY) == 0) loop_flag=0; return;
     case 'a': ontop_mac(winLevel==2?0:1); break;
     case 'f': fullscreen_mac(!vo_fs); break;
     case 'l':
