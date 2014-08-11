@@ -175,7 +175,7 @@ int64_t smptestring_to_frame (char *str) { // TODO int64
 /* any smpte output (verbose and OSD) */
 int frame_to_smptestring(char *smptestring, int64_t frame) {
 	bcd s;
-	if (!smptestring) return;
+	if (!smptestring) return 0;
 
 	int64_t frames = frame;
 	char sep = ':';
