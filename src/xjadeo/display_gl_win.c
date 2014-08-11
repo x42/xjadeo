@@ -114,6 +114,14 @@ enum wMenuId {
 	mOsdOffsetTC,
 	mOsdBox,
 
+	mOffsetZero,
+	mOffsetPF,
+	mOffsetMF,
+	mOffsetPM,
+	mOffsetMM,
+	mOffsetPH,
+	mOffsetMH,
+
 	mJackPlayPause,
 	mJackPlay,
 	mJackStop,
@@ -125,6 +133,7 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 	HMENU hSubMenuSync = CreatePopupMenu();
 	HMENU hSubMenuSize = CreatePopupMenu();
 	HMENU hSubMenuOSD  = CreatePopupMenu();
+	HMENU hSubMenuOffs = CreatePopupMenu();
 	HMENU hSubMenuJack = CreatePopupMenu();
 
 	AppendMenu(hSubMenuSync, MF_STRING, mSyncJack, "Jack");
@@ -157,6 +166,14 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 	AppendMenu(hSubMenuOSD, MF_SEPARATOR, 0, NULL);
 	AppendMenu(hSubMenuOSD, MF_STRING, mOsdBox, "Background\t b");
 	AppendMenu(hSubMenuOSD, MF_STRING, mOsdPosition, "Swap Position\t p");
+
+	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetZero, "Reset\t\\");
+	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetPF,   "+1 Frame\t+");
+	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetMF,   "-1 Frame\t-");
+	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetPM,   "+1 Minute\t}");
+	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetMM,   "-1 Minute\t{");
+	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetPH,   "+1 Hour");
+	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetMH,   "-1 Hour");
 
 	AppendMenu(hSubMenuJack, MF_STRING, mJackPlayPause, "Play/Pause\t<space>");
 	AppendMenu(hSubMenuJack, MF_STRING, mJackPlay, "Play");
@@ -223,6 +240,7 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 	// built top-level w/o ModifyMenu
 	unsigned int flags_load = 0;
 	unsigned int flags_sync = 0;
+	unsigned int flags_offs = 0;
 	unsigned int flags_jack = 0;
 	if (ui_syncsource() != SYNC_JACK || (interaction_override&OVR_JCONTROL)) {
 		flags_jack = MF_DISABLED | MF_GRAYED;
@@ -233,6 +251,9 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 	if (interaction_override & OVR_LOADFILE) {
 		flags_load = MF_DISABLED | MF_GRAYED;
 	}
+	if ((interaction_override&OVR_AVOFFSET) != 0 ) {
+		flags_offs = MF_DISABLED | MF_GRAYED;
+	}
 
 	AppendMenu(hMenu, MF_STRING | MF_DISABLED, 0, "XJadeo " VERSION);
 	AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
@@ -241,6 +262,7 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 	AppendMenu(hMenu, MF_STRING | MF_POPUP | flags_sync, (UINT_PTR)hSubMenuSync, "Sync");
 	AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hSubMenuSize, "Display");
 	AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hSubMenuOSD, "OSD");
+	AppendMenu(hMenu, MF_STRING | MF_POPUP | flags_offs, (UINT_PTR)hSubMenuOffs, "Offset");
 	AppendMenu(hMenu, MF_STRING | MF_POPUP | flags_jack, (UINT_PTR)hSubMenuJack, "Transport");
 
 	/* and go */
@@ -309,6 +331,13 @@ static void win_handle_menu(HWND hwnd, enum wMenuId id) {
 		case mOsdOffsetFN:     PTLL; ui_osd_offset_fn(); PTUL; break;
 		case mOsdOffsetTC:     PTLL; ui_osd_offset_tc(); PTUL; break;
 		case mOsdBox:          PTLL; ui_osd_box(); PTUL; break;
+		case mOffsetZero:      PTLL; XCtimeoffset( 0, 0); PTUL; break;
+		case mOffsetPF:        PTLL; XCtimeoffset( 1, 0); PTUL; break;
+		case mOffsetMF:        PTLL; XCtimeoffset(-1, 0); PTUL; break;
+		case mOffsetPM:        PTLL; XCtimeoffset( 2, 0); PTUL; break;
+		case mOffsetMM:        PTLL; XCtimeoffset(-2, 0); PTUL; break;
+		case mOffsetPH:        PTLL; XCtimeoffset( 3, 0); PTUL; break;
+		case mOffsetMH:        PTLL; XCtimeoffset(-3, 0); PTUL; break;
 		case mJackPlayPause:   jackt_toggle(); break;
 		case mJackPlay:        jackt_start(); break;
 		case mJackStop:        jackt_stop(); break;

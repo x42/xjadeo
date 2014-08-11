@@ -680,7 +680,8 @@ void XCresize_scale (int up) {
 
 void XCtimeoffset (int mode, unsigned int charcode) {
 	if ((interaction_override&OVR_AVOFFSET) != 0 ) {
-		remote_notify(NTY_KEYBOARD, 310, "keypress=%d", charcode);
+		if (charcode != 0)
+			remote_notify(NTY_KEYBOARD, 310, "keypress=%d", charcode);
 		return;
 	}
 
@@ -706,6 +707,22 @@ void XCtimeoffset (int mode, unsigned int charcode) {
 				ts_offset += framerate * 60;
 			} else {
 				ts_offset += 25*60;
+			}
+			break;
+		case -3:
+			if (framerate > 0) {
+				// TODO drop-frame ??
+				ts_offset -= framerate * 3600;
+			} else {
+				ts_offset -= 25*3600;
+			}
+			break;
+		case 3:
+			if (framerate > 0) {
+				// TODO drop-frame ??
+				ts_offset += framerate * 3600;
+			} else {
+				ts_offset += 25*3600;
 			}
 			break;
 		default:

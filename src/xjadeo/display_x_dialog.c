@@ -71,6 +71,14 @@ static void ui_letterbox()  { Xletterbox(2); }
 static void ui_fullscreen() { Xfullscreen(2); }
 static void ui_mousetoggle(){ Xmousepointer(2); }
 
+static void ui_offset_rst() { XCtimeoffset( 0, 0); }
+static void ui_offset_pf()  { XCtimeoffset( 1, 0); }
+static void ui_offset_mf()  { XCtimeoffset(-1, 0); }
+static void ui_offset_pm()  { XCtimeoffset( 2, 0); }
+static void ui_offset_mm()  { XCtimeoffset(-2, 0); }
+static void ui_offset_ph()  { XCtimeoffset( 3, 0); }
+static void ui_offset_mh()  { XCtimeoffset(-3, 0); }
+
 /* unlisted key-shorcuts
  * - Esc, q (quit)
  * - C (OSD - clear all)
@@ -122,6 +130,17 @@ static struct XjxMenuItem submenu_osd[] = {
 	{NULL, NULL, NULL, NULL, 0, 0},
 };
 
+static struct XjxMenuItem submenu_offs[] = {
+	{"Reset",     "\\", NULL, &ui_offset_rst, 0, 1},
+	{"+ 1 Frame",  "+", NULL, &ui_offset_pf, 0, 1},
+	{"- 1 Frame",  "-", NULL, &ui_offset_mf, 0, 1},
+	{"+ 1 Minute", "{", NULL, &ui_offset_pm, 0, 1},
+	{"- 1 Minute", "}", NULL, &ui_offset_mm, 0, 1},
+	{"+ 1 Hour",   "",  NULL, &ui_offset_ph, 0, 1},
+	{"- 1 Hour",   "",  NULL, &ui_offset_mh, 0, 1},
+	{NULL, NULL, NULL, NULL, 0, 0},
+};
+
 static struct XjxMenuItem submenu_jack[] = {
 	{"Play/Pause", "<spc>", NULL, &jackt_toggle, 0, 1},
 	{"Play", "", NULL, &jackt_start, 0, 1},
@@ -136,6 +155,7 @@ static struct XjxMenuItem mainmenu[] = {
 	{"Sync",               "", submenu_sync, NULL, 0, 1},
 	{"Display",            "", submenu_size, NULL, 0, 1},
 	{"OSD",                "", submenu_osd,  NULL, 0, 1},
+	{"Offset"   ,          "", submenu_offs, NULL, 0, 1},
 	{"Transport",          "", submenu_jack, NULL, 0, 1},
 	{"",                   "", NULL, NULL, 0, 0},
 	{"(Drag&Drop File on", "", NULL, NULL, 0, 1},
@@ -220,11 +240,17 @@ static void update_menus () {
 		submenu_size[10].enabled = 1;
 	}
 
+	if ((interaction_override&OVR_AVOFFSET) != 0 )
+	{
+		mainmenu[5].sensitive = 0;
+	} else {
+		mainmenu[5].sensitive = 1;
+	}
 	if (ui_syncsource() == SYNC_JACK && !(interaction_override&OVR_JCONTROL))
 	{
-		mainmenu[5].sensitive = 1;
+		mainmenu[6].sensitive = 1;
 	} else {
-		mainmenu[5].sensitive = 0;
+		mainmenu[6].sensitive = 0;
 	}
 
 	if (interaction_override & OVR_MENUSYNC) {
@@ -234,11 +260,11 @@ static void update_menus () {
 	}
 
 	if (interaction_override & OVR_LOADFILE) {
-		mainmenu[7].sensitive = 0;
 		mainmenu[8].sensitive = 0;
+		mainmenu[9].sensitive = 0;
 	} else {
-		mainmenu[7].sensitive = 1;
 		mainmenu[8].sensitive = 1;
+		mainmenu[9].sensitive = 1;
 	}
 }
 
