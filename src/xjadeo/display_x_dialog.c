@@ -65,6 +65,8 @@ static void hide_submenu(Display *dpy);
 static void ui_scale50()    { XCresize_percent(50); }
 static void ui_scale100()   { XCresize_percent(100); }
 static void ui_scale150()   { XCresize_percent(150); }
+static void ui_scale_inc()  { XCresize_scale( 1); }
+static void ui_scale_dec()  { XCresize_scale(-1); }
 static void ui_aspect()     { XCresize_aspect(0); }
 static void ui_ontop()      { Xontop(2); }
 static void ui_letterbox()  { Xletterbox(2); }
@@ -100,33 +102,38 @@ static struct XjxMenuItem submenu_sync[] = {
 };
 
 static struct XjxMenuItem submenu_size[] = {
-	{"50%",          "",  NULL, &ui_scale50, 0, 1},
-	{"100%",         ".", NULL, &ui_scale100, 0, 1},
-	{"150%",         "",  NULL, &ui_scale150, 0, 1},
-	{"",             "",  NULL, NULL, 0, 0},
-	{"Reset Aspect", ",", NULL, &ui_aspect, 0, 1},
-	{"Letterbox",    "l", NULL, &ui_letterbox, 0, 1},
-	{"",             "",  NULL, NULL, 0, 0},
-	{"On Top",       "a", NULL, &ui_ontop, 0, 1},
-	{"Fullscreen",   "f", NULL, &ui_fullscreen, 0, 1},
-	{"",             "",  NULL, NULL, 0, 0},
-	{"Mouse Cursor", "m", NULL, &ui_mousetoggle, 0, 1},
+	{"50%",           "",  NULL, &ui_scale50, 0, 1},
+	{"100%",          ".", NULL, &ui_scale100, 0, 1},
+	{"150%",          "",  NULL, &ui_scale150, 0, 1},
+	{"",              "",  NULL, NULL, 0, 0},
+	{"-20%",          "<", NULL, &ui_scale_dec, 0, 1},
+	{"+20%",          ">", NULL, &ui_scale_inc, 0, 1},
+	{"",              "",  NULL, NULL, 0, 0},
+	{"Reset Aspect",  ",", NULL, &ui_aspect, 0, 1},
+	{"Retain Aspect (Letterbox)",    "L", NULL, &ui_letterbox, 0, 1},
+	{"",              "",  NULL, NULL, 0, 0},
+	{"Window On Top", "A", NULL, &ui_ontop, 0, 1},
+	{"Fullscreen",    "F", NULL, &ui_fullscreen, 0, 1},
+	{"",              "",  NULL, NULL, 0, 0},
+	{"Mouse Cursor",  "M", NULL, &ui_mousetoggle, 0, 1},
 	{NULL, NULL, NULL, NULL, 0, 0},
 };
 
 static struct XjxMenuItem submenu_osd[] = {
-	{"External TC",  "s", NULL, &ui_osd_tc, 0, 1},
-	{"",             "",  NULL, NULL, 0, 0},
-	{"VTC off",      "v", NULL, &ui_osd_vtc_off, 0, 1},
-	{"VTC Timecode", "",  NULL, &ui_osd_vtc_tc, 0, 1},
-	{"Frame Number", "",  NULL, &ui_osd_vtc_fn, 0, 1},
-	{"",             "",  NULL, NULL, 0, 0},
-	{"Offset Off",   "o", NULL, &ui_osd_offset_none, 0, 1},
-	{"Offset TC",    "",  NULL, &ui_osd_offset_tc, 0, 1},
-	{"Offset FN",    "",  NULL, &ui_osd_offset_fn, 0, 1},
-	{"",             "",  NULL, NULL, 0, 0},
-	{"Background",   "b", NULL, &ui_osd_box, 0, 1},
-	{"Swap Position","p", NULL, &ui_osd_permute, 0, 1},
+	{"External Timecode",   "S", NULL, &ui_osd_tc, 0, 1},
+	{"",                    "",  NULL, NULL, 0, 0},
+	{"VTC Off",             "V", NULL, &ui_osd_vtc_off, 0, 1},
+	{"VTC Timecode",        "",  NULL, &ui_osd_vtc_tc, 0, 1},
+	{"VTC Frame Number",    "",  NULL, &ui_osd_vtc_fn, 0, 1},
+	{"",                    "",  NULL, NULL, 0, 0},
+	{"Offset Off",          "O", NULL, &ui_osd_offset_none, 0, 1},
+	{"Offset Timecode",     "",  NULL, &ui_osd_offset_tc, 0, 1},
+	{"Offset Frame Number", "",  NULL, &ui_osd_offset_fn, 0, 1},
+	{"",                    "",  NULL, NULL, 0, 0},
+	{"Background",          "B", NULL, &ui_osd_box, 0, 1},
+	{"Swap Position",       "P", NULL, &ui_osd_permute, 0, 1},
+	{"",                    "",  NULL, NULL, 0, 0},
+	{"Clear All",     "Shift+C", NULL, &ui_osd_clear, 0, 1},
 	{NULL, NULL, NULL, NULL, 0, 0},
 };
 
@@ -228,16 +235,16 @@ static void update_menus () {
 	}
 
 	if (Xgetletterbox()) {
-		submenu_size[5].enabled = 1;
-	}
-	if (Xgetontop()) {
-		submenu_size[7].enabled = 1;
-	}
-	if (Xgetfullscreen()) {
 		submenu_size[8].enabled = 1;
 	}
-	if (!Xgetmousepointer()) {
+	if (Xgetontop()) {
 		submenu_size[10].enabled = 1;
+	}
+	if (Xgetfullscreen()) {
+		submenu_size[11].enabled = 1;
+	}
+	if (!Xgetmousepointer()) {
+		submenu_size[13].enabled = 1;
 	}
 
 	if ((interaction_override&OVR_AVOFFSET) != 0 )

@@ -98,6 +98,8 @@ enum wMenuId {
 	mSize50,
 	mSize100,
 	mSize150,
+	mSizeInc,
+	mSizeDec,
 	mSizeAspect,
 	mSizeLetterbox,
 	mWinOnTop,
@@ -113,6 +115,7 @@ enum wMenuId {
 	mOsdOffsetFN,
 	mOsdOffsetTC,
 	mOsdBox,
+	mOsdClear,
 
 	mOffsetZero,
 	mOffsetPF,
@@ -146,39 +149,43 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 	AppendMenu(hSubMenuSize, MF_STRING, mSize100, "100%\t .");
 	AppendMenu(hSubMenuSize, MF_STRING, mSize150, "150%");
 	AppendMenu(hSubMenuSize, MF_SEPARATOR, 0, NULL);
+	AppendMenu(hSubMenuSize, MF_STRING, mSizeDec, "-20%\t<");
+	AppendMenu(hSubMenuSize, MF_STRING, mSizeInc, "+20%\t>");
+	AppendMenu(hSubMenuSize, MF_SEPARATOR, 0, NULL);
 	AppendMenu(hSubMenuSize, MF_STRING, mSizeAspect, "Reset Aspect\t ,");
-	AppendMenu(hSubMenuSize, MF_STRING, mSizeLetterbox, "Retain Aspect (Letterbox)\t l");
+	AppendMenu(hSubMenuSize, MF_STRING, mSizeLetterbox, "Retain Aspect (Letterbox)\t L");
 	AppendMenu(hSubMenuSize, MF_SEPARATOR, 0, NULL);
-	AppendMenu(hSubMenuSize, MF_STRING, mWinOnTop, "On Top\t a");
-	AppendMenu(hSubMenuSize, MF_STRING, mWinFullScreen, "Full Screen\t f");
+	AppendMenu(hSubMenuSize, MF_STRING, mWinOnTop, "On Top\t A");
+	AppendMenu(hSubMenuSize, MF_STRING, mWinFullScreen, "Full Screen\t F");
 	AppendMenu(hSubMenuSize, MF_SEPARATOR, 0, NULL);
-	AppendMenu(hSubMenuSize, MF_STRING, mWinMouseVisible, "Mouse Cursor\t m");
+	AppendMenu(hSubMenuSize, MF_STRING, mWinMouseVisible, "Mouse Cursor\t M");
 
-	AppendMenu(hSubMenuOSD, MF_STRING, mOsdTC, "External TC\t s");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdTC, "External Timecode\t S");
 	AppendMenu(hSubMenuOSD, MF_SEPARATOR, 0, NULL);
-	AppendMenu(hSubMenuOSD, MF_STRING, mOsdVtcNone, "VTC Off\t v");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdVtcNone, "VTC Off\t V");
 	AppendMenu(hSubMenuOSD, MF_STRING, mOsdVtcTc, "VTC Timecode");
-	AppendMenu(hSubMenuOSD, MF_STRING, mOsdVtcFn, "Frame number");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdVtcFn, "VTC Frame Number");
 	AppendMenu(hSubMenuOSD, MF_SEPARATOR, 0, NULL);
-	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetNone, "Offset Off\t o");
-	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetTC, "Offset TC");
-	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetFN, "Offset FN");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetNone, "Offset Off\t O");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetTC, "Offset Timecode");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetFN, "Offset Frame Number");
 	AppendMenu(hSubMenuOSD, MF_SEPARATOR, 0, NULL);
-	AppendMenu(hSubMenuOSD, MF_STRING, mOsdBox, "Background\t b");
-	AppendMenu(hSubMenuOSD, MF_STRING, mOsdPosition, "Swap Position\t p");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdBox, "Background\t B");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdPosition, "Swap Position\t P");
+	AppendMenu(hSubMenuOSD, MF_STRING, mOsdClear, "CLear All\t Shift+C");
 
-	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetZero, "Reset\t\\");
-	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetPF,   "+1 Frame\t+");
-	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetMF,   "-1 Frame\t-");
-	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetPM,   "+1 Minute\t}");
-	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetMM,   "-1 Minute\t{");
+	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetZero, "Reset\t \\");
+	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetPF,   "+1 Frame\t +");
+	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetMF,   "-1 Frame\t -");
+	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetPM,   "+1 Minute\t }");
+	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetMM,   "-1 Minute\t {");
 	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetPH,   "+1 Hour");
 	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetMH,   "-1 Hour");
 
-	AppendMenu(hSubMenuJack, MF_STRING, mJackPlayPause, "Play/Pause\t<space>");
+	AppendMenu(hSubMenuJack, MF_STRING, mJackPlayPause, "Play/Pause\t <space>");
 	AppendMenu(hSubMenuJack, MF_STRING, mJackPlay, "Play");
 	AppendMenu(hSubMenuJack, MF_STRING, mJackStop, "Stop");
-	AppendMenu(hSubMenuJack, MF_STRING, mJackRewind, "Rewind\t<backspace>");
+	AppendMenu(hSubMenuJack, MF_STRING, mJackRewind, "Rewind\t <backspace>");
 
 	/* update menu items */
 	switch (ui_syncsource()) {
@@ -317,6 +324,8 @@ static void win_handle_menu(HWND hwnd, enum wMenuId id) {
 		case mSize50:          XCresize_percent(50); break;
 		case mSize100:         XCresize_percent(100); break;
 		case mSize150:         XCresize_percent(150); break;
+		case mSizeInc:         XCresize_scale( 1); break;
+		case mSizeDec:         XCresize_scale(-1); break;
 		case mSizeAspect:      XCresize_aspect(0); break;
 		case mSizeLetterbox:   Xletterbox(2); break;
 		case mWinOnTop:        Xontop(2); break;
@@ -331,6 +340,7 @@ static void win_handle_menu(HWND hwnd, enum wMenuId id) {
 		case mOsdOffsetFN:     PTLL; ui_osd_offset_fn(); PTUL; break;
 		case mOsdOffsetTC:     PTLL; ui_osd_offset_tc(); PTUL; break;
 		case mOsdBox:          PTLL; ui_osd_box(); PTUL; break;
+		case mOsdClear:        PTLL; ui_osd_clear(); PTUL; break;
 		case mOffsetZero:      PTLL; XCtimeoffset( 0, 0); PTUL; break;
 		case mOffsetPF:        PTLL; XCtimeoffset( 1, 0); PTUL; break;
 		case mOffsetMF:        PTLL; XCtimeoffset(-1, 0); PTUL; break;
