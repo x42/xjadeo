@@ -11,9 +11,9 @@ fi
 progname="$0"
 curdir=`dirname "$progname"`
 progbase=`basename "$progname"`
-execname=${curdir}/${progbase}-bin
+execname="${progbase}-bin"
 
-if test -x "$execname"; then
+if test -x "${curdir}/$execname"; then
  cd "${curdir}"
-  exec "${execname}" $@
+ exec "./${execname}" $@
 fi
