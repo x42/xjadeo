@@ -44,6 +44,13 @@ static void gl_sync_unlock() { if (osxgui_status > 0) { sync_sem = 0; pthread_mu
 //forward declaration, need for 64bit apps on 10.5
 OSErr UpdateSystemActivity(UInt8 d);
 
+@interface MenuDLG : NSObject
+{
+	int menuID;
+}
+- (void)setMenuId:(int)id;
+@end
+
 __attribute__ ((visibility ("hidden")))
 @interface XjadeoWindow : NSWindow
 {
@@ -291,119 +298,185 @@ __attribute__ ((visibility ("hidden")))
 static XjadeoOpenGLView* osx_glview;
 static id osx_window;
 
-static NSMenuItem *fileOpen;
-static NSMenuItem *syncJACK;
+
+// Menus
+static NSMenuItem *mFileOpen;
+static NSMenuItem *mJackTransport;
+static NSMenuItem *mSyncJACK;
 #ifdef HAVE_LTC
-static NSMenuItem *syncLTC;
+static NSMenuItem *mSyncLTC;
 #endif
 #ifdef HAVE_JACKMIDI
-static NSMenuItem *syncMTCJ; // jack
+static NSMenuItem *mSyncMTCJ; // jack
 #endif
 #ifdef HAVE_PORTMIDI
-static NSMenuItem *syncMTCP; // portmidi
+static NSMenuItem *mSyncMTCP; // portmidi
 #endif
-static NSMenuItem *syncNone;
+static NSMenuItem *mSyncNone;
+
+static NSMenuItem *mOsdTC;
+static NSMenuItem *mOsdVtcOff;
+static NSMenuItem *mOsdVtcTc;
+static NSMenuItem *mOsdVtcFn;
+static NSMenuItem *mOsdOffOff;
+static NSMenuItem *mOsdOffTc;
+static NSMenuItem *mOsdOffFn;
+static NSMenuItem *mOsdBox;
+
+static NSMenuItem *mDpyLetterbox;
+static NSMenuItem *mDpyOnTop;
+static NSMenuItem *mDpyFullscreen;
+static NSMenuItem *mDpyMouseCursor;
 
 static void update_sync_menu() {
 	switch(ui_syncsource()) {
 		case SYNC_JACK:
-			[syncNone setState:NSOffState];
-			[syncJACK setState:NSOnState];
+			[mJackTransport setEnabled:YES];
+			[mSyncNone setState:NSOffState];
+			[mSyncJACK setState:NSOnState];
 #ifdef HAVE_LTC
-			[syncLTC  setState:NSOffState];
+			[mSyncLTC  setState:NSOffState];
 #endif
 #ifdef HAVE_JACKMIDI
-			[syncMTCJ setState:NSOffState];
+			[mSyncMTCJ setState:NSOffState];
 #endif
 #ifdef HAVE_PORTMIDI
-			[syncMTCP setState:NSOffState];
+			[mSyncMTCP setState:NSOffState];
 #endif
 		break;
 		case SYNC_LTC:
-			[syncNone setState:NSOffState];
-			[syncJACK setState:NSOffState];
+			[mJackTransport setEnabled:NO];
+			[mSyncNone setState:NSOffState];
+			[mSyncJACK setState:NSOffState];
 #ifdef HAVE_LTC
-			[syncLTC  setState:NSOnState];
+			[mSyncLTC  setState:NSOnState];
 #endif
 #ifdef HAVE_JACKMIDI
-			[syncMTCJ setState:NSOffState];
+			[mSyncMTCJ setState:NSOffState];
 #endif
 #ifdef HAVE_PORTMIDI
-			[syncMTCP setState:NSOffState];
+			[mSyncMTCP setState:NSOffState];
 #endif
 		break;
 		case SYNC_MTC_PORTMIDI:
-			[syncNone setState:NSOffState];
-			[syncJACK setState:NSOffState];
+			[mJackTransport setEnabled:NO];
+			[mSyncNone setState:NSOffState];
+			[mSyncJACK setState:NSOffState];
 #ifdef HAVE_LTC
-			[syncLTC  setState:NSOffState];
+			[mSyncLTC  setState:NSOffState];
 #endif
 #ifdef HAVE_JACKMIDI
-			[syncMTCJ setState:NSOffState];
+			[mSyncMTCJ setState:NSOffState];
 #endif
 #ifdef HAVE_PORTMIDI
-			[syncMTCP setState:NSOnState];
+			[mSyncMTCP setState:NSOnState];
 #endif
 		break;
 		case SYNC_MTC_JACK:
-			[syncNone setState:NSOffState];
-			[syncJACK setState:NSOffState];
+			[mJackTransport setEnabled:NO];
+			[mSyncNone setState:NSOffState];
+			[mSyncJACK setState:NSOffState];
 #ifdef HAVE_LTC
-			[syncLTC  setState:NSOffState];
+			[mSyncLTC  setState:NSOffState];
 #endif
 #ifdef HAVE_JACKMIDI
-			[syncMTCJ setState:NSOnState];
+			[mSyncMTCJ setState:NSOnState];
 #endif
 #ifdef HAVE_PORTMIDI
-			[syncMTCP setState:NSOffState];
+			[mSyncMTCP setState:NSOffState];
 #endif
 		break;
 		default:
-			[syncNone setState:NSOnState];
-			[syncJACK setState:NSOffState];
+			[mJackTransport setEnabled:NO];
+			[mSyncNone setState:NSOnState];
+			[mSyncJACK setState:NSOffState];
 #ifdef HAVE_LTC
-			[syncLTC  setState:NSOffState];
+			[mSyncLTC  setState:NSOffState];
 #endif
 #ifdef HAVE_JACKMIDI
-			[syncMTCJ setState:NSOffState];
+			[mSyncMTCJ setState:NSOffState];
 #endif
 #ifdef HAVE_PORTMIDI
-			[syncMTCP setState:NSOffState];
+			[mSyncMTCP setState:NSOffState];
 #endif
 		break;
 	}
 	if (interaction_override&OVR_MENUSYNC) {
-		[syncNone setEnabled:NO];
-		[syncJACK setEnabled:NO];
+		[mJackTransport setEnabled:NO];
+		[mSyncNone setEnabled:NO];
+		[mSyncJACK setEnabled:NO];
 #ifdef HAVE_LTC
-		[syncLTC  setEnabled:NO];
+		[mSyncLTC  setEnabled:NO];
 #endif
 #ifdef HAVE_JACKMIDI
-		[syncMTCJ setEnabled:NO];
+		[mSyncMTCJ setEnabled:NO];
 #endif
 #ifdef HAVE_PORTMIDI
-		[syncMTCP setEnabled:NO];
+		[mSyncMTCP setEnabled:NO];
 #endif
 	} else {
-		[syncNone setEnabled:YES];
-		[syncJACK setEnabled:YES];
+		[mSyncNone setEnabled:YES];
+		[mSyncJACK setEnabled:YES];
 #ifdef HAVE_LTC
-		[syncLTC  setEnabled:YES];
+		[mSyncLTC  setEnabled:YES];
 #endif
 #ifdef HAVE_JACKMIDI
-		[syncMTCJ setEnabled:YES];
+		[mSyncMTCJ setEnabled:YES];
 #endif
 #ifdef HAVE_PORTMIDI
-		[syncMTCP setEnabled:YES];
+		[mSyncMTCP setEnabled:YES];
 #endif
-	}
-
-	if (interaction_override&OVR_LOADFILE) {
-		[fileOpen setEnabled:NO];
-	} else {
-		[fileOpen setEnabled:YES];
 	}
 }
+
+static void update_osd_menu() {
+	[mOsdTC     setState: (OSD_mode&OSD_SMPTE) ? NSOnState : NSOffState];
+	[mOsdVtcOff setState: (OSD_mode&(OSD_SMPTE|OSD_VTC)) ? NSOffState : NSOnState];
+	[mOsdVtcTc  setState: (OSD_mode&OSD_FRAME) ? NSOnState : NSOffState];
+	[mOsdVtcFn  setState: (OSD_mode&OSD_VTC)   ? NSOnState : NSOffState];
+	[mOsdOffOff setState: (OSD_mode&(OSD_OFFF|OSD_OFFS)) ? NSOffState : NSOnState];
+	[mOsdOffTc  setState: (OSD_mode&OSD_OFFS)  ? NSOnState : NSOffState];
+	[mOsdOffFn  setState: (OSD_mode&OSD_OFFF)  ? NSOnState : NSOffState];
+	[mOsdBox    setState: (OSD_mode&OSD_BOX)   ? NSOnState : NSOffState];
+}
+
+static void update_dpy_menu() {
+	[mDpyLetterbox   setState: Xgetletterbox()    ? NSOnState : NSOffState];
+	[mDpyOnTop       setState: Xgetontop()        ? NSOnState : NSOffState];
+	[mDpyFullscreen  setState: Xgetfullscreen()   ? NSOnState : NSOffState];
+	[mDpyMouseCursor setState: Xgetmousepointer() ? NSOnState : NSOffState];
+}
+
+@implementation MenuDLG
+- (void)setMenuId:(int)id
+{
+	menuID = id;
+}
+- (void)menuWillOpen:(NSMenu *)menu
+{
+	switch(menuID) {
+		case 1:
+			if (interaction_override&OVR_LOADFILE) {
+				[mFileOpen setEnabled:NO];
+			} else {
+				[mFileOpen setEnabled:YES];
+			}
+			break;
+		case 2:
+			update_sync_menu();
+			break;
+		case 3:
+			update_osd_menu();
+			break;
+		case 4:
+			update_dpy_menu();
+			break;
+		default:
+			break;
+	}
+}
+@end
+
 
 @interface NSApplication (XJ)
 @end
@@ -459,35 +532,46 @@ static void update_sync_menu() {
 	}
 }
 
-- (void)syncToJack:(id)sender
-{
-	PTLL; ui_sync_to_jack(); PTUL;
-	update_sync_menu();
-}
+- (void)syncJack:(id)sender { PTLL; ui_sync_to_jack(); PTUL; }
+- (void)syncLTC:(id)sender  { PTLL; ui_sync_to_ltc(); PTUL; }
+- (void)syncMTCJ:(id)sender { PTLL; ui_sync_to_mtc_jack(); PTUL; }
+- (void)syncMTCP:(id)sender { PTLL; ui_sync_to_mtc_portmidi(); PTUL; }
+- (void)syncNone:(id)sender { PTLL; ui_sync_none(); PTUL; }
 
-- (void)syncToLTC:(id)sender
-{
-	PTLL; ui_sync_to_ltc(); PTUL;
-	update_sync_menu();
-}
+- (void)osdVtcNone:(id)sender { PTLL; ui_osd_vtc_off(); PTUL; }
+- (void)osdVtcTc:(id)sender   { PTLL; ui_osd_vtc_tc(); PTUL; }
+- (void)osdVtcFn:(id)sender   { PTLL; ui_osd_vtc_fn(); PTUL; }
+- (void)osdTc:(id)sender      { PTLL; ui_osd_tc(); PTUL; }
+- (void)osdPos:(id)sender     { PTLL; ui_osd_permute(); PTUL; }
+- (void)osdOffNone:(id)sender { PTLL; ui_osd_offset_none(); PTUL; }
+- (void)osdOffFn:(id)sender   { PTLL; ui_osd_offset_fn(); PTUL; }
+- (void)osdOffTc:(id)sender   { PTLL; ui_osd_offset_tc(); PTUL; }
+- (void)osdBox:(id)sender     { PTLL; ui_osd_box(); PTUL; }
+- (void)osdClear:(id)sender   { PTLL; ui_osd_clear(); PTUL; }
 
-- (void)syncToMTCJ:(id)sender
-{
-	PTLL; ui_sync_to_mtc_jack(); PTUL;
-	update_sync_menu();
-}
+- (void)dpySize50:(id)sender      { XCresize_percent(50); }
+- (void)dpySize100:(id)sender     { XCresize_percent(100); }
+- (void)dpySize150:(id)sender     { XCresize_percent(150); }
+- (void)dpySizeInc:(id)sender     { XCresize_scale(-1); }
+- (void)dpySizeDec:(id)sender     { XCresize_scale( 1); }
+- (void)dpyAspect:(id)sender      { XCresize_aspect(0); }
+- (void)dpyLetterbox:(id)sender   { Xletterbox(2); }
+- (void)dpyOnTop:(id)sender       { Xontop(2); }
+- (void)dpyFullscreen:(id)sender  { Xfullscreen(2); }
+- (void)dpyMouseCursor:(id)sender { hide_mouse^=1; }
 
-- (void)syncToMTCP:(id)sender
-{
-	PTLL; ui_sync_to_mtc_portmidi(); PTUL;
-	update_sync_menu();
-}
+- (void)offZero:(id)sender { PTLL; XCtimeoffset( 0, 0); PTUL; }
+- (void)offPF:(id)sender   { PTLL; XCtimeoffset( 1, 0); PTUL; }
+- (void)offMF:(id)sender   { PTLL; XCtimeoffset(-1, 0); PTUL; }
+- (void)offPM:(id)sender   { PTLL; XCtimeoffset( 2, 0); PTUL; }
+- (void)offMM:(id)sender   { PTLL; XCtimeoffset(-2, 0); PTUL; }
+- (void)offPH:(id)sender   { PTLL; XCtimeoffset( 3, 0); PTUL; }
+- (void)offMH:(id)sender   { PTLL; XCtimeoffset(-3, 0); PTUL; }
 
-- (void)syncToNone:(id)sender
-{
-	PTLL; ui_sync_none(); PTUL;
-}
-
+- (void)jackPlayPause:(id)sender  { jackt_toggle(); }
+- (void)jackPlay:(id)sender       { jackt_start(); }
+- (void)jackStop:(id)sender       { jackt_stop(); }
+- (void)jackRewind:(id)sender     { jackt_rewind(); }
 @end
 
 static void gl_make_current() {
@@ -550,13 +634,11 @@ static void makeAppMenu(void) {
 	fileMenu = [[NSMenu alloc] initWithTitle:@"File"];
 	[fileMenu setAutoenablesItems:NO];
 
-	fileOpen = [fileMenu addItemWithTitle:@"Open" action:@selector(openVideo:) keyEquivalent:@"o"];
+	MenuDLG *filedlg = [[MenuDLG new] autorelease];
+	[filedlg setMenuId:1];
+	[fileMenu setDelegate:filedlg];
 
-	if (interaction_override&OVR_LOADFILE) {
-		[fileOpen setEnabled:NO];
-	} else {
-		[fileOpen setEnabled:YES];
-	}
+	mFileOpen = [fileMenu addItemWithTitle:@"Open" action:@selector(openVideo:) keyEquivalent:@"o"];
 
 	fileMenuItem = [[NSMenuItem alloc] initWithTitle:@"File" action:nil keyEquivalent:@""];
 	[fileMenuItem setSubmenu:fileMenu];
@@ -570,24 +652,153 @@ static void makeAppMenu(void) {
 	syncMenu = [[NSMenu alloc] initWithTitle:@"Sync"];
 	[syncMenu setAutoenablesItems:NO];
 
-	syncJACK = [syncMenu addItemWithTitle:@"JACK" action:@selector(syncToJack:) keyEquivalent:@"j"];
+	MenuDLG *syncdlg = [[MenuDLG new] autorelease];
+	[syncdlg setMenuId:2];
+	[syncMenu setDelegate:syncdlg];
+
+	mSyncJACK = [syncMenu addItemWithTitle:@"JACK" action:@selector(syncJack:) keyEquivalent:@"j"];
 #ifdef HAVE_LTC
-	syncLTC  = [syncMenu addItemWithTitle:@"LTC" action:@selector(syncToLTC:) keyEquivalent:@"l"];
+	mSyncLTC  = [syncMenu addItemWithTitle:@"LTC" action:@selector(syncLTC:) keyEquivalent:@"l"];
 #endif
 #ifdef HAVE_JACKMIDI
-	syncMTCJ  = [syncMenu addItemWithTitle:@"MTC (jackmidi)" action:@selector(syncToMTCJ:) keyEquivalent:@"m"];
+	mSyncMTCJ  = [syncMenu addItemWithTitle:@"MTC (jackmidi)" action:@selector(syncMTCJ:) keyEquivalent:@"m"];
 #endif
 #ifdef HAVE_PORTMIDI
-	syncMTCP  = [syncMenu addItemWithTitle:@"MTC (portmidi)" action:@selector(syncToMTCP:) keyEquivalent:@"p"];
+	mSyncMTCP  = [syncMenu addItemWithTitle:@"MTC (portmidi)" action:@selector(syncMTCP:) keyEquivalent:@"p"];
 #endif
-	syncNone = [syncMenu addItemWithTitle:@"None" action:@selector(syncToNone:) keyEquivalent:@""];
-	[syncNone setEnabled:NO];
+	mSyncNone = [syncMenu addItemWithTitle:@"None" action:@selector(syncNone:) keyEquivalent:@""];
+	[mSyncNone setEnabled:NO];
+
+	[syncMenu addItem:[NSMenuItem separatorItem]];
+
+	NSMenu     *jackMenu;
+	jackMenu = [[NSMenu alloc] initWithTitle:@"Jack Transport"];
+
+	menuItem = [jackMenu addItemWithTitle:@"Play/Pause" action:@selector(jackPlayPause:) keyEquivalent:@" "];
+	[menuItem setKeyEquivalentModifierMask:0];
+	[jackMenu addItemWithTitle:@"Play" action:@selector(jackPlay:) keyEquivalent:@""];
+	[jackMenu addItemWithTitle:@"Stop" action:@selector(jackStop:) keyEquivalent:@""];
+	menuItem = [jackMenu addItemWithTitle:@"Rewind" action:@selector(jackRewind:) keyEquivalent:@"\010"];
+	[menuItem setKeyEquivalentModifierMask:0];
+
+	mJackTransport = [[NSMenuItem alloc] initWithTitle:@"Jack Transport" action:nil keyEquivalent:@""];
+	[mJackTransport setSubmenu:jackMenu];
+	[syncMenu addItem:mJackTransport];
+	[jackMenu release];
 
 	syncMenuItem = [[NSMenuItem alloc] initWithTitle:@"Sync" action:nil keyEquivalent:@""];
 	[syncMenuItem setSubmenu:syncMenu];
 	[[NSApp mainMenu] addItem:syncMenuItem];
 	[syncMenu release];
 	[syncMenuItem release];
+
+	/* Create the OSD menu */
+	NSMenu     *osdMenu;
+	NSMenuItem *osdMenuItem;
+	osdMenu = [[NSMenu alloc] initWithTitle:@"OSD"];
+	[osdMenu setAutoenablesItems:NO];
+
+	MenuDLG *osddlg = [[MenuDLG new] autorelease];
+	[osddlg setMenuId:3];
+	[osdMenu setDelegate:osddlg];
+
+	mOsdTC     = [osdMenu addItemWithTitle:@"External Timecode" action:@selector(osdTc:) keyEquivalent:@"s"];
+	[osdMenu addItem:[NSMenuItem separatorItem]];
+	mOsdVtcOff = [osdMenu addItemWithTitle:@"VTC Off" action:@selector(osdVtcNone:) keyEquivalent:@"v"];
+	mOsdVtcTc  = [osdMenu addItemWithTitle:@"VTC Timecode" action:@selector(osdVtcTc:) keyEquivalent:@""];
+	mOsdVtcFn  = [osdMenu addItemWithTitle:@"VTC Frame Number" action:@selector(osdVtcFn:) keyEquivalent:@""];
+	[osdMenu addItem:[NSMenuItem separatorItem]];
+	mOsdOffOff = [osdMenu addItemWithTitle:@"Offset Off" action:@selector(osdOffNone:) keyEquivalent:@"o"];
+	mOsdOffTc  = [osdMenu addItemWithTitle:@"Offset Timecode" action:@selector(osdOffTc:) keyEquivalent:@""];
+	mOsdOffFn  = [osdMenu addItemWithTitle:@"Offset Frame Number" action:@selector(osdOffFn:) keyEquivalent:@""];
+	[osdMenu addItem:[NSMenuItem separatorItem]];
+	mOsdBox   = [osdMenu addItemWithTitle:@"Background" action:@selector(osdBox:) keyEquivalent:@"b"];
+	menuItem  = [osdMenu addItemWithTitle:@"Swap Position" action:@selector(osdPos:) keyEquivalent:@"p"];
+	[menuItem   setKeyEquivalentModifierMask:0];
+	[osdMenu addItem:[NSMenuItem separatorItem]];
+	menuItem  = [osdMenu addItemWithTitle:@"Clear All" action:@selector(osdClear:) keyEquivalent:@"C"];
+	[menuItem   setKeyEquivalentModifierMask:NSShiftKeyMask];
+
+	[menuItem   setKeyEquivalentModifierMask:0];
+	[mOsdVtcOff setKeyEquivalentModifierMask:0];
+	[mOsdOffOff setKeyEquivalentModifierMask:0];
+	[mOsdBox    setKeyEquivalentModifierMask:0];
+	[mOsdTC     setKeyEquivalentModifierMask:0];
+
+	osdMenuItem = [[NSMenuItem alloc] initWithTitle:@"OSD" action:nil keyEquivalent:@""];
+	[osdMenuItem setSubmenu:osdMenu];
+	[[NSApp mainMenu] addItem:osdMenuItem];
+	[osdMenu release];
+	[osdMenuItem release];
+
+	/* Create the Display menu */
+	NSMenu     *dpyMenu;
+	NSMenuItem *dpyMenuItem;
+	dpyMenu = [[NSMenu alloc] initWithTitle:@"Display"];
+	[dpyMenu setAutoenablesItems:NO];
+
+	MenuDLG *dpydlg = [[MenuDLG new] autorelease];
+	[dpydlg setMenuId:4];
+	[dpyMenu setDelegate:dpydlg];
+
+	[dpyMenu addItemWithTitle:@"50%"  action:@selector(dpySize50:) keyEquivalent:@""];
+	menuItem = [dpyMenu addItemWithTitle:@"100%" action:@selector(dpySize100:) keyEquivalent:@"."];
+	[dpyMenu addItemWithTitle:@"150%" action:@selector(dpySize150:) keyEquivalent:@""];
+	[menuItem   setKeyEquivalentModifierMask:0];
+
+	[dpyMenu addItem:[NSMenuItem separatorItem]];
+	menuItem = [dpyMenu addItemWithTitle:@"\u2013 20%" action:@selector(dpySizeDec:) keyEquivalent:@"<"];
+	[menuItem   setKeyEquivalentModifierMask:NSShiftKeyMask];
+	menuItem = [dpyMenu addItemWithTitle:@"+20%" action:@selector(dpySizeInc:) keyEquivalent:@">"];
+	[menuItem   setKeyEquivalentModifierMask:NSShiftKeyMask];
+
+	[dpyMenu addItem:[NSMenuItem separatorItem]];
+
+	menuItem = [dpyMenu addItemWithTitle:@"Reset Aspect" action:@selector(dpyAspect:) keyEquivalent:@","];
+	[menuItem   setKeyEquivalentModifierMask:0];
+	mDpyLetterbox = [dpyMenu addItemWithTitle:@"Retain Aspect" action:@selector(dpyLetterbox:) keyEquivalent:@"l"];
+	[dpyMenu addItem:[NSMenuItem separatorItem]];
+	mDpyOnTop = [dpyMenu addItemWithTitle:@"Window On Top" action:@selector(dpyOnTop:) keyEquivalent:@"a"];
+	mDpyFullscreen = [dpyMenu addItemWithTitle:@"Fullscreen" action:@selector(dpyFullscreen:) keyEquivalent:@"f"];
+	[dpyMenu addItem:[NSMenuItem separatorItem]];
+	mDpyMouseCursor = [dpyMenu addItemWithTitle:@"Mouse Cursor" action:@selector(dpyMouseCursor:) keyEquivalent:@"m"];
+
+	[mDpyLetterbox   setKeyEquivalentModifierMask:0];
+	[mDpyOnTop   setKeyEquivalentModifierMask:0];
+	[mDpyFullscreen   setKeyEquivalentModifierMask:0];
+	[mDpyMouseCursor   setKeyEquivalentModifierMask:0];
+
+	dpyMenuItem = [[NSMenuItem alloc] initWithTitle:@"Display" action:nil keyEquivalent:@""];
+	[dpyMenuItem setSubmenu:dpyMenu];
+	[[NSApp mainMenu] addItem:dpyMenuItem];
+	[dpyMenu release];
+	[dpyMenuItem release];
+
+	/* Create the Offset menu */
+	NSMenu     *offMenu;
+	NSMenuItem *offMenuItem;
+	offMenu = [[NSMenu alloc] initWithTitle:@"Offset"];
+	[offMenu setAutoenablesItems:NO];
+
+	menuItem = [offMenu addItemWithTitle:@"Reset" action:@selector(offZero:)   keyEquivalent:@"\\"];
+	[menuItem   setKeyEquivalentModifierMask:0];
+	menuItem = [offMenu addItemWithTitle:@"+1 Frame"  action:@selector(offPF:) keyEquivalent:@"+"];
+	[menuItem   setKeyEquivalentModifierMask:0];
+	menuItem = [offMenu addItemWithTitle:@" \u20131 Frame"  action:@selector(offMF:) keyEquivalent:@"-"];
+	[menuItem   setKeyEquivalentModifierMask:0];
+	menuItem = [offMenu addItemWithTitle:@"+1 Minute" action:@selector(offPM:) keyEquivalent:@"{"];
+	[menuItem   setKeyEquivalentModifierMask:0];
+	menuItem = [offMenu addItemWithTitle:@" \u20131 Minute" action:@selector(offMM:) keyEquivalent:@"}"];
+	[menuItem   setKeyEquivalentModifierMask:0];
+	[offMenu addItemWithTitle:@"+1 Hour"   action:@selector(offPH:) keyEquivalent:@""];
+	[offMenu addItemWithTitle:@" \u20131 Hour"   action:@selector(offMH:) keyEquivalent:@""];
+
+	offMenuItem = [[NSMenuItem alloc] initWithTitle:@"Offset" action:nil keyEquivalent:@""];
+	[offMenuItem setSubmenu:offMenu];
+	[[NSApp mainMenu] addItem:offMenuItem];
+	[offMenu release];
+	[offMenuItem release];
+
 
 	/* Create the window menu */
 
@@ -663,16 +874,16 @@ static int osx_open_window () {
 }
 
 static void osx_post_event(int data1) {
-    NSEvent* event = [NSEvent otherEventWithType:NSApplicationDefined
-                                        location:NSMakePoint(0,0)
-                                   modifierFlags:0
-                                       timestamp:0.0
-                                    windowNumber:0
-                                         context:nil
-                                         subtype:0
-                                           data1:data1
-                                           data2:0];
-    [NSApp postEvent:event atStart:NO];
+	NSEvent* event = [NSEvent otherEventWithType:NSApplicationDefined
+	                                    location:NSMakePoint(0,0)
+	                               modifierFlags:0
+	                                   timestamp:0.0
+	                                windowNumber:0
+	                                     context:nil
+	                                     subtype:0
+	                                       data1:data1
+	                                       data2:0];
+	[NSApp postEvent:event atStart:NO];
 }
 
 
@@ -770,12 +981,9 @@ void osx_main () {
 		static int periodic_sync = 5;
 		if (--periodic_sync == 0) {
 			periodic_sync = framerate * 50;
-			update_sync_menu();
 			UpdateSystemActivity(1 /*UsrActivity*/);
 			// TODO use a one time call
 			// IOPMAssertionCreateWithName() NoDisplaySleepAssertion etc.
-		} else if (periodic_sync % (int)(2 * framerate) == 0) {
-			update_sync_menu();
 		}
 	}
 	if (osxgui_status > 0) {
