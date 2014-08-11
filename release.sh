@@ -102,13 +102,23 @@ if test "$ok" != 0; then
 	exit
 fi
 
-echo "building osx package ..."
-ssh ${OSXUSER}${OSXMACHINE} << EOF
+if test -n "$OSXFROMSCRATCH"; then
+  echo "building osx package from scratch"
+  ssh ${OSXUSER}${OSXMACHINE} << EOF
 exec /bin/bash -l
 curl -L -o /tmp/xjadeo-x-pbuildstatic.sh https://raw.github.com/x42/xjadeo/master/x-osx-buildstack.sh
 chmod +x /tmp/xjadeo-x-pbuildstatic.sh
 /tmp/xjadeo-x-pbuildstatic.sh
 EOF
+else
+  echo "building osx package with existing stack"
+  ssh ${OSXUSER}${OSXMACHINE} << EOF
+exec /bin/bash -l
+curl -L -o /tmp/xjadeo-x-pbuildstatic.sh https://raw.github.com/x42/xjadeo/master/x-osx-bundle.sh
+chmod +x /tmp/xjadeo-x-pbuildstatic.sh
+/tmp/xjadeo-x-pbuildstatic.sh
+EOF
+fi
 
 ok=$?
 if test "$ok" != 0; then
