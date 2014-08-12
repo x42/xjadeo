@@ -85,16 +85,16 @@ enum {
 	NTY_KEYBOARD = 0x08
 };
 
-#define OSD_FRAME (1)
-#define OSD_SMPTE (2)
-#define OSD_VTC (512)
+#define OSD_FRAME  (0x0001)
+#define OSD_SMPTE  (0x0002)
+#define OSD_VTC    (0x0200)
 
-#define OSD_EQ    (8)
-#define OSD_OFFS (16)
-#define OSD_OFFF (32)
-#define OSD_TEXT (64)
-#define OSD_MSG (128)
-#define OSD_BOX (256)
+#define OSD_EQ     (0x0008)
+#define OSD_OFFS   (0x0010)
+#define OSD_OFFF   (0x0020)
+#define OSD_TEXT   (0x0040)
+#define OSD_MSG    (0x0080)
+#define OSD_BOX    (0x0100)
 
 #ifdef TTFFONTFILE
 # define FONT_FILE TTFFONTFILE

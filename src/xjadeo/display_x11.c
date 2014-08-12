@@ -249,7 +249,7 @@ static void xj_set_eq (char *prop, int value) {
 
 static void xj_handle_X_events (void) {
 	XEvent event;
-	int value=0;
+	int value = 0; // used for color-eq
 	while(XPending(xj_dpy)) {
 		XNextEvent(xj_dpy, &event);
 #ifdef XDLG
@@ -337,7 +337,9 @@ static void xj_handle_X_events (void) {
 						xj_set_fullscreen(xj_fullscreen^=1);
 					else if   (key == XK_e ) {//'e' // toggle OSD EQ config
 						OSD_mode^=OSD_EQ;
-						if (getvidmode() != VO_XV && getvidmode() != VO_X11) OSD_mode&=~OSD_EQ; // disable but for Xv&imlib2
+						if (xj_get_eq("brightness", &value) && xj_get_eq("contrast", &value)) {
+							OSD_mode&=~OSD_EQ; // disable if not supported
+						}
 						force_redraw=1;
 					} else if   (key == XK_o ) { //'o' // OSD - offset in frames
 						ui_osd_offset_cycle();
@@ -645,7 +647,6 @@ static int xv_set_eq(char *name, int value) {
 	XvAttribute *attributes;
 	int i, howmany, xv_atom;
 
-	printf("xv_set_eq\n");
 	/* get available attributes */
 	attributes = XvQueryPortAttributes(xj_dpy, xv_port, &howmany);
 	for (i = 0; i < howmany && attributes; i++)

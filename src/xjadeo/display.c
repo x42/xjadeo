@@ -430,6 +430,8 @@ static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int y
 	rendervars rv;
 	void (*_render)(uint8_t *mybuffer, rendervars *rv, int dx, int dy, uint8_t val);
 
+	if (strlen(text) == 0) return;
+
 	rv.Uoff  = movie_width * movie_height;
 	rv.Voff = rv.Uoff + movie_width * movie_height/4;
 	rv.bpp = 0;
@@ -438,7 +440,7 @@ static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int y
 
 	if (OSD_movieheight != movie_height) {
 		OSD_movieheight = movie_height;
-	  OSD_fontsize = MIN(MAX(16, movie_height / 18), 56);
+	  OSD_fontsize = MIN(MAX(13, movie_height / 18), 56);
 		render_font(OSD_fontfile, "+1234567890:.", OSD_fontsize, 0);
 	  OSD_fonty0 = ST_top;
 	  OSD_fonty1 = ST_height;
@@ -484,17 +486,17 @@ static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int y
 			}
 		}
 	}
-	int donext =0;
+	int do_next = 0; // 2x2 pixel color alignment
 	for (y=0; y < fh && (y+yalign) < movie_height;y++) {
-		donext=0;
+		do_next=0;
 		for (x=0; x<ST_rightend && (x+xalign) < movie_width ;x++) {
-			if (ST_image[y+fo][x]>= ST_BG || donext) {
-				_render(mybuffer,&rv,(x+xalign),(y+yalign),ST_image[y+fo][x]);
+			if (ST_image[y+fo][x]>= ST_BG || do_next) {
+				if (x+xalign >= 0)
+					_render(mybuffer,&rv,(x+xalign),(y+yalign),ST_image[y+fo][x]);
 			}
-			if (ST_image[y+fo][x]>= ST_BG && rfmt == PIX_FMT_UYVY422) donext=1;
-			else donext=0;
+			if (ST_image[y+fo][x]>= ST_BG && rfmt == PIX_FMT_UYVY422) do_next=1;
+			else do_next=0;
 		}
-
 	}
 }
 
@@ -562,7 +564,7 @@ void render_buffer (uint8_t *mybuffer) {
 			char tempoff[30];
 			snprintf(tempoff,30,"O:  %"PRId64, ts_offset);
 			OSD_render (VO[VOutput].render_fmt, mybuffer, tempoff, OSD_CENTER, 50, -1);
-		} else if (OSD_mode&OSD_OFFS ) {
+		} else if (OSD_mode&OSD_OFFS) {
 			char tempsmpte[30];
 			if (ts_offset < 0) {
 				sprintf(tempsmpte,"O: -");
@@ -579,6 +581,7 @@ void render_buffer (uint8_t *mybuffer) {
 			OSD_render (VO[VOutput].render_fmt, mybuffer, tempsmpte, OSD_CENTER, 50, -1);
 		}
 	}
+
 	VO[VOutput].render(buffer); // buffer = mybuffer (so far no share mem or sth)
 }
 

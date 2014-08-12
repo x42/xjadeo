@@ -96,6 +96,7 @@ extern char OSD_frame[48];
 extern char OSD_smpte[13];
 extern int  OSD_mode;
 extern char OSD_msg[128];
+uint64_t    osd_smpte_ts;
 
 //------------------------------------------------
 // globals
@@ -1117,6 +1118,7 @@ static void *index_run (void *arg) {
 	sprintf(OSD_msg, "Indexing. Please wait.");
 	OSD_frame[0] = '\0';
 	OSD_smpte[0] = '\0';
+	osd_smpte_ts = -1;
 	force_redraw = 1;
 	if (!index_frames()) {
 		OSD_mode &= ~OSD_MSG;
@@ -1512,6 +1514,7 @@ void display_frame (int64_t timestamp, int force_update) {
 	static AVPacket packet;
 
 	if (!buffer) {
+		displaying_valid_frame = 0;
 		return;
 	}
 #if (defined DND && defined PLATFORM_LINUX) || (defined WINMENU && defined PLATFORM_WINDOWS)
@@ -1521,23 +1524,42 @@ void display_frame (int64_t timestamp, int force_update) {
 		OSD_mode &= ~OSD_EQ;
 		OSD_frame[0] = '\0';
 		OSD_smpte[0] = '\0';
+		osd_smpte_ts = -1;
 	}
 #endif
 
 	if (!scan_complete || !current_file) {
-		render_empty_frame (force_update);
+		OSD_frame[0] = '\0';
+		int need_redisplay = force_update;
+		if (OSD_mode&OSD_SMPTE) {
+			if (osd_smpte_ts != timestamp - ts_offset)
+				need_redisplay = 1;
+			osd_smpte_ts = timestamp - ts_offset;
+			strcpy(OSD_smpte, syncname[syncnidx]);
+			frame_to_smptestring (&OSD_smpte[4], osd_smpte_ts);
+		}
+		render_empty_frame (need_redisplay);
+		displaying_valid_frame = 0;
+		return;
+	}
+
+
+	if (timestamp < 0 || timestamp >= frames) {
+		OSD_frame[0] = '\0';
+		int need_redisplay = force_update || displaying_valid_frame;
+		if (OSD_mode&OSD_SMPTE) {
+			if (osd_smpte_ts != timestamp - ts_offset)
+				need_redisplay = 1;
+			osd_smpte_ts = timestamp - ts_offset;
+			strcpy(OSD_smpte, syncname[syncnidx]);
+			frame_to_smptestring (&OSD_smpte[4], osd_smpte_ts);
+		}
+		render_empty_frame (need_redisplay);
+		displaying_valid_frame = 0;
 		return;
 	}
 
 	if (!force_update && dispFrame == timestamp) return;
-
-	if (timestamp < 0 || timestamp >= frames) {
-		OSD_frame[0] = '\0';
-		OSD_smpte[0] = '\0';
-		render_empty_frame (force_update || displaying_valid_frame);
-		displaying_valid_frame = 0;
-		return;
-	}
 
 	if (want_verbose)
 		fprintf(stdout, "\t\t\t\tdisplay:%07"PRId64"  \r", timestamp);
@@ -1559,6 +1581,7 @@ void display_frame (int64_t timestamp, int force_update) {
 	}
 	if (OSD_mode&OSD_SMPTE) {
 		strcpy(OSD_smpte, syncname[syncnidx]);
+		osd_smpte_ts = dispFrame - ts_offset;
 		frame_to_smptestring (&OSD_smpte[4], dispFrame - ts_offset);
 	}
 
@@ -1649,5 +1672,6 @@ int close_movie () {
 	framerate = 5;
 	OSD_frame[0] = '\0';
 	OSD_smpte[0] = '\0';
+	osd_smpte_ts = -1;
 	return (0);
 }
