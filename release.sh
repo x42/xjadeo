@@ -114,9 +114,11 @@ else
   echo "building osx package with existing stack"
   ssh ${OSXUSER}${OSXMACHINE} << EOF
 exec /bin/bash -l
-curl -L -o /tmp/xjadeo-x-pbuildstatic.sh https://raw.github.com/x42/xjadeo/master/x-osx-bundle.sh
-chmod +x /tmp/xjadeo-x-pbuildstatic.sh
-/tmp/xjadeo-x-pbuildstatic.sh
+cd $HOME/xjbuildd
+rm -rf xjadeo
+git clone -b master git://github.com/x42/xjadeo.git
+cd xjadeo
+./x-osx-bundle.sh
 EOF
 fi
 
