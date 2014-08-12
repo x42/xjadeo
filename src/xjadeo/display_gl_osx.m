@@ -322,6 +322,7 @@ static NSMenuItem *mOsdOffOff;
 static NSMenuItem *mOsdOffTc;
 static NSMenuItem *mOsdOffFn;
 static NSMenuItem *mOsdBox;
+static NSMenuItem *mOsdNfo;
 
 static NSMenuItem *mDpyLetterbox;
 static NSMenuItem *mDpyOnTop;
@@ -438,6 +439,8 @@ static void update_osd_menu () {
 	[mOsdOffTc  setState:(OSD_mode & OSD_OFFS)  ? NSOnState : NSOffState];
 	[mOsdOffFn  setState:(OSD_mode & OSD_OFFF)  ? NSOnState : NSOffState];
 	[mOsdBox    setState:(OSD_mode & OSD_BOX)   ? NSOnState : NSOffState];
+	[mOsdNfo    setState:(OSD_mode & OSD_NFO)   ? NSOnState : NSOffState];
+	[mOsdNfo    setEnabled:(OSD_mode&(OSD_OFFF | OSD_OFFS) || movie_height < OSD_MIN_NFO_HEIGHT) ? NO : YES];
 }
 
 static void update_dpy_menu () {
@@ -547,6 +550,7 @@ static void update_dpy_menu () {
 - (void) osdOffFn: (id)sender   { PTLL; ui_osd_offset_fn(); PTUL; }
 - (void) osdOffTc: (id)sender   { PTLL; ui_osd_offset_tc(); PTUL; }
 - (void) osdBox: (id)sender     { PTLL; ui_osd_box(); PTUL; }
+- (void) osdNfo: (id)sender     { PTLL; ui_osd_fileinfo(); PTUL; }
 - (void) osdClear: (id)sender   { PTLL; ui_osd_clear(); PTUL; }
 
 - (void) dpySize50: (id)sender      { XCresize_percent(50); }
@@ -712,6 +716,7 @@ static void makeAppMenu (void) {
 	mOsdOffTc  = [osdMenu addItemWithTitle:@"Offset Timecode" action:@selector(osdOffTc:) keyEquivalent:@""];
 	mOsdOffFn  = [osdMenu addItemWithTitle:@"Offset Frame Number" action:@selector(osdOffFn:) keyEquivalent:@""];
 	[osdMenu addItem:[NSMenuItem separatorItem]];
+	mOsdNfo   = [osdMenu addItemWithTitle:@"File Info" action:@selector(osdNfo:) keyEquivalent:@"i"];
 	mOsdBox   = [osdMenu addItemWithTitle:@"Background" action:@selector(osdBox:) keyEquivalent:@"b"];
 	menuItem  = [osdMenu addItemWithTitle:@"Swap Position" action:@selector(osdPos:) keyEquivalent:@"p"];
 	[menuItem   setKeyEquivalentModifierMask:0];
@@ -722,6 +727,7 @@ static void makeAppMenu (void) {
 	[menuItem   setKeyEquivalentModifierMask:0];
 	[mOsdVtcOff setKeyEquivalentModifierMask:0];
 	[mOsdOffOff setKeyEquivalentModifierMask:0];
+	[mOsdNfo    setKeyEquivalentModifierMask:0];
 	[mOsdBox    setKeyEquivalentModifierMask:0];
 	[mOsdTC     setKeyEquivalentModifierMask:0];
 

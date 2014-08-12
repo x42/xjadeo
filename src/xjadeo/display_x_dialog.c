@@ -82,11 +82,7 @@ static void ui_offset_ph()  { XCtimeoffset( 3, 0); }
 static void ui_offset_mh()  { XCtimeoffset(-3, 0); }
 
 /* unlisted key-shorcuts
- * - Esc, q (quit)
- * - C (OSD - clear all)
- * - <, > (scale window size)
- * - \, -, +, { } (time offset)
- *
+ * - Esc (quit)
  * - e, E, 0-9 , Shift + 1-4 (color EQ for xv/imlib)
  * - [, ] (pan/crop -- ifdef'ed)
  */
@@ -130,6 +126,7 @@ static struct XjxMenuItem submenu_osd[] = {
 	{"Offset Timecode",     "",  NULL, &ui_osd_offset_tc, 0, 1},
 	{"Offset Frame Number", "",  NULL, &ui_osd_offset_fn, 0, 1},
 	{"",                    "",  NULL, NULL, 0, 0},
+	{"File Info",           "I", NULL, &ui_osd_fileinfo, 0, 1},
 	{"Background",          "B", NULL, &ui_osd_box, 0, 1},
 	{"Swap Position",       "P", NULL, &ui_osd_permute, 0, 1},
 	{"",                    "",  NULL, NULL, 0, 0},
@@ -230,8 +227,16 @@ static void update_menus () {
 	if (OSD_mode&OSD_OFFF) {
 		submenu_osd[8].enabled = 1;
 	}
-	if (OSD_mode&OSD_BOX) {
+	if (OSD_mode&OSD_NFO) {
 		submenu_osd[10].enabled = 1;
+	}
+	if (OSD_mode&(OSD_OFFF | OSD_OFFS) || movie_height < OSD_MIN_NFO_HEIGHT) {
+		submenu_osd[10].sensitive = 0;
+	} else {
+		submenu_osd[10].sensitive = 1;
+	}
+	if (OSD_mode&OSD_BOX) {
+		submenu_osd[11].enabled = 1;
 	}
 
 	if (Xgetletterbox()) {

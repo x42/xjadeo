@@ -220,6 +220,11 @@ void ui_osd_box () {
 	force_redraw = 1;
 }
 
+void ui_osd_fileinfo () {
+	OSD_mode ^= OSD_NFO;
+	force_redraw = 1;
+}
+
 void ui_osd_permute () {
 	const int t1 = OSD_sy;
 	OSD_sy = OSD_fy;

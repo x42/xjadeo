@@ -216,6 +216,7 @@ void ui_osd_offset_none();
 void ui_osd_tc();
 void ui_osd_fn();
 void ui_osd_box();
+void ui_osd_fileinfo();
 void ui_osd_permute ();
 void ui_osd_vtc_fn ();
 void ui_osd_vtc_tc ();

@@ -226,6 +226,11 @@ static void xjglKeyPress(const unsigned int sym, const char *key) {
 		ui_osd_clear();
 		gl_sync_unlock();
 	}
+	else if (!strcmp(key, "i")) {
+		gl_sync_lock();
+		ui_osd_fileinfo();
+		gl_sync_unlock();
+	}
 	else if (!strcmp(key, ".")) {
 		XCresize_percent(100);
 	}
