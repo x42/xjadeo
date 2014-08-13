@@ -633,11 +633,14 @@ static int seek_frame (AVPacket *packet, int64_t framenumber) {
 	return -5;
 }
 
+float index_progress = 0;
+
 static void report_idx_progress (const char *msg, float percent) {
 	static int lastval = 0;
 	if (!(OSD_mode & OSD_MSG)) return;
 	if (floorf (percent) == lastval) return; // also check msg?
 	lastval = floorf (percent);
+	index_progress = percent;
 	sprintf(OSD_msg, "%s%3.0f%%", msg, percent);
 	force_redraw = 1;
 }
@@ -650,7 +653,7 @@ static int add_idx (int64_t ts, int64_t pos, uint8_t key, int duration, AVRation
 		fidx = realloc (fidx, fcnt * sizeof(struct FrameIndex));
 		return -1;
 	}
-	report_idx_progress ("Scanning File:", 100.f * fcnt / frames);
+	report_idx_progress ("Pass 1: Scanning File:", 100.f * fcnt / frames);
 
 	fidx[fcnt].pkt_pts = ts;
 	fidx[fcnt].pkt_pos = pos;
@@ -834,7 +837,7 @@ static int index_frames () {
 		}
 		if (!fidx[i].key) continue;
 
-		report_idx_progress ("Indexing Frames:", 100.f * i / fcnt);
+		report_idx_progress ("Pass 2: Indexing Frames:", 100.f * i / fcnt);
 
 		int got_pic = 0;
 		int64_t pts = AV_NOPTS_VALUE;
@@ -933,7 +936,7 @@ static int index_frames () {
 			if (!want_quiet) fprintf(stderr, "Indexing aborted.\n");
 			return -1;
 		}
-		report_idx_progress ("Creating Index:", 100.f * i / fcnt);
+		report_idx_progress ("Pass 3: Creating Index:", 100.f * i / fcnt);
 
 		int64_t kfi = keyframe_lookup_helper (MIN(fcnt - 1, i + 2 + max_keyframe_interval), fidx[i].timestamp);
 		if (kfi < 0) {
@@ -1120,6 +1123,7 @@ static void *index_run (void *arg) {
 	OSD_frame[0] = '\0';
 	OSD_smpte[0] = '\0';
 	osd_smpte_ts = -1;
+	index_progress = 0;
 	force_redraw = 1;
 	if (!index_frames()) {
 		OSD_mode &= ~OSD_MSG;
@@ -1128,6 +1132,7 @@ static void *index_run (void *arg) {
 		sprintf(OSD_msg, "Index Error. File is not suitable.");
 	}
 	OSD_mode &= ~OSD_IDXNFO;
+	index_progress = -1;
 	force_redraw = 1;
 	pthread_exit (NULL);
 	return (NULL);
@@ -1140,6 +1145,7 @@ static void cancel_index_thread (void) {
 	abort_indexing = 0;
 	OSD_mode &= ~OSD_MSG;
 	thread_active = 0;
+	index_progress = -1;
 	force_redraw = 1;
 }
 

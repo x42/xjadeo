@@ -35,6 +35,7 @@ extern char  *smpte_offset;
 extern int64_t ts_offset; // display on screen
 extern int    want_nosplash;
 extern double framerate;
+extern float index_progress;
 extern uint8_t splashed ;
 
 /*******************************************************************************
@@ -82,22 +83,22 @@ typedef struct {
 	int bpp;
 } rendervars;
 
-static void _overlay_YUV422 (uint8_t *mybuffer, rendervars *rv, int dx, int dy, int val) {
-	int yoff=(2*dx+movie_width*dy*2);
-	mybuffer[yoff+1]=255-(mybuffer[yoff+1]+val)/2;
-	mybuffer[yoff+3]=255-(mybuffer[yoff+3]+val)/2;
+static void _overlay_YUV422 (uint8_t *mybuffer, rendervars *rv, const int dx, const int dy, const uint8_t val) {
+	const int yoff = (2 * dx + movie_width * dy * 2);
+	mybuffer[yoff+1] = 0xff - ((mybuffer[yoff+1] >> 1) + (val >> 1));
+	mybuffer[yoff+3] = 0xff - ((mybuffer[yoff+3] >> 1) + (val >> 1));
 }
 
-static void _overlay_YUV (uint8_t *mybuffer, rendervars *rv, int dx, int dy, int val) {
-	int yoff=(dx+movie_width*dy);
-	mybuffer[yoff]=255-(mybuffer[yoff]+val)/2;
+static void _overlay_YUV (uint8_t *mybuffer, rendervars *rv, const int dx, const int dy, const uint8_t val) {
+	const int yoff = (dx + movie_width * dy);
+	mybuffer[yoff] = 0xff - ((mybuffer[yoff] >> 1)  + (val >> 1));
 }
 
-static void _overlay_RGB (uint8_t *mybuffer, rendervars *rv, int dx, int dy, int val) {
-	int pos=rv->bpp*(dx+movie_width*dy);
-	mybuffer[pos]= 255-(mybuffer[pos]+val)/2;
-	mybuffer[pos+1]= 255-(mybuffer[pos+1]+val)/2;
-	mybuffer[pos+2]= 255-(mybuffer[pos+2]+val)/2;
+static void _overlay_RGB (uint8_t *mybuffer, rendervars *rv, const int dx, const int dy, const uint8_t val) {
+	const int pos = rv->bpp * (dx + movie_width * dy);
+	mybuffer[pos]  = 0xff - ((mybuffer[pos]   >> 1) + (val >> 1));
+	mybuffer[pos+1]= 0xff - ((mybuffer[pos+1] >> 1) + (val >> 1));
+	mybuffer[pos+2]= 0xff - ((mybuffer[pos+2] >> 1) + (val >> 1));
 }
 
 static void _render_YUV422 (uint8_t *mybuffer, rendervars *rv, int dx, int dy, uint8_t val) {
@@ -308,7 +309,7 @@ extern int ST_top;
 
 #define PB_H (20)
 #define PB_X (10)
-#define PB_W (movie_width-2*PB_X)
+#define PB_W (movie_width - 2 * PB_X)
 
 #define SET_RFMT(FORMAT, POINTER, VARS, FUNC) \
 	if ((FORMAT) == PIX_FMT_YUV420P) \
@@ -383,12 +384,11 @@ static void OSD_cmap(int rfmt, uint8_t *mybuffer, int yperc, int xoff, const int
 /* background, black box */
 #define ST_BG ((OSD_mode&OSD_BOX)?0:1)
 
-#if (HAVE_LIBXV || HAVE_IMLIB2)
-static void OSD_bar(int rfmt, uint8_t *mybuffer, int yperc, double min, double max, double val, double tara) {
-
-	int x,y, xalign, yalign;
+static void OSD_bar (int rfmt, uint8_t *mybuffer, int yperc, double min, double max, double val, double tara)
+{
+	int x, y, xalign, yalign;
 	rendervars rv;
-	void (*_render)(uint8_t *mybuffer, rendervars *rv, int dx, int dy, int val);
+	void (*_render)(uint8_t *mybuffer, rendervars *rv, const int dx, const int dy, const uint8_t val);
 
 	rv.Uoff  = movie_width * movie_height;
 	rv.Voff = rv.Uoff + movie_width * movie_height/4;
@@ -401,11 +401,11 @@ static void OSD_bar(int rfmt, uint8_t *mybuffer, int yperc, double min, double m
 
 	SET_RFMT(rfmt,_render, rv, overlay); // TODO once per window instance, inline _render.
 
-	for (x=0; x<pb_val && (x+xalign) < movie_width ;x++) {
-		for (y=3; y<PB_H && (y+yalign) < movie_height;y++) {
-			_render(mybuffer,&rv,(x+xalign),(y+yalign),(x%6&&y!=3)?0xf0:0x10);
+	for (x=0; x < pb_val && (x+xalign) < movie_width; ++x) {
+		for (y = 3; y < PB_H && (y+yalign) < movie_height; ++y) {
+			_render(mybuffer, &rv, (x+xalign), (y+yalign), (x%5 && y!=3) ? 0xf0 : 0x10);
 		}
-		if ((x%6)==5) x+=6; // bars'n'stripes
+		if ((x%5) == 4) x += 5; // bars'n'stripes
 	}
 	if (tara >= min) {
 		/* zero notch */
@@ -417,7 +417,6 @@ static void OSD_bar(int rfmt, uint8_t *mybuffer, int yperc, double min, double m
 		}
 	}
 }
-#endif
 
 enum MinWHVariant {
 	MINW__TC = -1,
@@ -586,6 +585,10 @@ void render_buffer (uint8_t *mybuffer) {
 			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_text, OSD_tx, OSD_ty, MINWH_NONE);
 		if (OSD_mode&OSD_MSG)
 			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_msg, 50, 85, MINWH_NONE);
+
+		if (index_progress >= 0 && index_progress <= 100 && movie_height >= OSD_MIN_NFO_HEIGHT) {
+			OSD_bar(VO[VOutput].render_fmt, mybuffer, 91, 0, 100.0, index_progress, -1);
+		}
 
 		if (OSD_mode&OSD_OFFF) {
 			char tempoff[30];

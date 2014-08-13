@@ -30,7 +30,7 @@ extern int OSD_fx, OSD_fy;
 extern int OSD_sx, OSD_sy;
 extern int OSD_tx, OSD_ty;
 
-#define OSD_MIN_NFO_HEIGHT (140)
+#define OSD_MIN_NFO_HEIGHT (160)
 
 /* prototypes in display.c */
 inline void stride_memcpy(void * dst, const void * src, int width, int height, int dstStride, int srcStride);
