@@ -97,6 +97,7 @@ enum {
 #define OSD_BOX    (0x0100)
 #define OSD_NFO    (0x0400)
 #define OSD_IDXNFO (0x0800)
+#define OSD_POS    (0x1000)
 
 #ifdef TTFFONTFILE
 # define FONT_FILE TTFFONTFILE
@@ -220,6 +221,7 @@ void ui_osd_permute ();
 void ui_osd_vtc_fn ();
 void ui_osd_vtc_tc ();
 void ui_osd_vtc_off ();
+void ui_osd_pos();
 
 enum SyncSource {
 	SYNC_JACK = 0, // used in display_x_dialog.c

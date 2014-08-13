@@ -33,6 +33,8 @@
 
 extern char  *smpte_offset;
 extern int64_t ts_offset; // display on screen
+extern int64_t frames;
+extern int64_t dispFrame;
 extern int    want_nosplash;
 extern double framerate;
 extern float index_progress;
@@ -391,6 +393,7 @@ static void OSD_bar (int rfmt, uint8_t *mybuffer, int yperc, double min, double 
 	int x, y, xalign, yalign;
 	rendervars rv;
 	void (*_render)(uint8_t *mybuffer, rendervars *rv, const int dx, const int dy, const uint8_t val);
+	if (movie_width < 4 * PB_X || movie_height < 6 * PB_H) return;
 
 	rv.Uoff  = movie_width * movie_height;
 	rv.Voff = rv.Uoff + movie_width * movie_height/4;
@@ -405,17 +408,30 @@ static void OSD_bar (int rfmt, uint8_t *mybuffer, int yperc, double min, double 
 
 	for (x = 0; x < pb_val && (x + xalign) < movie_width; ++x) {
 		for (y = 3; y < PB_H && (y + yalign) < movie_height; ++y) {
-			_render (mybuffer, &rv, x + xalign, y + yalign, (x % 5 && y != 3) ? 0xf0 : 0x10);
+			_render (mybuffer, &rv, x + xalign, y + yalign,
+					(x % 9 && y != 3) ? 0xf0 : 0x20);
 		}
-		if ((x % 5) == 4) x += 5; // bars'n'stripes
+		if ((x % 9) == 5) x += 3; // bars'n'stripes
 	}
 	if (tara >= min) {
 		/* zero notch */
 		for (x = pb_not - 1; x < pb_not + 2 && (x + xalign) < movie_width; ++x) {
-			for (y = 0; x >= 0 && y < 4 && (y + yalign) < movie_height; ++y)
+			for (y = 0; x >= 0 && y < 3 && (y + yalign) < movie_height; ++y)
 				_render (mybuffer, &rv, x + xalign, y + yalign, 0);
-			for (y = PB_H; x >= 0 && y < PB_H + 4 && (y + yalign) < movie_height; ++y)
+			for (y = PB_H; x >= 0 && y < PB_H + 3 && (y + yalign) < movie_height; ++y)
 				_render (mybuffer, &rv, x + xalign, y + yalign, 0);
+		}
+	} else if (tara < min - 1) {
+		/* border */
+		for (x = -2; x < PB_W + 1 && (x + xalign) < movie_width; ++x) {
+			if (yalign >= 0 && yalign < movie_height)
+				_render (mybuffer, &rv, x + xalign, yalign, 0x20);
+			if (yalign + PB_H + 3 >= 0 && yalign + PB_H + 3 < movie_height)
+				_render (mybuffer, &rv, x + xalign, yalign + PB_H + 3, 0x20);
+		}
+		for (y = 1; y < PB_H + 3 && (y + yalign) < movie_height; ++y) {
+			_render (mybuffer, &rv, PB_X - 3 , y + yalign, 0x20);
+			_render (mybuffer, &rv, PB_X + PB_W + 1, y + yalign, 0x20);
 		}
 	}
 }
@@ -610,6 +626,9 @@ void render_buffer (uint8_t *mybuffer) {
 			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_info[2], OSD_CENTER, 55, MINWH_SYNCTC);
 			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_info[3], OSD_CENTER, 66, MINWH_NONE);
 		}
+	}
+	if (OSD_mode & OSD_POS && index_progress < 0 && frames > 1 && movie_height >= OSD_MIN_NFO_HEIGHT) {
+		OSD_bar (VO[VOutput].render_fmt, mybuffer, 89, 0, frames - 1, dispFrame, -2);
 	}
 
 	VO[VOutput].render(buffer); // buffer = mybuffer (so far no share mem or sth)
