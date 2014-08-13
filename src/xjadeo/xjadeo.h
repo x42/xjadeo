@@ -55,7 +55,7 @@ enum VideoModes {
 enum { OSD_LEFT=-1, OSD_CENTER=-2, OSD_RIGHT=-3 }; ///< use positive values as percent or pixel.
 
 /* override bitwise flags -- see xjadeo.h
- * 0x0001 : ignore 'q', ESC  / quit
+ * 0x0001 : ignore ESC, menu > exit / quit
  * 0x0002 : ignore "window closed by WM" / quit
  * 0x0004 : (osx only) menu-exit / quit
  * 0x0008 : ignore mouse-button 1 -- resize

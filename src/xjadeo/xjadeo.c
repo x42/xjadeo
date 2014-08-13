@@ -1137,7 +1137,10 @@ static void cancel_index_thread (void) {
 	if (!thread_active) return;
 	abort_indexing = 1;
 	pthread_join (index_thread, NULL);
+	abort_indexing = 0;
+	OSD_mode &= ~OSD_MSG;
 	thread_active = 0;
+	force_redraw = 1;
 }
 
 static int start_index_thread (void) {
@@ -1164,7 +1167,8 @@ static void clear_info () {
 	OSD_info[0][0] = '\0';
 	OSD_info[1][0] = '\0';
 	OSD_info[2][0] = '\0';
-	OSD_info[3][0] = '\0';
+	strcpy(OSD_info[3], "-/- No File Open -\\-");
+	force_redraw = 1;
 }
 
 int open_movie (char* file_name) {
@@ -1546,6 +1550,7 @@ void display_frame (int64_t timestamp, int force_update) {
 	static AVPacket packet;
 
 	if (!buffer) {
+		osd_smpte_ts = -1;
 		displaying_valid_frame = 0;
 		return;
 	}
@@ -1701,6 +1706,9 @@ int close_movie () {
 	duration = frames = 1;
 	pCodecCtx = NULL;
 	pFormatCtx = NULL;
+	movie_width  = ffctv_width = 640;
+	movie_height = ffctv_height = 320;
+	movie_aspect = (float)movie_width / (float) movie_height;
 	framerate = 5;
 	OSD_frame[0] = '\0';
 	OSD_smpte[0] = '\0';

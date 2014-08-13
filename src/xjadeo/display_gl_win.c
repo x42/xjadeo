@@ -44,6 +44,7 @@ static size_t          win_vbuf_size = 0;
 static uint8_t        *win_vbuf = NULL;
 
 void xapi_open(void *d);
+void xapi_close (void *d);
 
 static HWND  _gl_hwnd;
 static HDC   _gl_hdc;
@@ -88,6 +89,8 @@ static uint8_t context_menu_visible = 0;
 
 enum wMenuId {
 	mLoad = 1,
+	mClose,
+	mQuit,
 
 	mSyncJack,
 	mSyncLTC,
@@ -134,6 +137,7 @@ enum wMenuId {
 
 static void open_context_menu(HWND hwnd, int x, int y) {
 	HMENU hMenu = CreatePopupMenu();
+	HMENU hSubMenuFile = CreatePopupMenu();
 	HMENU hSubMenuSync = CreatePopupMenu();
 	HMENU hSubMenuSize = CreatePopupMenu();
 	HMENU hSubMenuOSD  = CreatePopupMenu();
@@ -255,10 +259,15 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 	}
 
 	// built top-level w/o ModifyMenu
-	unsigned int flags_load = 0;
+	unsigned int flags_open = 0;
+	unsigned int flags_close = 0;
+	unsigned int flags_quit = 0;
 	unsigned int flags_sync = 0;
 	unsigned int flags_offs = 0;
 	unsigned int flags_jack = 0;
+	if (!have_open_file()) {
+		flags_close = MF_DISABLED | MF_GRAYED;
+	}
 	if (ui_syncsource() != SYNC_JACK || (interaction_override&OVR_JCONTROL)) {
 		flags_jack = MF_DISABLED | MF_GRAYED;
 	}
@@ -266,16 +275,25 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 		flags_sync = MF_DISABLED | MF_GRAYED;
 	}
 	if (interaction_override & OVR_LOADFILE) {
-		flags_load = MF_DISABLED | MF_GRAYED;
+		flags_open = MF_DISABLED | MF_GRAYED;
+		flags_close = MF_DISABLED | MF_GRAYED;
 	}
 	if ((interaction_override&OVR_AVOFFSET) != 0 ) {
 		flags_offs = MF_DISABLED | MF_GRAYED;
 	}
+	if ((interaction_override&OVR_QUIT_KEY) != 0 ) {
+		flags_quit = MF_DISABLED | MF_GRAYED;
+	}
+
+	AppendMenu(hSubMenuFile, MF_STRING | flags_open, mLoad, "Open\t Ctrl+O");
+	AppendMenu(hSubMenuFile, MF_STRING | flags_close, mClose, "Close\t Ctrl+W");
+	AppendMenu(hSubMenuFile, MF_SEPARATOR, 0, NULL);
+	AppendMenu(hSubMenuFile, MF_STRING | flags_quit, mQuit,  "Quit\t Ctrl+Q");
 
 	AppendMenu(hMenu, MF_STRING | MF_DISABLED, 0, "XJadeo " VERSION);
 	AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
-	AppendMenu(hMenu, MF_STRING | flags_load, mLoad, "Open Video\t Ctrl+O");
-	AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
+	if (!(flags_open && flags_quit))
+		AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hSubMenuFile, "File");
 	AppendMenu(hMenu, MF_STRING | MF_POPUP | flags_sync, (UINT_PTR)hSubMenuSync, "Sync");
 	AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hSubMenuSize, "Display");
 	AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hSubMenuOSD, "OSD");
@@ -296,7 +314,8 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 	DestroyMenu (hMenu);
 }
 
-static void win_load_file(HWND hwnd) {
+static void win_load_file (HWND hwnd) {
+	if (interaction_override & OVR_LOADFILE) return;
 	char fn[1024] = "";
 	OPENFILENAME ofn;
 	ZeroMemory(&ofn, sizeof(OPENFILENAME));
@@ -323,9 +342,23 @@ static void win_load_file(HWND hwnd) {
 	}
 }
 
+static void win_close_video () {
+	if (interaction_override & OVR_LOADFILE) return;
+	PTLL;
+	xapi_close(NULL);
+	PTUL;
+}
+
+static void win_quit_xjadeo () {
+	if (interaction_override & OVR_QUIT_KEY) return;
+	loop_flag=0;
+}
+
 static void win_handle_menu(HWND hwnd, enum wMenuId id) {
 	switch(id) {
 		case mLoad:            win_load_file(hwnd); break;
+		case mClose:           win_close_video(); break;
+		case mQuit:            win_quit_xjadeo(); break;
 		case mSyncJack:        PTLL; ui_sync_to_jack(); PTUL; break;
 		case mSyncLTC:         PTLL; ui_sync_to_ltc(); PTUL; break;
 		case mSyncMTCJACK:     PTLL; ui_sync_to_mtc_jack(); PTUL; break;
@@ -541,21 +574,24 @@ handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
 
 					if ( 1 == ToAscii(wParam, scanCode, kbs, (LPWORD)lb, 0)) {
 						const char buf [2] = {(char)lb[0] , 0};
-						if (GetKeyState(VK_CONTROL) & GetKeyState('O') & 0x8000) {
-							// Ctrl + O
-							win_load_file(hwnd);
+						if ((GetKeyState(VK_CONTROL) & GetKeyState('O') & 0x8000)
+								&& (interaction_override & OVR_LOADFILE) == 0) {
+							win_load_file (hwnd);
+						}
+						else if ((GetKeyState(VK_CONTROL) & GetKeyState('W') & 0x8000)
+								&& (interaction_override & OVR_LOADFILE) == 0) {
+								win_close_video ();
 						}
 						else if ((GetKeyState(VK_CONTROL) & GetKeyState('Q') & 0x8000)
 								&& (interaction_override&OVR_QUIT_KEY) == 0) {
-							// Ctrl + Q
-							loop_flag=0;
+							win_quit_xjadeo ();
 						}
 						else if (!strcmp(buf, "f")) {
 							// direct fullscreen handling
 							_gl_fullscreen^=1;
-							win_set_fullscreen();
+							win_set_fullscreen ();
 						} else {
-							xjglKeyPress((char)lb[0], buf);
+							xjglKeyPress ((char)lb[0], buf);
 						}
 					}
 				}

@@ -24,6 +24,8 @@
 #ifdef XDLG
 #if (defined HAVE_LIBXV || defined HAVE_IMLIB2 || (defined HAVE_GL && !defined PLATFORM_WINDOWS && !defined PLATFORM_OSX))
 
+void xapi_close (void *d);
+
 #include <X11/Xresource.h>
 
 static XContext _dlg_ctx = 0;
@@ -80,6 +82,11 @@ static void ui_offset_pm()  { XCtimeoffset( 2, 0); }
 static void ui_offset_mm()  { XCtimeoffset(-2, 0); }
 static void ui_offset_ph()  { XCtimeoffset( 3, 0); }
 static void ui_offset_mh()  { XCtimeoffset(-3, 0); }
+
+static void ui_close_file() {
+	if (interaction_override&OVR_LOADFILE) return;
+	xapi_close(NULL);
+}
 
 /* unlisted key-shorcuts
  * - Esc (quit)
@@ -162,6 +169,7 @@ static struct XjxMenuItem mainmenu[] = {
 	{"Offset"   ,          "", submenu_offs, NULL, 0, 1},
 	{"Transport",          "", submenu_jack, NULL, 0, 1},
 	{"",                   "", NULL, NULL, 0, 0},
+	{"Cloe Video",         "", NULL, &ui_close_file, 0, 1},
 	{"(Drag&Drop File on", "", NULL, NULL, 0, 1},
 	{" Window to Load)",   "", NULL, NULL, 0, 1},
 	{NULL, NULL, NULL, NULL, 0, 0},
@@ -274,9 +282,11 @@ static void update_menus () {
 	if (interaction_override & OVR_LOADFILE) {
 		mainmenu[8].sensitive = 0;
 		mainmenu[9].sensitive = 0;
+		mainmenu[10].sensitive = 0;
 	} else {
-		mainmenu[8].sensitive = 1;
+		mainmenu[8].sensitive = have_open_file() ? 1 : 0;
 		mainmenu[9].sensitive = 1;
+		mainmenu[10].sensitive = 1;
 	}
 }
 

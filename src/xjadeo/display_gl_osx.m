@@ -21,6 +21,7 @@
 #if (defined HAVE_GL && defined PLATFORM_OSX)
 
 void xapi_open (void *d);
+void xapi_close (void *d);
 extern double framerate;
 
 #import <Cocoa/Cocoa.h>
@@ -301,6 +302,7 @@ static id osx_window;
 
 // Menus
 static NSMenuItem *mFileOpen;
+static NSMenuItem *mFileClose;
 static NSMenuItem *mJackTransport;
 static NSMenuItem *mSyncJACK;
 #ifdef HAVE_LTC
@@ -461,8 +463,10 @@ static void update_dpy_menu () {
 		case 1:
 			if (interaction_override&OVR_LOADFILE) {
 				[mFileOpen setEnabled:NO];
+				[mFileClose setEnabled:NO];
 			} else {
 				[mFileOpen setEnabled:YES];
+				[mFileClose setEnabled:  have_open_file() ? YES : NO];
 			}
 			break;
 		case 2:
@@ -533,6 +537,12 @@ static void update_dpy_menu () {
 	if (osx_window) {
 		[osx_window makeKeyAndOrderFront:osx_window];
 	}
+}
+
+- (void) closeVideo: (id)sender
+{
+	if (interaction_override&OVR_LOADFILE) return;
+	PTLL; xapi_close (NULL); PTUL;
 }
 
 - (void) syncJack: (id)sender { PTLL; ui_sync_to_jack(); PTUL; }
@@ -642,7 +652,8 @@ static void makeAppMenu (void) {
 	[filedlg setMenuId:1];
 	[fileMenu setDelegate:filedlg];
 
-	mFileOpen = [fileMenu addItemWithTitle:@"Open" action:@selector(openVideo:) keyEquivalent:@"o"];
+	mFileOpen  = [fileMenu addItemWithTitle:@"Open" action:@selector(openVideo:) keyEquivalent:@"o"];
+	mFileClose = [fileMenu addItemWithTitle:@"Close" action:@selector(closeVideo:) keyEquivalent:@"w"];
 
 	fileMenuItem = [[NSMenuItem alloc] initWithTitle:@"File" action:nil keyEquivalent:@""];
 	[fileMenuItem setSubmenu:fileMenu];

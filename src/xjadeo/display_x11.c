@@ -311,8 +311,6 @@ static void xj_handle_X_events (void) {
 						default:
 							break;
 					}
-					if (getvidmode() == VO_XV)
-						xj_render();
 				}
 				break;
 			case KeyPress:
@@ -629,7 +627,6 @@ void newsrc_xv (void) {
 
 	xj_letterbox();
 	allocate_xvimage();
-	xj_render();
 
 #if 1 // keep current window size when loading a new file ?? -> TODO config option
       // and also other video modes..
