@@ -224,6 +224,7 @@ void event_loop (void) {
 	int64_t newFrame, offFrame;
 	float   nominal_delay;
 	int64_t splash_timeout;
+	uint8_t prev_syncidx = 0xff;
 
 	splashed = want_nosplash;
 	force_redraw = 1;
@@ -260,6 +261,12 @@ void event_loop (void) {
 		if (newFrame < 0) {
 			syncnidx = 0;
 			newFrame = userFrame;
+		}
+
+		if (prev_syncidx != syncnidx) {
+			force_redraw = 1;
+			osd_smpte_ts = -1;
+			prev_syncidx = syncnidx;
 		}
 
 #if 0 // DEBUG
