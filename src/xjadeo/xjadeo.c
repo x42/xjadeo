@@ -645,7 +645,7 @@ static void report_idx_progress (const char *msg, float percent) {
 	force_redraw = 1;
 }
 
-static int add_idx (int64_t ts, int64_t pos, uint8_t key, int duration, AVRational tb) {
+static int add_idx (int64_t ts, int64_t pos, uint8_t key, int _duration, AVRational tb) {
 	if (fcnt >= frames) {
 		++fcnt;
 		if (!want_quiet)
@@ -1523,25 +1523,25 @@ static void render_empty_frame (int blit) {
 	if (render_fmt == PIX_FMT_RGB24)
 		for (x = 0, y = 0; x < movie_width - 1; ++x, y = movie_height * x / movie_width) {
 			int yoff = 3 * (x + movie_width * y);
-			buffer[yoff]=255;
-			buffer[yoff+1]=255;
-			buffer[yoff+2]=255;
+			buffer[yoff]=127;
+			buffer[yoff+1]=127;
+			buffer[yoff+2]=127;
 			yoff = 3 * (x + movie_width * (movie_height - y - 1));
-			buffer[yoff]=255;
-			buffer[yoff+1]=255;
-			buffer[yoff+2]=255;
+			buffer[yoff]=127;
+			buffer[yoff+1]=127;
+			buffer[yoff+2]=127;
 		}
 	if (render_fmt == PIX_FMT_RGBA32 || render_fmt == PIX_FMT_BGRA32)
 		for (x = 0, y = 0; x < movie_width - 1; ++x, y = movie_height * x / movie_width) {
 			int yoff = 4 * (x + movie_width * y);
-			buffer[yoff]=255;
-			buffer[yoff+1]=255;
-			buffer[yoff+2]=255;
+			buffer[yoff]=127;
+			buffer[yoff+1]=127;
+			buffer[yoff+2]=127;
 			buffer[yoff+3]=255;
 			yoff = 4 * (x + movie_width * (movie_height - y - 1));
-			buffer[yoff]=255;
-			buffer[yoff+1]=255;
-			buffer[yoff+2]=255;
+			buffer[yoff]=127;
+			buffer[yoff+1]=127;
+			buffer[yoff+2]=127;
 			buffer[yoff+3]=255;
 		}
 #endif
