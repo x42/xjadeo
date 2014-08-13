@@ -96,7 +96,7 @@ extern char OSD_frame[48];
 extern char OSD_smpte[20];
 extern int  OSD_mode;
 extern char OSD_msg[128];
-extern char OSD_info[4][48];
+extern char OSD_info[5][48];
 uint64_t    osd_smpte_ts;
 
 //------------------------------------------------
@@ -1177,10 +1177,11 @@ int have_open_file () {
 }
 
 static void clear_info () {
-	OSD_info[0][0] = '\0';
+	strcpy(OSD_info[0], "-/- No File Open -\\-");
 	OSD_info[1][0] = '\0';
 	OSD_info[2][0] = '\0';
-	strcpy(OSD_info[3], "-/- No File Open -\\-");
+	OSD_info[3][0] = '\0';
+	OSD_info[4][0] = '\0';
 	force_redraw = 1;
 }
 
@@ -1448,26 +1449,28 @@ int open_movie (char* file_name) {
 
 	char *tmp;
 	if (have_dropframes)
-		sprintf(OSD_info[0], "FPS: %.2f df", framerate);
+		sprintf(OSD_info[1], "FPS: %.2f df", framerate);
 	else
-		sprintf(OSD_info[0], "FPS: %.3f", framerate);
-	strcat(OSD_info[1], "S: ");
-	strcat(OSD_info[2], "E: ");
-	frame_to_smptestring(&OSD_info[1][3], file_frame_offset, 1);
-	frame_to_smptestring(&OSD_info[2][3], file_frame_offset + frames, 1);
+		sprintf(OSD_info[1], "FPS: %.3f", framerate);
+	strcat(OSD_info[2], "S: ");
+	strcat(OSD_info[3], "E: ");
+	strcat(OSD_info[4], "L: ");
+	frame_to_smptestring(&OSD_info[2][3], file_frame_offset, 1);
+	frame_to_smptestring(&OSD_info[3][3], file_frame_offset + frames - 1, 1);
+	frame_to_smptestring(&OSD_info[4][3], frames, 1);
 #ifdef PLATFORM_WINDOWS
 	if ((tmp = strrchr(file_name, '\\')) && *++tmp)
 #else
 	if ((tmp = strrchr(file_name, '/')) && *++tmp)
 #endif
 	{
-		strncpy(OSD_info[3], tmp, sizeof(OSD_info[3]) - 1);
+		strncpy(OSD_info[0], tmp, sizeof(OSD_info[3]) - 1);
 	} else {
-		strncpy(OSD_info[3], file_name, sizeof(OSD_info[3]) - 1);
+		strncpy(OSD_info[0], file_name, sizeof(OSD_info[3]) - 1);
 	}
-	OSD_info[3][sizeof(OSD_info[4]) - 3] = '.';
-	OSD_info[3][sizeof(OSD_info[4]) - 2] = '.';
-	OSD_info[3][sizeof(OSD_info[4]) - 1] = '\0';
+	OSD_info[0][sizeof(OSD_info[0]) - 3] = '.';
+	OSD_info[0][sizeof(OSD_info[0]) - 2] = '.';
+	OSD_info[0][sizeof(OSD_info[0]) - 1] = '\0';
 
 	current_file = strdup (file_name);
 
