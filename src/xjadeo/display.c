@@ -20,6 +20,7 @@
 
 #include "xjadeo.h"
 #include "display.h"
+#include <assert.h>
 
 #include <libavcodec/avcodec.h> // needed for PIX_FMT
 #include <libavformat/avformat.h>
@@ -503,8 +504,10 @@ static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int y
 	else if (xpos == OSD_RIGHT) xalign = movie_width - ST_PADDING - ST_rightend; // right
 	else xalign = (movie_width - ST_rightend) / 2; // center
 
-	const int fh = (minw != 0 ? OSD_fonty1 : ST_height);
-	const int fo = ST_HEIGHT - 8 - (minw != 0 ? OSD_fonty0 : ST_top);
+	const int fh = 1 + (minw != 0 ? OSD_fonty1 : ST_height);
+	const int fo = ST_HEIGHT - 9 - (minw != 0 ? OSD_fonty0 : ST_top);
+	assert(fo > 0);
+	assert(fh + fo < ST_HEIGHT);
 	yalign = (movie_height - fh) * yperc / 100.0;
 
 	if (!ST_BG) {
@@ -520,8 +523,8 @@ static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int y
 			if (x < 0 || x >= movie_width)
 				continue;
 			for (y = 0; y < 4; ++y) {
-				if (yalign - 1 - y >= 0 && yalign - 1 - y < movie_height)
-					_render (mybuffer, &rv, x, yalign - 1 - y, 0);
+				if (yalign - 1 - y >= 0 && yalign - y < movie_height)
+					_render (mybuffer, &rv, x, yalign - y, 0);
 				if (yalign + fh + y >= 0 && yalign + fh + y < movie_height)
 					_render (mybuffer, &rv, x, y + fh + yalign, 0);
 			}
@@ -628,10 +631,10 @@ void render_buffer (uint8_t *mybuffer) {
 			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_nfo_tme[4], OSD_CENTER, 68, MINWH_SYNCTC);
 		} else if (OSD_mode & (OSD_GEO) && movie_height >= OSD_MIN_NFO_HEIGHT) {
 			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_nfo_geo[0], OSD_CENTER, 31, MINWH_NONE);
-			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_nfo_geo[1], OSD_CENTER, 41, MINW__TC);
-			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_nfo_geo[2], OSD_CENTER, 50, MINW__TC);
-			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_nfo_geo[3], OSD_CENTER, 59, MINW__TC);
-			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_nfo_geo[4], OSD_CENTER, 68, MINW__TC);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_nfo_geo[1], OSD_CENTER, 41, MINWH_NONE);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_nfo_geo[2], OSD_CENTER, 50, MINWH_NONE);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_nfo_geo[3], OSD_CENTER, 59, MINWH_NONE);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_nfo_geo[4], OSD_CENTER, 68, MINWH_NONE);
 		}
 	}
 	if (OSD_mode & OSD_POS && index_progress < 0 && frames > 1 && movie_height >= OSD_MIN_NFO_HEIGHT) {
