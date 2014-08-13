@@ -510,10 +510,10 @@ void splash (uint8_t *mybuffer) {
 				xjadeo_splash_width, xjadeo_splash_height, xjadeo_splash, xjadeo_splash_cmap);
 }
 
-static void update_smptestring() {
-	if (smpte_offset) free(smpte_offset);
-	smpte_offset = calloc(15,sizeof(char));
-	frame_to_smptestring(smpte_offset, ts_offset);
+static void update_smptestring () {
+	if (smpte_offset) free (smpte_offset);
+	smpte_offset = calloc(15, sizeof(char));
+	frame_to_smptestring (smpte_offset, ts_offset, 0);
 }
 
 /*******************************************************************************
@@ -566,21 +566,13 @@ void render_buffer (uint8_t *mybuffer) {
 
 		if (OSD_mode&OSD_OFFF) {
 			char tempoff[30];
-			snprintf(tempoff,30,"O:  %"PRId64, ts_offset);
+			snprintf(tempoff, 30, "O:  %"PRId64, ts_offset);
 			OSD_render (VO[VOutput].render_fmt, mybuffer, tempoff, OSD_CENTER, 50, -1);
 		} else if (OSD_mode&OSD_OFFS) {
 			char tempsmpte[30];
-			if (ts_offset < 0) {
-				sprintf(tempsmpte,"O: -");
-				if (frame_to_smptestring(tempsmpte+4, -ts_offset)) {
-					strcat(tempsmpte," +d");
-				}
-			} else {
-				sprintf(tempsmpte,"O:  ");
-				frame_to_smptestring(tempsmpte+4, ts_offset);
-				if (frame_to_smptestring(tempsmpte+4, ts_offset)) {
-					strcat(tempsmpte," +d");
-				}
+			strcpy(tempsmpte, "O: ");
+			if (frame_to_smptestring(tempsmpte+3, ts_offset, 1)) {
+				strcat(tempsmpte," +d");
 			}
 			OSD_render (VO[VOutput].render_fmt, mybuffer, tempsmpte, OSD_CENTER, 50, -1);
 		} else if (OSD_mode & (OSD_NFO | OSD_IDXNFO) && movie_height >= OSD_MIN_NFO_HEIGHT) {
@@ -770,6 +762,6 @@ void XCtimeoffset (int mode, unsigned int charcode) {
 
 	if (off != ts_offset) {
 		force_redraw=1;
-		update_smptestring();
+		update_smptestring ();
 	}
 }

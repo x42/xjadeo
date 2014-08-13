@@ -22,7 +22,7 @@ extern int interaction_override;
 extern char OSD_fontfile[1024];
 extern char OSD_text[128];
 extern char OSD_frame[48];
-extern char OSD_smpte[13];
+extern char OSD_smpte[20];
 extern char OSD_msg[128];
 extern char OSD_info[4][48];
 extern int OSD_mode;

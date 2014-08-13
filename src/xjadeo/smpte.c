@@ -152,8 +152,9 @@ int64_t smpte_to_frame(int type, int f, int s, int m, int h, int overflow);
 int64_t smptestring_to_frame (char *str) { // TODO int64
 	bcd s;
 	int64_t frame;
-	parse_string(&s,str);
-	if ((strchr(str,':') && have_dropframes && want_autodrop)||want_dropframes) {
+	// TODO handle negative prefix
+	parse_string (&s,str);
+	if ((strchr(str, ':') && have_dropframes && want_autodrop)||want_dropframes) {
 		frame= smpte_to_frame (
 				2 /*29.97fps */,
 				s.v[SMPTE_FRAME],
@@ -173,7 +174,7 @@ int64_t smptestring_to_frame (char *str) { // TODO int64
 }
 
 /* any smpte output (verbose and OSD) */
-int frame_to_smptestring(char *smptestring, int64_t frame) {
+int frame_to_smptestring(char *smptestring, int64_t frame, uint8_t add_sign) {
 	bcd s;
 	if (!smptestring) return 0;
 
@@ -185,14 +186,28 @@ int frame_to_smptestring(char *smptestring, int64_t frame) {
 		sep = ';';
 	}
 
-	parse_int(&s, (int) frames);
+	if (add_sign && frames < 0) {
+		parse_int(&s, (int) -frames);
+	} else {
+		parse_int(&s, (int) frames);
+	}
 
-	snprintf(smptestring,13,"%02i:%02i:%02i%c%02i",
-			s.v[SMPTE_HOUR],
-			s.v[SMPTE_MIN],
-			s.v[SMPTE_SEC],
-			sep,
-			s.v[SMPTE_FRAME]);
+	if (add_sign) {
+		snprintf(smptestring,14,"%c%02i:%02i:%02i%c%02i",
+				(frames < 0) ? '-' : ' ',
+				s.v[SMPTE_HOUR],
+				s.v[SMPTE_MIN],
+				s.v[SMPTE_SEC],
+				sep,
+				s.v[SMPTE_FRAME]);
+	} else {
+		snprintf(smptestring,13,"%02i:%02i:%02i%c%02i",
+				s.v[SMPTE_HOUR],
+				s.v[SMPTE_MIN],
+				s.v[SMPTE_SEC],
+				sep,
+				s.v[SMPTE_FRAME]);
+	}
 	return s.v[SMPTE_OVERFLOW];
 }
 

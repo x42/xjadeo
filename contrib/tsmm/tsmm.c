@@ -235,11 +235,11 @@ int main (int argc, char **argv) {
 
 	asprintf (&(te[0].text), "Frame: %i", 0);
 	te[1].text = calloc (48, sizeof (char));
-	frame_to_smptestring (te[1].text, 0);
+	frame_to_smptestring (te[1].text, 0, 0);
 
 	te[2].text = calloc (48, sizeof (char));
 	sprintf (te[2].text, "Duration: ");
-	frame_to_smptestring (te[2].text+10, last_frame);
+	frame_to_smptestring (te[2].text+10, last_frame, 0);
 	te[2].xpos = OSD_CENTER;
 	te[2].yperc = 30;
 
@@ -250,9 +250,9 @@ int main (int argc, char **argv) {
 #ifdef OFFSET
 	int offset = framerate * 15;
 	strcpy (te[1].text, "offset: ");
-	frame_to_smptestring (&te[1].text[strlen (te[1].text)], offset);
+	frame_to_smptestring (&te[1].text[strlen (te[1].text)], offset, 0);
 #else
-	frame_to_smptestring (te[1].text, 0);
+	frame_to_smptestring (te[1].text, 0, 0);
 #endif
 	render_frame (filename, w, h, te);
 
@@ -266,7 +266,7 @@ int main (int argc, char **argv) {
 	te[2].yperc = 45;
 	te[2].text = calloc (48, sizeof (char));
 	strcat (te[2].text, "start: ")
-		frame_to_smptestring (&te[2].text[strlen (te[2].text)], offset);
+		frame_to_smptestring (&te[2].text[strlen (te[2].text)], offset, 0);
 	int fcnt = 1;
 #endif
 
@@ -283,12 +283,12 @@ int main (int argc, char **argv) {
 #ifndef OFFSET
 		asprintf (&(te[0].text), "Frame: %i", i);
 		te[1].text = calloc (48, sizeof (char));
-		frame_to_smptestring (te[1].text, i);
+		frame_to_smptestring (te[1].text, i, 0);
 #else
 		int f = i;
 		int stopframe = 0;
 		te[1].text = calloc (64, sizeof (char));
-		frame_to_smptestring (te[1].text, f + offset);
+		frame_to_smptestring (te[1].text, f + offset, 0);
 		asprintf (&(te[0].text), "Frame: %4d (rel: %4d)", fcnt, i);
 		++fcnt;
 #endif

@@ -93,7 +93,7 @@ extern int  use_ltc;
 
 // On screen display
 extern char OSD_frame[48];
-extern char OSD_smpte[13];
+extern char OSD_smpte[20];
 extern int  OSD_mode;
 extern char OSD_msg[128];
 extern char OSD_info[4][48];
@@ -311,7 +311,7 @@ void event_loop (void) {
 			fprintf(stdout, "frame: smpte:%"PRId64"    \r", newFrame);
 #else
 			char tempsmpte[15];
-			frame_to_smptestring (tempsmpte,newFrame);
+			frame_to_smptestring (tempsmpte, newFrame, 1);
 			fprintf(stdout, "smpte: %s f:%"PRId64"\r", tempsmpte, newFrame);
 #endif
 			fflush (stdout);
@@ -1436,8 +1436,8 @@ int open_movie (char* file_name) {
 		sprintf(OSD_info[0], "FPS: %.3f", framerate);
 	strcat(OSD_info[1], "S: ");
 	strcat(OSD_info[2], "E: ");
-	frame_to_smptestring(&OSD_info[1][3], file_frame_offset);
-	frame_to_smptestring(&OSD_info[2][3], file_frame_offset + frames);
+	frame_to_smptestring(&OSD_info[1][3], file_frame_offset, 1);
+	frame_to_smptestring(&OSD_info[2][3], file_frame_offset + frames, 1);
 #ifdef PLATFORM_WINDOWS
 	if ((tmp = strrchr(file_name, '\\')) && *++tmp)
 #else
@@ -1457,14 +1457,6 @@ int open_movie (char* file_name) {
 	start_index_thread();
 
 	return 0;
-}
-
-void override_fps (double fps) {
-	if (fps <= 0) return;
-
-	framerate = fps;
-	// recalc offset with new framerate
-	if (smpte_offset) ts_offset = smptestring_to_frame (smpte_offset);
 }
 
 static void render_empty_frame (int blit) {
@@ -1576,7 +1568,7 @@ void display_frame (int64_t timestamp, int force_update) {
 				need_redisplay = 1;
 			osd_smpte_ts = timestamp - ts_offset;
 			strcpy(OSD_smpte, syncname[syncnidx]);
-			frame_to_smptestring (&OSD_smpte[4], osd_smpte_ts);
+			frame_to_smptestring (&OSD_smpte[4], osd_smpte_ts, 0);
 		}
 		render_empty_frame (need_redisplay);
 		displaying_valid_frame = 0;
@@ -1592,7 +1584,7 @@ void display_frame (int64_t timestamp, int force_update) {
 				need_redisplay = 1;
 			osd_smpte_ts = timestamp - ts_offset;
 			strcpy(OSD_smpte, syncname[syncnidx]);
-			frame_to_smptestring (&OSD_smpte[4], osd_smpte_ts);
+			frame_to_smptestring (&OSD_smpte[4], osd_smpte_ts, 0);
 		}
 		render_empty_frame (need_redisplay);
 		displaying_valid_frame = 0;
@@ -1614,7 +1606,7 @@ void display_frame (int64_t timestamp, int force_update) {
 			dfn = dispFrame;
 		}
 		if (OSD_mode&OSD_VTC) {
-			frame_to_smptestring (&OSD_frame[0], dfn);
+			frame_to_smptestring (&OSD_frame[0], dfn, 0);
 		} else {
 			snprintf(OSD_frame, 48, "F:%8"PRId64" ", dfn);
 		}
@@ -1622,7 +1614,7 @@ void display_frame (int64_t timestamp, int force_update) {
 	if (OSD_mode&OSD_SMPTE) {
 		strcpy(OSD_smpte, syncname[syncnidx]);
 		osd_smpte_ts = dispFrame - ts_offset;
-		frame_to_smptestring (&OSD_smpte[4], dispFrame - ts_offset);
+		frame_to_smptestring (&OSD_smpte[4], dispFrame - ts_offset, 0);
 	}
 
 	if (fFirstTime) {

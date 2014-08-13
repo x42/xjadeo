@@ -180,7 +180,6 @@ int open_movie(char* file_name);
 int have_open_file ();
 int close_movie();
 void avinit (void);
-void override_fps (double fps);
 void init_moviebuffer(void);
 void event_loop(void);
 size_t video_buffer_size();
@@ -253,7 +252,7 @@ int ltcjack_connected(void);
 
 /* smpte.c prototypes */
 int64_t smptestring_to_frame (char *str);
-int frame_to_smptestring(char *smptestring, int64_t frame);
+int frame_to_smptestring(char *smptestring, int64_t frame, uint8_t add_sign);
 int64_t smpte_to_frame(int type, int f, int s, int m, int h, int overflow);
 
 /* midi.c function prototype */

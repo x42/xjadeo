@@ -452,8 +452,8 @@ void xapi_pposition(void *d) {
 
 void xapi_psmpte(void *d) {
 	char smptestr[13];
-	frame_to_smptestring(smptestr,dispFrame);
-	remote_printf(228,"smpte=%s",smptestr);
+	frame_to_smptestring(smptestr, dispFrame, 0);
+	remote_printf(228,"smpte=%s",smptestr, 0);
 }
 
 void xapi_seek(void *d) {
