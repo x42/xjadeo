@@ -95,6 +95,8 @@ enum {
 #define OSD_TEXT   (0x0040)
 #define OSD_MSG    (0x0080)
 #define OSD_BOX    (0x0100)
+#define OSD_NFO    (0x0400)
+#define OSD_IDXNFO (0x0800)
 
 #ifdef TTFFONTFILE
 # define FONT_FILE TTFFONTFILE
@@ -175,6 +177,7 @@ int remote_fd_set(fd_set *fd);
 /* xjadeo.c */
 void display_frame(int64_t timestamp, int force_update);
 int open_movie(char* file_name);
+int have_open_file ();
 int close_movie();
 void avinit (void);
 void override_fps (double fps);

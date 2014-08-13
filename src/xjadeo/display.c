@@ -35,6 +35,7 @@ extern char  *smpte_offset;
 extern int64_t ts_offset; // display on screen
 extern int    want_nosplash;
 extern double framerate;
+extern uint8_t splashed ;
 
 static int minw_frame = 0;
 static int minw_smpte = 0;
@@ -534,8 +535,11 @@ void render_buffer (uint8_t *mybuffer) {
 	if (OSD_mode&(OSD_FRAME|OSD_VTC)) OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_frame, OSD_fx, OSD_fy, minw_frame);
 	if (OSD_mode&OSD_SMPTE) OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_smpte, OSD_sx, OSD_sy, minw_smpte);
 
+	if (!splashed) {
+		; // keep center free
+	}
 #if (HAVE_LIBXV || HAVE_IMLIB2)
-	if (OSD_mode&OSD_EQ) {
+	else if (OSD_mode&OSD_EQ) {
 		int v0,v1,v2,v3,v4;
 		if(xj_get_eq("brightness",&v0)) v0=0;
 		if(xj_get_eq("contrast",&v1)) v1=0;
@@ -579,6 +583,11 @@ void render_buffer (uint8_t *mybuffer) {
 				}
 			}
 			OSD_render (VO[VOutput].render_fmt, mybuffer, tempsmpte, OSD_CENTER, 50, -1);
+		} else if (OSD_mode & (OSD_NFO | OSD_IDXNFO) && movie_height >= OSD_MIN_NFO_HEIGHT) {
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_info[0], OSD_CENTER, 35, -1);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_info[1], OSD_CENTER, 45, minw_smpte);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_info[2], OSD_CENTER, 55, minw_smpte);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_info[3], OSD_CENTER, 66, 0);
 		}
 	}
 

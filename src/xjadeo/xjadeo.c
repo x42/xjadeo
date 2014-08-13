@@ -96,6 +96,7 @@ extern char OSD_frame[48];
 extern char OSD_smpte[13];
 extern int  OSD_mode;
 extern char OSD_msg[128];
+extern char OSD_info[4][48];
 uint64_t    osd_smpte_ts;
 
 //------------------------------------------------
@@ -215,7 +216,7 @@ static int select_sleep (const long usec) {
 // main event loop
 //--------------------------------------------
 static void cancel_index_thread (void);
-static uint8_t splashed = 0;
+uint8_t splashed = 0;
 
 void event_loop (void) {
 	double  elapsed_time;
@@ -1113,8 +1114,8 @@ static int index_frames () {
 }
 
 static void *index_run (void *arg) {
-	OSD_mode |= OSD_MSG;
-	OSD_mode &= ~OSD_EQ;
+	OSD_mode |= OSD_MSG | OSD_IDXNFO;
+	OSD_mode &= ~(OSD_EQ | OSD_OFFF | OSD_OFFS);
 	sprintf(OSD_msg, "Indexing. Please wait.");
 	OSD_frame[0] = '\0';
 	OSD_smpte[0] = '\0';
@@ -1126,6 +1127,7 @@ static void *index_run (void *arg) {
 		OSD_mode |= OSD_BOX;
 		sprintf(OSD_msg, "Index Error. File is not suitable.");
 	}
+	OSD_mode &= ~OSD_IDXNFO;
 	force_redraw = 1;
 	pthread_exit (NULL);
 	return (NULL);
@@ -1149,6 +1151,20 @@ static int start_index_thread (void) {
 	}
 	thread_active = 1;
 	return 0;
+}
+
+int have_open_file () {
+	if (current_file && pFrameFMT)
+		return 1;
+	else
+		return 0;
+}
+
+static void clear_info () {
+	OSD_info[0][0] = '\0';
+	OSD_info[1][0] = '\0';
+	OSD_info[2][0] = '\0';
+	OSD_info[3][0] = '\0';
 }
 
 int open_movie (char* file_name) {
@@ -1177,6 +1193,7 @@ int open_movie (char* file_name) {
 	framerate    = 10;
 	videoStream  = -1;
 	file_frame_offset = 0;
+	clear_info();
 
 	// recalc offset with default framerate
 	if (smpte_offset) {
@@ -1412,6 +1429,29 @@ int open_movie (char* file_name) {
 		return -1;
 	}
 
+	char *tmp;
+	if (have_dropframes)
+		sprintf(OSD_info[0], "FPS: %.2f df", framerate);
+	else
+		sprintf(OSD_info[0], "FPS: %.3f", framerate);
+	strcat(OSD_info[1], "S: ");
+	strcat(OSD_info[2], "E: ");
+	frame_to_smptestring(&OSD_info[1][3], file_frame_offset);
+	frame_to_smptestring(&OSD_info[2][3], file_frame_offset + frames);
+#ifdef PLATFORM_WINDOWS
+	if ((tmp = strrchr(file_name, '\\')) && *++tmp)
+#else
+	if ((tmp = strrchr(file_name, '/')) && *++tmp)
+#endif
+	{
+		strncpy(OSD_info[3], tmp, sizeof(OSD_info[3]) - 1);
+	} else {
+		strncpy(OSD_info[3], file_name, sizeof(OSD_info[3]) - 1);
+	}
+	OSD_info[3][sizeof(OSD_info[4]) - 3] = '.';
+	OSD_info[3][sizeof(OSD_info[4]) - 2] = '.';
+	OSD_info[3][sizeof(OSD_info[4]) - 1] = '\0';
+
 	current_file = strdup (file_name);
 
 	start_index_thread();
@@ -1569,9 +1609,9 @@ void display_frame (int64_t timestamp, int force_update) {
 	if (OSD_mode & (OSD_FRAME | OSD_VTC)) {
 		int64_t dfn;
 		if (want_ignstart) {
-			dfn = dispFrame;
+			dfn = dispFrame + file_frame_offset;
 		} else {
-			dfn = dispFrame - file_frame_offset;
+			dfn = dispFrame;
 		}
 		if (OSD_mode&OSD_VTC) {
 			frame_to_smptestring (&OSD_frame[0], dfn);
@@ -1673,5 +1713,6 @@ int close_movie () {
 	OSD_frame[0] = '\0';
 	OSD_smpte[0] = '\0';
 	osd_smpte_ts = -1;
+	clear_info();
 	return (0);
 }

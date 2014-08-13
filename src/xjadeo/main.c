@@ -158,6 +158,7 @@ char OSD_text[128] = "xjadeo!";
 char OSD_msg[128] = "";
 char OSD_frame[48] = "";
 char OSD_smpte[13] = "";
+char OSD_info[4][48] = {"", "", "", ""};
 int OSD_mode = 0;
 
 int OSD_fx = OSD_CENTER;
