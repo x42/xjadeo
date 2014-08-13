@@ -48,9 +48,9 @@ static void render_null (uint8_t *mybuffer) { ; }
 static void handle_X_events_null (void) { ; }
 static void newsrc_null (void) { ; }
 static void resize_null (unsigned int x, unsigned int y) { ; }
-static void getsize_null (unsigned int *x, unsigned int *y) { if(x)*x=1; if(y)*y=1; }
+static void getsize_null (unsigned int *x, unsigned int *y) { if (x) *x = 1; if (y) *y = 1; }
 static void position_null (int x, int y) { ; }
-static void getpos_null (int *x, int *y) { if(x)*x=1; if(y)*y=1; }
+static void getpos_null (int *x, int *y) { if(x)*x=1; if (y) *y = 1; }
 static void fullscreen_null (int a) { ; }
 static void mousepointer_null (int a) { ; }
 static void ontop_null (int a) { ; }
@@ -101,27 +101,27 @@ static void _overlay_RGB (uint8_t *mybuffer, rendervars *rv, const int dx, const
 	mybuffer[pos+2]= 0xff - ((mybuffer[pos+2] >> 1) + (val >> 1));
 }
 
-static void _render_YUV422 (uint8_t *mybuffer, rendervars *rv, int dx, int dy, uint8_t val) {
-	int yoff=(2*dx+movie_width*dy*2);
-	mybuffer[yoff+0]=0x80;
-	mybuffer[yoff+1]=val;
-	mybuffer[yoff+2]=0x80;
-	mybuffer[yoff+3]=val;
+static void _render_YUV422 (uint8_t *mybuffer, rendervars *rv, const int dx, const int dy, const uint8_t val) {
+	const int yoff = 2 * dx + movie_width * dy * 2;
+	mybuffer[yoff+0] = 0x80;
+	mybuffer[yoff+1] = val;
+	mybuffer[yoff+2] = 0x80;
+	mybuffer[yoff+3] = val;
 }
 
-static void _render_YUV (uint8_t *mybuffer, rendervars *rv, int dx, int dy, uint8_t val) {
-	int yoff=(dx+movie_width*dy);
-	int uvoff=((dx/2)+movie_width/2*(dy/2));
-	mybuffer[yoff]=val;
-	mybuffer[rv->Uoff+uvoff]=0x80;
-	mybuffer[rv->Voff+uvoff]=0x80;
+static void _render_YUV (uint8_t *mybuffer, rendervars *rv, const int dx, const int dy, const uint8_t val) {
+	const int yoff = (dx + movie_width * dy);
+	const int uvoff = (dx / 2) + movie_width / 2 * (dy / 2);
+	mybuffer[yoff] = val;
+	mybuffer[rv->Uoff+uvoff] = 0x80;
+	mybuffer[rv->Voff+uvoff] = 0x80;
 }
 
-static void _render_RGB (uint8_t *mybuffer, rendervars *rv, int dx, int dy, uint8_t val) {
-	int pos=rv->bpp*(dx+movie_width*dy);
-	mybuffer[pos]=val;
-	mybuffer[pos+1]=val;
-	mybuffer[pos+2]=val;
+static void _render_RGB (uint8_t *mybuffer, rendervars *rv, const int dx, const int dy, const uint8_t val) {
+	const int pos = rv->bpp * (dx + movie_width * dy);
+	mybuffer[pos] = val;
+	mybuffer[pos+1] = val;
+	mybuffer[pos+2] = val;
 }
 
 /*******************************************************************************
@@ -129,11 +129,11 @@ static void _render_RGB (uint8_t *mybuffer, rendervars *rv, int dx, int dy, uint
  */
 
 void rgb2argb (uint8_t *rgbabuffer, uint8_t *rgbbuffer, int width, int height) {
-	int x,y,p3,p4;
-	for (x=0; x< width ;x++)
-		for (y=0; y< height;y++) {
-			p3=3*(x+movie_width*y);
-			p4=4*(x+movie_width*y);
+	int x, y, p3, p4;
+	for (x = 0; x < width; ++x)
+		for (y = 0; y < height; ++y) {
+			p3 = 3 * (x + movie_width * y);
+			p4 = 4 * (x + movie_width * y);
 			rgbabuffer[p4+0] = 255;
 			rgbabuffer[p4+1] = rgbbuffer[p3];
 			rgbabuffer[p4+2] = rgbbuffer[p3+1];
@@ -142,11 +142,11 @@ void rgb2argb (uint8_t *rgbabuffer, uint8_t *rgbbuffer, int width, int height) {
 }
 
 void rgb2abgr (uint8_t *rgbabuffer, uint8_t *rgbbuffer, int width, int height) {
-	int x,y,p3,p4;
-	for (x=0; x< width ;x++)
-		for (y=0; y< height;y++) {
-			p3=3*(x+movie_width*y);
-			p4=4*(x+movie_width*y);
+	int x, y, p3, p4;
+	for (x = 0; x < width; ++x)
+		for (y = 0; y < height; ++y) {
+			p3 = 3 * (x + movie_width * y);
+			p4 = 4 * (x + movie_width * y);
 			rgbabuffer[p4+3] = 255;
 			rgbabuffer[p4+2] = rgbbuffer[p3];
 			rgbabuffer[p4+1] = rgbbuffer[p3+1];
@@ -177,7 +177,7 @@ const vidout VO[] = {
 			NULLOUTPUT
 #endif
 	},
-	{ PIX_FMT_YUV420P, SUP_LIBXV,	"XV - X11 video extension",
+	{ PIX_FMT_YUV420P, SUP_LIBXV, "XV - X11 video extension",
 #if HAVE_LIBXV
 		&render_xv, &open_window_xv, &close_window_xv,
 		&handle_X_events_xv, &newsrc_xv, &resize_xv,
@@ -188,7 +188,7 @@ const vidout VO[] = {
 			NULLOUTPUT
 #endif
 	},
-	{ PIX_FMT_YUV420P, SUP_SDL,	"SDL",
+	{ PIX_FMT_YUV420P, SUP_SDL, "SDL",
 #ifdef HAVE_SDL
 		&render_sdl, &open_window_sdl, &close_window_sdl,
 		&handle_X_events_sdl, &newsrc_sdl, &resize_sdl,
@@ -226,22 +226,22 @@ const vidout VO[] = {
 			NULLOUTPUT
 #endif
 	},
-	{-1,-1,NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL} // the end.
+	{-1, -1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL} // the end.
 };
 
 static int VOutput = 0;
 
 int parsevidoutname (char *arg) {
-	int i=0;
-	int s0=strlen(arg);
-	if (s0==0) return (0);
+	int i = 0;
+	int s0 = strlen(arg);
+	if (s0 == 0) return (0);
 
-	if (!strncasecmp("list",arg,s0>4?4:s0)) return(-1);
+	if (!strncasecmp("list", arg, s0 > 4 ? 4 : s0)) return -1;
 
 	for(i = 0; i < sizeof(VO) / sizeof (vidout); ++i) {
-		if (VO[i].supported>=0) {
-			int s1=strlen(VO[i].name);
-			if (!strncasecmp(VO[i].name,arg,s0>s1?s1:s0)) return(i);
+		if (VO[i].supported >= 0) {
+			int s1 = strlen(VO[i].name);
+			if (!strncasecmp(VO[i].name, arg, s0 > s1 ? s1 : s0)) return i;
 		}
 	}
 	return(0);
@@ -256,20 +256,20 @@ int vidoutsupported (int i) {
 }
 
 void dump_vopts (void) {
-	int i=0;
+	int i = 0;
 	fprintf (stdout, "Video Output Modes: \n");
 	fprintf (stdout, " --vo 0 # autodetect (default)\n");
 
-	while (VO[++i].supported>=0) {
-		fprintf (stdout, " --vo %i # %s %s\n",i,VO[i].name,
-				VO[i].supported?"(supported by this xjadeo)":"(NOT compiled in this xjadeo)");
+	while (VO[++i].supported >= 0) {
+		fprintf (stdout, " --vo %i # %s %s\n", i, VO[i].name,
+				VO[i].supported ? "(supported by this xjadeo)" : "(NOT compiled in this xjadeo)");
 	}
 }
 
 int try_next_vidoutmode(int user_req) {
-	int i=0;
+	int i = 0;
 	// check available modes..
-	while (VO[++i].supported>=0);
+	while (VO[++i].supported >= 0);
 
 	if (user_req >= i || user_req < 0 ) return (-1);
 	if (user_req < i && user_req > 0 && VO[user_req].supported) return(1);
@@ -277,23 +277,23 @@ int try_next_vidoutmode(int user_req) {
 }
 
 int vidoutmode(int user_req) {
-	int i=0;
+	int i = 0;
 	if (user_req < 0) {
 		dump_vopts();
 		exit (0);
 	}
 
-	VOutput=0;
+	VOutput = 0;
 
 	// check available modes..
-	while (VO[++i].supported>=0) {
-		if (VO[i].supported && VOutput==0) {
-			VOutput=i;
+	while (VO[++i].supported >= 0) {
+		if (VO[i].supported && VOutput == 0) {
+			VOutput = i;
 		}
 	}
 
-	if (user_req < i && user_req>0 )
-		if (VO[user_req].supported) VOutput=user_req;
+	if (user_req < i && user_req > 0)
+		if (VO[user_req].supported) VOutput = user_req;
 
 	return VO[VOutput].render_fmt;
 }
@@ -327,46 +327,48 @@ extern int ST_top;
 		VARS.bpp = 4; \
 	} else return ;
 
+#if (HAVE_LIBXV || HAVE_IMLIB2)
 static void OSD_bitmap(int rfmt, uint8_t *mybuffer, int yperc, int xoff, int w, int h, uint8_t *src, uint8_t *mask) {
-	int x,y, xalign, yalign;
+	int x, y, xalign, yalign;
 	rendervars rv;
-	void (*_render)(uint8_t *mybuffer, rendervars *rv, int dx, int dy, uint8_t val);
+	void (*_render)(uint8_t *mybuffer, rendervars *rv, const int dx, const int dy, const uint8_t val);
 
 	rv.Uoff  = movie_width * movie_height;
 	rv.Voff = rv.Uoff + movie_width * movie_height/4;
 	rv.bpp = 0;
 
-	xalign= (movie_width - w)/2;
-	yalign= (movie_height - h) * yperc /100.0;
-	if (xalign < 0 ) xalign=0;
-	if (yalign < 0 ) yalign=0;
+	xalign = (movie_width - w) / 2;
+	yalign = (movie_height - h) * yperc / 100.0;
+	if (xalign < 0) xalign = 0;
+	if (yalign < 0) yalign = 0;
 
-	SET_RFMT(rfmt,_render, rv, render); // TODO once per window, and rather make _render fn's inline, include LOOP in fn pointer.
+	SET_RFMT(rfmt, _render, rv, render); // TODO once per window, and rather make _render fn's inline, include LOOP in fn pointer.
 
-	for (x=0; x<w && (x+xalign) < movie_width ;x++) {
-		for (y=0; y<h && (y+yalign) < movie_height;y++) {
-			int byte = ((y*w+x)>>3); // PIXMAP width must be mult. of 8 !
-			int val = src[byte] & 1<<(x%8);
-			if (!mask || mask[byte] &  1<<(x%8))
-				_render(mybuffer, &rv, (x+xalign), (y+yalign), val ? 0xee : 0x11);
+	for (x = 0; x < w && (x + xalign) < movie_width; ++x) {
+		for (y = 0; y < h && (y + yalign) < movie_height; ++y) {
+			int byte = ((y * w + x) >> 3); // PIXMAP width must be mult. of 8 !
+			int val = src[byte] & (1 << (x % 8));
+			if (!mask || mask[byte] & (1 << (x % 8)))
+				_render (mybuffer, &rv, (x + xalign), (y + yalign), val ? 0xee : 0x11);
 		}
 	}
 }
+#endif
 
 static void OSD_cmap(int rfmt, uint8_t *mybuffer, int yperc, int xoff, const int w, const int h,
 		uint8_t const * const img, uint8_t const * const map) {
-	int x,y, xalign, yalign;
+	int x, y, xalign, yalign;
 	rendervars rv;
-	void (*_render)(uint8_t *mybuffer, rendervars *rv, int dx, int dy, uint8_t val);
+	void (*_render)(uint8_t *mybuffer, rendervars *rv, const int dx, const int dy, const uint8_t val);
 
-	rv.Uoff  = movie_width * movie_height;
-	rv.Voff = rv.Uoff + movie_width * movie_height/4;
-	rv.bpp = 0;
+	rv.Uoff = movie_width * movie_height;
+	rv.Voff = rv.Uoff + movie_width * movie_height / 4;
+	rv.bpp  = 0;
 
-	xalign= (movie_width - w)/2;
-	yalign= (movie_height - h) * yperc /100.0;
-	if (xalign < 0 ) xalign=0;
-	if (yalign < 0 ) yalign=0;
+	xalign = (movie_width - w) / 2;
+	yalign = (movie_height - h) * yperc / 100.0;
+	if (xalign < 0) xalign = 0;
+	if (yalign < 0) yalign = 0;
 
 	SET_RFMT(rfmt, _render, rv, render); // TODO once per window, and rather make _render fn's inline, include LOOP in fn pointer.
 
@@ -375,7 +377,7 @@ static void OSD_cmap(int rfmt, uint8_t *mybuffer, int yperc, int xoff, const int
 		for (x = 0; x < w && (x + xalign) < movie_width; ++x) {
 			const int pos = y0 + x;
 			uint8_t val = map[(uint8_t)img[pos]];
-			_render(mybuffer, &rv, (x+xalign), (y+yalign), val);
+			_render (mybuffer, &rv, (x+xalign), (y+yalign), val);
 		}
 	}
 }
@@ -394,26 +396,26 @@ static void OSD_bar (int rfmt, uint8_t *mybuffer, int yperc, double min, double 
 	rv.Voff = rv.Uoff + movie_width * movie_height/4;
 	rv.bpp = 0;
 
-	xalign=PB_X;
-	yalign= (movie_height - PB_H) * yperc / 100.0;
-	int pb_val = (int) (PB_W*(val-min)/(max-min));
-	int pb_not = (int) (PB_W*(tara-min)/(max-min));
+	xalign = PB_X;
+	yalign = (movie_height - PB_H) * yperc / 100.0;
+	int pb_val = (int) (PB_W * (val-min) / (max - min));
+	int pb_not = (int) (PB_W * (tara-min) / (max - min));
 
-	SET_RFMT(rfmt,_render, rv, overlay); // TODO once per window instance, inline _render.
+	SET_RFMT(rfmt, _render, rv, overlay); // TODO once per window instance, inline _render.
 
-	for (x=0; x < pb_val && (x+xalign) < movie_width; ++x) {
-		for (y = 3; y < PB_H && (y+yalign) < movie_height; ++y) {
-			_render(mybuffer, &rv, (x+xalign), (y+yalign), (x%5 && y!=3) ? 0xf0 : 0x10);
+	for (x = 0; x < pb_val && (x + xalign) < movie_width; ++x) {
+		for (y = 3; y < PB_H && (y + yalign) < movie_height; ++y) {
+			_render (mybuffer, &rv, x + xalign, y + yalign, (x % 5 && y != 3) ? 0xf0 : 0x10);
 		}
-		if ((x%5) == 4) x += 5; // bars'n'stripes
+		if ((x % 5) == 4) x += 5; // bars'n'stripes
 	}
 	if (tara >= min) {
 		/* zero notch */
-		for (x=pb_not-1; x<pb_not+2 && (x+xalign) < movie_width ;x++) {
-			for (y=0; x>=0 && y<4 && (y+yalign) < movie_height;y++)
-				_render(mybuffer,&rv,(x+xalign),(y+yalign),0);
-			for (y=PB_H; x>=0 && y<PB_H+4 && (y+yalign) < movie_height;y++)
-				_render(mybuffer,&rv,(x+xalign),(y+yalign),0);
+		for (x = pb_not - 1; x < pb_not + 2 && (x + xalign) < movie_width; ++x) {
+			for (y = 0; x >= 0 && y < 4 && (y + yalign) < movie_height; ++y)
+				_render (mybuffer, &rv, x + xalign, y + yalign, 0);
+			for (y = PB_H; x >= 0 && y < PB_H + 4 && (y + yalign) < movie_height; ++y)
+				_render (mybuffer, &rv, x + xalign, y + yalign, 0);
 		}
 	}
 }
@@ -434,9 +436,9 @@ static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int y
 	static int minw_frame = 0;
 	static int minw_smpte = 0;
 
-	int x,y, xalign, yalign;
+	int x, y, xalign, yalign;
 	rendervars rv;
-	void (*_render)(uint8_t *mybuffer, rendervars *rv, int dx, int dy, uint8_t val);
+	void (*_render)(uint8_t *mybuffer, rendervars *rv, const int dx, const int dy, const uint8_t val);
 
 	if (strlen(text) == 0) return;
 
@@ -444,7 +446,7 @@ static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int y
 	rv.Voff = rv.Uoff + movie_width * movie_height/4;
 	rv.bpp = 0;
 
-	SET_RFMT(rfmt,_render,rv,render);
+	SET_RFMT(rfmt, _render, rv, render);
 
 	if (OSD_movieheight != movie_height) {
 		OSD_movieheight = movie_height;
@@ -454,7 +456,7 @@ static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int y
 	  OSD_fonty1 = ST_height;
 		minw_smpte = 0;
 		render_font(OSD_fontfile, "000000000000000", OSD_fontsize, 0);
-		minw_smpte = MAX(minw_smpte,ST_rightend);
+		minw_smpte = MAX(minw_smpte, ST_rightend);
 		render_font(OSD_fontfile, "00000000000", OSD_fontsize, 0);
 		minw_frame = ST_rightend;
 		render_font(OSD_fontfile, "0", OSD_fontsize, 0);
@@ -487,38 +489,38 @@ static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int y
 
 	const int fh = (minw != 0 ? OSD_fonty1 : ST_height);
 	const int fo = ST_HEIGHT - 8 - (minw != 0 ? OSD_fonty0 : ST_top);
-	yalign= (movie_height - fh) * yperc /100.0;
+	yalign = (movie_height - fh) * yperc / 100.0;
 
 	if (!ST_BG) {
-		for (y=0; y < fh && (y+yalign) < movie_height;y++) {
+		for (y = 0; y < fh && (y + yalign) < movie_height; ++y) {
 			for (x = -4; x < 0; ++x) {
 				if (x + xalign >= 0)
-					_render(mybuffer,&rv,(x+xalign),(y+yalign),0);
-				if (ST_rightend + xalign - x -1 < movie_width)
-					_render(mybuffer,&rv,(ST_rightend+xalign-x-1),(y+yalign),0);
+					_render (mybuffer, &rv, x + xalign, y +yalign, 0);
+				if (ST_rightend + xalign - x - 1 < movie_width)
+					_render (mybuffer, &rv, ST_rightend + xalign - x - 1, y + yalign, 0);
 			}
 		}
-		for (x = xalign -4; x < xalign + ST_rightend + 4; ++x) {
+		for (x = xalign - 4; x < xalign + ST_rightend + 4; ++x) {
 			if (x < 0 || x >= movie_width)
 				continue;
 			for (y = 0; y < 4; ++y) {
-				if (yalign - 1 - y >=0 && yalign - 1 - y < movie_height)
-					_render(mybuffer,&rv,x,(yalign - 1 - y),0);
-				if (yalign + fh + y >=0 && yalign +fh + y < movie_height)
-					_render(mybuffer,&rv,x,(y+fh+yalign),0);
+				if (yalign - 1 - y >= 0 && yalign - 1 - y < movie_height)
+					_render (mybuffer, &rv, x, yalign - 1 - y, 0);
+				if (yalign + fh + y >= 0 && yalign + fh + y < movie_height)
+					_render (mybuffer, &rv, x, y + fh + yalign, 0);
 			}
 		}
 	}
 	int do_next = 0; // 2x2 pixel color alignment
-	for (y=0; y < fh && (y+yalign) < movie_height;y++) {
-		do_next=0;
-		for (x=0; x<ST_rightend && (x+xalign) < movie_width ;x++) {
-			if (ST_image[y+fo][x]>= ST_BG || do_next) {
-				if (x+xalign >= 0)
-					_render(mybuffer,&rv,(x+xalign),(y+yalign),ST_image[y+fo][x]);
+	for (y = 0; y < fh && (y + yalign) < movie_height; ++y) {
+		do_next = 0;
+		for (x = 0; x < ST_rightend && (x + xalign) < movie_width; ++x) {
+			if (ST_image[y + fo][x] >= ST_BG || do_next) {
+				if (x + xalign >= 0)
+					_render (mybuffer, &rv, x + xalign, y + yalign, ST_image[y + fo][x]);
 			}
-			if (ST_image[y+fo][x]>= ST_BG && rfmt == PIX_FMT_UYVY422) do_next=1;
-			else do_next=0;
+			if (ST_image[y + fo][x] >= ST_BG && rfmt == PIX_FMT_UYVY422) do_next = 1;
+			else do_next = 0;
 		}
 	}
 }
@@ -528,7 +530,7 @@ static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int y
 void splash (uint8_t *mybuffer) {
 	if (want_nosplash) return;
 	if (movie_width >= xjadeo_splash_height && movie_height >= xjadeo_splash_width)
-		OSD_cmap(VO[VOutput].render_fmt, mybuffer,50,0,
+		OSD_cmap (VO[VOutput].render_fmt, mybuffer, 50, 0,
 				xjadeo_splash_width, xjadeo_splash_height, xjadeo_splash, xjadeo_splash_cmap);
 }
 
@@ -547,50 +549,51 @@ static void update_smptestring () {
 #include "icons/osd_bitmaps.h"
 #endif
 
-#define OBM(NAME,YPOS) \
-	OSD_bitmap(VO[VOutput].render_fmt, mybuffer,YPOS,0, osd_##NAME##_width, osd_##NAME##_height, osd_##NAME##_bits, osd_##NAME##_mask_bits);
+#define OBM(NAME, YPOS) \
+	OSD_bitmap(VO[VOutput].render_fmt, mybuffer, YPOS, 0, osd_##NAME##_width, osd_##NAME##_height, osd_##NAME##_bits, osd_##NAME##_mask_bits);
 
 void render_buffer (uint8_t *mybuffer) {
 	if (!mybuffer) return;
 
 	// render OSD on buffer
-	if (OSD_mode&(OSD_FRAME|OSD_VTC)) OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_frame, OSD_fx, OSD_fy, MINWH_FRAMEN);
-	if (OSD_mode&OSD_SMPTE) OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_smpte, OSD_sx, OSD_sy, MINWH_SYNCTC);
+	if (OSD_mode & (OSD_FRAME | OSD_VTC))
+		OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_frame, OSD_fx, OSD_fy, MINWH_FRAMEN);
+	if (OSD_mode & OSD_SMPTE)
+		OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_smpte, OSD_sx, OSD_sy, MINWH_SYNCTC);
 
 	if (!splashed) {
 		; // keep center free
 	}
 #if (HAVE_LIBXV || HAVE_IMLIB2)
-	else if (OSD_mode&OSD_EQ) {
-		int v0,v1,v2,v3,v4;
-		if(xj_get_eq("brightness",&v0)) v0=0;
-		if(xj_get_eq("contrast",&v1)) v1=0;
-		if(xj_get_eq("gamma",&v2)) v2=0;
-		if(xj_get_eq("saturation",&v3)) v3=0;
-		if(xj_get_eq("hue",&v4)) v4=0;
+	else if (OSD_mode & OSD_EQ) {
+		int v0, v1, v2, v3, v4;
+		if (xj_get_eq("brightness", &v0)) v0 = 0;
+		if (xj_get_eq("contrast", &v1)) v1 = 0;
+		if (xj_get_eq("gamma", &v2)) v2 = 0;
+		if (xj_get_eq("saturation", &v3)) v3 = 0;
+		if (xj_get_eq("hue", &v4)) v4 = 0;
 		OBM(brightness, 3);
 		OBM(contrast, 23);
 		OBM(gamma, 43);
 		OBM(saturation, 63);
-		OSD_bar(VO[VOutput].render_fmt, mybuffer,10, -1000.0,1000.0,(double) v0, 0.0);
-		OSD_bar(VO[VOutput].render_fmt, mybuffer,30, -1000.0,1000.0,(double) v1, (VOutput==1)?-500.0:0.0);
-		OSD_bar(VO[VOutput].render_fmt, mybuffer,50, -1000.0,1000.0,(double) v2, 0.0);
-		OSD_bar(VO[VOutput].render_fmt, mybuffer,70, -1000.0,1000.0,(double) v3, 0.0);
-		OSD_bar(VO[VOutput].render_fmt, mybuffer,90, -1000.0,1000.0,(double) v4, 0.0);
-
+		OSD_bar (VO[VOutput].render_fmt, mybuffer, 10, -1000.0, 1000.0, v0, 0.0);
+		OSD_bar (VO[VOutput].render_fmt, mybuffer, 30, -1000.0, 1000.0, v1, (VOutput == VO_XV) ? -500.0 : 0.0);
+		OSD_bar (VO[VOutput].render_fmt, mybuffer, 50, -1000.0, 1000.0, v2, 0.0);
+		OSD_bar (VO[VOutput].render_fmt, mybuffer, 70, -1000.0, 1000.0, v3, 0.0);
+		OSD_bar (VO[VOutput].render_fmt, mybuffer, 90, -1000.0, 1000.0, v4, 0.0);
 	} else
 #endif
 	{
-		if (OSD_mode&OSD_TEXT)
+		if (OSD_mode & OSD_TEXT)
 			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_text, OSD_tx, OSD_ty, MINWH_NONE);
-		if (OSD_mode&OSD_MSG)
+		if (OSD_mode & OSD_MSG)
 			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_msg, 50, 85, MINWH_NONE);
 
 		if (index_progress >= 0 && index_progress <= 100 && movie_height >= OSD_MIN_NFO_HEIGHT) {
-			OSD_bar(VO[VOutput].render_fmt, mybuffer, 91, 0, 100.0, index_progress, -1);
+			OSD_bar (VO[VOutput].render_fmt, mybuffer, 91, 0, 100.0, index_progress, -1);
 		}
 
-		if (OSD_mode&OSD_OFFF) {
+		if (OSD_mode & OSD_OFFF) {
 			char tempoff[30];
 			snprintf(tempoff, 30, "O:  %"PRId64, ts_offset);
 			OSD_render (VO[VOutput].render_fmt, mybuffer, tempoff, OSD_CENTER, 50, MINW__TC);
@@ -598,7 +601,7 @@ void render_buffer (uint8_t *mybuffer) {
 			char tempsmpte[30];
 			strcpy(tempsmpte, "O: ");
 			if (frame_to_smptestring(tempsmpte+3, ts_offset, 1)) {
-				strcat(tempsmpte," +d");
+				strcat(tempsmpte, " +d");
 			}
 			OSD_render (VO[VOutput].render_fmt, mybuffer, tempsmpte, OSD_CENTER, 50, MINW__TC);
 		} else if (OSD_mode & (OSD_NFO | OSD_IDXNFO) && movie_height >= OSD_MIN_NFO_HEIGHT) {
@@ -613,19 +616,20 @@ void render_buffer (uint8_t *mybuffer) {
 }
 
 void open_window(void) {
-	if (!want_quiet)
-		printf("Video output: %s\n",VO[VOutput].name);
+	if (want_verbose)
+		printf("Video output: %s\n", VO[VOutput].name);
 	if (VO[VOutput].open() ) {
-		fprintf(stderr,"Could not open video output.\n");
-		VOutput=0;
-		loop_run=0;
-	} else loop_run=1;
+		if (!want_quiet)
+			fprintf(stderr, "Could not open video output.\n");
+		VOutput = 0;
+		loop_run = 0;
+	} else loop_run = 1;
 }
 
 void close_window(void) {
-	int vmode=VOutput;
-	VOutput=0;
-	loop_run=0;
+	int vmode = VOutput;
+	VOutput = 0;
+	loop_run = 0;
 	VO[vmode].close();
 }
 
@@ -642,15 +646,15 @@ int getvidmode (void) {
 }
 
 void Xgetpos (int *x, int *y) {
-	VO[VOutput].getpos(x,y);
+	VO[VOutput].getpos(x, y);
 }
 
 void Xgetsize (unsigned int *x, unsigned int *y) {
-	VO[VOutput].getsize(x,y);
+	VO[VOutput].getsize(x, y);
 }
 
 void Xresize (unsigned int x, unsigned int y) {
-	VO[VOutput].resize(x,y);
+	VO[VOutput].resize(x, y);
 }
 
 void Xontop (int a) {
@@ -678,8 +682,8 @@ int Xgetletterbox (void) {
 }
 
 void Xletterbox (int action) {
-	if (action==2) want_letterbox=!want_letterbox;
-	else want_letterbox = action?1:0;
+	if (action == 2) want_letterbox = !want_letterbox;
+	else want_letterbox = action ? 1 : 0;
 	VO[VOutput].letterbox_change();
 }
 
@@ -688,7 +692,7 @@ void Xfullscreen (int a) {
 }
 
 void Xposition (int x, int y) {
-	VO[VOutput].position(x,y);
+	VO[VOutput].position(x, y);
 }
 
 
@@ -787,7 +791,7 @@ void XCtimeoffset (int mode, unsigned int charcode) {
 	}
 
 	if (off != ts_offset) {
-		force_redraw=1;
+		force_redraw = 1;
 		update_smptestring ();
 	}
 }
