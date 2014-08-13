@@ -532,13 +532,41 @@ handleMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
 				return DefWindowProc(hwnd, message, wParam, lParam);
 			break;
 #endif
-		case WM_LBUTTONDOWN:
-			xjglButton(1);
+		case WM_MOUSEMOVE:
+			if (osd_seeking && ui_syncsource() == SYNC_NONE && OSD_mode & OSD_POS) {
+				const float sk = calc_slider (GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				if (sk >= 0) {
+					// no lock, userFrame is queried atomically
+					// and transport is disconnected when osd_seeking is set
+					ui_sync_manual (sk);
+				}
+			}
 			break;
-		case WM_MBUTTONDOWN:
+		case WM_LBUTTONDOWN:
+			if (ui_syncsource() == SYNC_NONE && OSD_mode & OSD_POS) {
+				const float sk = calc_slider (GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				if (sk >= 0) {
+					PTLL;
+					ui_sync_manual (sk);
+					osd_seeking = 1;
+					force_redraw = 1;
+					PTUL;
+				}
+			}
+			break;
+		case WM_LBUTTONUP:
+			if (osd_seeking) {
+				PTLL;
+				osd_seeking = 0;
+				force_redraw = 1;
+				PTUL;
+			} else
+				xjglButton(1);
+			break;
+		case WM_MBUTTONUP:
 			xjglButton(2);
 			break;
-		case WM_RBUTTONDOWN:
+		case WM_RBUTTONUP:
 #ifdef WINMENU
 			if (1) {
 				POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };

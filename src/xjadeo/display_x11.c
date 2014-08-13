@@ -236,6 +236,21 @@ int xj_get_eq(char *prop, int *value) {
 	return (1); // error
 }
 
+static float calc_slider(int x, int y) {
+	if (interaction_override&OVR_MENUSYNC) return -1;
+	const int bar_x0 = xj_box[0] + (PB_X * xj_box[2] / (float)movie_width);
+	const int bar_xw = xj_box[2] - 2 * PB_X;
+
+	const int bar_y1 = xj_box[1] + xj_box[3] * BAR_Y;
+	const int bar_y0 = bar_y1 - (PB_H - 4) * xj_box[3] / (float)movie_height;
+
+	if (y > bar_y0 && y < bar_y1 && x >= bar_x0 && x <= bar_x0 + bar_xw) {
+		return (100.f * (x - bar_x0) / (float)(bar_xw));
+	}
+	return -1;
+}
+
+
 static void xj_set_eq (char *prop, int value) {
 #ifdef COLOREQ
 # ifdef HAVE_LIBXV
@@ -287,9 +302,28 @@ static void xj_handle_X_events (void) {
 			case UnmapNotify:
 				loop_run=0;
 				break;
+			case MotionNotify:
+				if (osd_seeking && ui_syncsource() == SYNC_NONE && OSD_mode & OSD_POS) {
+					const float sk = calc_slider (event.xmotion.x, event.xmotion.y);
+					if (sk >= 0)
+						ui_sync_manual (sk);
+				}
+				break;
 			case ButtonPress:
+				if (event.xbutton.button == 1 && ui_syncsource() == SYNC_NONE && OSD_mode & OSD_POS) {
+					const float sk = calc_slider (event.xbutton.x, event.xbutton.y);
+					if (sk >= 0) {
+						ui_sync_manual (sk);
+						osd_seeking = 1;
+						force_redraw = 1;
+					}
+				}
 				break;
 			case ButtonRelease:
+				if (osd_seeking) {
+					osd_seeking = 0;
+					force_redraw = 1;
+				} else
 #ifdef XDLG
 				if (event.xbutton.button == 3) {
 					show_x_dialog(xj_dpy, xj_win,
@@ -352,6 +386,8 @@ static void xj_handle_X_events (void) {
 						ui_osd_fn();
 					} else if (key == XK_b ) { //'b' // OSD - black box
 						ui_osd_box();
+					} else if (key == XK_x ) { //'x' // OSD - seek position
+						ui_osd_pos();
 					} else if (key == XK_C ) { //'C' // OSD - clear all
 						ui_osd_clear();
 					} else if (key == XK_exclam ) { //'Shift-1' //
@@ -447,7 +483,7 @@ static void xj_handle_X_events (void) {
 							remote_notify(NTY_KEYBOARD,
 									310, "keypress=%d # space", (unsigned int) key);
 #if 0 // TEST - save current config -- JACK-SESSION
-					} else if (key == XK_x ) { // 'x'
+					} else if (key == XK_z ) { // 'z'
 						saveconfig("/tmp/xj.cfg");
 #endif
 					} else {
@@ -890,7 +926,7 @@ int open_window_xv (void) {
 
 	xj_set_hints();
 
-	ev_mask =  KeyPressMask | ButtonPressMask | ButtonReleaseMask |
+	ev_mask =  KeyPressMask | ButtonPressMask | ButtonReleaseMask | Button1MotionMask |
 			ExposureMask | StructureNotifyMask; //| PropertyChangeMask | PointerMotionMask;
 	XSelectInput(xj_dpy, xj_win, ev_mask);
 
@@ -1021,7 +1057,7 @@ int open_window_imlib2 (void) {
 
 	xj_set_hints();
 
-	ev_mask =  KeyPressMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | StructureNotifyMask;
+	ev_mask =  KeyPressMask | ButtonPressMask | ButtonReleaseMask | Button1MotionMask | ExposureMask | StructureNotifyMask;
 	XSelectInput(xj_dpy, xj_win, ev_mask);
 
 #ifdef DND

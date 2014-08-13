@@ -169,6 +169,7 @@ int gl_open_window () {
 	_gl_height = ffctv_height;
 
 	attr.event_mask = ExposureMask | KeyPressMask
+		| Button1MotionMask
 		| ButtonPressMask | ButtonReleaseMask
 		| StructureNotifyMask;
 
@@ -305,9 +306,28 @@ void gl_handle_events () {
 				}
 				_gl_reexpose = true;
 				break;
+			case MotionNotify:
+				if (osd_seeking && ui_syncsource() == SYNC_NONE && OSD_mode & OSD_POS) {
+					const float sk = calc_slider (event.xmotion.x, event.xmotion.y);
+					if (sk >= 0)
+						ui_sync_manual (sk);
+				}
+				break;
 			case ButtonPress:
+				if (event.xbutton.button == 1 && ui_syncsource() == SYNC_NONE && OSD_mode & OSD_POS) {
+					const float sk = calc_slider (event.xbutton.x, event.xbutton.y);
+					if (sk >= 0) {
+						ui_sync_manual (sk);
+						osd_seeking = 1;
+						force_redraw = 1;
+					}
+				}
 				break;
 			case ButtonRelease:
+				if (osd_seeking) {
+					osd_seeking = 0;
+					force_redraw = 1;
+				} else
 #ifdef XDLG
 				if (event.xbutton.button == 3) {
 					show_x_dialog(_gl_display, _gl_win,

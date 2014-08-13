@@ -29,7 +29,11 @@ extern int OSD_mode;
 extern int OSD_fx, OSD_fy;
 extern int OSD_sx, OSD_sy;
 extern int OSD_tx, OSD_ty;
+extern uint8_t osd_seeking;
 
+#define PB_H (20)
+#define PB_X (10)
+#define BAR_Y ((OSD_mode & OSD_SMPTE && OSD_sy > 80) || (OSD_mode & (OSD_FRAME | OSD_VTC) && OSD_fy > 80) ? .89 : .95)
 #define OSD_MIN_NFO_HEIGHT (160)
 
 /* prototypes in display.c */

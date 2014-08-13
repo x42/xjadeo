@@ -20,6 +20,8 @@
 #include "xjadeo.h"
 
 /// here ??
+extern int64_t frames;
+extern int64_t userFrame;
 extern int interaction_override;
 extern int force_redraw;
 extern int OSD_mode; // change via keystroke
@@ -73,6 +75,15 @@ void ui_sync_none () {
 #ifdef HAVE_LTC
 	if (ltcjack_connected()) close_ltcjack();
 #endif
+}
+
+void ui_sync_manual (float percent) {
+	if (interaction_override&OVR_MENUSYNC) return;
+	if (frames < 1) return;
+	ui_sync_none();
+	if (percent <= 0.f) percent = 0.f;
+	if (percent >= 100.f) percent = 100.f;
+	userFrame = rint((frames - 1.f) * percent / 100.f);
 }
 
 void ui_sync_to_jack () {

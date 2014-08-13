@@ -319,4 +319,22 @@ void gl_letterbox_change () {
 		}
 	}
 }
+
+static float calc_slider(int x, int y) {
+	if (interaction_override&OVR_MENUSYNC) return -1;
+	// TODO: cache those for a given values of
+	// _gl_width, _gl_height, movie_width, movie_height
+	const float xw = _gl_width * _gl_quad_x;
+
+	const int bar_x0 = xw * ((.5 / _gl_quad_x - .5) + PB_X / (float)movie_width);
+	const int bar_xw = xw * ( (movie_width - 2 * PB_X) / (float)movie_width);
+
+	const int bar_y1 = _gl_height * (.5 + _gl_quad_y * (BAR_Y - .5)); // 89% = bottom of OSD_bar
+	const int bar_y0 = bar_y1 - (PB_H - 4) * (_gl_height * _gl_quad_y) / (float)movie_height;
+
+	if (y > bar_y0 && y < bar_y1 && x >= bar_x0 && x <= bar_x0 + bar_xw) {
+		return (100.f * (x - bar_x0) / (float)(bar_xw));
+	}
+	return -1;
+}
 #endif

@@ -201,6 +201,7 @@ void INT_sync_to_jack(int remote_msg);
 void INT_sync_to_ltc(char *port, int remote_msg);
 
 void ui_sync_none ();
+void ui_sync_manual (float percent);
 void ui_sync_to_jack ();
 void ui_sync_to_ltc ();
 void ui_sync_to_mtc_jack ();

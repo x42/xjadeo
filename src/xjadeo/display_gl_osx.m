@@ -140,9 +140,6 @@ __attribute__ ((visibility ("hidden")))
            depthBits:(int)numDepthBits;
 - (void) reshape;
 - (void) drawRect:(NSRect)rect;
-- (void) mouseDown:(NSEvent*)event;
-- (void) rightMouseDown:(NSEvent*)event;
-- (void) keyDown:(NSEvent*)event;
 - (void) setFullScreen:(int)onoff;
 
 @end
@@ -227,37 +224,67 @@ __attribute__ ((visibility ("hidden")))
 {
 	NSRect frame = [[self window] frame];
 	NSPoint mp   = [self convertPoint:[event locationInWindow] fromView:self];
-	if (!resizing && (frame.size.width - mp.x > 16 || mp.y > 16)) return;
-	resizing = TRUE;
-
-	// TODO use absolute mouse position, clamp to window edge
-	CGFloat originY = frame.origin.y;
-	CGFloat deltaY  = [event deltaY];
-
-	frame.origin.y = (originY + frame.size.height) - (frame.size.height + deltaY);
-	frame.size.width  += [event deltaX];
-	frame.size.height += deltaY;
-
-	if (frame.size.width < 80)
-		frame.size.width = 80;
-
-	if (frame.size.height < 60) {
-		frame.size.height = 60;
-		frame.origin.y = originY;
+	if (!resizing && osd_seeking && ui_syncsource() == SYNC_NONE && OSD_mode & OSD_POS) {
+		const float sk = calc_slider (mp.x, _gl_height - mp.y);
+		if (sk >= 0) {
+			// no lock, userFrame is queried atomically
+			// and transport is disconnected when osd_seeking is set
+			ui_sync_manual (sk);
+		}
 	}
-	[[self window] setFrame:frame display:YES animate:NO];
+	else if (resizing || !(mp.y > 16 || frame.size.width - mp.x > 16)) {
+		resizing = TRUE;
+
+		// TODO use absolute mouse position, clamp to window edge
+		CGFloat originY = frame.origin.y;
+		CGFloat deltaY  = [event deltaY];
+
+		frame.origin.y = (originY + frame.size.height) - (frame.size.height + deltaY);
+		frame.size.width  += [event deltaX];
+		frame.size.height += deltaY;
+
+		if (frame.size.width < 80)
+			frame.size.width = 80;
+
+		if (frame.size.height < 60) {
+			frame.size.height = 60;
+			frame.origin.y = originY;
+		}
+		[[self window] setFrame:frame display:YES animate:NO];
+	}
 }
+
 - (void) mouseDown:(NSEvent*)event
 {
-	xjglButton (1);
+	if (ui_syncsource() == SYNC_NONE && OSD_mode & OSD_POS) {
+		NSPoint mp = [self convertPoint:[event locationInWindow] fromView:self];
+		const float sk = calc_slider (mp.x, _gl_height - mp.y);
+		if (sk >= 0) {
+			PTLL;
+			ui_sync_manual (sk);
+			osd_seeking = 1;
+			force_redraw = 1;
+			PTUL;
+		}
+	}
 }
 
 - (void) mouseUp:(NSEvent*)event
 {
-	resizing = FALSE;
+	if (resizing || osd_seeking) {
+		if (osd_seeking) {
+			PTLL;
+			osd_seeking = 0;
+			force_redraw = 1;
+			PTUL;
+		}
+		resizing = FALSE;
+	} else {
+		xjglButton(1);
+	}
 }
 
-- (void) rightMouseDown:(NSEvent*)event
+- (void) rightMouseUp:(NSEvent*)event
 {
 	xjglButton(3);
 }

@@ -39,6 +39,7 @@ extern int    want_nosplash;
 extern double framerate;
 extern float index_progress;
 extern uint8_t splashed ;
+uint8_t osd_seeking = 0;
 
 /*******************************************************************************
  * NULL Video Output
@@ -309,8 +310,6 @@ extern int ST_rightend;
 extern int ST_height;
 extern int ST_top;
 
-#define PB_H (20)
-#define PB_X (10)
 #define PB_W (movie_width - 2 * PB_X)
 
 #define SET_RFMT(FORMAT, POINTER, VARS, FUNC) \
@@ -423,15 +422,16 @@ static void OSD_bar (int rfmt, uint8_t *mybuffer, int yperc, double min, double 
 		}
 	} else if (tara < min - 1) {
 		/* border */
+		const uint8_t bcol = tara < min - 2 ? 0x10 : 0xf0;
 		for (x = -2; x < PB_W + 1 && (x + xalign) < movie_width; ++x) {
 			if (yalign >= 0 && yalign < movie_height)
-				_render (mybuffer, &rv, x + xalign, yalign, 0x20);
+				_render (mybuffer, &rv, x + xalign, yalign, bcol);
 			if (yalign + PB_H + 3 >= 0 && yalign + PB_H + 3 < movie_height)
-				_render (mybuffer, &rv, x + xalign, yalign + PB_H + 3, 0x20);
+				_render (mybuffer, &rv, x + xalign, yalign + PB_H + 3, bcol);
 		}
 		for (y = 1; y < PB_H + 3 && (y + yalign) < movie_height; ++y) {
-			_render (mybuffer, &rv, PB_X - 3 , y + yalign, 0x20);
-			_render (mybuffer, &rv, PB_X + PB_W + 1, y + yalign, 0x20);
+			_render (mybuffer, &rv, PB_X - 3 , y + yalign, bcol);
+			_render (mybuffer, &rv, PB_X + PB_W + 1, y + yalign, bcol);
 		}
 	}
 }
@@ -628,7 +628,11 @@ void render_buffer (uint8_t *mybuffer) {
 		}
 	}
 	if (OSD_mode & OSD_POS && index_progress < 0 && frames > 1 && movie_height >= OSD_MIN_NFO_HEIGHT) {
-		OSD_bar (VO[VOutput].render_fmt, mybuffer, 89, 0, frames - 1, dispFrame, -2);
+		int sbox = osd_seeking ? -3 : -2;
+		if (ui_syncsource() != SYNC_NONE || (interaction_override&OVR_MENUSYNC)) {
+			sbox = -1;
+		}
+		OSD_bar (VO[VOutput].render_fmt, mybuffer, 100. * BAR_Y, 0, frames - 1, dispFrame, sbox);
 	}
 
 	VO[VOutput].render(buffer); // buffer = mybuffer (so far no share mem or sth)
