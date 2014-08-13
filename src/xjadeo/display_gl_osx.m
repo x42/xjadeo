@@ -64,8 +64,8 @@ __attribute__ ((visibility ("hidden")))
 - (BOOL) windowShouldClose:(id)sender;
 - (void) becomeKeyWindow:(id)sender;
 - (BOOL) canBecomeKeyWindow:(id)sender;
-- (void)miniaturize:(id)sender;
-- (void)deminiaturize:(id)sender;
+- (void) miniaturize:(id)sender;
+- (void) deminiaturize:(id)sender;
 @end
 
 
@@ -263,11 +263,11 @@ __attribute__ ((visibility ("hidden")))
 
 - (void) scrollWheel:(NSEvent*)event
 {
-	int xs = [event deltaX];
-	if (xs > 0) {
-		xjglButton(5);
-	} else {
+	const double dy = [event deltaY];
+	if (dy > 0) {
 		xjglButton(4);
+	} else if (dy < 0) {
+		xjglButton(5);
 	}
 	[self updateTrackingAreas];
 }
@@ -552,8 +552,8 @@ static void update_dpy_menu() {
 - (void)dpySize50:(id)sender      { XCresize_percent(50); }
 - (void)dpySize100:(id)sender     { XCresize_percent(100); }
 - (void)dpySize150:(id)sender     { XCresize_percent(150); }
-- (void)dpySizeInc:(id)sender     { XCresize_scale(-1); }
-- (void)dpySizeDec:(id)sender     { XCresize_scale( 1); }
+- (void)dpySizeDec:(id)sender     { XCresize_scale(-1); }
+- (void)dpySizeInc:(id)sender     { XCresize_scale( 1); }
 - (void)dpyAspect:(id)sender      { XCresize_aspect(0); }
 - (void)dpyLetterbox:(id)sender   { Xletterbox(2); }
 - (void)dpyOnTop:(id)sender       { Xontop(2); }
@@ -933,6 +933,7 @@ void gl_handle_events () {
 void osx_main () {
 	[NSAutoreleasePool new];
 	[NSApplication sharedApplication];
+	[NSApp setDelegate:[NSApplication sharedApplication]];
 	makeAppMenu();
 	[NSApp finishLaunching];
 
@@ -1046,24 +1047,13 @@ void gl_set_fullscreen (int action) {
 	else _gl_fullscreen = action ? 1 : 0;
 	if (_gl_fullscreen) {
 		nofs_frame = [osx_window frame];
-#if 0
-		[osx_window setLevel:NSFloatingWindowLevel + 1];
-		NSRect mainDisplayRect = [[NSScreen mainScreen] frame];
-		NSRect viewRect = NSMakeRect(0.0, 0.0, mainDisplayRect.size.width, mainDisplayRect.size.height);
-		[osx_window setFrame:viewRect display:YES animate:YES];
-		//[osx_window setStyleMask:NSBorderlessWindowMask];
-#else
 		[osx_glview setFullScreen:YES];
-#endif
 	} else {
-#if 0
-		gl_set_ontop(_gl_ontop);
-		[osx_window setFrame:nofs_frame display:YES animate:YES];
-		//[osx_window setStyleMask:(NSClosableWindowMask | NSTitledWindowMask | NSResizableWindowMask)];
-		[NSApplication setPresentationOptions:NSApplicationPresentationDefault];
-#else
 		[osx_glview setFullScreen:NO];
-#endif
+	}
+	if (osx_window) {
+		[osx_window makeKeyAndOrderFront:osx_window];
+		[osx_window makeFirstResponder:osx_glview];
 	}
 }
 
