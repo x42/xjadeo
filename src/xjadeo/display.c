@@ -37,9 +37,6 @@ extern int    want_nosplash;
 extern double framerate;
 extern uint8_t splashed ;
 
-static int minw_frame = 0;
-static int minw_smpte = 0;
-
 /*******************************************************************************
  * NULL Video Output
  */
@@ -343,14 +340,14 @@ static void OSD_bitmap(int rfmt, uint8_t *mybuffer, int yperc, int xoff, int w, 
 	if (xalign < 0 ) xalign=0;
 	if (yalign < 0 ) yalign=0;
 
-	SET_RFMT(rfmt,_render,rv,render); // TODO once per window, and rather make _render fn's inline, include LOOP in fn pointer.
+	SET_RFMT(rfmt,_render, rv, render); // TODO once per window, and rather make _render fn's inline, include LOOP in fn pointer.
 
 	for (x=0; x<w && (x+xalign) < movie_width ;x++) {
 		for (y=0; y<h && (y+yalign) < movie_height;y++) {
 			int byte = ((y*w+x)>>3); // PIXMAP width must be mult. of 8 !
 			int val = src[byte] & 1<<(x%8);
 			if (!mask || mask[byte] &  1<<(x%8))
-				_render(mybuffer,&rv,(x+xalign),(y+yalign),val?0xee:0x11);
+				_render(mybuffer, &rv, (x+xalign), (y+yalign), val ? 0xee : 0x11);
 		}
 	}
 }
@@ -387,7 +384,7 @@ static void OSD_cmap(int rfmt, uint8_t *mybuffer, int yperc, int xoff, const int
 #define ST_BG ((OSD_mode&OSD_BOX)?0:1)
 
 #if (HAVE_LIBXV || HAVE_IMLIB2)
-static void OSD_bar(int rfmt, uint8_t *mybuffer, int yperc, double min,double max,double val, double tara) {
+static void OSD_bar(int rfmt, uint8_t *mybuffer, int yperc, double min, double max, double val, double tara) {
 
 	int x,y, xalign, yalign;
 	rendervars rv;
@@ -398,11 +395,11 @@ static void OSD_bar(int rfmt, uint8_t *mybuffer, int yperc, double min,double ma
 	rv.bpp = 0;
 
 	xalign=PB_X;
-	yalign= (movie_height - PB_H) * yperc /100.0;
+	yalign= (movie_height - PB_H) * yperc / 100.0;
 	int pb_val = (int) (PB_W*(val-min)/(max-min));
 	int pb_not = (int) (PB_W*(tara-min)/(max-min));
 
-	SET_RFMT(rfmt,_render,rv,overlay); // TODO once per window instance, inline _render.
+	SET_RFMT(rfmt,_render, rv, overlay); // TODO once per window instance, inline _render.
 
 	for (x=0; x<pb_val && (x+xalign) < movie_width ;x++) {
 		for (y=3; y<PB_H && (y+yalign) < movie_height;y++) {
@@ -410,22 +407,33 @@ static void OSD_bar(int rfmt, uint8_t *mybuffer, int yperc, double min,double ma
 		}
 		if ((x%6)==5) x+=6; // bars'n'stripes
 	}
-	/* zero notch */
-	for (x=pb_not-1; x<pb_not+2 && (x+xalign) < movie_width ;x++) {
-		for (y=0; x>=0 && y<4 && (y+yalign) < movie_height;y++)
-			_render(mybuffer,&rv,(x+xalign),(y+yalign),0);
-		for (y=PB_H; x>=0 && y<PB_H+4 && (y+yalign) < movie_height;y++)
-			_render(mybuffer,&rv,(x+xalign),(y+yalign),0);
+	if (tara >= min) {
+		/* zero notch */
+		for (x=pb_not-1; x<pb_not+2 && (x+xalign) < movie_width ;x++) {
+			for (y=0; x>=0 && y<4 && (y+yalign) < movie_height;y++)
+				_render(mybuffer,&rv,(x+xalign),(y+yalign),0);
+			for (y=PB_H; x>=0 && y<PB_H+4 && (y+yalign) < movie_height;y++)
+				_render(mybuffer,&rv,(x+xalign),(y+yalign),0);
+		}
 	}
 }
 #endif
 
-static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int yperc, int minw) {
+enum MinWHVariant {
+	MINW__TC = -1,
+	MINWH_NONE = 0,
+	MINWH_SYNCTC,
+	MINWH_FRAMEN,
+};
+
+static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int yperc, enum MinWHVariant minwh) {
 	static int OSD_movieheight = -1;
 	static int OSD_fonty0 = -1;
 	static int OSD_fonty1 = -1;
 	static int OSD_fontsize = -1;
 	static int OSD_monospace = 0;
+	static int minw_frame = 0;
+	static int minw_smpte = 0;
 
 	int x,y, xalign, yalign;
 	rendervars rv;
@@ -433,7 +441,7 @@ static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int y
 
 	if (strlen(text) == 0) return;
 
-	rv.Uoff  = movie_width * movie_height;
+	rv.Uoff = movie_width * movie_height;
 	rv.Voff = rv.Uoff + movie_width * movie_height/4;
 	rv.bpp = 0;
 
@@ -455,13 +463,28 @@ static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int y
 		if (want_verbose)
 			printf("Set Fontsize to %d\n", OSD_fontsize);
 	}
+	int minw = 0;
+	switch (minwh) {
+		case MINW__TC:
+			minw = -1;
+			break;
+		case MINWH_NONE:
+			minw = 0;
+			break;
+		case MINWH_SYNCTC:
+			minw = minw_smpte;
+			break;
+		case MINWH_FRAMEN:
+			minw = minw_frame;
+			break;
+	}
 
-	if ( render_font(OSD_fontfile, text, OSD_fontsize, minw > 0 ? OSD_monospace : 0) ) return;
-	ST_rightend = MAX(minw,ST_rightend);
+	if (render_font(OSD_fontfile, text, OSD_fontsize, minw > 0 ? OSD_monospace : 0)) return;
+	ST_rightend = MAX(minw, ST_rightend);
 
-	if (xpos == OSD_LEFT) xalign=ST_PADDING; // left
-	else if (xpos == OSD_RIGHT) xalign=movie_width-ST_PADDING-ST_rightend; // right
-	else xalign=(movie_width- ST_rightend)/2; // center
+	if (xpos == OSD_LEFT) xalign = ST_PADDING; // left
+	else if (xpos == OSD_RIGHT) xalign = movie_width - ST_PADDING - ST_rightend; // right
+	else xalign = (movie_width - ST_rightend) / 2; // center
 
 	const int fh = (minw != 0 ? OSD_fonty1 : ST_height);
 	const int fo = ST_HEIGHT - 8 - (minw != 0 ? OSD_fonty0 : ST_top);
@@ -532,8 +555,8 @@ void render_buffer (uint8_t *mybuffer) {
 	if (!mybuffer) return;
 
 	// render OSD on buffer
-	if (OSD_mode&(OSD_FRAME|OSD_VTC)) OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_frame, OSD_fx, OSD_fy, minw_frame);
-	if (OSD_mode&OSD_SMPTE) OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_smpte, OSD_sx, OSD_sy, minw_smpte);
+	if (OSD_mode&(OSD_FRAME|OSD_VTC)) OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_frame, OSD_fx, OSD_fy, MINWH_FRAMEN);
+	if (OSD_mode&OSD_SMPTE) OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_smpte, OSD_sx, OSD_sy, MINWH_SYNCTC);
 
 	if (!splashed) {
 		; // keep center free
@@ -560,26 +583,26 @@ void render_buffer (uint8_t *mybuffer) {
 #endif
 	{
 		if (OSD_mode&OSD_TEXT)
-			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_text, OSD_tx, OSD_ty, 0);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_text, OSD_tx, OSD_ty, MINWH_NONE);
 		if (OSD_mode&OSD_MSG)
-			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_msg, 50, 85, 0);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_msg, 50, 85, MINWH_NONE);
 
 		if (OSD_mode&OSD_OFFF) {
 			char tempoff[30];
 			snprintf(tempoff, 30, "O:  %"PRId64, ts_offset);
-			OSD_render (VO[VOutput].render_fmt, mybuffer, tempoff, OSD_CENTER, 50, -1);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, tempoff, OSD_CENTER, 50, MINW__TC);
 		} else if (OSD_mode&OSD_OFFS) {
 			char tempsmpte[30];
 			strcpy(tempsmpte, "O: ");
 			if (frame_to_smptestring(tempsmpte+3, ts_offset, 1)) {
 				strcat(tempsmpte," +d");
 			}
-			OSD_render (VO[VOutput].render_fmt, mybuffer, tempsmpte, OSD_CENTER, 50, -1);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, tempsmpte, OSD_CENTER, 50, MINW__TC);
 		} else if (OSD_mode & (OSD_NFO | OSD_IDXNFO) && movie_height >= OSD_MIN_NFO_HEIGHT) {
-			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_info[0], OSD_CENTER, 35, -1);
-			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_info[1], OSD_CENTER, 45, minw_smpte);
-			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_info[2], OSD_CENTER, 55, minw_smpte);
-			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_info[3], OSD_CENTER, 66, 0);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_info[0], OSD_CENTER, 35, MINW__TC);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_info[1], OSD_CENTER, 45, MINWH_SYNCTC);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_info[2], OSD_CENTER, 55, MINWH_SYNCTC);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_info[3], OSD_CENTER, 66, MINWH_NONE);
 		}
 	}
 
