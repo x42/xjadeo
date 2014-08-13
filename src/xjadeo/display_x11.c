@@ -386,6 +386,10 @@ static void xj_handle_X_events (void) {
 						ui_osd_fn();
 					} else if (key == XK_b ) { //'b' // OSD - black box
 						ui_osd_box();
+					} else if (key == XK_i ) { //'i' // Time Into
+						ui_osd_fileinfo();
+					} else if (key == XK_g ) { //'g' // Geometry Into
+						ui_osd_geo();
 					} else if (key == XK_x ) { //'x' // OSD - seek position
 						ui_osd_pos();
 					} else if (key == XK_C ) { //'C' // OSD - clear all

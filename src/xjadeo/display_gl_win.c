@@ -119,6 +119,7 @@ enum wMenuId {
 	mOsdOffsetTC,
 	mOsdBox,
 	mOsdFileInfo,
+	mOsdGeometry,
 	mOsdClear,
 
 	mOffsetZero,
@@ -180,7 +181,8 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetTC, "Offset Timecode");
 	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetFN, "Offset Frame Number");
 	AppendMenu(hSubMenuOSD, MF_SEPARATOR, 0, NULL);
-	AppendMenu(hSubMenuOSD, MF_STRING | nfo_flags, mOsdFileInfo, "File Info\t I");
+	AppendMenu(hSubMenuOSD, MF_STRING | nfo_flags, mOsdFileInfo, "Time Info\t I");
+	AppendMenu(hSubMenuOSD, MF_STRING | nfo_flags, mOsdGeometry, "Geometry\t G");
 	AppendMenu(hSubMenuOSD, MF_SEPARATOR, 0, NULL);
 	AppendMenu(hSubMenuOSD, MF_STRING, mOsdBox, "Background\t B");
 	AppendMenu(hSubMenuOSD, MF_STRING, mOsdPosition, "Swap Position\t P");
@@ -244,6 +246,9 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 	}
 	if (OSD_mode&OSD_NFO) {
 		CheckMenuItem(hSubMenuOSD, mOsdFileInfo, MF_CHECKED | MF_BYCOMMAND);
+	}
+	if (OSD_mode&OSD_GEO) {
+		CheckMenuItem(hSubMenuOSD, mOsdGeometry, MF_CHECKED | MF_BYCOMMAND);
 	}
 
 	if (Xgetletterbox()) {
@@ -385,6 +390,7 @@ static void win_handle_menu(HWND hwnd, enum wMenuId id) {
 		case mOsdOffsetTC:     PTLL; ui_osd_offset_tc(); PTUL; break;
 		case mOsdBox:          PTLL; ui_osd_box(); PTUL; break;
 		case mOsdFileInfo:     PTLL; ui_osd_fileinfo(); PTUL; break;
+		case mOsdGeometry:     PTLL; ui_osd_geo(); PTUL; break;
 		case mOsdClear:        PTLL; ui_osd_clear(); PTUL; break;
 		case mOffsetZero:      PTLL; XCtimeoffset( 0, 0); PTUL; break;
 		case mOffsetPF:        PTLL; XCtimeoffset( 1, 0); PTUL; break;

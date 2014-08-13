@@ -352,6 +352,7 @@ static NSMenuItem *mOsdOffTc;
 static NSMenuItem *mOsdOffFn;
 static NSMenuItem *mOsdBox;
 static NSMenuItem *mOsdNfo;
+static NSMenuItem *mOsdGeo;
 
 static NSMenuItem *mDpyLetterbox;
 static NSMenuItem *mDpyOnTop;
@@ -470,6 +471,8 @@ static void update_osd_menu () {
 	[mOsdBox    setState:(OSD_mode & OSD_BOX)   ? NSOnState : NSOffState];
 	[mOsdNfo    setState:(OSD_mode & OSD_NFO)   ? NSOnState : NSOffState];
 	[mOsdNfo    setEnabled:(movie_height < OSD_MIN_NFO_HEIGHT) ? NO : YES];
+	[mOsdGeo    setState:(OSD_mode & OSD_GEO)   ? NSOnState : NSOffState];
+	[mOsdGeo    setEnabled:(movie_height < OSD_MIN_NFO_HEIGHT) ? NO : YES];
 }
 
 static void update_dpy_menu () {
@@ -588,6 +591,7 @@ static void update_dpy_menu () {
 - (void) osdOffTc: (id)sender   { PTLL; ui_osd_offset_tc(); PTUL; }
 - (void) osdBox: (id)sender     { PTLL; ui_osd_box(); PTUL; }
 - (void) osdNfo: (id)sender     { PTLL; ui_osd_fileinfo(); PTUL; }
+- (void) osdGeo: (id)sender     { PTLL; ui_osd_geo(); PTUL; }
 - (void) osdClear: (id)sender   { PTLL; ui_osd_clear(); PTUL; }
 
 - (void) dpySize50: (id)sender      { XCresize_percent(50); }
@@ -754,7 +758,8 @@ static void makeAppMenu (void) {
 	mOsdOffTc  = [osdMenu addItemWithTitle:@"Offset Timecode" action:@selector(osdOffTc:) keyEquivalent:@""];
 	mOsdOffFn  = [osdMenu addItemWithTitle:@"Offset Frame Number" action:@selector(osdOffFn:) keyEquivalent:@""];
 	[osdMenu addItem:[NSMenuItem separatorItem]];
-	mOsdNfo   = [osdMenu addItemWithTitle:@"File Info" action:@selector(osdNfo:) keyEquivalent:@"i"];
+	mOsdNfo   = [osdMenu addItemWithTitle:@"Time Info" action:@selector(osdNfo:) keyEquivalent:@"i"];
+	mOsdNfo   = [osdMenu addItemWithTitle:@"Geometry" action:@selector(osdGeo:) keyEquivalent:@"g"];
 	[osdMenu addItem:[NSMenuItem separatorItem]];
 	mOsdBox   = [osdMenu addItemWithTitle:@"Background" action:@selector(osdBox:) keyEquivalent:@"b"];
 	menuItem  = [osdMenu addItemWithTitle:@"Swap Position" action:@selector(osdPos:) keyEquivalent:@"p"];
@@ -767,6 +772,7 @@ static void makeAppMenu (void) {
 	[mOsdVtcOff setKeyEquivalentModifierMask:0];
 	[mOsdOffOff setKeyEquivalentModifierMask:0];
 	[mOsdNfo    setKeyEquivalentModifierMask:0];
+	[mOsdGeo    setKeyEquivalentModifierMask:0];
 	[mOsdBox    setKeyEquivalentModifierMask:0];
 	[mOsdTC     setKeyEquivalentModifierMask:0];
 

@@ -619,13 +619,19 @@ void render_buffer (uint8_t *mybuffer) {
 			if (frame_to_smptestring(tempsmpte+3, ts_offset, 1)) {
 				strcat(tempsmpte, " +d");
 			}
-			OSD_render (VO[VOutput].render_fmt, mybuffer, tempsmpte, OSD_CENTER, 50, MINW__TC);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, tempsmpte, OSD_CENTER, 50, MINWH_SYNCTC);
 		} else if (OSD_mode & (OSD_NFO | OSD_IDXNFO) && movie_height >= OSD_MIN_NFO_HEIGHT) {
-			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_info[0], OSD_CENTER, 31, MINWH_NONE);
-			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_info[1], OSD_CENTER, 41, MINW__TC);
-			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_info[2], OSD_CENTER, 50, MINWH_SYNCTC);
-			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_info[3], OSD_CENTER, 59, MINWH_SYNCTC);
-			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_info[4], OSD_CENTER, 68, MINWH_SYNCTC);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_nfo_tme[0], OSD_CENTER, 31, MINWH_NONE);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_nfo_tme[1], OSD_CENTER, 41, MINW__TC);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_nfo_tme[2], OSD_CENTER, 50, MINWH_SYNCTC);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_nfo_tme[3], OSD_CENTER, 59, MINWH_SYNCTC);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_nfo_tme[4], OSD_CENTER, 68, MINWH_SYNCTC);
+		} else if (OSD_mode & (OSD_GEO) && movie_height >= OSD_MIN_NFO_HEIGHT) {
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_nfo_geo[0], OSD_CENTER, 31, MINWH_NONE);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_nfo_geo[1], OSD_CENTER, 41, MINW__TC);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_nfo_geo[2], OSD_CENTER, 50, MINW__TC);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_nfo_geo[3], OSD_CENTER, 59, MINW__TC);
+			OSD_render (VO[VOutput].render_fmt, mybuffer, OSD_nfo_geo[4], OSD_CENTER, 68, MINW__TC);
 		}
 	}
 	if (OSD_mode & OSD_POS && index_progress < 0 && frames > 1 && movie_height >= OSD_MIN_NFO_HEIGHT) {

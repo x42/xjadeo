@@ -1378,6 +1378,9 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
     case 'i': //'i' // OSD - fileinfo
       ui_osd_fileinfo();
       break;
+    case 'g': //'g' // OSD - geometry
+      ui_osd_geo();
+      break;
     case '\\':
       XCtimeoffset(0, (unsigned int) charcode);
       break;

@@ -160,7 +160,7 @@ void ui_osd_clear () {
 }
 
 void ui_osd_offset_cycle () {
-	OSD_mode &= ~OSD_NFO;
+	OSD_mode &= ~(OSD_NFO | OSD_GEO);
 	if (OSD_mode & OSD_OFFF) {
 		OSD_mode &= ~(OSD_OFFF | OSD_OFFS);
 	}
@@ -175,13 +175,13 @@ void ui_osd_offset_cycle () {
 }
 
 void ui_osd_offset_tc () {
-	OSD_mode &= ~(OSD_OFFF | OSD_NFO);
+	OSD_mode &= ~(OSD_OFFF | OSD_NFO | OSD_GEO);
 	OSD_mode |= OSD_OFFS;
 	force_redraw = 1;
 }
 
 void ui_osd_offset_fn () {
-	OSD_mode &= ~(OSD_OFFS | OSD_NFO);
+	OSD_mode &= ~(OSD_OFFS | OSD_NFO | OSD_GEO);
 	OSD_mode |= OSD_OFFF;
 	force_redraw = 1;
 }
@@ -231,8 +231,16 @@ void ui_osd_box () {
 	force_redraw = 1;
 }
 
+void ui_osd_geo () {
+	ui_osd_offset_none();
+	OSD_mode &= ~OSD_NFO;
+	OSD_mode ^= OSD_GEO;
+	force_redraw = 1;
+}
+
 void ui_osd_fileinfo () {
 	ui_osd_offset_none();
+	OSD_mode &= ~OSD_GEO;
 	OSD_mode ^= OSD_NFO;
 	force_redraw = 1;
 }

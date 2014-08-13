@@ -402,6 +402,8 @@ void handle_X_events_sdl (void) {
 					ui_osd_box();
 				} else if(ev.key.keysym.sym==SDLK_i) {
 					ui_osd_fileinfo();
+				} else if(ev.key.keysym.sym==SDLK_g) {
+					ui_osd_geo();
 				} else if(ev.key.keysym.sym== SDLK_c && ev.key.keysym.mod&KMOD_SHIFT) {
 					ui_osd_clear();
 				} else if(ev.key.keysym.sym== SDLK_LESS || (ev.key.keysym.sym== SDLK_COMMA && ev.key.keysym.mod&KMOD_SHIFT) ) { // '<'

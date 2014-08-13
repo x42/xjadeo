@@ -96,7 +96,8 @@ extern char OSD_frame[48];
 extern char OSD_smpte[20];
 extern int  OSD_mode;
 extern char OSD_msg[128];
-extern char OSD_info[5][48];
+extern char OSD_nfo_tme[5][48];
+extern char OSD_nfo_geo[5][48];
 uint64_t    osd_smpte_ts;
 
 //------------------------------------------------
@@ -1177,11 +1178,16 @@ int have_open_file () {
 }
 
 static void clear_info () {
-	strcpy(OSD_info[0], "-/- No File Open -\\-");
-	OSD_info[1][0] = '\0';
-	OSD_info[2][0] = '\0';
-	OSD_info[3][0] = '\0';
-	OSD_info[4][0] = '\0';
+	strcpy(OSD_nfo_tme[0], "-/- No File Open -\\-");
+	OSD_nfo_tme[1][0] = '\0';
+	OSD_nfo_tme[2][0] = '\0';
+	OSD_nfo_tme[3][0] = '\0';
+	OSD_nfo_tme[4][0] = '\0';
+	strcpy(OSD_nfo_geo[0], "-/- No File Open -\\-");
+	OSD_nfo_geo[1][0] = '\0';
+	OSD_nfo_geo[2][0] = '\0';
+	OSD_nfo_geo[3][0] = '\0';
+	OSD_nfo_geo[4][0] = '\0';
 	force_redraw = 1;
 }
 
@@ -1449,28 +1455,50 @@ int open_movie (char* file_name) {
 
 	char *tmp;
 	if (have_dropframes)
-		sprintf(OSD_info[1], "FPS: %.2f df", framerate);
+		sprintf(OSD_nfo_tme[1], "FPS: %.2f df", framerate);
 	else
-		sprintf(OSD_info[1], "FPS: %.3f", framerate);
-	strcat(OSD_info[2], "S: ");
-	strcat(OSD_info[3], "E: ");
-	strcat(OSD_info[4], "L: ");
-	frame_to_smptestring(&OSD_info[2][3], file_frame_offset, 1);
-	frame_to_smptestring(&OSD_info[3][3], file_frame_offset + frames - 1, 1);
-	frame_to_smptestring(&OSD_info[4][3], frames, 1);
+		sprintf(OSD_nfo_tme[1], "FPS: %.3f", framerate);
+	strcat(OSD_nfo_tme[2], "S: ");
+	strcat(OSD_nfo_tme[3], "E: ");
+	strcat(OSD_nfo_tme[4], "L: ");
+	frame_to_smptestring(&OSD_nfo_tme[2][3], file_frame_offset, 1);
+	frame_to_smptestring(&OSD_nfo_tme[3][3], file_frame_offset + frames - 1, 1);
+	frame_to_smptestring(&OSD_nfo_tme[4][3], frames, 1);
+
+	sprintf(OSD_nfo_geo[1], "PRESCALE: %d x %d", movie_width, movie_height);
+	sprintf(OSD_nfo_geo[3], "GEOMETRY: %d x %d", ffctv_width, ffctv_height);
+
+	if (av_stream->sample_aspect_ratio.num)
+		sprintf(OSD_nfo_geo[2], "SAR: %d : %d",
+				av_stream->sample_aspect_ratio.num, av_stream->sample_aspect_ratio.den);
+	else if (av_stream->codec->sample_aspect_ratio.num)
+		sprintf(OSD_nfo_geo[2], "SAR: %d : %d",
+				av_stream->codec->sample_aspect_ratio.num, av_stream->codec->sample_aspect_ratio.den);
+	else
+		sprintf(OSD_nfo_geo[2], "SAR: unknown (1 : 1)");
+
+	AVRational dar;
+	av_reduce(&dar.num, &dar.den, ffctv_width, ffctv_height, 1024 * 1024);
+	sprintf(OSD_nfo_geo[4], "DAR: %d : %d", dar.num, dar.den);
+
 #ifdef PLATFORM_WINDOWS
 	if ((tmp = strrchr(file_name, '\\')) && *++tmp)
 #else
 	if ((tmp = strrchr(file_name, '/')) && *++tmp)
 #endif
 	{
-		strncpy(OSD_info[0], tmp, sizeof(OSD_info[3]) - 1);
+		strncpy(OSD_nfo_tme[0], tmp, sizeof(OSD_nfo_tme[3]) - 1);
+		strncpy(OSD_nfo_geo[0], tmp, sizeof(OSD_nfo_tme[3]) - 1);
 	} else {
-		strncpy(OSD_info[0], file_name, sizeof(OSD_info[3]) - 1);
+		strncpy(OSD_nfo_tme[0], file_name, sizeof(OSD_nfo_tme[3]) - 1);
+		strncpy(OSD_nfo_geo[0], file_name, sizeof(OSD_nfo_tme[3]) - 1);
 	}
-	OSD_info[0][sizeof(OSD_info[0]) - 3] = '.';
-	OSD_info[0][sizeof(OSD_info[0]) - 2] = '.';
-	OSD_info[0][sizeof(OSD_info[0]) - 1] = '\0';
+	OSD_nfo_tme[0][sizeof(OSD_nfo_tme[0]) - 3] = '.';
+	OSD_nfo_tme[0][sizeof(OSD_nfo_tme[0]) - 2] = '.';
+	OSD_nfo_tme[0][sizeof(OSD_nfo_tme[0]) - 1] = '\0';
+	OSD_nfo_geo[0][sizeof(OSD_nfo_tme[0]) - 3] = '.';
+	OSD_nfo_geo[0][sizeof(OSD_nfo_tme[0]) - 2] = '.';
+	OSD_nfo_geo[0][sizeof(OSD_nfo_tme[0]) - 1] = '\0';
 
 	current_file = strdup (file_name);
 
