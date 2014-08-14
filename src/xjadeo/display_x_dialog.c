@@ -134,6 +134,7 @@ static struct XjxMenuItem submenu_osd[] = {
 	{"Offset Frame Number", "",  NULL, &ui_osd_offset_fn, 0, 1},
 	{"",                    "",  NULL, NULL, 0, 0},
 	{"File Info",           "I", NULL, &ui_osd_fileinfo, 0, 1},
+	{"",                    "",  NULL, NULL, 0, 0},
 	{"Background",          "B", NULL, &ui_osd_box, 0, 1},
 	{"Swap Position",       "P", NULL, &ui_osd_permute, 0, 1},
 	{"",                    "",  NULL, NULL, 0, 0},
@@ -238,13 +239,13 @@ static void update_menus () {
 	if (OSD_mode&OSD_NFO) {
 		submenu_osd[10].enabled = 1;
 	}
-	if (OSD_mode&(OSD_OFFF | OSD_OFFS) || movie_height < OSD_MIN_NFO_HEIGHT) {
+	if (movie_height < OSD_MIN_NFO_HEIGHT) {
 		submenu_osd[10].sensitive = 0;
 	} else {
 		submenu_osd[10].sensitive = 1;
 	}
 	if (OSD_mode&OSD_BOX) {
-		submenu_osd[11].enabled = 1;
+		submenu_osd[12].enabled = 1;
 	}
 
 	if (Xgetletterbox()) {

@@ -442,7 +442,7 @@ static void update_osd_menu () {
 	[mOsdOffFn  setState:(OSD_mode & OSD_OFFF)  ? NSOnState : NSOffState];
 	[mOsdBox    setState:(OSD_mode & OSD_BOX)   ? NSOnState : NSOffState];
 	[mOsdNfo    setState:(OSD_mode & OSD_NFO)   ? NSOnState : NSOffState];
-	[mOsdNfo    setEnabled:(OSD_mode&(OSD_OFFF | OSD_OFFS) || movie_height < OSD_MIN_NFO_HEIGHT) ? NO : YES];
+	[mOsdNfo    setEnabled:(movie_height < OSD_MIN_NFO_HEIGHT) ? NO : YES];
 }
 
 static void update_dpy_menu () {
@@ -728,6 +728,7 @@ static void makeAppMenu (void) {
 	mOsdOffFn  = [osdMenu addItemWithTitle:@"Offset Frame Number" action:@selector(osdOffFn:) keyEquivalent:@""];
 	[osdMenu addItem:[NSMenuItem separatorItem]];
 	mOsdNfo   = [osdMenu addItemWithTitle:@"File Info" action:@selector(osdNfo:) keyEquivalent:@"i"];
+	[osdMenu addItem:[NSMenuItem separatorItem]];
 	mOsdBox   = [osdMenu addItemWithTitle:@"Background" action:@selector(osdBox:) keyEquivalent:@"b"];
 	menuItem  = [osdMenu addItemWithTitle:@"Swap Position" action:@selector(osdPos:) keyEquivalent:@"p"];
 	[menuItem   setKeyEquivalentModifierMask:0];

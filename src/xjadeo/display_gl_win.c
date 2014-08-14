@@ -166,7 +166,7 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 	AppendMenu(hSubMenuSize, MF_STRING, mWinMouseVisible, "Mouse Cursor\t M");
 
 	unsigned int nfo_flags = 0;
-	if (OSD_mode&(OSD_OFFF | OSD_OFFS) || movie_height < OSD_MIN_NFO_HEIGHT) {
+	if (movie_height < OSD_MIN_NFO_HEIGHT) {
 		nfo_flags |= MF_DISABLED | MF_GRAYED;
 	}
 
@@ -181,6 +181,7 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 	AppendMenu(hSubMenuOSD, MF_STRING, mOsdOffsetFN, "Offset Frame Number");
 	AppendMenu(hSubMenuOSD, MF_SEPARATOR, 0, NULL);
 	AppendMenu(hSubMenuOSD, MF_STRING | nfo_flags, mOsdFileInfo, "File Info\t I");
+	AppendMenu(hSubMenuOSD, MF_SEPARATOR, 0, NULL);
 	AppendMenu(hSubMenuOSD, MF_STRING, mOsdBox, "Background\t B");
 	AppendMenu(hSubMenuOSD, MF_STRING, mOsdPosition, "Swap Position\t P");
 	AppendMenu(hSubMenuOSD, MF_STRING, mOsdClear, "CLear All\t Shift+C");
