@@ -160,7 +160,7 @@ char OSD_frame[48] = "";
 char OSD_smpte[20] = "";
 char OSD_nfo_tme[5][48] = {"", "", "", "", ""};
 char OSD_nfo_geo[5][48] = {"", "", "", "", ""};
-int OSD_mode = 0;
+int OSD_mode = OSD_BOX;
 
 int OSD_fx = OSD_CENTER;
 int OSD_tx = OSD_CENTER;

@@ -155,7 +155,7 @@ enum SyncSource ui_syncsource() {
 }
 
 void ui_osd_clear () {
-	OSD_mode = 0; // XXX retain message when indexing or file closed?
+	OSD_mode = OSD_BOX; // XXX retain message when indexing or file closed?
 	force_redraw = 1;
 }
 
