@@ -1,3 +1,17 @@
+2014-08-14 (unreleased)  Robin Gareus <robin@gareus.org>
+* embed font-file in Linux statically linked binaries
+* improve overall consistency, interaction and display:
+ - add "Offset" menu to document all keyboard shortcuts
+ - "Close Video" menu entry
+ - dedicated VTC OSD as alternative to frame-number
+ - remove 'q' quit shortcut (use Esc or Ctrl-Q)
+ - darker 'cross' for RGB[A] display (was already grey for YUV)
+* improve OSD text and optimize OSD re-exposure
+* Add File Time and Geometry Info OSD
+* update icons and splash image
+* fix various typos
+* re-use color-eq bars for progress-bar.
+
 2014-07-31 (0.8.0-rc2)  Robin Gareus <robin@gareus.org>
 * update usage() help text
 * add --osc-doc option
@@ -24,7 +38,7 @@
 * change -J semantics: don't connect to and later (remote) don't autostart jack
 * major cleanup of accumulated cruft.
 * rework fps detection (new ffmpeg API)
-* remove cutom debian package -> use debian's *real* package.
+* remove custom debian package -> use debian's *real* package.
 * fix memleak when connecting jack-midi ports
 * add override for sync and file changes (OSX menu, X11 DnD)
 * fix X11/GLX drag-drop
@@ -33,9 +47,9 @@
 * allow to start xjadeo without file (use DnD or Menu to load)
 * update seek-mechanism: create seek index table
 * remove -k option (no more seek-modes!) all indexed
-* -K option changed to specify max-continous-keyframe limit.
+* -K option changed to specify max-continuous-keyframe limit.
 * add native windows application support (openGL) and context-menu
-* decrease max possible OSD font-size (to accomodate messages)
+* decrease max possible OSD font-size (to accommodate messages)
 
 2014-07-13 (0.7.8)  Robin Gareus <robin@gareus.org>
 * document -J option in --help
