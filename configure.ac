@@ -32,7 +32,6 @@ AC_ARG_ENABLE(qtgui,       AC_HELP_STRING([--enable-qtgui],[Build the Qt GUI con
 AC_ARG_WITH(qt4prefix,     AS_HELP_STRING([--with-qt4prefix], [prefix for Qt4 installation, e.g. "/usr/lib/qt4"]), qt4prefix="$withval", qt4prefix="")
 AC_ARG_WITH(qmakeargs,     AS_HELP_STRING([--with-qmakeargs], [specify custom qmake arguments]), qmakeargs="$withval", qmakeargs="")
 AC_ARG_ENABLE(contrib,     AC_HELP_STRING([--enable-contrib], [Compile and install code in contrib folder (default:off)]))
-AC_ARG_ENABLE(tiff,        AC_HELP_STRING([--disable-tiff], [disable libtiff support (affects only contrib/tsmm/) (default:on)]))
 AC_ARG_ENABLE(timescale,   AC_HELP_STRING([--enable-timescale], [enable time-mapping/loop-playback support - experimental - DO NOT USE]))
 AC_ARG_ENABLE(framecrop,   AC_HELP_STRING([--enable-framecrop], [hardcoded frame cropping - experimental - DO NOT USE]))
 
@@ -148,7 +147,6 @@ AH_TEMPLATE([HAVE_LIBLO], [Define as 1 if you have the loblo OSC library])
 AH_TEMPLATE([TTFFONTFILE], [absolute path to truetype default OSD font file])
 
 dnl misc
-AH_TEMPLATE([HAVE_TIFF], [Define as 1 if you have libtiff (contrib/tsmm)])
 AH_TEMPLATE([CFG_WARN_ONLY], [errors in the resource config file only result in a warning message instead of forcing xjadeo to exit.])
 AH_TEMPLATE([DND], [enable xjadeo x11/glx drag and drop])
 AH_TEMPLATE([XDLG], [enable xjadeo x11/glx context menu])
@@ -373,23 +371,6 @@ AC_SUBST(LTC_CFLAGS)
 AC_SUBST(LTC_LIBS)
 
 dnl ---------------------------------------------------------------------------
-dnl contrib/tsmm
-AS_IF([test "x${enable_contrib}" != "xno"], [
-	AC_CHECK_HEADERS(tiffio.h, [FOUND_H_TIFF=yes])
-	AC_CHECK_LIB([tiff], [TIFFOpen], [FOUND_L_TIFF=yes])
-
-	if test "x$FOUND_H_TIFF$FOUND_L_TIFF" = "xyesyes"; then
-		AC_DEFINE(HAVE_TIFF) HAVE_TIFF=1
-		TIFF_LIBS="-ltiff"
-		TIFF_CFLAGS=""
-	else
-		PKG_CHECK_MODULES(TIFF,tiff,  [AC_DEFINE(HAVE_TIFF) HAVE_TIFF=1], [NOFAIL=0])
-	fi
-])
-AC_SUBST(TIFF_CFLAGS)
-AC_SUBST(TIFF_LIBS)
-
-dnl ---------------------------------------------------------------------------
 dnl Qt GUI stuff (unmaintained)
 if test "$enable_qtgui" = "yes"; then
 
@@ -437,18 +418,12 @@ ac_contrib_dir=""
 
 if test "x$enable_contrib" = "xyes"; then
 	ac_contrib_dir="contrib/cli-remote/"
-	if test -n "$HAVE_TIFF"; then
-		ac_contrib_dir="$ac_contrib_dir contrib/tsmm"
-	fi
 fi
 
 AC_SUBST(ac_contrib_dir)
 
 if test "x$enable_contrib" = "xyes"; then
 	AC_CONFIG_FILES([contrib/cli-remote/Makefile])
-	if test -n "$HAVE_TIFF"; then
-		AC_CONFIG_FILES([contrib/tsmm/Makefile])
-	fi
 fi
 
 dnl ---------------------------------------------------------------------------
@@ -496,13 +471,7 @@ fi
 
 CONTREPORT="no"
 if test "x$enable_contrib" = "xyes"; then
-	CONTREPORT="yes
- libtiff (xjtsmm):   ";
-	if test -n "$HAVE_TIFF"; then
-		CONTREPORT="${CONTREPORT}yes";
-	else
-		CONTREPORT="${CONTREPORT}not avail.";
-	fi
+	CONTREPORT="yes"
 fi
 
 if test -n "$HAVE_GL"; then RPT_OPENGL="yes"; else RPT_OPENGL="not avail."; fi
