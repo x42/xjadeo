@@ -15,6 +15,3 @@ cli-remote:
  command line interface - remote xjadeo.
  example code that generates xjadeo remote commands
  to be piped into a 'xjadeo -R' instance.
-
-jadio:
- experimental cli audio player 
