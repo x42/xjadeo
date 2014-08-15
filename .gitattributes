@@ -1,9 +1,11 @@
 .gitignore export-ignore
 .gitattributes export-ignore
 
+release.sh export-ignore
 x-osx-buildstack.sh export-ignore
 x-osx-bundle.sh export-ignore
-release.sh export-ignore
-x-pbuildstatic.sh export-ignore
+x-pbuildstatic.shexport-ignore
+x-releasestatic.sh export-ignore
 x-static.sh export-ignore
-x-win32.sh export-ignore
+x-win-bundle.sh export-ignore
+x-win-pbuild.sh export-ignore
