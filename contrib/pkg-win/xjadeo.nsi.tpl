@@ -1,8 +1,8 @@
 ; The name of the installer
-Name "Jadeo"
+Name "Xjadeo"
 
 ; The file to write
-OutFile "jadeo_installer_vVERSION.exe"
+OutFile "xjadeo_installer_vVERSION.exe"
 
 ; The default installation directory
 InstallDir $PROGRAMFILES\xjadeo
@@ -25,7 +25,7 @@ UninstPage instfiles
 ;--------------------------------
 
 ; The stuff to install
-Section "jadeo (required)"
+Section "Xjadeo (required)"
 
   SectionIn RO
   
@@ -75,7 +75,7 @@ Section "jadeo (required)"
   WriteRegStr HKLM SOFTWARE\RSS\xjadeo "Install_Dir" "$INSTDIR"
   
   ; Write the uninstall keys for Windows
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\xjadeo" "DisplayName" "Jadeo"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\xjadeo" "DisplayName" "Xjadeo"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\xjadeo" "UninstallString" '"$INSTDIR\uninstall.exe"'
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\xjadeo" "NoModify" 1
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\xjadeo" "NoRepair" 1

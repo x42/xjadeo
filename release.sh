@@ -131,7 +131,7 @@ fi
 # collect binaries from build-hosts
 rsync -Pa $COWBUILDER:/tmp/xjadeo-i386-linux-gnu-v${VERSION}.tgz /tmp/ || exit
 rsync -Pa $COWBUILDER:/tmp/xjadeo-x86_64-linux-gnu-v${VERSION}.tgz /tmp/ || exit
-rsync -Pa $COWBUILDER:/tmp/jadeo_installer_v${WINVERS}.exe /tmp/ || exit
+rsync -Pa $COWBUILDER:/tmp/xjadeo_installer_v${WINVERS}.exe /tmp/ || exit
 rsync -Pa ${OSXUSER}${OSXMACHINE}:/tmp/jadeo-${VERSION}.dmg /tmp/ || exit
 
 #upload files to sourceforge
@@ -139,7 +139,7 @@ sftp $SFUSER,xjadeo@frs.sourceforge.net << EOF
 cd /home/frs/project/x/xj/xjadeo/xjadeo
 mkdir v${VERSION}
 cd v${VERSION}
-put /tmp/jadeo_installer_v${WINVERS}.exe
+put /tmp/xjadeo_installer_v${WINVERS}.exe
 put /tmp/xjadeo-i386-linux-gnu-v${VERSION}.tgz
 put /tmp/xjadeo-x86_64-linux-gnu-v${VERSION}.tgz
 put /tmp/jadeo-${VERSION}.dmg

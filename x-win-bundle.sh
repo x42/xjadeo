@@ -1,17 +1,21 @@
-#!/bin/sh
-#NORECONF=1
+#!/bin/bash
+
+# NORECONF=1 NSIDIR=build/win/ ./x-win-bundle.sh
 
 : ${WINPREFIX="$HOME/.wine/drive_c/x-prefix"}
 : ${WINLIB="$WINPREFIX/bin/"}
 : ${QTDLL="$HOME/.wine/drive_c/Qt/2010.04/qt/bin"}
 : ${QTSPECPATH=win32-x-g++}
 : ${NSISEXE="$HOME/.wine/drive_c/Program Files/NSIS/makensis.exe"}
-: ${NSIDIR=contrib/nsi/}
 
 set -e
 
-# XXX if NSIDIR is empty, we should use mktemp here and clean up..
-mkdir -p "$NSIDIR"
+if test -z "$NSIDIR"; then
+	NSIDIR=$(mktemp -d)
+	trap 'rm -rf $NSIDIR' exit
+else
+	mkdir -p "$NSIDIR"
+fi
 
 unset CC
 if test -z "$NORECONF"; then
@@ -62,7 +66,7 @@ VERSION=$(grep " VERSION " config.h | cut -d ' ' -f3 | sed 's/"//g'| sed 's/\./_
 echo $VERSION
 
 sed 's/VERSION/'$VERSION'/' \
-	contrib/nsi/xjadeo.nsi.tpl \
+	contrib/pkg-win/xjadeo.nsi.tpl \
 	> "$NSIDIR"/xjadeo.nsi
 
 #XXX winepath should probably be moved into a wrapper script "$NSISEXE"
@@ -71,5 +75,5 @@ echo
 echo "$NSISEXE" "$WP"
 "$NSISEXE" "$WP"
 
-cp -v "$NSIDIR/jadeo_installer_v$VERSION.exe" /tmp/
-ls -lt "/tmp/jadeo_installer_v$VERSION.exe" | head -n 1
+cp -v "$NSIDIR/xjadeo_installer_v$VERSION.exe" /tmp/
+ls -lt "/tmp/xjadeo_installer_v$VERSION.exe" | head -n 1
