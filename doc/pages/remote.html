@@ -76,14 +76,14 @@ The following list was auto-generated from the <code>help</code> command:
 <dt>window position &nbsp;<code><em>int</em></code>&nbsp;x&nbsp;<code><em>int</em></code>&nbsp;</dt><dd> move window to given position (top-left coordinates)</dd>
 <dt>window pos &nbsp;<code><em>int</em></code>&nbsp;x&nbsp;<code><em>int</em></code>&nbsp;</dt><dd> alias for 'window position'</dd>
 <dt>window xy &nbsp;<code><em>int</em></code>&nbsp;x&nbsp;<code><em>int</em></code>&nbsp;</dt><dd> alias for 'window position'</dd>
-<dt>window fullscreen &nbsp;<code>[on|off|toggle]</code>&nbsp;</dt><dd> en/disable fullscreen</dd>
-<dt>window zoom &nbsp;<code>[on|off|toggle]</code>&nbsp;</dt><dd> alias for 'window fullscreen'</dd>
+<dt>window fullscreen &nbsp;<code>[on|off|toggle]</code>&nbsp;</dt><dd> en/disable full screen</dd>
+<dt>window zoom &nbsp;<code>[on|off|toggle]</code>&nbsp;</dt><dd> alias for 'window full screen'</dd>
 <dt>window letterbox &nbsp;<code>[on|off|toggle]</code>&nbsp;</dt><dd> don't break aspect ratio</dd>
 <dt>window mouse &nbsp;<code>[on|off|toggle]</code>&nbsp;</dt><dd> en/disable mouse cursor display</dd>
 <dt>window ontop &nbsp;<code>[on|off|toggle]</code>&nbsp;</dt><dd> en/disable 'on top'</dd>
 <dt>window fixaspect</dt><dd> scale window to match aspect ration</dd>
-<dt>osd frame &nbsp;<code><em>ypos</em></code>&nbsp;</dt><dd> render current framenumber. y=0..100 (negative integer: disable)</dd>
-<dt>osd smpte &nbsp;<code><em>ypos</em></code>&nbsp;</dt><dd> render smpte. y=0..100 (negative integer: disable)</dd>
+<dt>osd frame &nbsp;<code><em>ypos</em></code>&nbsp;</dt><dd> render current frame number. y=0..100 (negative integer: disable)</dd>
+<dt>osd smpte &nbsp;<code><em>ypos</em></code>&nbsp;</dt><dd> render sync timecode. y=0..100 (negative integer: disable)</dd>
 <dt>osd text &nbsp;<code><em>text</em></code>&nbsp;</dt><dd> render &nbsp;<code><em>text</em></code>&nbsp; on screen</dd>
 <dt>osd text</dt><dd> display prev. OSD text</dd>
 <dt>osd notext</dt><dd> clear text OSD</dd>
@@ -99,7 +99,7 @@ The following list was auto-generated from the <code>help</code> command:
 <dt>jack disconnect</dt><dd> disconnect from jack server</dd>
 <dt>jack status</dt><dd> get status of jack connection</dd>
 <dt>midi connect &nbsp;<code><em>port</em></code>&nbsp;</dt><dd> connect to midi time source (-1: discover)</dd>
-<dt>midi disconnect</dt><dd> unconect from midi device</dd>
+<dt>midi disconnect</dt><dd> close midi device</dd>
 <dt>midi reconnect</dt><dd> connect to last specified midi port</dd>
 <dt>midi status</dt><dd> display status of midi connection</dd>
 <dt>midi driver &nbsp;<code><em>name</em></code>&nbsp;</dt><dd> select midi driver</dd>
@@ -113,12 +113,12 @@ The following list was auto-generated from the <code>help</code> command:
 <dt>notify disable</dt><dd> disable async messages</dd>
 <dt>notify off</dt><dd> alias for 'disable'</dd>
 <dt>notify frame</dt><dd> subscribe to async frame-update messages</dd>
-<dt>notify keyboard</dt><dd> subscribe to async keypress notificaions</dd>
+<dt>notify keyboard</dt><dd> subscribe to async key-press notifications</dd>
 <dt>notify loop</dt><dd> enable continuous frame position messages</dd>
 <dt>notify settings</dt><dd> receive a dump of current settings when xjadeo shuts down</dd>
 <dt>notify noframe</dt><dd> stop frame-update message subscription</dd>
 <dt>notify noloop</dt><dd> disable continuous frame position messages</dd>
-<dt>notify nokeyboard</dt><dd> disable async keypress notification messages</dd>
+<dt>notify nokeyboard</dt><dd> disable async key-press notification messages</dd>
 <dt>notify nosettings</dt><dd> disable async settings dump on shutdown</dd>
 <dt>get position</dt><dd> return current frame position</dd>
 <dt>get smpte</dt><dd> return current frame position</dd>
@@ -132,11 +132,11 @@ The following list was auto-generated from the <code>help</code> command:
 <dt>get framerate</dt><dd> show frame rate of video file</dd>
 <dt>get width</dt><dd> query width of video source buffer</dd>
 <dt>get height</dt><dd> query width of video source buffer</dd>
-<dt>get seekmode</dt><dd> deprecated - no returnvalue</dd>
+<dt>get seekmode</dt><dd> deprecated - no return value</dd>
 <dt>get windowsize</dt><dd> show current window size</dd>
 <dt>get windowpos</dt><dd> show current window position</dd>
 <dt>get videomode</dt><dd> display current video mode</dd>
-<dt>get midisync</dt><dd> display midi smpte conversion mode</dd>
+<dt>get midisync</dt><dd> display midi SMPTE conversion mode</dd>
 <dt>get midiclk</dt><dd> MTC quarter frame precision</dd>
 <dt>get osdcfg</dt><dd> display status on screen display</dd>
 <dt>get syncsource</dt><dd> display currently used sync source</dd>
@@ -147,7 +147,7 @@ The following list was auto-generated from the <code>help</code> command:
 <dt>get version</dt><dd> query xjadeo version</dd>
 <dt>set offset &nbsp;<code><em>int</em></code>&nbsp;</dt><dd> set timecode offset in frames</dd>
 <dt>set fps &nbsp;<code><em>float</em></code>&nbsp;</dt><dd> set screen update frequency</dd>
-<dt>set framerate &nbsp;<code><em>float</em></code>&nbsp;</dt><dd> override frame rate of video file</dd>
+<dt>set framerate </dt><dd> deprecated - no operation</dd>
 <dt>set override &nbsp;<code><em>int</em></code>&nbsp;</dt><dd> disable user-interaction (bitmask)</dd>
 <dt>set seekmode </dt><dd> deprecated - no operation</dd>
 <dt>set timescale &nbsp;<code><em>float</em></code>&nbsp; &nbsp;<code><em>int</em></code>&nbsp;</dt><dd> set timescale and offset (*)</dd>

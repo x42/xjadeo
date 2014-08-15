@@ -856,7 +856,7 @@ typedef struct _command {
 static Dcommand cmd_midi[] = {
 /*	{"autoconnect", ": discover and connect to midi time source", NULL, xapi_detect_midi, 0 }, */
 	{"connect ", "<port>: connect to midi time source (-1: discover)", NULL, xapi_open_midi, 0 },
-	{"disconnect", ": unconect from midi device", NULL, xapi_close_midi, 0 },
+	{"disconnect", ": close midi device", NULL, xapi_close_midi, 0 },
 	{"reconnect", ": connect to last specified midi port", NULL, xapi_reopen_midi, 0 },
 	{"status", ": display status of midi connection", NULL, xapi_midi_status, 0 },
 	{"driver ", "<name>: select midi driver", NULL, xapi_smididriver, 0 },
@@ -882,8 +882,8 @@ static Dcommand cmd_ltc[] = {
 };
 
 static Dcommand cmd_osd[] = {
-	{"frame " , "<ypos>: render current framenumber. y=0..100 (negative integer: disable)", NULL, xapi_osd_frame, 0 },
-	{"smpte " , "<ypos>: render smpte. y=0..100 (negative integer: disable)", NULL, xapi_osd_smpte, 0 },
+	{"frame " , "<ypos>: render current frame number. y=0..100 (negative integer: disable)", NULL, xapi_osd_frame, 0 },
+	{"smpte " , "<ypos>: render sync timecode. y=0..100 (negative integer: disable)", NULL, xapi_osd_smpte, 0 },
 	{"text " , "<text>: render <text> on screen", NULL, xapi_osd_text, 0 },
 	{"text" , ": display prev. OSD text", NULL, xapi_osd_on, 0 },
 	{"notext" , ": clear text OSD", NULL, xapi_osd_off, 0 },
@@ -913,11 +913,11 @@ static Dcommand cmd_get[] = {
 	{"width", ": query width of video source buffer", NULL, xapi_pmwidth , 0 },
 	{"height", ": query width of video source buffer", NULL, xapi_pmheight , 0 },
 
-	{"seekmode", ": deprecated - no returnvalue", NULL, xapi_pseekmode, 0 },
+	{"seekmode", ": deprecated - no return value", NULL, xapi_pseekmode, 0 },
 	{"windowsize" , ": show current window size", NULL, xapi_pwinsize, 0 },
 	{"windowpos" , ": show current window position", NULL, xapi_pwinpos, 0 },
 	{"videomode" , ": display current video mode", NULL, xapi_pvideomode, 0 },
-	{"midisync", ": display midi smpte conversion mode", NULL, xapi_pmidisync, 0 },
+	{"midisync", ": display midi SMPTE conversion mode", NULL, xapi_pmidisync, 0 },
 	{"midiclk", ": MTC quarter frame precision", NULL, xapi_pmidiclk, 0 },
 	{"osdcfg", ": display status on screen display", NULL, xapi_posd, 0 },
 	{"syncsource", ": display currently used sync source", NULL, xapi_psync, 0 },
@@ -933,12 +933,12 @@ static Dcommand cmd_notify[] = {
 	{"disable" , ": disable async messages", NULL, xapi_bidir_alloff, 0 },
 	{"off" , ": alias for 'disable'", NULL, xapi_bidir_alloff, 0 },
 	{"frame" , ": subscribe to async frame-update messages", NULL, xapi_bidir_frame, 0 },
-	{"keyboard" , ": subscribe to async keypress notificaions", NULL, xapi_bidir_keyboard, 0 },
+	{"keyboard" , ": subscribe to async key-press notifications", NULL, xapi_bidir_keyboard, 0 },
 	{"loop" , ": enable continuous frame position messages", NULL, xapi_bidir_loop, 0 },
 	{"settings" , ": receive a dump of current settings when xjadeo shuts down", NULL, xapi_bidir_settings, 0 },
 	{"noframe" , ": stop frame-update message subscription", NULL, xapi_bidir_noframe, 0 },
 	{"noloop" , ": disable continuous frame position messages", NULL, xapi_bidir_noloop, 0 },
-	{"nokeyboard" , ": disable async keypress notification messages", NULL, xapi_bidir_nokeyboard, 0 },
+	{"nokeyboard" , ": disable async key-press notification messages", NULL, xapi_bidir_nokeyboard, 0 },
 	{"nosettings" , ": disable async settings dump on shutdown", NULL, xapi_bidir_nosettings, 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
@@ -952,8 +952,8 @@ static Dcommand cmd_window[] = {
 	{"position " , "<int>x<int>: move window to given position (top-left coordinates)", NULL, xapi_swinpos, 0 },
 	{"pos " , "<int>x<int>: alias for 'window position'", NULL, xapi_swinpos, 0 },
 	{"xy " , "<int>x<int>: alias for 'window position'", NULL, xapi_swinpos, 0 },
-	{"fullscreen " , "[on|off|toggle]: en/disable fullscreen", NULL, xapi_fullscreen, 0 },
-	{"zoom " , "[on|off|toggle]: alias for 'window fullscreen'", NULL, xapi_fullscreen, 0 },
+	{"fullscreen " , "[on|off|toggle]: en/disable full screen", NULL, xapi_fullscreen, 0 },
+	{"zoom " , "[on|off|toggle]: alias for 'window full screen'", NULL, xapi_fullscreen, 0 },
 	{"letterbox " , "[on|off|toggle]: don't break aspect ratio", NULL, xapi_sletterbox, 0 },
 	{"mouse " , "[on|off|toggle]: en/disable mouse cursor display", NULL, xapi_mousepointer, 0 },
 	{"ontop " , "[on|off|toggle]: en/disable 'on top'", NULL, xapi_ontop, 0 },
