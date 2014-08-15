@@ -1,4 +1,4 @@
-2014-08-14 (unreleased)  Robin Gareus <robin@gareus.org>
+2014-08-15 (0.8.0-rc3)  Robin Gareus <robin@gareus.org>
 * embed font-file in Linux statically linked binaries
 * improve overall consistency, interaction and display:
  - add "Offset" menu to document all keyboard shortcuts
@@ -11,6 +11,8 @@
 * update icons and splash image
 * fix various typos
 * re-use color-eq bars for progress-bar.
+* new example/test video
+* update xjadeorc documentation
 
 2014-07-31 (0.8.0-rc2)  Robin Gareus <robin@gareus.org>
 * update usage() help text

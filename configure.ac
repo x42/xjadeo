@@ -8,7 +8,7 @@ AC_CANONICAL_TARGET
 
 VERSION_MAJOR=0
 VERSION_MINOR=8
-VERSION_SUB=0-rc2
+VERSION_SUB=0-rc3
 
 AM_INIT_AUTOMAKE(xjadeo, [${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_SUB}])
 AM_CONFIG_HEADER(config.h)
@@ -523,8 +523,8 @@ AC_MSG_NOTICE([
 
 if test "x$enable_contrib" = "xyes"; then
 AC_MSG_NOTICE([
- Note for Packagers: --enable-contrib does not make a difference when packaging
- all Programs in contrib are noinst targets. They are intended for advanced
+ Note for Packagers: --enable-contrib does not make a difference when packaging.
+ All programs in contrib/ are noinst targets. They are intended for advanced
  users, developers and testing only.
 ])
 fi
@@ -538,9 +538,10 @@ fi
 
 if test -n "$PLATFORM_LINUX$PLATFORM_OSX" -a -n "$HAVE_QT4"; then
 AC_MSG_WARN([
- qjadeo is deprecated an not intended to be used. Xjadeo now
- features a complete built-in user interface. Do not use
- --enable-qtgui unless you really know what you are doing.
+ qjadeo is deprecated an not intended to be used.
+ It will be removed in future releases.
+ Xjadeo now features a complete built-in user interface.
+ Do not use --enable-qtgui unless you really know what you are doing.
 ])
 fi
 
