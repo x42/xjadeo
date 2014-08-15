@@ -26,7 +26,7 @@ EXTRA_DIST= \
  contrib/cli-remote/jadeo.c \
  contrib/cli-remote/Makefile.am \
  contrib/cli-remote/README \
- contrib/xjadeo-example.avi
+ contrib/xjadeo-example.mp4
 
 MAINTAINERCLEANFILES = \
  Makefile.in \
