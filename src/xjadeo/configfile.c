@@ -212,8 +212,6 @@ int parseoption (char *item, char *value) {
 		YES_OK(want_letterbox)
 	} else if (!strncasecmp(item,"LASH",4)) {
 		rv=1; // legacy -- ignore
-	} else if (!strncasecmp(item,"MQ",2)) {
-		YES_OK(mq_en);
 	} else if (!strncasecmp(item,"FONTFILE",8)) {
 		strncpy(OSD_fontfile,value,1023);rv=1;
 		OSD_fontfile[1023]=0; // just to be sure.

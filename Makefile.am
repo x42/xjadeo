@@ -7,8 +7,8 @@ man_MANS = doc/xjadeo.1 doc/xjremote.1
 
 EXTRA_DIST= \
  xjadeo.lsm.in \
- doc/Makefile doc/xjadeo.1 doc/xjremote.1 \
  doc/xjadeorc \
+ doc/Makefile doc/xjadeo.1 doc/xjremote.1 \
  \
  src/xjadeo/icons/osd_bitmaps.h \
  src/xjadeo/icons/brightness.bitmap src/xjadeo/icons/brightness_mask.xbm \
@@ -26,6 +26,7 @@ EXTRA_DIST= \
  contrib/cli-remote/jadeo.c \
  contrib/cli-remote/Makefile.am \
  contrib/cli-remote/README \
+ \
  contrib/xjadeo-example.mp4
 
 MAINTAINERCLEANFILES = \

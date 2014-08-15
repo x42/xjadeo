@@ -2,77 +2,100 @@
 #
 # lines beginning with '#' or ';' are ignored.
 #
-# xjadeo checks:  @sysconfdir@/xjadeorc
-#                 $HOME/.xjadeorc
-#                 ./xjadeorc
+# Every line in the configuration file is a KEY=VALUE pair.
+# the "KEY" is case insesitive, as are boolen values
+# (YES, NO).
+#
+# xjadeo load files if they exist from the following locations:
+#   @sysconfdir@/xjadeorc (usually /etc/xjadeorc or /usr/local/etc/xjadeorc)
+#   $HOME/.xjadeorc (old, deprecated)
+#   $HOMEDRIVE$HOMEPATH\xjadeorc (windows only)
+#   $HOMEDRIVE$HOMEPATH\Local Settings\xjadeorc (windows only)
+#     (HOMEDRIVE$HOMEPATH is usually C:\Documents and Settings\Username\)
+#   $XDM_CONFIG_HOME/xjadeo/xjadeorc (usually $HOME/.config/xjadeo/xjadeorc)
+#   $HOME/Library/Preferences/ (OSX Only)
+#   ./xjadeorc
 #
 
-#verbose=[yes|no]
+#verbose=[yes|no] ; --verbose
 ;verbose=no
 
-#quiet=[yes|no]
+#quiet=[yes|no] ; --quiet
 ;quiet=no
 
-# xjadeo framerate - delay
-# specifies how many times per second xjadeo updates the screen.
-# this is independant of the video-file's frame-rate.
-# a negative value will force xjadeo to use the frame-rate of the video file.
-#fps=<numeric>
+#Desired refresh-rate of the video display in frames
+# per second. If this value is equal or less than zero,
+# xjadeo will use the FPS of the video-file as its update
+# frequency.
+#fps=<numeric> ; --screen-fps
 ;fps=10.0
 
-# specify default seek mode
-#seek=[any|cont|key]
-;seek=any
-
-# disable LASH support (enabled by default)
-#lash=[yes|no]
-;lash=yes
-
 # select the video library/interface to use.
-#videomode=[xv|imlib2|x11|sdl|mac]
+#videomode=[auto|opengl|xv|imlib2|sdl|mac] ; --videomode
 ;videomode=auto
 
 # en/disable message queues (remote control)
-#mq=[on|off]
+#mq=[on|off] ; --mq
 ;mq=off
 
 # absolute path to a TTF font file to be used for on-screen-display
-#fontfile=<filename>
+#fontfile=<filename> ; --ttf-file
 ;fontfile=/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf
 
 # specify whether to retain the aspect ratio of the movie when scaling
 # the window.  (only Xv)
-#letterbox=[yes|no]
-;letterbox=no
+#letterbox=[yes|no] ; --no-letterbox
+;letterbox=yes
 
-#
+# do not dispay xjadeo logo on screen on startup.
+#nosplash=[yes|no] ; --no-splash
+;nosplash=no
+
+# select sync source
+# 0: none  1: jack  2: MTC  3: LTC
+# using MTC requires a valid 'midiid' setting
+#syncsource=<num> ; --no-initial-sync, --ltc, --midi
+;syncsource=1
+
+# Enable interactive remote control mode
+# using standard I/O. This option implies non-verbose
+# and quiet as the terminal is used for interaction.
+#remotectl=[yes|no] ; --remote
+;remotectl=no
+
+# Set-up IPC message queues for remote-control
+# Inter-Process Communication is used by `xjremote`
+# on OSX and other platforms that do not support
+# realtime message queues
+#ipc=<queue-name> ; --ipc
+;ipc=
+
+
+###
 # MIDI OPTIONS
 # (midi options will be ignored if midi is not available)
 #
 
-# -m : specify MIDI port to read from.
+# --midi, --midi-driver : MTC settings
 # jack-midi: specify midi-port name to connect to or "" to not auto-connect.
-# alsa-seq: specify id to connect to. (-1: none) eg. -m ardour or -m 80 
-# portmidi: numeric-id; -1: autodetect, > -1 specifies a (input) midi port.
-#           use '-v -m -1' to list midi-ports.
-# alsa-raw: specify device-name eg. -m hw:1,0 or -m 1 
+# alsa-seq:  specify id to connect to. (-1: none) eg. -m ardour or -m 80
+# portmidi:  numeric-id; -1: autodetect, > -1 specifies a (input) midi port.
+#            use '-v -m -1' to list midi-ports.
+# alsa-raw:  specify device-name eg. -m hw:1,0 or -m 1
+#
 # 'xjadeo -h' shows more information, 'xjadeo -V' lists available drivers.
-;mididriver=alsa-sequencer
+;mididriver=jack-midi
 ;midiid=-1
 
-# -c : don't use MTC quarter frames for 
-# more accurate sync. 
-#midiclk=[yes|no]
+# do not use MTC quarter frames for
+#midiclk=[yes|no] ; --no-midiclk (advanced, debug only)
 ;midiclk=no
 
-# -M : how to convert the MTC smpte to video smpte 
+# -M : how to convert the MTC smpte to video smpte
 # 1: use MTC information (-v to check) - default
 # 2: force video file's fps
 # 3: convert/adjust framerates
-#midismpte=<1|2|3>
-;midismpte=0
-
-# do not dispay xjadeo logo on screen on startup.
-;nosplash=no
+#midismpte=[1|2|3] ; --midiclk (advanced, debug only)
+;midismpte=1
 
 # END of xjadeorc
