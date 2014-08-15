@@ -13,13 +13,14 @@ if test -z "$BINARYONLY"; then
 	make clean
 	sh autogen.sh
 	./configure --enable-contrib --enable-qtgui
-	make # update binaries for help2man.
-	make -C doc man html
-	make clean
-	make dist
 
 	VERSION=$(awk '/define VERSION /{print $3;}' config.h | sed 's/"//g')
 	WINVERS=$(grep " VERSION " config.h | cut -d ' ' -f3 | sed 's/"//g'| sed 's/\./_/g')
+
+	make REV="v$VERSION" # update binaries for help2man.
+	make -C doc man html
+	make clean
+	make dist
 
 	git commit -a
 	git tag "v$VERSION" || (echo -n "version tagging failed. - press Enter to continue, CTRL-C to stop."; read; )
