@@ -36,15 +36,31 @@ file src/xjadeo/xjadeo
 file src/xjadeo/xjremote
 
 #############################################################################
-# DEPLOY TO LOCAL APP DIR
-
+# Create LOCAL APP DIR
 export PRODUCT_NAME="Jadeo"
 export APPNAME="${PRODUCT_NAME}.app"
-export CONTRIB_DIR="$(pwd)/contrib/"
-export TARGET_BUILD_DIR="${CONTRIB_DIR}${APPNAME}/"
+export RSRC_DIR="$(pwd)/contrib/pkg-osx/"
+
+export BUNDLEDIR=`mktemp -d -t /xjbundle`
+trap "rm -rf $BUNDLEDIR" EXIT
+
+export TARGET_BUILD_DIR="${BUNDLEDIR}/${APPNAME}/"
 export TARGET_CONTENTS="${TARGET_BUILD_DIR}Contents/"
 
-rm -f ${TARGET_CONTENTS}MacOS/Jadeo-bin
+mkdir ${TARGET_BUILD_DIR}
+mkdir ${TARGET_BUILD_DIR}Contents
+mkdir ${TARGET_BUILD_DIR}Contents/MacOS
+mkdir ${TARGET_BUILD_DIR}Contents/Resources
+
+cp ${RSRC_DIR}/Info.plist ${TARGET_CONTENTS}
+cp ${RSRC_DIR}/wrapper.sh ${TARGET_CONTENTS}MacOS/${PRODUCT_NAME}
+cp ${RSRC_DIR}/${PRODUCT_NAME}.icns ${TARGET_CONTENTS}Resources/
+echo "APPL~~~~" > ${TARGET_CONTENTS}PkgInfo
+
+#############################################################################
+# DEPLOY TO LOCAL APP DIR
+
+rm -f ${TARGET_CONTENTS}MacOS/${PRODUCT_NAME}-bin
 rm -f ${TARGET_CONTENTS}MacOS/xjremote
 cp src/xjadeo/xjadeo ${TARGET_CONTENTS}MacOS/${PRODUCT_NAME}-bin
 cp src/xjadeo/xjremote ${TARGET_CONTENTS}MacOS/xjremote
@@ -147,7 +163,7 @@ echo "all bundled up."
 
 UC_DMG="/tmp/${PRODUCT_NAME}-${VERSION}.dmg"
 
-DMGBACKGROUND=${CONTRIB_DIR}dmgbg.png
+DMGBACKGROUND=${RSRC_DIR}dmgbg.png
 VOLNAME=$PRODUCT_NAME-${VERSION}
 EXTRA_SPACE_MB=5
 
@@ -159,7 +175,7 @@ MNTPATH=`mktemp -d -t /xjadeoimg`
 TMPDMG=`mktemp -t xjadeo`
 ICNSTMP=`mktemp -t appicon`
 
-trap "rm -rf $MNTPATH $TMPDMG ${TMPDMG}.dmg $ICNSTMP" EXIT
+trap "rm -rf $MNTPATH $TMPDMG ${TMPDMG}.dmg $ICNSTMP $BUNDLEDIR" EXIT
 
 rm -f $UC_DMG "$TMPDMG" "${TMPDMG}.dmg" "$ICNSTMP ${ICNSTMP}.icns ${ICNSTMP}.rsrc"
 rm -rf "$MNTPATH"
@@ -232,6 +248,7 @@ cp ${TARGET_CONTENTS}Resources/Jadeo.icns ${ICNSTMP}.icns
 /Developer/Tools/SetFile -a C "$UC_DMG"
 
 rm ${ICNSTMP}.icns ${ICNSTMP}.rsrc
+rm -rf $BUNDLEDIR
 
 echo
 echo "packaging suceeded:"
