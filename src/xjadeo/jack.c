@@ -55,10 +55,7 @@ void open_jack(void ) {
 	if (xj_init_jack(&jack_client, "xjadeo")) {
 		return;
 	}
-#ifndef PLATFORM_WINDOWS
-		WJACK_on_shutdown (jack_client, jack_shutdown, 0);
-		WJACK_activate(jack_client);
-#endif
+	WJACK_on_shutdown (jack_client, jack_shutdown, 0);
 }
 
 void jackt_rewind() {
@@ -109,6 +106,7 @@ int64_t jack_poll_frame (void) {
 	int64_t frame = 0;
 
 	if (!jack_client) return (-1);
+	memset(&jack_position, 0, sizeof(jack_position));
 	WJACK_transport_query(jack_client, &jack_position);
 
 #ifdef JACK_DEBUG
