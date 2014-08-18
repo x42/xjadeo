@@ -137,6 +137,7 @@ static uint8_t pts_warn = 0;
 static pthread_t index_thread;
 
 static AVRational fr_Q = { 1, 1 };
+static int64_t    one_frame;
 static int        fFirstTime=1;
 static uint8_t    syncnidx = 0;
 static const char syncname[4][5] =
@@ -473,14 +474,6 @@ static int seek_frame (AVPacket *packet, int64_t framenumber) {
 	if (!scan_complete) return -1;
 	if (videoStream < 0) return -1;
 
-	AVStream *v_stream = pFormatCtx->streams[videoStream];
-
-	// TODO get frame duration at current pos. for variable fps files
-	// (though ffmpeg will probably leave this constant per stream per file)
-	// -> do once on file-load
-	const int64_t one_frame = av_rescale_q (1, fr_Q, v_stream->time_base);
-	const int64_t prefuzz = one_frame > 10 ? 1 : 0;
-
 	if (want_ignstart) {
 		framenumber += file_frame_offset;
 	}
@@ -603,6 +596,7 @@ static int seek_frame (AVPacket *packet, int64_t framenumber) {
 			return -7;
 		}
 
+		const int64_t prefuzz = one_frame > 10 ? 1 : 0;
 		if (pts + prefuzz >= timestamp) {
 
 #if 0 // DEBUG
@@ -1215,6 +1209,7 @@ int open_movie (char* file_name) {
 	duration     = 1;
 	frames       = 1;
 	framerate    = 10;
+	one_frame    = 1;
 	videoStream  = -1;
 	file_frame_offset = 0;
 	clear_info();
@@ -1329,13 +1324,15 @@ int open_movie (char* file_name) {
 			fprintf(stdout, "enabled drop-frame-timecode (use -n to override).\n");
 	}
 
-	if (pFormatCtx->streams[videoStream]->nb_frames > 0) {
-		frames = pFormatCtx->streams[videoStream]->nb_frames;
+	if (av_stream->nb_frames > 0) {
+		frames = av_stream->nb_frames;
 		duration = frames * av_q2d (fr_Q);
 	} else {
-		duration = ((double)pFormatCtx->duration / (double)AV_TIME_BASE);
-		frames = framerate * duration;
+		duration = pFormatCtx->duration / (double)AV_TIME_BASE;
+		frames = pFormatCtx->duration * framerate / (double)AV_TIME_BASE;
 	}
+
+	one_frame = av_rescale_q (1, fr_Q, av_stream->time_base);
 
 	if (pFormatCtx->start_time != AV_NOPTS_VALUE) {
 		file_frame_offset = (int64_t) rint (framerate * (double) pFormatCtx->start_time / (double) AV_TIME_BASE);
