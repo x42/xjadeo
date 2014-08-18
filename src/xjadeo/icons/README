@@ -1,0 +1,29 @@
+128x128 main application icon (OSX, Linux Desktop)
+ * xjadeoH128.png
+ -> contrib/pkg-osx/Jadeo.icns
+
+192x110, splash screen
+ GIMP header image file format (save as .h)
+ * xjadeoH.h
+
+48x48 icon, windows application
+ * xjadeoH.ico
+
+32x32 icon, taskbar.
+ * xjadeo8.xpm   // main file, color, display_glx.c, display_x11.c
+ * xjadeo8.ico   // 8bit color version, -- not directly used
+ * xjadeo8_ico.h // xxd -i xjadeo8.ico; display_gl_win.c
+ -> contrib/pkg-osx/Jadeo.icns
+
+combination, 2 layer: 32x32, 48x48: xjadeo8.ico + xjadeoH.ico
+ * xjadeo_win.ico // windows NSI package, app icon
+
+
+color-EQ symbols for On Screen Display
+xbm + mask: 1 bit black/white + 1 bit transparency
+ * osd_bitmaps.h // includes the individual files:
+ * brightness.bitmap brightness_mask.xbm
+ * contrast.bitmap contrast_mask.xbm
+ * gamma.bitmap gamma_mask.xbm
+ * hue.bitmap hue_mask.xbm
+ * saturation.bitmap saturation_mask.xbm

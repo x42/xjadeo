@@ -232,7 +232,7 @@ void event_loop (void) {
 
 	if (want_verbose) printf("\nentering video update loop @%.2f fps.\n",delay>0?(1.0/delay):framerate);
 	clock1 = xj_get_monotonic_time();
-	splash_timeout = clock1 + 2000000; // 2 sec;
+	splash_timeout = clock1 + 2500000; // 2.5 sec;
 
 	while (loop_flag) { /* MAIN LOOP */
 
