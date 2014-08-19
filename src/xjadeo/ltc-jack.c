@@ -184,6 +184,7 @@ void close_ltcjack(void) {
 }
 
 #else
+#include <stdint.h>
 
 int64_t ltc_poll_frame (void) { return 0;}
 void open_ltcjack(char *autoconnect) { ; }
