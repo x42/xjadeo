@@ -4,8 +4,6 @@
 
 : ${WINPREFIX="$HOME/.wine/drive_c/x-prefix"}
 : ${WINLIB="$WINPREFIX/bin/"}
-: ${QTDLL="$HOME/.wine/drive_c/Qt/2010.04/qt/bin"}
-: ${QTSPECPATH=win32-x-g++}
 : ${NSISEXE="$HOME/.wine/drive_c/Program Files/NSIS/makensis.exe"}
 
 set -e
@@ -23,9 +21,8 @@ if test -z "$NORECONF"; then
 	CPPFLAGS="-I$WINPREFIX/include" \
 	LDFLAGS="-L$WINPREFIX/lib/ -L$WINLIB" \
 	./configure --host=i686-w64-mingw32 --build=i386-linux --prefix="" \
-		--disable-xv --disable-imlib2 --disable-mq --disable-ipc --disable-osc --enable-qtgui \
+		--disable-xv --disable-imlib2 --disable-mq --disable-ipc --disable-osc \
 		--with-fontfile=ArdourMono.ttf \
-		--with-qmakeargs="-spec ${QTSPECPATH} -config release" \
 		$@
 fi
 
@@ -35,32 +32,24 @@ make -C src/xjadeo xjadeo.exe
 cp -v src/xjadeo/xjadeo.exe "$NSIDIR"
 cp -v src/xjadeo/icons/xjadeo_win.ico "$NSIDIR"/xjadeo.ico
 
-cp -v $WINLIB/avcodec-54.dll "$NSIDIR"
-cp -v $WINLIB/avformat-54.dll "$NSIDIR"
-cp -v $WINLIB/avutil-51.dll "$NSIDIR"
+cp -v $WINLIB/avcodec-55.dll "$NSIDIR"
+cp -v $WINLIB/avformat-55.dll "$NSIDIR"
+cp -v $WINLIB/avutil-52.dll "$NSIDIR"
 cp -v $WINLIB/swscale-2.dll "$NSIDIR"
-
-cp -v $WINLIB/freetype6.dll "$NSIDIR"
-cp -v $WINLIB/SDL.dll "$NSIDIR"
+cp -v $WINLIB/libogg-0.dll "$NSIDIR"
+cp -v $WINLIB/libtheora-0.dll "$NSIDIR"
+cp -v $WINLIB/libtheoradec-1.dll "$NSIDIR"
+cp -v $WINLIB/libtheoraenc-1.dll "$NSIDIR"
+cp -v $WINLIB/libfreetype-6.dll "$NSIDIR"
 cp -v $WINLIB/zlib1.dll "$NSIDIR"
-cp -v $WINLIB/pthreadVSE2.dll "$NSIDIR"
+cp -v $WINLIB/pthreadGC2.dll "$NSIDIR"
 cp -v $WINLIB/libltc-11.dll "$NSIDIR"
+cp -v $WINLIB/libiconv-2.dll "$NSIDIR"
+cp -v $WINLIB/libx264-142.dll "$NSIDIR"
+cp -v $WINLIB/libportmidi-0.dll "$NSIDIR"
+cp -v $WINLIB/libporttime-0.dll "$NSIDIR"
 
 cp -v src/xjadeo/fonts/ArdourMono.ttf "$NSIDIR"
-
-make -C src/qt-gui
-cp -v src/qt-gui/release/qjadeo.exe "$NSIDIR"
-cp -v src/qt-gui/qjadeo_fr.qm "$NSIDIR"
-cp -v src/qt-gui/qjadeo_ru.qm "$NSIDIR"
-cp -v src/qt-gui/qjadeo_el_GR.qm "$NSIDIR"
-cp -v src/qt-gui/qjadeo_cs.qm "$NSIDIR"
-
-cp -v $QTDLL/QtGui4.dll "$NSIDIR"
-cp -v $QTDLL/QtCore4.dll "$NSIDIR"
-cp -v $QTDLL/QtSvg4.dll "$NSIDIR"
-cp -v $QTDLL/QtTest4.dll "$NSIDIR"
-cp -v $QTDLL/libgcc_s_dw2-1.dll "$NSIDIR"
-cp -v $QTDLL/mingwm10.dll "$NSIDIR"
 
 VERSION=$(grep " VERSION " config.h | cut -d ' ' -f3 | sed 's/"//g'| sed 's/\./_/g')
 echo $VERSION

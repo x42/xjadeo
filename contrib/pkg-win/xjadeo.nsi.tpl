@@ -34,42 +34,40 @@ Section "Xjadeo (required)"
   
   ; Put file there
   File "xjadeo.exe"
-	File "SDL.dll"
-	File "avcodec-54.dll"
-	File "avformat-54.dll"
-	File "avutil-51.dll"
-	File "freetype6.dll"
-	File "swscale-2.dll"
-	File "libltc-11.dll"
-	File "zlib1.dll"
-	File "pthreadVSE2.dll"
-	File "ArdourMono.ttf"
+  File "ArdourMono.ttf"
   File "xjadeo.nsi"
 
-  File "qjadeo.exe"
-  File "qjadeo_fr.qm"
-  File "qjadeo_ru.qm"
-  File "QtCore4.dll"
-  File "QtGui4.dll"
-  File "QtSvg4.dll"
-  File "QtTest4.dll"
-  File "libgcc_s_dw2-1.dll"
-  File "mingwm10.dll"
+  File "avcodec-55.dll"
+  File "avformat-55.dll"
+  File "avutil-52.dll"
+  File "swscale-2.dll"
+  File "libogg-0.dll"
+  File "libtheora-0.dll"
+  File "libtheoradec-1.dll"
+  File "libtheoraenc-1.dll"
+  File "libfreetype-6.dll"
+  File "libltc-11.dll"
+  File "libiconv-2.dll"
+  File "zlib1.dll"
+  File "pthreadGC2.dll"
+  File "libx264-142.dll"
+  File "libportmidi-0.dll"
+  File "libporttime-0.dll"
 
-	ClearErrors
-	FileOpen $0 $INSTDIR\xjremote.bat w
-	IfErrors done
-	FileWrite $0 "@echo off"
-	FileWriteByte $0 "13"
-	FileWriteByte $0 "10"
-	FileWrite $0 "cd $INSTDIR"
-	FileWriteByte $0 "13"
-	FileWriteByte $0 "10"
-	FileWrite $0 "xjadeo.exe -R"
-	FileWriteByte $0 "13"
-	FileWriteByte $0 "10"
-	FileClose $0
-	done:
+  ClearErrors
+  FileOpen $0 $INSTDIR\xjremote.bat w
+  IfErrors done
+  FileWrite $0 "@echo off"
+  FileWriteByte $0 "13"
+  FileWriteByte $0 "10"
+  FileWrite $0 "cd $INSTDIR"
+  FileWriteByte $0 "13"
+  FileWriteByte $0 "10"
+  FileWrite $0 "xjadeo.exe -R"
+  FileWriteByte $0 "13"
+  FileWriteByte $0 "10"
+  FileClose $0
+  done:
   
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\RSS\xjadeo "Install_Dir" "$INSTDIR"
@@ -104,28 +102,27 @@ Section "Uninstall"
 
   ; Remove files and uninstaller
   Delete $INSTDIR\xjadeo.exe
-  Delete $INSTDIR\SDL.dll
-  Delete $INSTDIR\avcodec-52.dll
-  Delete $INSTDIR\avformat-52.dll
-  Delete $INSTDIR\avutil-49.dll
-  Delete $INSTDIR\swscale-0.dll
-  Delete $INSTDIR\freetype6.dll
-  Delete $INSTDIR\libltc-11.dll
-  Delete $INSTDIR\zlib1.dll
-  Delete $INSTDIR\pthreadVSE2.dll
   Delete $INSTDIR\ArdourMono.ttf
   Delete $INSTDIR\xjadeo.nsi
-  Delete $INSTDIR\qjadeo.exe
-  Delete $INSTDIR\qjadeo_fr.qm
-  Delete $INSTDIR\qjadeo_ru.qm
-  Delete $INSTDIR\QtCore4.dll
-  Delete $INSTDIR\QtGui4.dll
-  Delete $INSTDIR\QtSvg4.dll
-  Delete $INSTDIR\QtTest4.dll
-  Delete $INSTDIR\libgcc_s_dw2-1.dll
-  Delete $INSTDIR\mingwm10.dll
   Delete $INSTDIR\xjremote.bat
   Delete $INSTDIR\uninstall.exe
+
+  Delete $INSTDIR\avcodec-55.dll
+  Delete $INSTDIR\avformat-55.dll
+  Delete $INSTDIR\avutil-52.dll
+  Delete $INSTDIR\swscale-2.dll
+  Delete $INSTDIR\libogg-0.dll
+  Delete $INSTDIR\libtheora-0.dll
+  Delete $INSTDIR\libtheoradec-1.dll
+  Delete $INSTDIR\libtheoraenc-1.dll
+  Delete $INSTDIR\libfreetype-6.dll
+  Delete $INSTDIR\libltc-11.dll
+  Delete $INSTDIR\libx264-142.dll
+  Delete $INSTDIR\libiconv-2.dll
+  Delete $INSTDIR\zlib1.dll
+  Delete $INSTDIR\pthreadGC2.dll
+  Delete $INSTDIR\libportmidi-0.dll
+  Delete $INSTDIR\libporttime-0.dll
 
   ; Remove shortcuts, if any
   Delete "$SMPROGRAMS\xjadeo\*.*"
