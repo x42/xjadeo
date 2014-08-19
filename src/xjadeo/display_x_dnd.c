@@ -193,6 +193,7 @@ static void getDragData (Display *dpy, Window win, XEvent *xe) {
 
 	if (num > 0 && !(interaction_override&OVR_LOADFILE)) {
 		xapi_open(files[0]);
+		XSetInputFocus(dpy, win, RevertToNone, CurrentTime);
 	}
 	free(data);
 }
