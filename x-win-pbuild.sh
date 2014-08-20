@@ -98,20 +98,29 @@ tar xzf ${SRCDIR}/libiconv-1.14.tar.gz
 cd libiconv-1.14
 autoconfbuild --with-included-gettext --with-libiconv-prefix=$PREFIX
 
-#################################################################################
-##download libpng-1.6.12.tar.gz ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.12.tar.gz
-#download libpng-1.6.12.tar.gz https://downloads.sourceforge.net/project/libpng/libpng16/1.6.12/libpng-1.6.12.tar.gz
-#cd ${BUILDD}
-#tar xzf ${SRCDIR}/libpng-1.6.12.tar.gz
-#cd libpng-1.6.12
-#autoconfbuild
-#
-#################################################################################
-#download jpegsrc.v9a.tar.gz http://www.ijg.org/files/jpegsrc.v9a.tar.gz
-#cd ${BUILDD}
-#tar xzf ${SRCDIR}/jpegsrc.v9a.tar.gz
-#cd jpeg-9a
-#autoconfbuild
+################################################################################
+#git://liblo.git.sourceforge.net/gitroot/liblo/liblo
+download liblo-0.28.tar.gz http://downloads.sourceforge.net/liblo/liblo-0.28.tar.gz
+cd ${BUILDD}
+tar xzf ${SRCDIR}/liblo-0.28.tar.gz
+cd liblo-0.28
+PATH=${PREFIX}/bin:/usr/bin:/bin:/usr/sbin:/sbin \
+	CPPFLAGS="-I${PREFIX}/include" \
+	CFLAGS="-I${PREFIX}/include" \
+	CXXFLAGS="-I${PREFIX}/include" \
+	LDFLAGS="-L${PREFIX}/lib" \
+	./configure --host=i686-w64-mingw32 --build=i386-linux --prefix=$PREFIX --enable-shared $@
+ed src/Makefile << EOF
+/noinst_PROGRAMS
+.,+3d
+wq
+EOF
+ed Makefile << EOF
+%s/examples//
+wq
+EOF
+make $MAKEFLAGS && make install
+
 
 ################################################################################
 #git://github.com/x42/libltc.git
@@ -187,39 +196,6 @@ autoconf
 autoreconf -i
 autoconfbuild
 
-
-
-
-################################################################################
-download libogg-1.3.2.tar.gz http://downloads.xiph.org/releases/ogg/libogg-1.3.2.tar.gz
-cd ${BUILDD}
-tar xzf ${SRCDIR}/libogg-1.3.2.tar.gz
-cd libogg-1.3.2
-autoconfbuild
-
-################################################################################
-download libtheora-1.1.1.tar.bz2 http://downloads.xiph.org/releases/theora/libtheora-1.1.1.tar.bz2
-cd ${BUILDD}
-tar xjf ${SRCDIR}/libtheora-1.1.1.tar.bz2
-cd libtheora-1.1.1
-MAKEFLAGS=-j1 autoconfbuild --disable-sdltest --disable-examples --disable-vorbistest --with-ogg=${PREFIX}
-
-################################################################################
-### ftp://ftp.videolan.org/pub/x264/snapshots/last_x264.tar.bz2
-### ftp://ftp.videolan.org/pub/x264/snapshots/last_stable_x264.tar.bz2
-download x264.tar.bz2 ftp://ftp.videolan.org/pub/x264/snapshots/last_stable_x264.tar.bz2 # XXX
-cd ${BUILDD}
-#git clone --depth 1 git://git.videolan.org/x264.git
-tar xjf  ${SRCDIR}/x264.tar.bz2
-cd x264*
-PATH=${PREFIX}/bin:/usr/bin:/bin:/usr/sbin:/sbin \
-	CPPFLAGS="-I${PREFIX}/include" \
-	CFLAGS="-I${PREFIX}/include" \
-	CXXFLAGS="-I${PREFIX}/include" \
-	LDFLAGS="-L${PREFIX}/lib" \
-	./configure --host=i686-w64-mingw32 --cross-prefix=i686-w64-mingw32- --prefix=$PREFIX --enable-shared --disable-cli --disable-asm
-make $MAKEFLAGS && make install
-
 ################################################################################
 download libvpx-v1.3.0.tar.bz2 https://webm.googlecode.com/files/libvpx-v1.3.0.tar.bz2
 cd ${BUILDD}
@@ -254,12 +230,12 @@ wq
 EOF
 
 ./configure --prefix=${PREFIX} \
---enable-libx264 --enable-libtheora --enable-libvpx --disable-programs \
---enable-shared --enable-gpl --disable-static --disable-debug \
---disable-ffserver --disable-ffplay \
---arch=i686 --target-os=mingw32 --cpu=i686 --enable-cross-compile --cross-prefix=i686-w64-mingw32- \
---extra-cflags="-I${PREFIX}/include" \
---extra-ldflags="-L${PREFIX}/lib"
+	--disable-programs \
+	--enable-gpl --enable-shared --disable-static --disable-debug \
+	--enable-libvpx \
+	--arch=i686 --target-os=mingw32 --cpu=i686 --enable-cross-compile --cross-prefix=i686-w64-mingw32- \
+	--extra-cflags="-I${PREFIX}/include" \
+	--extra-ldflags="-L${PREFIX}/lib"
 make $MAKEFLAGS && make install
 
 

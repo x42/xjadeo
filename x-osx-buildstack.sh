@@ -114,50 +114,6 @@ cp pm_common/portmidi.h ${PREFIX}/include
 cp porttime/porttime.h ${PREFIX}/include
 
 ################################################################################
-download libogg-1.3.2.tar.gz http://downloads.xiph.org/releases/ogg/libogg-1.3.2.tar.gz
-cd ${BUILDD}
-tar xzf ${SRCDIR}/libogg-1.3.2.tar.gz
-cd libogg-1.3.2
-autoconfbuild
-
-################################################################################
-download libtheora-1.1.1.tar.bz2 http://downloads.xiph.org/releases/theora/libtheora-1.1.1.tar.bz2
-cd ${BUILDD}
-tar xjf ${SRCDIR}/libtheora-1.1.1.tar.bz2
-cd libtheora-1.1.1
-autoconfbuild --disable-sdltest --disable-vorbistest --disable-oggtest --disable-asm --disable-examples --with-ogg=${PREFIX}
-
-################################################################################
-function x264build {
-CFLAGS="-arch $1 ${OSXCOMPAT}" \
-LDFLAGS="-arch $1 ${OSXCOMPAT} -headerpad_max_install_names" \
-./configure --host=$1-macosx-darwin --enable-shared --disable-cli
-make $MAKEFLAGS
-DYL=`ls libx264.*.dylib`
-cp ${DYL} ${DYL}-$1
-}
-
-### ftp://ftp.videolan.org/pub/x264/snapshots/last_x264.tar.bz2
-### ftp://ftp.videolan.org/pub/x264/snapshots/last_stable_x264.tar.bz2
-download x264.tar.bz2 ftp://ftp.videolan.org/pub/x264/snapshots/last_stable_x264.tar.bz2 # XXX
-cd ${BUILDD}
-#git clone --depth 1 git://git.videolan.org/x264.git
-tar xjf  ${SRCDIR}/x264.tar.bz2
-cd x264*
-x264build i386
-make install prefix=${PREFIX}
-make clean
-x264build x86_64
-if test -z "$NOPPC"; then
-	make clean
-	x264build ppc
-fi
-
-DYL=`ls libx264.*.dylib`
-lipo -create -output ${PREFIX}/lib/${DYL} ${DYL}-*
-install_name_tool -id ${PREFIX}/lib/${DYL} ${PREFIX}/lib/${DYL}
-
-################################################################################
 download libvpx-v1.3.0.tar.bz2 https://webm.googlecode.com/files/libvpx-v1.3.0.tar.bz2
 cd ${BUILDD}
 tar xjf ${SRCDIR}/libvpx-v1.3.0.tar.bz2

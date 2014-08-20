@@ -40,19 +40,15 @@ Section "Xjadeo (required)"
   File "avcodec-55.dll"
   File "avformat-55.dll"
   File "avutil-52.dll"
-  File "swscale-2.dll"
-  File "libogg-0.dll"
-  File "libtheora-0.dll"
-  File "libtheoradec-1.dll"
-  File "libtheoraenc-1.dll"
   File "libfreetype-6.dll"
-  File "libltc-11.dll"
   File "libiconv-2.dll"
-  File "zlib1.dll"
-  File "pthreadGC2.dll"
-  File "libx264-142.dll"
+  File "liblo-7.dll"
+  File "libltc-11.dll"
   File "libportmidi-0.dll"
   File "libporttime-0.dll"
+  File "pthreadGC2.dll"
+  File "swscale-2.dll"
+  File "zlib1.dll"
 
   ClearErrors
   FileOpen $0 $INSTDIR\xjremote.bat w
@@ -110,19 +106,15 @@ Section "Uninstall"
   Delete $INSTDIR\avcodec-55.dll
   Delete $INSTDIR\avformat-55.dll
   Delete $INSTDIR\avutil-52.dll
-  Delete $INSTDIR\swscale-2.dll
-  Delete $INSTDIR\libogg-0.dll
-  Delete $INSTDIR\libtheora-0.dll
-  Delete $INSTDIR\libtheoradec-1.dll
-  Delete $INSTDIR\libtheoraenc-1.dll
   Delete $INSTDIR\libfreetype-6.dll
-  Delete $INSTDIR\libltc-11.dll
-  Delete $INSTDIR\libx264-142.dll
   Delete $INSTDIR\libiconv-2.dll
-  Delete $INSTDIR\zlib1.dll
-  Delete $INSTDIR\pthreadGC2.dll
+  Delete $INSTDIR\liblo-7.dll
+  Delete $INSTDIR\libltc-11.dll
   Delete $INSTDIR\libportmidi-0.dll
   Delete $INSTDIR\libporttime-0.dll
+  Delete $INSTDIR\pthreadGC2.dll
+  Delete $INSTDIR\swscale-2.dll
+  Delete $INSTDIR\zlib1.dll
 
   ; Remove shortcuts, if any
   Delete "$SMPROGRAMS\xjadeo\*.*"

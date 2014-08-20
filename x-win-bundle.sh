@@ -21,7 +21,7 @@ if test -z "$NORECONF"; then
 	CPPFLAGS="-I$WINPREFIX/include" \
 	LDFLAGS="-L$WINPREFIX/lib/ -L$WINLIB" \
 	./configure --host=i686-w64-mingw32 --build=i386-linux --prefix="" \
-		--disable-xv --disable-imlib2 --disable-mq --disable-ipc --disable-osc \
+		--disable-xv --disable-imlib2 --disable-mq --disable-ipc \
 		--with-fontfile=ArdourMono.ttf \
 		$@
 fi
@@ -35,19 +35,15 @@ cp -v src/xjadeo/icons/xjadeo_win.ico "$NSIDIR"/xjadeo.ico
 cp -v $WINLIB/avcodec-55.dll "$NSIDIR"
 cp -v $WINLIB/avformat-55.dll "$NSIDIR"
 cp -v $WINLIB/avutil-52.dll "$NSIDIR"
-cp -v $WINLIB/swscale-2.dll "$NSIDIR"
-cp -v $WINLIB/libogg-0.dll "$NSIDIR"
-cp -v $WINLIB/libtheora-0.dll "$NSIDIR"
-cp -v $WINLIB/libtheoradec-1.dll "$NSIDIR"
-cp -v $WINLIB/libtheoraenc-1.dll "$NSIDIR"
 cp -v $WINLIB/libfreetype-6.dll "$NSIDIR"
-cp -v $WINLIB/zlib1.dll "$NSIDIR"
-cp -v $WINLIB/pthreadGC2.dll "$NSIDIR"
-cp -v $WINLIB/libltc-11.dll "$NSIDIR"
 cp -v $WINLIB/libiconv-2.dll "$NSIDIR"
-cp -v $WINLIB/libx264-142.dll "$NSIDIR"
+cp -v $WINLIB/liblo-7.dll "$NSIDIR"
+cp -v $WINLIB/libltc-11.dll "$NSIDIR"
 cp -v $WINLIB/libportmidi-0.dll "$NSIDIR"
 cp -v $WINLIB/libporttime-0.dll "$NSIDIR"
+cp -v $WINLIB/pthreadGC2.dll "$NSIDIR"
+cp -v $WINLIB/swscale-2.dll "$NSIDIR"
+cp -v $WINLIB/zlib1.dll "$NSIDIR"
 
 cp -v src/xjadeo/fonts/ArdourMono.ttf "$NSIDIR"
 
