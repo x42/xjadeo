@@ -147,11 +147,11 @@ buildvpx x86-darwin9-gcc
 cd ${BUILDD}/ffmpeg-${FFVERSION}/
 
 ./configure --prefix=${PREFIX} \
---enable-libx264 --enable-libtheora --enable-libvpx \
---enable-shared --enable-gpl --disable-static --disable-programs --disable-debug \
---arch=x86_32 --target-os=darwin --cpu=i686 --enable-cross-compile \
---extra-cflags="-arch i386 ${OSXCOMPAT}  -I${PREFIX}/include" \
---extra-ldflags="-arch i386 ${OSXCOMPAT} -L${PREFIX}/lib -headerpad_max_install_names"
+	--enable-libvpx \
+	--enable-shared --enable-gpl --disable-static --disable-programs --disable-debug \
+	--arch=x86_32 --target-os=darwin --cpu=i686 --enable-cross-compile \
+	--extra-cflags="-arch i386 ${OSXCOMPAT}  -I${PREFIX}/include" \
+	--extra-ldflags="-arch i386 ${OSXCOMPAT} -L${PREFIX}/lib -headerpad_max_install_names"
 make $MAKEFLAGS && make install
 
 find . -iname "*dylib" -type f -exec echo cp -v {} ${PREFIX}/fflipo/\`basename {}\`-i386 \; | bash -
@@ -160,11 +160,11 @@ make clean
 buildvpx x86_64-darwin9-gcc
 cd ${BUILDD}/ffmpeg-${FFVERSION}/
 ./configure --prefix=${PREFIX} \
---enable-libx264 --enable-libtheora --enable-libvpx \
---enable-shared --enable-gpl --disable-static --disable-programs --disable-debug \
---arch=x86_64 \
---extra-cflags="-arch x86_64 ${OSXCOMPAT}  -I${PREFIX}/include" \
---extra-ldflags="-arch x86_64 ${OSXCOMPAT} -L${PREFIX}/lib -headerpad_max_install_names"
+	--enable-libvpx \
+	--enable-shared --enable-gpl --disable-static --disable-programs --disable-debug \
+	--arch=x86_64 \
+	--extra-cflags="-arch x86_64 ${OSXCOMPAT}  -I${PREFIX}/include" \
+	--extra-ldflags="-arch x86_64 ${OSXCOMPAT} -L${PREFIX}/lib -headerpad_max_install_names"
 make $MAKEFLAGS
 find . -iname "*dylib" -type f -exec echo cp -v {} ${PREFIX}/fflipo/\`basename {}\`-x86_64 \; | bash -
 make clean
@@ -173,11 +173,11 @@ if test -z "$NOPPC"; then
 buildvpx ppc32-darwin9-gcc
 cd ${BUILDD}/ffmpeg-${FFVERSION}/
 ./configure --prefix=${PREFIX} \
---enable-libx264 --enable-libtheora --enable-libvpx \
---enable-shared --enable-gpl --disable-static --disable-programs --disable-debug \
---arch=ppc \
---extra-cflags="-arch ppc ${OSXCOMPAT}  -I${PREFIX}/include" \
---extra-ldflags="-arch ppc ${OSXCOMPAT} -L${PREFIX}/lib -headerpad_max_install_names"
+	--enable-libvpx \
+	--enable-shared --enable-gpl --disable-static --disable-programs --disable-debug \
+	--arch=ppc \
+	--extra-cflags="-arch ppc ${OSXCOMPAT}  -I${PREFIX}/include" \
+	--extra-ldflags="-arch ppc ${OSXCOMPAT} -L${PREFIX}/lib -headerpad_max_install_names"
 make $MAKEFLAGS
 find . -iname "*dylib" -type f -exec echo cp -v {} ${PREFIX}/fflipo/\`basename {}\`-ppc \; | bash -
 fi
