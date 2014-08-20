@@ -155,10 +155,10 @@ static struct XjxMenuItem submenu_offs[] = {
 };
 
 static struct XjxMenuItem submenu_jack[] = {
-	{"Play/Pause", "<spc>", NULL, &jackt_toggle, 0, 1},
-	{"Play", "", NULL, &jackt_start, 0, 1},
-	{"Stop", "", NULL, &jackt_stop, 0, 1},
-	{"Rewind",     "<-",    NULL, &jackt_rewind, 0, 1},
+	{"Play/Pause", "<space>",     NULL, &jackt_toggle, 0, 1},
+	{"Play", "",                  NULL, &jackt_start, 0, 1},
+	{"Stop", "",                  NULL, &jackt_stop, 0, 1},
+	{"Rewind",     "<backspace>", NULL, &jackt_rewind, 0, 1},
 	{NULL, NULL, NULL, NULL, 0, 0},
 };
 
