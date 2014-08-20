@@ -1,3 +1,11 @@
+2014-08-20 (unreleased)  Robin Gareus <robin@gareus.org>
+* fix various typos
+* prepare build-stack for binary releases
+* re-add windows on-jack-shutdown handler
+* update app icon
+* fix some compiler warnings
+* request X11-focus after file drag/drop.
+
 2014-08-15 (0.8.0-rc3)  Robin Gareus <robin@gareus.org>
 * embed font-file in Linux statically linked binaries
 * improve overall consistency, interaction and display:

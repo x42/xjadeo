@@ -4,10 +4,12 @@
 # - configure.ac
 # - ChangeLog
 
-: ${SFUSER:=x42}
-: ${OSXUSER:=ardour@}
-: ${OSXMACHINE:=priroda.local}
-: ${COWBUILDER:=opendaw.local}
+: ${SFUSER:=}
+: ${OSXUSER:=}
+: ${OSXMACHINE:=cowbuilder.local}
+: ${COWBUILDER:=osxbuilder.local}
+
+test -f "$HOME/.buildcfg.sh" && . "$HOME/.buildcfg.sh"
 
 if test -z "$BINARYONLY"; then
 	make clean
