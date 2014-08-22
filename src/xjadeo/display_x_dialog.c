@@ -171,7 +171,7 @@ static struct XjxMenuItem mainmenu[] = {
 	{"Offset"   ,          "", submenu_offs, NULL, 0, 1},
 	{"Transport",          "", submenu_jack, NULL, 0, 1},
 	{"",                   "", NULL, NULL, 0, 0},
-	{"Cloe Video",         "", NULL, &ui_close_file, 0, 1},
+	{"Close Video",        "", NULL, &ui_close_file, 0, 1},
 	{"(Drag&Drop File on", "", NULL, NULL, 0, 1},
 	{" Window to Load)",   "", NULL, NULL, 0, 1},
 	{NULL, NULL, NULL, NULL, 0, 0},
