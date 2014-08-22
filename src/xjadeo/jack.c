@@ -101,13 +101,13 @@ void close_jack(void) {
 	jack_client=NULL;
 }
 
-int64_t jack_poll_frame (void) {
+int64_t jack_poll_frame (uint8_t *rolling) {
 	jack_position_t	jack_position;
 	int64_t frame = 0;
 
 	if (!jack_client) return (-1);
 	memset(&jack_position, 0, sizeof(jack_position));
-	WJACK_transport_query(jack_client, &jack_position);
+	jack_transport_state_t jts = WJACK_transport_query(jack_client, &jack_position);
 
 #ifdef JACK_DEBUG
 	fprintf(stdout, "jack position: %u %u/ \n", (unsigned int) jack_position.frame, (unsigned int) jack_position.frame_rate);
@@ -129,6 +129,9 @@ int64_t jack_poll_frame (void) {
 #ifdef JACK_DEBUG
 		fprintf(stdout, "jack calculated time: %lf sec - frame: %li\n", jack_time, frame);
 #endif
+	}
+	if (rolling) {
+		*rolling = (jts != JackTransportStopped) ? 1 : 0;
 	}
 	return(frame);
 }

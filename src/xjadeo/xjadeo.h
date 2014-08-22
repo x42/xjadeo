@@ -239,7 +239,7 @@ enum SyncSource {
 enum SyncSource ui_syncsource();
 
 /* jack.c function prototypes */
-int64_t jack_poll_frame (void);
+int64_t jack_poll_frame (uint8_t *rolling);
 void open_jack(void );
 void close_jack(void);
 int jack_connected(void);

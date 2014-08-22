@@ -236,6 +236,7 @@ void event_loop (void) {
 	splash_timeout = clock1 + 2500000; // 2.5 sec;
 
 	while (loop_flag) { /* MAIN LOOP */
+		uint8_t we_know_transport_is_not_rolling = 0;
 
 		if (loop_run == 0) {
 			/* video offline - (eg. window minimized)
@@ -256,8 +257,11 @@ void event_loop (void) {
 		else
 #endif
 		{
-			newFrame = jack_poll_frame();
+			uint8_t jack_rolling = 1;
+			newFrame = jack_poll_frame(&jack_rolling);
 			syncnidx = 1;
+			if (!jack_rolling)
+				we_know_transport_is_not_rolling = 1;
 		}
 
 		if (newFrame < 0) {
@@ -270,6 +274,44 @@ void event_loop (void) {
 			osd_smpte_ts = -1;
 			prev_syncidx = syncnidx;
 		}
+
+#if 0 // experimental PLL
+		static uint8_t dll_initialized = 0;
+		static double dll_e2, dll_e0;
+		static double dll_t0, dll_t1;
+		static double dll_b, dll_c;
+		static double dll_frameno;
+		static int64_t prevFrame = 0;
+		if (!scan_complete) dll_initialized = 0;
+		if (syncnidx != 3) {
+			// USE DLL to smooth over large jack cycles
+			// with jack -> we know transport rolling state -> use it
+			// this still jitters on start/stop,:( more work is needed.
+			if (newFrame < prevFrame || newFrame > prevFrame + 4 || we_know_transport_is_not_rolling || !dll_initialized) {
+				// reset DLL
+				dll_initialized = 1;
+				dll_e0 = dll_t0 = 0;
+				dll_e2 = (delay > 0) ? (.5 * framerate * (float)delay) : .2;
+				dll_t1 = newFrame + dll_e2;
+
+				const double omega = 2. * M_PI / framerate;
+				dll_b = 1.4142135623730950488 * omega; // sqrt(2)
+				dll_c = omega * omega;
+				if (!want_quiet && !we_know_transport_is_not_rolling)
+					printf("RE-INIT DLL %g %lld <> %lld\n", dll_e2, prevFrame, newFrame);
+				prevFrame = newFrame;
+			} else {
+				double expect = prevFrame + (xj_get_monotonic_time() - clock1) * framerate / 1000000.f;
+				dll_e0 = expect - dll_t1;
+				dll_t0 = dll_t1;
+				dll_t1 += dll_b * dll_e0 + dll_e2;
+				dll_e2 += dll_c * dll_e0;
+				//printf("%.1f %+7.4f %lld %s\n", dll_t1, dll_e0, newFrame,  floor(dll_t1) != newFrame ? "!":"");
+				prevFrame = newFrame;
+				newFrame = floor(dll_t1);
+			}
+		}
+#endif
 
 #if 0 // DEBUG
 		static int64_t oldFrame = 0;
@@ -337,8 +379,8 @@ void event_loop (void) {
 #if 0 // debug timing
 			printf("  %7.1f ms, [%"PRId64"]\n", microsecdelay / 1e3, offFrame);
 #endif
-#if 1 // poll 10 times per frame, unless -f delay is given explicitly
-			const long pollinterval = ceilf (nominal_delay * .1f);
+#if 1 // poll 5 times per frame, unless -f delay is given explicitly
+			const long pollinterval = ceilf (nominal_delay * .2f);
 			if (microsecdelay > pollinterval && delay <= 0) microsecdelay = pollinterval;
 #endif
 			if (!select_sleep (microsecdelay)) {
