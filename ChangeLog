@@ -1,4 +1,4 @@
-2014-08-20 (unreleased)  Robin Gareus <robin@gareus.org>
+2014-08-22 (0.8.0)  Robin Gareus <robin@gareus.org>
 * fix various typos
 * prepare build-stack for binary releases
 * re-add windows on-jack-shutdown handler
