@@ -416,7 +416,7 @@ void event_loop (void) {
 // Video file, rendering and ffmpeg inteface
 //--------------------------------------------
 
-static void render_empty_frame (int blit);
+static void render_empty_frame (int blit, int splashagain);
 static uint8_t displaying_valid_frame = 0;
 
 static int vbufsize = 0;
@@ -442,7 +442,7 @@ void init_moviebuffer (void) {
 		avpicture_fill ((AVPicture *)pFrameFMT, buffer, render_fmt, movie_width, movie_height);
 		pSWSCtx = sws_getContext (pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, movie_width, movie_height, render_fmt, SWS_BICUBIC, NULL, NULL, NULL);
 	}
-	render_empty_frame (0);
+	render_empty_frame (0, 0);
 }
 
 void avinit (void) {
@@ -1546,7 +1546,7 @@ int open_movie (char* file_name) {
 	return 0;
 }
 
-static void render_empty_frame (int blit) {
+static void render_empty_frame (int blit, int splashagain) {
 	if (!buffer) return;
 	// clear image (black / or YUV green)
 	if (render_fmt == PIX_FMT_UYVY422) {
@@ -1622,7 +1622,7 @@ static void render_empty_frame (int blit) {
 			buffer[yoff+3]=255;
 		}
 #endif
-	if (!splashed) {
+	if (!splashed || splashagain) {
 		splash(buffer);
 	}
 	if (blit)
@@ -1658,7 +1658,7 @@ void display_frame (int64_t timestamp, int force_update) {
 			strcpy(OSD_smpte, syncname[syncnidx]);
 			frame_to_smptestring (&OSD_smpte[4], osd_smpte_ts, 0);
 		}
-		render_empty_frame (need_redisplay);
+		render_empty_frame (need_redisplay, !current_file && !want_nosplash);
 		displaying_valid_frame = 0;
 		return;
 	}
@@ -1674,7 +1674,7 @@ void display_frame (int64_t timestamp, int force_update) {
 			strcpy(OSD_smpte, syncname[syncnidx]);
 			frame_to_smptestring (&OSD_smpte[4], osd_smpte_ts, 0);
 		}
-		render_empty_frame (need_redisplay);
+		render_empty_frame (need_redisplay, 0);
 		displaying_valid_frame = 0;
 		return;
 	}
@@ -1749,7 +1749,7 @@ void display_frame (int64_t timestamp, int force_update) {
 		// seek failed of no format
 		if (pFrameFMT && want_debug)
 			printf("DEBUG: frame seek unsucessful.\n");
-		render_empty_frame (force_update || displaying_valid_frame);
+		render_empty_frame (force_update || displaying_valid_frame, 0);
 		displaying_valid_frame = 0;
 		last_decoded_pts = -1;
 		last_decoded_frameno = -1;
