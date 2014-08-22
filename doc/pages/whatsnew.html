@@ -1,0 +1,63 @@
+<h1>News</h1>
+
+<h2>Version 0.8.0</h2>
+
+<p>
+Xjadeo version 0.8.0  brings a lot of significant changes. Most notably:
+</p>
+
+<ul>
+	<li>openGL display</li>
+	<li>video-frame indexing</li>
+	<li>built-in UI / context menu</li>
+</ul>
+
+<p>
+With openGL, video-scaling is now performed in hardware and playback
+synchronized to the screen's vertical refresh (if the hardware permits
+that; most graphics cards do). This is the new default display and
+supersedes prior platform-specific video outputs (XVideo, X11/imlib2,
+SDL, quartz, which are still available via the <tt>--vo</tt> option
+and also used a fallback).
+</p><p>
+Video files are now scanned and indexed on load which provides for
+reliable seeking to video frames for a wide variety of codecs where
+frame-accurate seeking was not possible with earlier versions of xjadeo.
+This also acts as a guard to detect and refuse broken video files early on.
+</p><p>
+User interaction has been overhauled, most notably by adding a menu that
+facilitates discovering key-bindings. This deprecates the external
+control application qjadeo which previously came with xjadeo.
+</p><p>
+There have been over 200 changes since the last release.
+For a detailed list see the <a href="https://github.com/x42/xjadeo/blob/master/ChangeLog">ChangeLog</a>.
+</p><p>
+Other highlights include:
+</p>
+
+<ul>
+	<li>separate On-Screen-Display for Sync-Source and Video Timecode</li>
+	<li>self-documenting OSC API</li>
+	<li>disable screensaver</li>
+	<li>64 bit timeline</li>
+	<li>new website</li>
+</ul>
+
+<p>
+Note that various command line options have changed. The seek-related
+<tt>-K</tt>, <tt>-k</tt> parameters are no longer needed due to the
+change to indexing.
+Letterbox is enabled by default, and it is now also possible to start
+xjadeo without an initial file. In short, a lot of defaults have been
+updated to make xjadeo more topical (despite that fact the menu for
+the X11 variant is plain old toolkit-less Xlib :)
+</p><p>
+xjadeo is developed and has been tested for accuracy with ffmpeg-2.2.5
+it may or may not work properly with different versions, but compiles
+with any version of ffmpeg &ge; 1.0 to date.
+</p><p>
+Many thanks to Chris Goddard who provided valuable feedback and spent
+several weeks on quality assurance and polishing user interaction. We're
+far from done on the quest to 1.0, yet 0.8.0 marks a major milestone in
+the life of xjadeo. 
+</p>
