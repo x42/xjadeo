@@ -99,6 +99,7 @@ extern char OSD_msg[128];
 extern char OSD_nfo_tme[5][48];
 extern char OSD_nfo_geo[5][48];
 uint64_t    osd_smpte_ts;
+uint64_t    osd_vtc_oob;
 
 //------------------------------------------------
 // globals
@@ -272,6 +273,7 @@ void event_loop (void) {
 		if (prev_syncidx != syncnidx) {
 			force_redraw = 1;
 			osd_smpte_ts = -1;
+			osd_vtc_oob  = -1;
 			prev_syncidx = syncnidx;
 		}
 
@@ -1167,6 +1169,7 @@ static void *index_run (void *arg) {
 	OSD_frame[0] = '\0';
 	OSD_smpte[0] = '\0';
 	osd_smpte_ts = -1;
+	osd_vtc_oob  = -1;
 	index_progress = 0;
 	force_redraw = 1;
 	if (!index_frames()) {
@@ -1634,6 +1637,7 @@ void display_frame (int64_t timestamp, int force_update) {
 
 	if (!buffer) {
 		osd_smpte_ts = -1;
+		osd_vtc_oob  = -1;
 		displaying_valid_frame = 0;
 		return;
 	}
@@ -1645,6 +1649,7 @@ void display_frame (int64_t timestamp, int force_update) {
 		OSD_frame[0] = '\0';
 		OSD_smpte[0] = '\0';
 		osd_smpte_ts = -1;
+		osd_vtc_oob  = -1;
 	}
 #endif
 
@@ -1664,6 +1669,7 @@ void display_frame (int64_t timestamp, int force_update) {
 	}
 
 
+	// want_ignstart here ??
 	if (timestamp < 0 || timestamp >= frames) {
 		OSD_frame[0] = '\0';
 		int need_redisplay = force_update || displaying_valid_frame;
@@ -1673,6 +1679,25 @@ void display_frame (int64_t timestamp, int force_update) {
 			osd_smpte_ts = timestamp - ts_offset;
 			strcpy(OSD_smpte, syncname[syncnidx]);
 			frame_to_smptestring (&OSD_smpte[4], osd_smpte_ts, 0);
+		}
+		if ((OSD_mode & (OSD_VTC | OSD_VTCOOR)) == (OSD_VTC | OSD_VTCOOR)) {
+			int64_t oob = timestamp;
+			if (want_ignstart) {
+				oob += file_frame_offset;
+			}
+			if (timestamp < 0) {
+				strcpy(OSD_frame, "-- ");
+				oob -= file_frame_offset;
+			} else {
+				strcpy(OSD_frame, "++ ");
+				oob -= frames;
+			}
+			if (osd_vtc_oob != oob) {
+				need_redisplay = 1;
+			}
+			osd_vtc_oob = oob;
+			frame_to_smptestring (&OSD_frame[3], oob, 1);
+			strcat(OSD_frame, " EOF");
 		}
 		render_empty_frame (need_redisplay, 0);
 		displaying_valid_frame = 0;
@@ -1796,6 +1821,7 @@ int close_movie () {
 	OSD_frame[0] = '\0';
 	OSD_smpte[0] = '\0';
 	osd_smpte_ts = -1;
+	osd_vtc_oob  = -1;
 	clear_info();
 	return (0);
 }

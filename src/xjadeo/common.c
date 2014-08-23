@@ -250,6 +250,15 @@ void ui_osd_pos () {
 	force_redraw = 1;
 }
 
+void ui_osd_outofrange () {
+	OSD_mode ^= OSD_VTCOOR;
+	if (OSD_mode & OSD_VTCOOR) {
+		OSD_mode |= OSD_VTC;
+		OSD_mode &= ~OSD_FRAME;
+	}
+	force_redraw = 1;
+}
+
 void ui_osd_permute () {
 	const int t1 = OSD_sy;
 	OSD_sy = OSD_fy;

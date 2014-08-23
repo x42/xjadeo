@@ -128,6 +128,34 @@ static void _render_RGB (uint8_t *mybuffer, rendervars *rv, const int dx, const 
 	mybuffer[pos+2] = val;
 }
 
+static void _red_render_YUV422 (uint8_t *mybuffer, rendervars *rv, const int dx, const int dy, const uint8_t val) {
+	const int yoff = 2 * (dx&~1) + movie_width * dy * 2;
+	if (val > 0x10) {
+		mybuffer[yoff+0] = 0x40;
+		mybuffer[yoff+2] = 0xb0;
+	}
+	if (dx%2)
+		mybuffer[yoff+3] = val >> 1;
+	else
+		mybuffer[yoff+1] = val >> 1;
+}
+
+static void _red_render_YUV (uint8_t *mybuffer, rendervars *rv, const int dx, const int dy, const uint8_t val) {
+	const int yoff = (dx + movie_width * dy);
+	const int uvoff = (dx / 2) + movie_width / 2 * (dy / 2);
+	mybuffer[yoff] = val > 0x90 ? 0x90 : val;
+	mybuffer[rv->Uoff+uvoff] = val > 0x10 ? 0x50 : 0x80;
+	mybuffer[rv->Voff+uvoff] = val > 0x10 ? 0xc0 : 0x80;
+}
+
+static void _red_render_RGB (uint8_t *mybuffer, rendervars *rv, const int dx, const int dy, const uint8_t val) {
+	const int pos = rv->bpp * (dx + movie_width * dy);
+	mybuffer[pos] = val>>2;
+	mybuffer[pos+1] = val>>2;
+	mybuffer[pos+2] = val;
+}
+
+
 /*******************************************************************************
  * colorspace utils (slow) - used for old imlib big/little endian compat
  */
@@ -463,7 +491,11 @@ static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int y
 	rv.Voff = rv.Uoff + movie_width * movie_height/4;
 	rv.bpp = 0;
 
-	SET_RFMT(rfmt, _render, rv, render);
+	if ((!strncmp(text, "++ ", 3) || !strncmp(text, "-- ", 3)) && strstr(text, " EOF")) {
+		SET_RFMT(rfmt, _render, rv, red_render);
+	} else {
+		SET_RFMT(rfmt, _render, rv, render);
+	}
 
 	if (OSD_movieheight != movie_height) {
 		OSD_movieheight = movie_height;
@@ -530,16 +562,12 @@ static void OSD_render (int rfmt, uint8_t *mybuffer, char *text, int xpos, int y
 			}
 		}
 	}
-	int do_next = 0; // 2x2 pixel color alignment
 	for (y = 0; y < fh && (y + yalign) < movie_height; ++y) {
-		do_next = 0;
 		for (x = 0; x < ST_rightend && (x + xalign) < movie_width; ++x) {
-			if (ST_image[y + fo][x] >= ST_BG || do_next) {
+			if (ST_image[y + fo][x] >= ST_BG) {
 				if (x + xalign >= 0)
 					_render (mybuffer, &rv, x + xalign, y + yalign, ST_image[y + fo][x]);
 			}
-			if (ST_image[y + fo][x] >= ST_BG && rfmt == PIX_FMT_UYVY422) do_next = 1;
-			else do_next = 0;
 		}
 	}
 }

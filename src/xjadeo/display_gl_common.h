@@ -199,6 +199,11 @@ static void xjglKeyPress(const unsigned int sym, const char *key) {
 		ui_osd_permute();
 		gl_sync_unlock();
 	}
+	else if (!strcmp(key, "r")) {
+		gl_sync_lock();
+		ui_osd_outofrange();
+		gl_sync_unlock();
+	}
 	else if (!strcmp(key, "x")) {
 		gl_sync_lock();
 		ui_osd_pos();

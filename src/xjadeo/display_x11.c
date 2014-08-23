@@ -390,6 +390,8 @@ static void xj_handle_X_events (void) {
 						ui_osd_fileinfo();
 					} else if (key == XK_g ) { //'g' // Geometry Into
 						ui_osd_geo();
+					} else if (key == XK_r ) { //'r' // OSD - out of range
+						ui_osd_outofrange();
 					} else if (key == XK_x ) { //'x' // OSD - seek position
 						ui_osd_pos();
 					} else if (key == XK_C ) { //'C' // OSD - clear all
