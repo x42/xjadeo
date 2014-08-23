@@ -27,6 +27,9 @@
 
 #include "icons/xjadeo8.xpm"
 
+void xapi_open (void *d);
+void xapi_close (void *d);
+
 static Display*   _gl_display;
 static int        _gl_screen;
 static Window     _gl_win;
@@ -268,6 +271,9 @@ void gl_close_window() {
 #ifdef XDLG
 	close_x_dialog(_gl_display);
 #endif
+#ifdef XFIB
+	close_x_fib(_gl_display);
+#endif
 	glXDestroyContext(_gl_display, _gl_ctx);
 	XDestroyWindow(_gl_display, _gl_win);
 	XCloseDisplay(_gl_display);
@@ -279,6 +285,15 @@ void gl_handle_events () {
 		XNextEvent(_gl_display, &event);
 #ifdef XDLG
 		if (handle_xdlg_event(_gl_display, &event)) continue;
+#endif
+#ifdef XFIB
+		if (handle_xfib_event (_gl_display, &event)) {
+			if (status_x_fib () > 0) {
+				char *fn = filename_x_fib ();
+				xapi_open (fn);
+				free (fn);
+			}
+		}
 #endif
 #ifdef DND
 		if (handle_dnd_event(_gl_display, _gl_win, &event)) continue;
@@ -345,7 +360,19 @@ void gl_handle_events () {
 				char    buf[6] = {0,0,0,0,0,0};
 				static XComposeStatus stat;
 				int n = XLookupString(&event.xkey, buf, sizeof(buf), &sym, &stat);
-				if (n == 1) {
+				if (event.xkey.state & ControlMask && n == 1 && sym == XK_o) {
+					if (!(interaction_override & OVR_LOADFILE))
+						show_x_fib (_gl_display, _gl_win, 0, 0);
+				}
+				else if (event.xkey.state & ControlMask && n == 1 && sym == XK_w) {
+					if (!(interaction_override & OVR_LOADFILE))
+						xapi_close (NULL);
+				}
+				else if (event.xkey.state & ControlMask && n == 1 && sym == XK_q) {
+					if (!(interaction_override&OVR_QUIT_WMG))
+						loop_flag = 0;
+				}
+				else if (n == 1) {
 					xjglKeyPress(sym, buf);
 				}
 				}

@@ -35,6 +35,7 @@ static XColor   _c_gray1, _c_gray2;
 
 static Window   _dlg_mwin = 0;
 static Window   _dlg_swin = 0;
+static Window   _parent = 0;
 
 struct XjxMenuItem {
 	const char *text;
@@ -82,6 +83,14 @@ static void ui_offset_pm()  { XCtimeoffset( 2, 0); }
 static void ui_offset_mm()  { XCtimeoffset(-2, 0); }
 static void ui_offset_ph()  { XCtimeoffset( 3, 0); }
 static void ui_offset_mh()  { XCtimeoffset(-3, 0); }
+
+static void ui_quit() {
+	loop_flag=0;
+}
+
+static void ui_open_file() {
+	;
+}
 
 static void ui_close_file() {
 	if (interaction_override&OVR_LOADFILE) return;
@@ -162,18 +171,25 @@ static struct XjxMenuItem submenu_jack[] = {
 	{NULL, NULL, NULL, NULL, 0, 0},
 };
 
+static struct XjxMenuItem submenu_file[] = {
+	{"Open Video",         "Ctrl+O", NULL, &ui_open_file, 0, 1},
+	{"Close Video",        "Ctrl+W", NULL, &ui_close_file, 0, 1},
+	{"",                   "",       NULL, NULL, 0, 0},
+	{"(Drag&Drop File on", "",       NULL, NULL, 0, 1},
+	{" Window to Load)",   "",       NULL, NULL, 0, 1},
+	{"",                   "",       NULL, NULL, 0, 0},
+	{"Quit",               "Ctrl+Q", NULL, &ui_quit, 0, 1},
+};
+
 static struct XjxMenuItem mainmenu[] = {
 	{"XJadeo " VERSION,    "", NULL, NULL, 0, 1},
 	{"",                   "", NULL, NULL, 0, 0},
+	{"File",               "", submenu_file, NULL, 0, 1},
 	{"Sync",               "", submenu_sync, NULL, 0, 1},
 	{"Display",            "", submenu_size, NULL, 0, 1},
 	{"OSD",                "", submenu_osd,  NULL, 0, 1},
 	{"Offset"   ,          "", submenu_offs, NULL, 0, 1},
 	{"Transport",          "", submenu_jack, NULL, 0, 1},
-	{"",                   "", NULL, NULL, 0, 0},
-	{"Close Video",        "", NULL, &ui_close_file, 0, 1},
-	{"(Drag&Drop File on", "", NULL, NULL, 0, 1},
-	{" Window to Load)",   "", NULL, NULL, 0, 1},
 	{NULL, NULL, NULL, NULL, 0, 0},
 };
 
@@ -269,31 +285,41 @@ static void update_menus () {
 
 	if ((interaction_override&OVR_AVOFFSET) != 0 )
 	{
-		mainmenu[5].sensitive = 0;
+		mainmenu[6].sensitive = 0;
 	} else {
-		mainmenu[5].sensitive = 1;
+		mainmenu[6].sensitive = 1;
 	}
 	if (ui_syncsource() == SYNC_JACK && !(interaction_override&OVR_JCONTROL))
 	{
-		mainmenu[6].sensitive = 1;
+		mainmenu[7].sensitive = 1;
 	} else {
-		mainmenu[6].sensitive = 0;
+		mainmenu[7].sensitive = 0;
 	}
 
 	if (interaction_override & OVR_MENUSYNC) {
-		mainmenu[2].sensitive = 0;
+		mainmenu[3].sensitive = 0;
 	} else {
-		mainmenu[2].sensitive = 1;
+		mainmenu[3].sensitive = 1;
 	}
 
 	if (interaction_override & OVR_LOADFILE) {
-		mainmenu[8].sensitive = 0;
-		mainmenu[9].sensitive = 0;
-		mainmenu[10].sensitive = 0;
+		submenu_file[0].sensitive = 0;
+		submenu_file[1].sensitive = 0;
+		submenu_file[3].sensitive = 0;
+		submenu_file[4].sensitive = 0;
 	} else {
-		mainmenu[8].sensitive = have_open_file() ? 1 : 0;
-		mainmenu[9].sensitive = 1;
-		mainmenu[10].sensitive = 1;
+		submenu_file[0].sensitive = 1;
+		submenu_file[1].sensitive = have_open_file() ? 1 : 0;
+		submenu_file[3].sensitive = 1;
+		submenu_file[4].sensitive = 1;
+	}
+#ifndef XFIB
+	submenu_file[0].sensitive = 0;
+#endif
+	if (interaction_override & OVR_QUIT_WMG) {
+		submenu_file[6].sensitive = 0;
+	} else {
+		submenu_file[6].sensitive = 1;
 	}
 }
 
@@ -545,6 +571,12 @@ static int dialog_click (Display *dpy, Window win, int x, int y, int b) {
 		if (dlg->menu_items[dlg->menu_hover].callback && dlg->menu_items[dlg->menu_hover].sensitive) {
 			dlg->menu_items[dlg->menu_hover].callback();
 			close_x_dialog(dpy);
+#ifdef XFIB
+			if (dlg->menu_items[dlg->menu_hover].callback == &ui_open_file) {
+				if (!(interaction_override&OVR_LOADFILE))
+					show_x_fib (dpy, _parent, 0, 0);
+			}
+#endif
 		}
 	}
 	return 0;
@@ -571,6 +603,7 @@ int show_x_dialog (Display *dpy, Window parent, int x, int y) {
 	if (!_dlg_ctx) {
 		_dlg_ctx = XUniqueContext();
 	}
+	_parent = parent;
 
 	XColor dummy;
 	Colormap colormap = DefaultColormap (dpy, DefaultScreen (dpy));

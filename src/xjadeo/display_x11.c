@@ -33,6 +33,9 @@ int xoffset = 0;
 #include <X11/xpm.h>
 #include "icons/xjadeo8.xpm"
 
+void xapi_open (void *d);
+void xapi_close (void *d);
+
 extern const  vidout VO[];
 extern int    OSD_mode; // change via keystroke
 
@@ -270,6 +273,15 @@ static void xj_handle_X_events (void) {
 #ifdef XDLG
 		if (handle_xdlg_event(xj_dpy, &event)) continue;
 #endif
+#ifdef XFIB
+		if (handle_xfib_event (xj_dpy, &event)) {
+			if (status_x_fib () > 0) {
+				char *fn = filename_x_fib ();
+				xapi_open (fn);
+				free (fn);
+			}
+		}
+#endif
 #ifdef DND
 		if (handle_dnd_event(xj_dpy, xj_win, &event)) continue;
 #endif
@@ -353,10 +365,20 @@ static void xj_handle_X_events (void) {
 					char buf[100];
 					static XComposeStatus stat;
 
-					XLookupString(&event.xkey, buf, sizeof(buf), &key, &stat);
-
-				/* HARDCODED KEY BINDINGS */
-					if        (key == XK_Escape) { // 'Esc'
+					int n = XLookupString(&event.xkey, buf, sizeof(buf), &key, &stat);
+					if (event.xkey.state & ControlMask && n == 1 && key == XK_o) {
+						if (!(interaction_override & OVR_LOADFILE))
+							show_x_fib (xj_dpy, xj_win, 0, 0);
+					}
+					else if (event.xkey.state & ControlMask && n == 1 && key == XK_w) {
+						if (!(interaction_override & OVR_LOADFILE))
+							xapi_close (NULL);
+					}
+					else if (event.xkey.state & ControlMask && n == 1 && key == XK_q) {
+						if (!(interaction_override&OVR_QUIT_WMG))
+							loop_flag = 0;
+					}
+					else if (key == XK_Escape) { // 'Esc'
 						if ((interaction_override&OVR_QUIT_KEY) == 0) {
 							loop_flag=0;
 						} else {
@@ -976,6 +998,9 @@ int open_window_xv (void) {
 void close_window_xv(void) {
 #ifdef XDLG
 	close_x_dialog(xj_dpy);
+#endif
+#ifdef XFIB
+	close_x_fib(xj_dpy);
 #endif
 	XvStopVideo(xj_dpy, xv_port, xj_win);
 	if(xv_shminfo.shmaddr) {

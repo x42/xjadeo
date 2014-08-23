@@ -132,6 +132,14 @@ void close_x_dialog(Display *dpy);
 int handle_xdlg_event (Display *dpy, XEvent *event);
 #endif
 
+#ifdef XFIB
+int show_x_fib (Display *dpy, Window parent, int x, int y);
+void close_x_fib (Display *dpy);
+int handle_xfib_event (Display *dpy, XEvent *event);
+int status_x_fib ();
+char *filename_x_fib ();
+#endif
+
 
 #endif
 
