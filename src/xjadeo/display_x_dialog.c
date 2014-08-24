@@ -32,6 +32,7 @@ static XContext _dlg_ctx = 0;
 static int      _dlg_font_height = 0;
 static int      _dlg_font_ascent = 0;
 static XColor   _c_gray1, _c_gray2;
+static Font     _dlgfont = 0;
 
 static Window   _dlg_mwin = 0;
 static Window   _dlg_swin = 0;
@@ -353,6 +354,12 @@ static void close_x_dialog_win (Display *dpy, Window *win) {
 	*win = 0;
 }
 
+static uint8_t font_err = 0;
+static int x_error_handler(Display *d, XErrorEvent *e) {
+	font_err = 1;
+	return 0;
+}
+
 static int open_x_dialog_win (
 		Display *dpy, Window *win,
 		int x, int y, int pw,
@@ -387,6 +394,24 @@ static int open_x_dialog_win (
 
 	GC dlg_gc = XCreateGC (dpy, *win, 0, NULL);
 
+	int (*handler)(Display *, XErrorEvent *) = XSetErrorHandler(&x_error_handler);
+#define _XTESTFONT(FN) \
+	{ \
+		font_err = 0; \
+		_dlgfont = XLoadFont(dpy, FN); \
+		XSetFont(dpy, dlg_gc, _dlgfont); \
+		XSync (dpy, False); \
+	}
+
+	font_err = 1;
+	if (font_err) _XTESTFONT ("-*-verdana-medium-r-normal-*-*-*-*-*-*-*-*-*");
+	if (font_err) _XTESTFONT ("-*-arial-medium-r-normal-*-*-*-*-*-*-*-*-*")
+	if (font_err) _XTESTFONT ("-misc-fixed-medium-r-normal-*-13-*-*-*-*-*-*-*");
+	if (font_err) _XTESTFONT ("-misc-fixed-medium-r-normal-*-12-*-*-*-*-*-*-*");
+	if (font_err) _dlgfont = None;
+	XSync (dpy, False);
+	XSetErrorHandler(handler);
+
 	if (_dlg_font_height == 0) { // 1st time only
 		if (query_font_geometry (dpy, dlg_gc, "|0Yy", NULL, &_dlg_font_height, &_dlg_font_ascent, NULL)) {
 			XFreeGC (dpy, dlg_gc);
@@ -405,12 +430,13 @@ static int open_x_dialog_win (
 	for(i = 0; i < m_items; ++i) {
 		int cw;
 		if (!query_font_geometry(dpy, dlg_gc, menu[i].text, &cw, NULL, NULL, NULL)) {
+			cw += 4;
 			if (menu[i].key && strlen(menu[i].key) > 0) {
 				int ks = 0;
 				query_font_geometry(dpy, dlg_gc, menu[i].key, &ks, NULL, NULL, NULL);
-				cw += ks + 6;
+				cw += ks + 10;
 			}
-			if (menu[i].submenu) {
+			else if (menu[i].submenu) {
 				cw += 10;
 			}
 			if (cw > max_w) max_w = cw;
@@ -496,9 +522,9 @@ static void dialog_expose (Display *dpy, Window win) {
 		XDrawString (dpy, win, dlg->gc, t_x, t_y, dlg->menu_items[i].text, strlen (dlg->menu_items[i].text));
 		if (dlg->menu_items[i].key && strlen(dlg->menu_items[i].key) > 0) {
 			int ks = 10;
-			if (strlen(dlg->menu_items[i].key) > 1) {
+			if (strlen(dlg->menu_items[i].key) > 0) {
 				query_font_geometry(dpy, dlg->gc, dlg->menu_items[i].key, &ks, NULL, NULL, NULL);
-				ks += 3;
+				ks += 5;
 			}
 			XDrawString (dpy, win, dlg->gc, dlg->width - ks, t_y, dlg->menu_items[i].key, strlen (dlg->menu_items[i].key));
 		}
@@ -641,6 +667,8 @@ void close_x_dialog (Display *dpy) {
 	Colormap colormap = DefaultColormap (dpy, DefaultScreen (dpy));
 	XFreeColors (dpy, colormap, &_c_gray1.pixel, 1, 0);
 	XFreeColors (dpy, colormap, &_c_gray2.pixel, 1, 0);
+	if (_dlgfont != None) XUnloadFont(dpy, _dlgfont);
+	_dlgfont = None;
 	force_redraw = 1;
 }
 

@@ -56,6 +56,7 @@
 static Window   _fib_win = 0;
 static GC       _fib_gc = 0;
 static XColor   _c_gray1, _c_gray2, _c_gray3, _c_gray4;
+static Font     _fibfont = 0;
 
 static int      _fib_width  = 100;
 static int      _fib_height = 100;
@@ -127,7 +128,7 @@ static FibButton    *_btns[] = { &_btn_cancel, &_btn_ok};
 
 /* hardcoded layout */
 #define DSEP 6 // px; horiz space beween elements, also l+r margin for file-list
-#define FILECOLUMN 200 //px;  min width of file-column
+#define FILECOLUMN (17 * _fib_dir_indent) //px;  min width of file-column
 #define LISTTOP 2.6 //em;  top of the file-browser list
 #define LISTBOT 4.75 //em;  bottom of the file-browers list
 #define BTNLRMARGIN 3 // px top/bottom row l+r border also (DSEP /2)
@@ -655,6 +656,12 @@ static int fib_opendir (Display *dpy, const char* path) {
 		t1 = t0 + 1;
 		++i;
 	}
+#if 1 // select first, TODO: select most recently used if any
+	if (_dircount > 0) {
+		_fsel = 0;
+		_dirlist[_fsel].flags |= 2;
+	}
+#endif
 	fib_expose (dpy, _fib_win);
 	return _dircount;
 }
@@ -966,6 +973,12 @@ static void fib_mouseup (Display *dpy, int x, int y, int btn, unsigned long time
 	_scrl_my = -1;
 }
 
+static uint8_t font_err = 0;
+static int x_error_handler(Display *d, XErrorEvent *e) {
+	font_err = 1;
+	return 0;
+}
+
 int show_x_fib (Display *dpy, Window parent, int x, int y) {
 	if (_fib_win) return -1;
 
@@ -1004,8 +1017,26 @@ int show_x_fib (Display *dpy, Window parent, int x, int y) {
 	Atom wmDelete = XInternAtom (dpy, "WM_DELETE_WINDOW", True);
 	XSetWMProtocols (dpy, _fib_win, &wmDelete, 1);
 
-	XGCValues gcv;
-	_fib_gc = XCreateGC (dpy, _fib_win, 0, &gcv);
+	_fib_gc = XCreateGC (dpy, _fib_win, 0, NULL);
+
+	int (*handler)(Display *, XErrorEvent *) = XSetErrorHandler(&x_error_handler);
+
+#define _XTESTFONT(FN) \
+	{ \
+		font_err = 0; \
+		_fibfont = XLoadFont(dpy, FN); \
+		XSetFont(dpy, _fib_gc, _fibfont); \
+		XSync (dpy, False); \
+	}
+
+	font_err = 1;
+	if (font_err) _XTESTFONT ("-*-verdana-medium-r-normal-*-*-*-*-*-*-*-*-*");
+	if (font_err) _XTESTFONT ("-*-arial-medium-r-normal-*-*-*-*-*-*-*-*-*")
+	if (font_err) _XTESTFONT ("-misc-fixed-medium-r-normal-*-13-*-*-*-*-*-*-*");
+	if (font_err) _XTESTFONT ("-misc-fixed-medium-r-normal-*-12-*-*-*-*-*-*-*");
+	if (font_err) _fibfont = None;
+	XSync (dpy, False);
+	XSetErrorHandler(handler);
 
 	if (_fib_font_height == 0) { // 1st time only
 		query_font_geometry (dpy, _fib_gc, "D ", &_fib_dir_indent, NULL, NULL , NULL);
@@ -1036,7 +1067,7 @@ int show_x_fib (Display *dpy, Window parent, int x, int y) {
 	int minw = 5 + (_btn_w + DSEP) * sizeof(_btns) / sizeof(FibButton*);
 
 	_fib_height = _fib_font_vsep * (15.8);
-	_fib_width  = MAX (minw, 420);
+	_fib_width  = MAX (minw, 440);
 
 	XResizeWindow (dpy, _fib_win, _fib_width, _fib_height);
 
@@ -1090,6 +1121,13 @@ void close_x_fib (Display *dpy) {
 	_fib_win = 0;
 	if (_dirlist) free (_dirlist);
 	if (_pathbtn) free (_pathbtn);
+	if (_fibfont != None) XUnloadFont(dpy, _fibfont);
+	_fibfont = None;
+	Colormap colormap = DefaultColormap (dpy, DefaultScreen (dpy));
+	XFreeColors (dpy, colormap, &_c_gray1.pixel, 1, 0);
+	XFreeColors (dpy, colormap, &_c_gray2.pixel, 1, 0);
+	XFreeColors (dpy, colormap, &_c_gray3.pixel, 1, 0);
+	XFreeColors (dpy, colormap, &_c_gray4.pixel, 1, 0);
 	_dirlist = NULL;
 	_pathbtn = NULL;
 }
