@@ -295,12 +295,12 @@ void gl_handle_events () {
 			}
 		}
 #endif
-#ifdef DND
-		if (handle_dnd_event(_gl_display, _gl_win, &event)) continue;
-#endif
 		if (event.xany.window != _gl_win) {
 			continue;
 		}
+#ifdef DND
+		if (handle_dnd_event(_gl_display, _gl_win, &event)) continue;
+#endif
 		switch (event.type) {
 			case MapNotify:
 				loop_run=1;

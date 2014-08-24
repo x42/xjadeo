@@ -282,12 +282,12 @@ static void xj_handle_X_events (void) {
 			}
 		}
 #endif
-#ifdef DND
-		if (handle_dnd_event(xj_dpy, xj_win, &event)) continue;
-#endif
 		if (event.xany.window != xj_win) {
 			continue;
 		}
+#ifdef DND
+		if (handle_dnd_event(xj_dpy, xj_win, &event)) continue;
+#endif
 		switch (event.type) {
 			case Expose:
 				xj_render();
