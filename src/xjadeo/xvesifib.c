@@ -1030,8 +1030,9 @@ int show_x_fib (Display *dpy, Window parent, int x, int y) {
 	}
 
 	font_err = 1;
-	if (font_err) _XTESTFONT ("-*-verdana-medium-r-normal-*-*-*-*-*-*-*-*-*");
-	if (font_err) _XTESTFONT ("-*-arial-medium-r-normal-*-*-*-*-*-*-*-*-*")
+	if (getenv("XJFONT")) _XTESTFONT (getenv("XJFONT"));
+	if (font_err) _XTESTFONT ("-*-helvetica-medium-r-normal-*-12-*-*-*-*-*-*-*");
+	if (font_err) _XTESTFONT ("-*-verdana-medium-r-normal-*-12-*-*-*-*-*-*-*");
 	if (font_err) _XTESTFONT ("-misc-fixed-medium-r-normal-*-13-*-*-*-*-*-*-*");
 	if (font_err) _XTESTFONT ("-misc-fixed-medium-r-normal-*-12-*-*-*-*-*-*-*");
 	if (font_err) _fibfont = None;
