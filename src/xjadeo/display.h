@@ -133,11 +133,13 @@ int handle_xdlg_event (Display *dpy, XEvent *event);
 #endif
 
 #ifdef XFIB
-int show_x_fib (Display *dpy, Window parent, int x, int y);
-void close_x_fib (Display *dpy);
-int handle_xfib_event (Display *dpy, XEvent *event);
-int status_x_fib ();
-char *filename_x_fib ();
+int   x_fib_show (Display *dpy, Window parent, int x, int y);
+void  x_fib_close (Display *dpy);
+int   x_fib_handle_events (Display *dpy, XEvent *event);
+int   x_fib_status ();
+char *x_fib_filename ();
+int   x_fib_cfg_filter_callback (int (*cb)(const char*));
+int fib_filter_movie_filename (const char *name);
 #endif
 
 

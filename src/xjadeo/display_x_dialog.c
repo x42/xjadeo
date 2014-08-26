@@ -600,8 +600,10 @@ static int dialog_click (Display *dpy, Window win, int x, int y, int b) {
 			close_x_dialog(dpy);
 #ifdef XFIB
 			if (dlg->menu_items[dlg->menu_hover].callback == &ui_open_file) {
-				if (!(interaction_override&OVR_LOADFILE))
-					show_x_fib (dpy, _parent, 0, 0);
+				if (!(interaction_override&OVR_LOADFILE)) {
+					x_fib_cfg_filter_callback(fib_filter_movie_filename);
+					x_fib_show (dpy, _parent, 0, 0);
+				}
 			}
 #endif
 		}

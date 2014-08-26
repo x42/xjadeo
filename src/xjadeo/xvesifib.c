@@ -32,7 +32,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <ctype.h>
+#include <mntent.h>
 
 #include <dirent.h>
 #include <sys/types.h>
@@ -56,7 +56,7 @@
 
 static Window   _fib_win = 0;
 static GC       _fib_gc = 0;
-static XColor   _c_gray0, _c_gray1, _c_gray2, _c_gray3, _c_gray4, _c_gray5;
+static XColor   _c_gray0, _c_gray1, _c_gray2, _c_gray3, _c_gray4, _c_gray5, _c_gray6;
 static Font     _fibfont = 0;
 
 static int      _fib_width  = 100;
@@ -97,8 +97,12 @@ static uint8_t  _fib_mapped = 0;
 static uint8_t  _fib_resized = 0;
 static unsigned long _dblclk = 0;
 
-static int      _status = 0;
-static char     _rv_open[1024];
+static int      _status = -2;
+static char     _rv_open[1024] = "";
+
+static char     _fib_cfg_custom_places[1024] = "";
+static char     _fib_cfg_custom_font[256] = "";
+static char     _fib_cfg_title[128] = "xjadeo - Open Video File";
 
 typedef struct {
 	char name[256];
@@ -118,7 +122,7 @@ typedef struct {
 
 typedef struct {
 	char text[24];
-	uint8_t flags; // 2: selected, 4: toggle
+	uint8_t flags; // 2: selected, 4: toggle, 8 disable
 	int x0;
 	int tw;
 	int xw;
@@ -128,9 +132,7 @@ typedef struct {
 typedef struct {
 	char name[256];
 	char path[1024];
-	int y0;
-	int tw;
-	uint8_t flags; // 1: hover, 2: selected
+	uint8_t flags; // 1: hover, 2: selected, 4:add sep
 } FibPlace;
 
 static char           _cur_path[1024] = "";
@@ -148,26 +150,30 @@ static FibButton     _btn_places;
 static FibButton     _btn_hidden;
 static FibButton    *_btns[] = {&_btn_places, &_btn_filter, &_btn_hidden, &_btn_cancel, &_btn_ok};
 
+static int (*_fib_filter_function)(const char *filename);
+
 /* hardcoded layout */
 #define DSEP 6 // px; horiz space beween elements, also l+r margin for file-list
+#define PSEP 4 // px; horiz space beween paths
 #define FILECOLUMN (17 * _fib_dir_indent) //px;  min width of file-column
-#define LISTTOP 2.6 //em;  top of the file-browser list
+#define LISTTOP 2.7 //em;  top of the file-browser list
 #define LISTBOT 4.75 //em;  bottom of the file-browers list
-#define BTNLRMARGIN 3 // px top/bottom row l+r border also (DSEP /2)
 #define BTNBTMMARGIN 0.75 //em;  height/margin of the button row
 #define BTNPADDING 2 // px - only used for open/cancel buttons
-#define SCROLLBARW (3+(_fib_spc_norm&~1)) //px; - should be SCROLLBARW = (N * 2 + 3)
+#define SCROLLBARW (3 + (_fib_spc_norm&~1)) //px; - should be SCROLLBARW = (N * 2 + 3)
 #define SCROLLBOXH 10 //px; arrow box top+bottom
 #define PLACESW _fib_place_width //px;
 #define PLACESWMAX (15 *_fib_spc_norm) //px;
 #define PATHBTNTOP _fib_font_vsep //px; offset by (_fib_font_ascent);
-#define FAREAMRGR 3 //px; margin of file-area
-#define FAREAMRGL (_fib_show_places ? PLACESW + FAREAMRGR : FAREAMRGR) //px; left margin of file-area
+#define FAREAMRGB 3 //px; base L+R margin
+#define FAREAMRGR (FAREAMRGB + 1) //px; right margin of file-area + 1 (line width)
+#define FAREAMRGL (_fib_show_places ? PLACESW + FAREAMRGB : FAREAMRGB) //px; left margin of file-area
 #define TEXTSEP 4 //px;
 #define FAREATEXTL (FAREAMRGL + TEXTSEP) //px; filename text-left FAREAMRGL + TEXTSEP
 #define SORTBTNOFF -10 //px;
 
 #define DBLCLKTME 200 //msec; double click time
+#define DRAW_OUTLINE
 
 static int query_font_geometry (Display *dpy, GC gc, const char *txt, int *w, int *h, int *a, int *d) {
 	XCharStruct text_structure;
@@ -182,6 +188,22 @@ static int query_font_geometry (Display *dpy, GC gc, const char *txt, int *w, in
 	if (d) *d = text_structure.descent;
 	XFreeFontInfo (NULL, fontinfo, 1);
 	return 0;
+}
+
+static void VDrawRectangle (Display *dpy, Drawable d, GC gc, int x, int y, unsigned int w, unsigned int h) {
+	const unsigned long blackColor = BlackPixel (dpy, DefaultScreen (dpy));
+#ifdef DRAW_OUTLINE
+	XSetForeground (dpy, gc, _c_gray5.pixel);
+	XDrawLine (dpy, d, gc, x + 1, y + h, x + w, y + h);
+	XDrawLine (dpy, d, gc, x + w, y + 1, x + w, y + h);
+
+	XSetForeground (dpy, gc, blackColor);
+	XDrawLine (dpy, d, gc, x + 1, y, x + w, y);
+	XDrawLine (dpy, d, gc, x, y + 1, x, y + h);
+#else
+	XSetForeground (dpy, _fib_gc, blackColor);
+	XDrawRectangle (dpy, d, gc, x, y, w, h);
+#endif
 }
 
 static void fib_expose (Display *dpy, Window win) {
@@ -202,11 +224,11 @@ static void fib_expose (Display *dpy, Window win) {
 	assert (_pathparts > 0);
 
 	int ppw = 0;
-	int ppx = BTNLRMARGIN;
+	int ppx = FAREAMRGB;
 
 	for (i = _pathparts - 1; i >= 0; --i) {
-		ppw += _pathbtn[i].xw + DSEP;
-		if (ppw >= _fib_width - DSEP - _pathbtn[0].xw - BTNLRMARGIN) break; // XXX, first change is from "/" to  "<", NOOP
+		ppw += _pathbtn[i].xw + PSEP;
+		if (ppw >= _fib_width - PSEP - _pathbtn[0].xw - FAREAMRGB) break; // XXX, first change is from "/" to  "<", NOOP
 	}
 	++i;
 	// border-less "<" parent/up, IFF space is limited
@@ -217,7 +239,7 @@ static void fib_expose (Display *dpy, Window win) {
 			XSetForeground (dpy, _fib_gc, blackColor);
 		}
 		XDrawString (dpy, win, _fib_gc, ppx, PATHBTNTOP, "<", 1);
-		ppx += _pathbtn[0].xw + DSEP;
+		ppx += _pathbtn[0].xw + PSEP;
 		if (i == _pathparts) --i;
 	}
 
@@ -230,16 +252,15 @@ static void fib_expose (Display *dpy, Window win) {
 			XSetForeground (dpy, _fib_gc, _c_gray2.pixel);
 		}
 		XFillRectangle (dpy, win, _fib_gc,
+				ppx + 1, PATHBTNTOP - _fib_font_ascent,
+				_pathbtn[i].xw - 1, _fib_font_height);
+		VDrawRectangle (dpy, win, _fib_gc,
 				ppx, PATHBTNTOP - _fib_font_ascent,
-				_pathbtn[i].xw + BTNPADDING + BTNPADDING, _fib_font_height);
-		XSetForeground (dpy, _fib_gc, blackColor);
-		XDrawRectangle (dpy, win, _fib_gc,
-				ppx, PATHBTNTOP - _fib_font_ascent,
-				_pathbtn[i].xw + BTNPADDING + BTNPADDING, _fib_font_height);
+				_pathbtn[i].xw, _fib_font_height);
 		XDrawString (dpy, win, _fib_gc, ppx + 1 + BTNPADDING, PATHBTNTOP,
 				_pathbtn[i].name, strlen (_pathbtn[i].name));
 		_pathbtn[i].x0 = ppx; // current position
-		ppx += _pathbtn[i].xw + DSEP;
+		ppx += _pathbtn[i].xw + PSEP;
 		++i;
 	}
 
@@ -280,44 +301,49 @@ static void fib_expose (Display *dpy, Window win) {
 	XSetForeground (dpy, _fib_gc, _c_gray2.pixel);
 	XFillRectangle (dpy, win, _fib_gc, FAREAMRGL, ltop, fsel_width, fsel_height);
 
+#ifdef DRAW_OUTLINE
+	VDrawRectangle (dpy, win, _fib_gc, FAREAMRGL, ltop - _fib_font_vsep -1, _fib_width - FAREAMRGL - FAREAMRGR, fsel_height + _fib_font_vsep + 1);
+#endif
+
 	switch (_hov_h) {
 		case 1:
 			XSetForeground (dpy, _fib_gc, _c_gray0.pixel);
-			XFillRectangle (dpy, win, _fib_gc, t_x + _fib_dir_indent - TEXTSEP, ltop - _fib_font_vsep, t_t - t_x - _fib_dir_indent, _fib_font_vsep);
+			XFillRectangle (dpy, win, _fib_gc, t_x + _fib_dir_indent - TEXTSEP + 1, ltop - _fib_font_vsep, t_t - t_x - _fib_dir_indent - 1, _fib_font_vsep);
 			break;
 		case 2:
 			XSetForeground (dpy, _fib_gc, _c_gray0.pixel);
-			XFillRectangle (dpy, win, _fib_gc, t_t - TEXTSEP, ltop - _fib_font_vsep, _fib_font_size_width + TEXTSEP, _fib_font_vsep);
+			XFillRectangle (dpy, win, _fib_gc, t_t - TEXTSEP + 1, ltop - _fib_font_vsep, _fib_font_size_width + TEXTSEP - 1, _fib_font_vsep);
 			break;
 		case 3:
 			XSetForeground (dpy, _fib_gc, _c_gray0.pixel);
-			XFillRectangle (dpy, win, _fib_gc, t_s - TEXTSEP, ltop - _fib_font_vsep, TEXTSEP + TEXTSEP + _fib_font_time_width, _fib_font_vsep);
+			XFillRectangle (dpy, win, _fib_gc, t_s - TEXTSEP + 1, ltop - _fib_font_vsep, TEXTSEP + TEXTSEP + _fib_font_time_width - 1, _fib_font_vsep);
 			break;
 		default:
 			break;
 	}
 
-	const int trioff = _fib_font_height - _fib_font_ascent - 3;
 	// column headings and sort order
-	XPoint ptri[4] = { {0, ttop - trioff }, { 3, -7}, {-6, 0}, { 3, 7}}; // TODO scale w/ font
+	int arp = MAX (2, _fib_font_height / 5);  // arrow scale
+	const int trioff = _fib_font_height - _fib_font_ascent - arp + 1;
+	XPoint ptri[4] = { {0, ttop - trioff }, {arp, -arp - arp - 1}, {-arp - arp, 0}, {arp, arp + arp + 1}};
 	if (_sort & 1) {
-		ptri[0].y = ttop - 8 - trioff;
+		ptri[0].y = ttop -arp - arp - 1;
 		ptri[1].y *= -1;
 		ptri[3].y *= -1;
 	}
 	switch (_sort) {
 		case 0:
 		case 1:
-			ptri[0].x = t_t + SORTBTNOFF;
-			XSetForeground (dpy, _fib_gc, _c_gray5.pixel);
+			ptri[0].x = t_t + SORTBTNOFF + 2 - arp;
+			XSetForeground (dpy, _fib_gc, _c_gray6.pixel);
 			XFillPolygon (dpy, win, _fib_gc, ptri, 3, Convex, CoordModePrevious);
 			XDrawLines (dpy, win, _fib_gc, ptri, 4, CoordModePrevious);
 			break;
 		case 2:
 		case 3:
 			if (_columns & 1) {
-				ptri[0].x = t_s + SORTBTNOFF;
-				XSetForeground (dpy, _fib_gc, _c_gray5.pixel);
+				ptri[0].x = t_s + SORTBTNOFF + 2 - arp;
+				XSetForeground (dpy, _fib_gc, _c_gray6.pixel);
 				XFillPolygon (dpy, win, _fib_gc, ptri, 3, Convex, CoordModePrevious);
 				XDrawLines (dpy, win, _fib_gc, ptri, 4, CoordModePrevious);
 			}
@@ -325,18 +351,27 @@ static void fib_expose (Display *dpy, Window win) {
 		case 4:
 		case 5:
 			if (_columns & 2) {
-				ptri[0].x = FAREATEXTL + fsel_width + SORTBTNOFF;
-				XSetForeground (dpy, _fib_gc, _c_gray5.pixel);
+				ptri[0].x = FAREATEXTL + fsel_width + SORTBTNOFF + 2 - arp;
+				XSetForeground (dpy, _fib_gc, _c_gray6.pixel);
 				XFillPolygon (dpy, win, _fib_gc, ptri, 3, Convex, CoordModePrevious);
 				XDrawLines (dpy, win, _fib_gc, ptri, 4, CoordModePrevious);
 			}
 			break;
 	}
 
+#if 0 // bottom header bottom border
+	XSetForeground (dpy, _fib_gc, _c_gray5.pixel);
+	XSetLineAttributes (dpy, _fib_gc, 1, LineOnOffDash, CapButt, JoinMiter);
+	XDrawLine (dpy, win, _fib_gc,
+			FAREAMRGL + 1, ltop,
+			FAREAMRGL + fsel_width, ltop);
+	XSetLineAttributes (dpy, _fib_gc, 1, LineSolid, CapButt, JoinMiter);
+#endif
+
 	XSetForeground (dpy, _fib_gc, _c_gray4.pixel);
 	XDrawLine (dpy, win, _fib_gc,
-			t_x + _fib_dir_indent - TEXTSEP, ltop - _fib_font_vsep,
-			t_x + _fib_dir_indent - TEXTSEP, ltop - 1);
+			t_x + _fib_dir_indent - TEXTSEP, ltop - _fib_font_vsep + 3,
+			t_x + _fib_dir_indent - TEXTSEP, ltop - 3);
 
 	XSetForeground (dpy, _fib_gc, blackColor);
 	XDrawString (dpy, win, _fib_gc, t_x + _fib_dir_indent, ttop, "Name", 4);
@@ -344,8 +379,8 @@ static void fib_expose (Display *dpy, Window win) {
 	if (_columns & 1) {
 		XSetForeground (dpy, _fib_gc, _c_gray4.pixel);
 		XDrawLine (dpy, win, _fib_gc,
-				t_t - TEXTSEP, ltop - _fib_font_vsep,
-				t_t - TEXTSEP, ltop - 1);
+				t_t - TEXTSEP, ltop - _fib_font_vsep + 3,
+				t_t - TEXTSEP, ltop - 3);
 		XSetForeground (dpy, _fib_gc, blackColor);
 		XDrawString (dpy, win, _fib_gc, t_t, ttop, "Size", 4);
 	}
@@ -353,8 +388,8 @@ static void fib_expose (Display *dpy, Window win) {
 	if (_columns & 2) {
 		XSetForeground (dpy, _fib_gc, _c_gray4.pixel);
 		XDrawLine (dpy, win, _fib_gc,
-				t_s - TEXTSEP, ltop - _fib_font_vsep,
-				t_s - TEXTSEP, ltop - 1);
+				t_s - TEXTSEP, ltop - _fib_font_vsep + 3,
+				t_s - TEXTSEP, ltop - 3);
 		XSetForeground (dpy, _fib_gc, blackColor);
 		XDrawString (dpy, win, _fib_gc, t_s, ttop, "Last Modified", 13);
 	}
@@ -365,18 +400,23 @@ static void fib_expose (Display *dpy, Window win) {
 		XSetForeground (dpy, _fib_gc, _c_gray4.pixel);
 		XDrawLine (dpy, win, _fib_gc,
 				sx0 - 1, ltop - _fib_font_vsep,
-				sx0 - 1, ltop - 1);
+#ifdef DRAW_OUTLINE
+				sx0 - 1, ltop + fsel_height
+#else
+				sx0 - 1, ltop - 1
+#endif
+				);
 	}
 
 	// clip area for file-name
-	XRectangle clp = {FAREAMRGL + 1, ltop, t_t - FAREAMRGL - TEXTSEP - TEXTSEP, fsel_height};
+	XRectangle clp = {FAREAMRGL + 1, ltop, t_t - FAREAMRGL - TEXTSEP - TEXTSEP - 1, fsel_height};
 
 	// list files in view
 	for (i = 0; i < llen; ++i) {
 		const int j = i + fstop;
 		if (j >= _dircount) break;
 
-		const int t_y = ltop + (i+1) * _fib_font_vsep;
+		const int t_y = ltop + (i+1) * _fib_font_vsep - 4;
 
 		XSetForeground (dpy, _fib_gc, blackColor);
 		if (_dirlist[j].flags & 2) {
@@ -461,20 +501,24 @@ static void fib_expose (Display *dpy, Window win) {
 
 		// heading
 		XSetForeground (dpy, _fib_gc, _c_gray3.pixel);
-		XFillRectangle (dpy, win, _fib_gc, FAREAMRGR, ltop - _fib_font_vsep, PLACESW - TEXTSEP, _fib_font_vsep);
+		XFillRectangle (dpy, win, _fib_gc, FAREAMRGB, ltop - _fib_font_vsep, PLACESW - TEXTSEP, _fib_font_vsep);
 
 		// body
 		XSetForeground (dpy, _fib_gc, _c_gray2.pixel);
-		XFillRectangle (dpy, win, _fib_gc, FAREAMRGR, ltop, PLACESW - TEXTSEP, fsel_height);
+		XFillRectangle (dpy, win, _fib_gc, FAREAMRGB, ltop, PLACESW - TEXTSEP, fsel_height);
+
+#ifdef DRAW_OUTLINE
+	VDrawRectangle (dpy, win, _fib_gc, FAREAMRGB, ltop - _fib_font_vsep -1, PLACESW - TEXTSEP, fsel_height + _fib_font_vsep + 1);
+#endif
 
 		XSetForeground (dpy, _fib_gc, blackColor);
-		XDrawString (dpy, win, _fib_gc, FAREAMRGR + TEXTSEP, ttop, "Places", 6);
+		XDrawString (dpy, win, _fib_gc, FAREAMRGB + TEXTSEP, ttop, "Places", 6);
 
-		XRectangle pclip = {FAREAMRGR + 1, ltop, PLACESW - TEXTSEP -1, fsel_height};
+		XRectangle pclip = {FAREAMRGB + 1, ltop, PLACESW - TEXTSEP -1, fsel_height};
 		XSetClipRectangles (dpy, _fib_gc, 0, 0, &pclip, 1, Unsorted);
-		const int plx = FAREAMRGR + TEXTSEP;
+		const int plx = FAREAMRGB + TEXTSEP;
 		for (i = 0; i < llen && i < _placecnt; ++i) {
-			const int ply = ltop + (i+1) * _fib_font_vsep;
+			const int ply = ltop + (i+1) * _fib_font_vsep - 4;
 			if (i == _hov_l) {
 				XSetForeground (dpy, _fib_gc, _c_gray4.pixel);
 			} else {
@@ -483,16 +527,25 @@ static void fib_expose (Display *dpy, Window win) {
 			XDrawString (dpy, win, _fib_gc,
 					plx, ply,
 					_placelist[i].name, strlen (_placelist[i].name));
+			if (_placelist[i].flags & 4) {
+				XSetForeground (dpy, _fib_gc, _c_gray3.pixel);
+				const int plly = ply - _fib_font_ascent + _fib_font_height;
+				const int pllx0 = FAREAMRGB;
+				const int pllx1 = FAREAMRGB + (PLACESW - TEXTSEP);
+				XDrawLine (dpy, win, _fib_gc, pllx0, plly, pllx1, plly);
+			}
 		}
 		XSetClipMask (dpy, _fib_gc, None);
 
 		if (_placecnt > llen) {
-			XSetForeground (dpy, _fib_gc, _c_gray4.pixel);
-			XSetLineAttributes(dpy, _fib_gc, 1, LineOnOffDash, CapButt, JoinMiter);
-			XDrawLine (dpy, win, _fib_gc,
-					FAREAMRGR, ltop + fsel_height - 1,
-					FAREAMRGR + PLACESW - TEXTSEP, ltop + fsel_height - 1);
-			XSetLineAttributes(dpy, _fib_gc, 1, LineSolid, CapButt, JoinMiter);
+			const int plly =  ltop + fsel_height - _fib_font_height + _fib_font_ascent;
+			const int pllx0 = FAREAMRGB + (PLACESW - TEXTSEP) * .75;
+			const int pllx1 = FAREAMRGB + (PLACESW - TEXTSEP - TEXTSEP);
+
+			XSetForeground (dpy, _fib_gc, blackColor);
+			XSetLineAttributes (dpy, _fib_gc, 1, LineOnOffDash, CapButt, JoinMiter);
+			XDrawLine (dpy, win, _fib_gc, pllx0, plly, pllx1, plly);
+			XSetLineAttributes (dpy, _fib_gc, 1, LineSolid, CapButt, JoinMiter);
 		}
 	}
 
@@ -503,8 +556,9 @@ static void fib_expose (Display *dpy, Window win) {
 	const int bbase = _fib_height - BTNBTMMARGIN * _fib_font_vsep - BTNPADDING;
 	const int cblw = cbox > 20 ? 5 : 3;
 
-	int bx = BTNLRMARGIN;
+	int bx = FAREAMRGB;
 	for (i = 0; i < numb; ++i) {
+		if (_btns[i]->flags & 8) { continue; }
 		if (_btns[i]->flags & 4) {
 			// checkbutton
 			const int cby0 = bbase - cbox + 1 + BTNPADDING;
@@ -521,15 +575,15 @@ static void fib_expose (Display *dpy, Window win) {
 					bx+1, cby0, cbox, cbox);
 
 			if (_btns[i]->flags & 2) {
-				XSetLineAttributes(dpy, _fib_gc, cblw, LineSolid, CapRound, JoinMiter);
-				XSetForeground (dpy, _fib_gc, _c_gray5.pixel);
+				XSetLineAttributes (dpy, _fib_gc, cblw, LineSolid, CapRound, JoinMiter);
+				XSetForeground (dpy, _fib_gc, _c_gray6.pixel);
 				XDrawLine (dpy, win, _fib_gc,
 						bx + 2, cby0 + 1,
 						bx + cbox - 1, cby0 + cbox - 2);
 				XDrawLine (dpy, win, _fib_gc,
 						bx + cbox - 1, cby0 + 1,
 						bx + 2, cby0 + cbox - 2);
-				XSetLineAttributes(dpy, _fib_gc, 1, LineSolid, CapButt, JoinMiter);
+				XSetLineAttributes (dpy, _fib_gc, 1, LineSolid, CapButt, JoinMiter);
 			}
 
 			if (i == _hov_b) {
@@ -560,12 +614,11 @@ static void fib_expose (Display *dpy, Window win) {
 				XSetForeground (dpy, _fib_gc, _c_gray2.pixel);
 			}
 			XFillRectangle (dpy, win, _fib_gc,
-					bx, bbase - _fib_font_ascent,
+					bx + 1, bbase - _fib_font_ascent,
 					_btn_w - 1, _fib_font_height + BTNPADDING + BTNPADDING);
-			XSetForeground (dpy, _fib_gc, blackColor);
-			XDrawRectangle (dpy, win, _fib_gc,
+			VDrawRectangle (dpy, win, _fib_gc,
 					bx, bbase - _fib_font_ascent,
-					_btn_w - 1, _fib_font_height + BTNPADDING + BTNPADDING);
+					_btn_w, _fib_font_height + BTNPADDING + BTNPADDING);
 			XDrawString (dpy, win, _fib_gc, bx + (_btn_w - _btns[i]->tw) * .5, 1 + bbase + BTNPADDING,
 					_btns[i]->text, strlen (_btns[i]->text));
 		}
@@ -664,7 +717,7 @@ static void fmt_size (Display *dpy, FibFileEntry *f) {
 	else {
 		sprintf (f->strsize, "%.0f  B", f->size / 1.f);
 	}
-	int sw;
+	int sw = 0;
 	query_font_geometry (dpy, _fib_gc, f->strsize, &sw, NULL, NULL, NULL);
 	if (sw > _fib_font_size_width) {
 		_fib_font_size_width = sw;
@@ -680,7 +733,7 @@ static void fmt_time (Display *dpy, FibFileEntry *f) {
 	}
 	strftime (f->strtime, sizeof(f->strtime), "%F %H:%M", tmp);
 
-	int tw;
+	int tw = 0;
 	query_font_geometry (dpy, _fib_gc, f->strtime, &tw, NULL, NULL, NULL);
 	if (tw > _fib_font_time_width) {
 		_fib_font_time_width = tw;
@@ -731,7 +784,7 @@ static void fib_select (Display *dpy, int item) {
 	fib_expose (dpy, _fib_win);
 }
 
-static inline int fib_filter (const char *name) { // TODO use fn pointer, set filter_fn()
+int fib_filter_movie_filename (const char *name) {
 	if (!_fib_filter_fn) return 1;
   const int l3 = strlen (name) - 3;
   const int l4 = l3 - 1;
@@ -769,12 +822,22 @@ static inline int fib_filter (const char *name) { // TODO use fn pointer, set fi
 	return 0;
 }
 
+static inline int fib_filter (const char *name) {
+	if (_fib_filter_function) {
+		return _fib_filter_function (name);
+	} else {
+		return 0;
+	}
+}
+
 static int fib_opendir (Display *dpy, const char* path, const char *sel) {
 	char *t0, *t1;
-	int i, x0;
-	assert (strlen (path) < 1024);
+	int i;
+
+	assert (strlen (path) < sizeof(_cur_path) -1);
 	assert (strlen (path) > 0);
 	assert (strstr (path, "//") == NULL);
+	assert (path[0] == '/');
 
 	if (_dirlist) free (_dirlist);
 	if (_pathbtn) free (_pathbtn);
@@ -813,8 +876,8 @@ static int fib_opendir (Display *dpy, const char* path, const char *sel) {
 		while ((de = readdir (dir))) {
 			struct stat fs;
 			if (!_fib_hidden_fn && de->d_name[0] == '.') continue;
-			if (!strcmp(de->d_name, ".")) continue;
-			if (!strcmp(de->d_name, "..")) continue;
+			if (!strcmp (de->d_name, ".")) continue;
+			if (!strcmp (de->d_name, "..")) continue;
 			strcpy (tp, _cur_path);
 			strcat (tp, de->d_name);
 			if (access (tp, R_OK)) {
@@ -823,7 +886,7 @@ static int fib_opendir (Display *dpy, const char* path, const char *sel) {
 			if (stat (tp, &fs)) {
 				continue;
 			}
-			assert(i < _dircount); // could happen if dir changes while we're reading.
+			assert (i < _dircount); // could happen if dir changes while we're reading.
 			if (S_ISDIR (fs.st_mode)) {
 				_dirlist[i].flags |= 4;
 			}
@@ -846,7 +909,10 @@ static int fib_opendir (Display *dpy, const char* path, const char *sel) {
 		}
 		_dircount = i;
 		closedir (dir);
-		_fsel = 0; // select first
+		if (_dircount > 0)
+			_fsel = 0; // select first
+		else
+			_fsel = -1;
 		fib_resort (sel);
 	}
 
@@ -860,7 +926,6 @@ static int fib_opendir (Display *dpy, const char* path, const char *sel) {
 
 	t1 = _cur_path;
 	i = 0;
-	x0 = 0;
 	while (*t1 && (t0 = strchr (t1, '/'))) {
 		if (i == 0) {
 			strcpy (_pathbtn[i].name, "/");
@@ -869,8 +934,7 @@ static int fib_opendir (Display *dpy, const char* path, const char *sel) {
 			strcpy (_pathbtn[i].name, t1);
 		}
 		query_font_geometry (dpy, _fib_gc, _pathbtn[i].name, &_pathbtn[i].xw, NULL, NULL, NULL);
-		_pathbtn[i].x0 = x0;
-		x0 += _pathbtn[i].xw + DSEP;
+		_pathbtn[i].xw += BTNPADDING + BTNPADDING;
 		*t0 = '/';
 		t1 = t0 + 1;
 		++i;
@@ -934,7 +998,7 @@ static void cb_places (Display *dpy) {
 static void cb_filter (Display *dpy) {
 	_fib_filter_fn = ! _fib_filter_fn;
 	sync_button_states ();
-	char *sel = _fsel >= 0 ? strdup(_dirlist[_fsel].name) : NULL;
+	char *sel = _fsel >= 0 ? strdup (_dirlist[_fsel].name) : NULL;
 	fib_opendir (dpy, _cur_path, sel);
 	free (sel);
 }
@@ -942,7 +1006,7 @@ static void cb_filter (Display *dpy) {
 static void cb_hidden (Display *dpy) {
 	_fib_hidden_fn = ! _fib_hidden_fn;
 	sync_button_states ();
-	char *sel = _fsel >= 0 ? strdup(_dirlist[_fsel].name) : NULL;
+	char *sel = _fsel >= 0 ? strdup (_dirlist[_fsel].name) : NULL;
 	fib_opendir (dpy, _cur_path, sel);
 	free (sel);
 }
@@ -959,23 +1023,21 @@ static int fib_widget_at_pos (Display *dpy, int x, int y, int *it) {
 	// paths at top
 	if (y > ptop && y < ptop + _fib_font_height && _view_p >= 0) {
 		int i = _view_p;
-		int ppx = BTNLRMARGIN;
 		*it = -1;
-		if (i > 0) {
-			if (x >= ppx && x <= _pathbtn[0].xw + BTNPADDING + BTNPADDING) {
+		if (i > 0) { // special case '<'
+			if (x > FAREAMRGB && x <= FAREAMRGB + _pathbtn[0].xw) {
 				*it = _view_p - 1;
 				i = _pathparts;
 			}
-			ppx += _pathbtn[0].xw + DSEP;
 		}
 		while (i < _pathparts) {
-			if (x >= ppx && x <= ppx + _pathbtn[i].xw + BTNPADDING + BTNPADDING) {
+			if (x >= _pathbtn[i].x0 && x <= _pathbtn[i].x0 + _pathbtn[i].xw) {
 				*it = i;
 				break;
 			}
-			ppx += _pathbtn[i].xw + DSEP;
 			++i;
 		}
+		assert(*it < _pathparts);
 		if (*it >= 0) return 1;
 		else return 0;
 	}
@@ -986,6 +1048,7 @@ static int fib_widget_at_pos (Display *dpy, int x, int y, int *it) {
 		*it = -1;
 		for (i = 0; i < sizeof(_btns) / sizeof(FibButton*); ++i) {
 			const int bx = _btns[i]->x0;
+			if (_btns[i]->flags & 8) { continue; }
 			if (x > bx && x < bx + _btns[i]->xw) {
 				*it = i;
 			}
@@ -1032,7 +1095,7 @@ static int fib_widget_at_pos (Display *dpy, int x, int y, int *it) {
 	}
 
 	// places list
-	if (_fib_show_places && y >= ltop - _fib_font_vsep && y < fbot && x > FAREAMRGR && x < FAREAMRGL - FAREAMRGR) {
+	if (_fib_show_places && y >= ltop && y < fbot && x > FAREAMRGB && x < FAREAMRGL - FAREAMRGB) {
 			const int item = (y - ltop) / _fib_font_vsep;
 			*it = -1;
 			if (item >= 0 && item < _placecnt) {
@@ -1077,7 +1140,7 @@ static void fib_update_hover (Display *dpy, int need_expose, const int type, con
 }
 
 static void fib_motion (Display *dpy, int x, int y) {
-	int it;
+	int it = -1;
 
 	if (_scrl_my >= 0) {
 		const int sdiff = y - _scrl_my;
@@ -1096,7 +1159,7 @@ static void fib_motion (Display *dpy, int x, int y) {
 	}
 
 	const int type = fib_widget_at_pos (dpy, x, y, &it);
-	fib_update_hover(dpy, 0, type, it);
+	fib_update_hover (dpy, 0, type, it);
 }
 
 
@@ -1158,6 +1221,7 @@ static void fib_mousedown (Display *dpy, int x, int y, int btn, unsigned long ti
 			}
 			break;
 		case 1: // paths
+			assert (_fsel < _dircount);
 			assert (it >= 0 && it < _pathparts);
 			{
 				int i = 0;
@@ -1220,12 +1284,12 @@ static int add_place_places (Display *dpy, const char *name, const char *url) {
 	char const * path;
 	struct stat fs;
 	int i;
-	if (!url || strlen(url) < 1) return -1;
-	if (!name || strlen(name) < 1) return -1;
+	if (!url || strlen (url) < 1) return -1;
+	if (!name || strlen (name) < 1) return -1;
 	if (url[0] == '/') {
 		path = url;
 	}
-	else if (!strncmp(url, "file:///", 8)) {
+	else if (!strncmp (url, "file:///", 8)) {
 		path = &url[7];
 	}
 	else {
@@ -1243,14 +1307,15 @@ static int add_place_places (Display *dpy, const char *name, const char *url) {
 	}
 
 	for (i = 0; i < _placecnt; ++i) {
-		if (!strcmp(path, _placelist[i].path)) {
+		if (!strcmp (path, _placelist[i].path)) {
 			return -1;
 		}
 	}
 
-	_placelist = realloc(_placelist, (_placecnt + 1) * sizeof(FibPlace));
+	_placelist = realloc (_placelist, (_placecnt + 1) * sizeof(FibPlace));
 	strcpy (_placelist[_placecnt].path, path);
 	strcpy (_placelist[_placecnt].name, name);
+	_placelist[_placecnt].flags = 0;
 
 	int sw;
 	query_font_geometry (dpy, _fib_gc, name, &sw, NULL, NULL, NULL);
@@ -1261,19 +1326,30 @@ static int add_place_places (Display *dpy, const char *name, const char *url) {
 	return 0;
 }
 
+static int fib_isxdigit (const char x) {
+	if (
+			(x >= '0' && x <= '9')
+			||
+			(x >= 'a' && x <= 'f')
+			||
+			(x >= 'A' && x <= 'F')
+		 ) return 1;
+	return 0;
+}
+
 static void decode_3986 (char *str) {
-	int len = strlen(str);
+	int len = strlen (str);
 	int idx = 0;
-	while(idx + 2 < len) {
+	while (idx + 2 < len) {
 		char *in = &str[idx];
-		if(('%' == *in) && isxdigit(in[1]) && isxdigit(in[2])) {
+		if (('%' == *in) && fib_isxdigit (in[1]) && fib_isxdigit (in[2])) {
 			char hexstr[3];
 			hexstr[0] = in[1];
 			hexstr[1] = in[2];
 			hexstr[2] = 0;
-			long hex = strtol(hexstr, NULL, 16);
+			long hex = strtol (hexstr, NULL, 16);
 			*in = hex;
-			memmove(&str[idx+1], &str[idx + 3], len - idx - 2);
+			memmove (&str[idx+1], &str[idx + 3], len - idx - 2);
 			len -= 2;
 		}
 		++idx;
@@ -1315,8 +1391,84 @@ static int parse_gtk_bookmarks (Display *dpy, const char *fn) {
 	return found;
 }
 
+static const char *ignore_mountpoints[] = {
+	"/bin",  "/boot", "/dev",  "/etc",
+	"/lib",  "/live", "/mnt",  "/opt",
+	"/root", "/sbin", "/srv",  "/tmp",
+	"/usr",  "/var",  "/proc", "/sbin",
+	"/net",  "/sys"
+};
+
+static const char *ignore_fs[] = {
+	"auto",      "autofs",
+	"debugfs",   "devfs",
+	"devpts",    "ecryptfs",
+	"fusectl",   "kernfs",
+	"linprocfs", "proc",
+	"ptyfs",     "rootfs",
+	"selinuxfs", "sysfs",
+	"tmpfs",     "usbfs",
+	"nfsd",      "rpc_pipefs",
+};
+
+static const char *ignore_devices[] = {
+	"binfmt_",   "devpts",
+	"gvfs",      "none",
+	"nfsd",      "sunrpc",
+	"/dev/loop", "/dev/vn"
+};
+
+static int check_mount (const char *mountpoint, const char *fs, const char *device) {
+	int i;
+	if (!mountpoint || !fs || !device) return -1;
+	//printf("%s %s %s\n", mountpoint, fs, device);
+	for (i = 0 ; i < sizeof(ignore_mountpoints) / sizeof(char*); ++i) {
+		if (!strncmp (mountpoint, ignore_mountpoints[i], strlen (ignore_mountpoints[i]))) {
+			return 1;
+		}
+	}
+	if (!strncmp (mountpoint, "/home", 5)) {
+		return 1;
+	}
+	for (i = 0 ; i < sizeof(ignore_fs) / sizeof(char*); ++i) {
+		if (!strncmp (fs, ignore_fs[i], strlen (ignore_fs[i]))) {
+			return 1;
+		}
+	}
+	for (i = 0 ; i < sizeof(ignore_devices) / sizeof(char*); ++i) {
+		if (!strncmp (device, ignore_devices[i], strlen (ignore_devices[i]))) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
+static int read_mtab (Display *dpy, char *mtab) {
+	FILE *mt = fopen (mtab, "r");
+	if (!mt) return -1;
+	int found = 0;
+	struct mntent *mntent;
+	while ((mntent = getmntent (mt)) != NULL) {
+		char *s;
+		if (check_mount (mntent->mnt_dir, mntent->mnt_type, mntent->mnt_fsname))
+			continue;
+
+		if ((s = strrchr (mntent->mnt_dir, '/'))) {
+			++s;
+		} else {
+			s = mntent->mnt_dir;
+		}
+		if (!add_place_places (dpy, s, mntent->mnt_dir)) {
+			++found;
+		}
+	}
+	fclose (mt);
+	return found;
+}
+
 static void populate_places (Display *dpy) {
 	char tmp[1024];
+	int spacer = -1;
 	if (_placecnt > 0) return;
 	_fib_place_width = 0;
 
@@ -1329,6 +1481,16 @@ static void populate_places (Display *dpy) {
 	}
 
 	add_place_places (dpy, "Filesystem", "/");
+
+	if (_placecnt > 0) spacer = _placecnt -1;
+
+	if (strlen (_fib_cfg_custom_places) > 0) {
+		parse_gtk_bookmarks (dpy, _fib_cfg_custom_places);
+	}
+
+	if (read_mtab (dpy, "/proc/mounts") < 1) {
+		read_mtab (dpy, "/etc/mtab");
+	}
 
 	int parsed_bookmarks = 0;
 	if (!parsed_bookmarks && getenv ("HOME")) {
@@ -1353,7 +1515,10 @@ static void populate_places (Display *dpy) {
 		}
 	}
 	if (_fib_place_width > 0) {
-		_fib_place_width = MIN(_fib_place_width + TEXTSEP + _fib_dir_indent /*extra*/ , PLACESWMAX);
+		_fib_place_width = MIN (_fib_place_width + TEXTSEP + _fib_dir_indent /*extra*/ , PLACESWMAX);
+	}
+	if (spacer > 0 && spacer < _placecnt -1) {
+		_placelist[ spacer ].flags |= 4;
 	}
 }
 
@@ -1363,7 +1528,14 @@ static int x_error_handler (Display *d, XErrorEvent *e) {
 	return 0;
 }
 
-int show_x_fib (Display *dpy, Window parent, int x, int y) {
+/** open a file select dialog
+ * @param dpy X Display connection
+ * @param parent (optional) if not NULL, become transient for given window
+ * @param x if >0 set explict initial width of the window
+ * @param y if >0 set explict initial height of the window
+ * @return 0 on success
+ */
+int x_fib_show (Display *dpy, Window parent, int x, int y) {
 	if (_fib_win) {
 		XSetInputFocus (dpy, _fib_win, RevertToParent, CurrentTime);
 		return -1;
@@ -1379,7 +1551,8 @@ int show_x_fib (Display *dpy, Window parent, int x, int y) {
 	_c_gray2.red = _c_gray2.green = _c_gray2.blue = 54016; // 83% button & list bg
 	_c_gray3.red = _c_gray3.green = _c_gray3.blue = 48640; // 75% heading + scrollbar-bg
 	_c_gray4.red = _c_gray4.green = _c_gray4.blue = 26112; // 40% prelight text, sep lines
-	_c_gray5.red = _c_gray5.green = _c_gray5.blue =  6400; // 10% checkbox cross, sort triangles
+	_c_gray5.red = _c_gray5.green = _c_gray5.blue = 12800; // 20% 3D border
+	_c_gray6.red = _c_gray6.green = _c_gray6.blue =  6400; // 10% checkbox cross, sort triangles
 
 	if (!XAllocColor (dpy, colormap, &_c_gray0)) return -1;
 	if (!XAllocColor (dpy, colormap, &_c_gray1)) return -1;
@@ -1387,6 +1560,7 @@ int show_x_fib (Display *dpy, Window parent, int x, int y) {
 	if (!XAllocColor (dpy, colormap, &_c_gray3)) return -1;
 	if (!XAllocColor (dpy, colormap, &_c_gray4)) return -1;
 	if (!XAllocColor (dpy, colormap, &_c_gray5)) return -1;
+	if (!XAllocColor (dpy, colormap, &_c_gray6)) return -1;
 
 	XSetWindowAttributes attr;
 	memset (&attr, 0, sizeof(XSetWindowAttributes));
@@ -1395,7 +1569,7 @@ int show_x_fib (Display *dpy, Window parent, int x, int y) {
 	attr.event_mask = ExposureMask | KeyPressMask
 		| ButtonPressMask | ButtonReleaseMask
 		| ConfigureNotify | StructureNotifyMask
-		| PointerMotionMask;
+		| PointerMotionMask | LeaveWindowMask;
 
 	_fib_win = XCreateWindow (
 			dpy, DefaultRootWindow (dpy),
@@ -1414,9 +1588,9 @@ int show_x_fib (Display *dpy, Window parent, int x, int y) {
 	XSetWMProtocols (dpy, _fib_win, &wmDelete, 1);
 
 	_fib_gc = XCreateGC (dpy, _fib_win, 0, NULL);
-	XSetLineAttributes(dpy, _fib_gc, 1, LineSolid, CapButt, JoinMiter);
+	XSetLineAttributes (dpy, _fib_gc, 1, LineSolid, CapButt, JoinMiter);
 	const char dl[1] = {1};
-	XSetDashes(dpy, _fib_gc, 0, dl, 1);
+	XSetDashes (dpy, _fib_gc, 0, dl, 1);
 
 	int (*handler)(Display *, XErrorEvent *) = XSetErrorHandler (&x_error_handler);
 
@@ -1430,6 +1604,7 @@ int show_x_fib (Display *dpy, Window parent, int x, int y) {
 
 	font_err = 1;
 	if (getenv ("XJFONT")) _XTESTFONT (getenv ("XJFONT"));
+	if (font_err && strlen (_fib_cfg_custom_font) > 0) _XTESTFONT (_fib_cfg_custom_font);
 	if (font_err) _XTESTFONT ("-*-helvetica-medium-r-normal-*-12-*-*-*-*-*-*-*");
 	if (font_err) _XTESTFONT ("-*-verdana-medium-r-normal-*-12-*-*-*-*-*-*-*");
 	if (font_err) _XTESTFONT ("-misc-fixed-medium-r-normal-*-13-*-*-*-*-*-*-*");
@@ -1452,12 +1627,11 @@ int show_x_fib (Display *dpy, Window parent, int x, int y) {
 		_fib_font_vsep = _fib_font_height + 2;
 	}
 
-	populate_places(dpy);
+	populate_places (dpy);
 
-	// TODO optionally exclude filter & places button
 	strcpy (_btn_ok.text,     "Open");
 	strcpy (_btn_cancel.text, "Cancel");
-	strcpy (_btn_filter.text, "Show All Files");
+	strcpy (_btn_filter.text, "List All Files");
 	strcpy (_btn_places.text, "Show Places");
 	strcpy (_btn_hidden.text, "Show Hidden");
 
@@ -1470,11 +1644,16 @@ int show_x_fib (Display *dpy, Window parent, int x, int y) {
 	_btn_places.flags |= 4;
 	_btn_hidden.flags |= 4;
 
+	if (!_fib_filter_function) {
+		_btn_filter.flags |= 8;
+	}
+
 	int i;
 	int btncnt = 0;
 	_btn_w = 0;
 	_btn_span = 0;
 	for (i = 0; i < sizeof(_btns) / sizeof(FibButton*); ++i) {
+		if (_btns[i]->flags & 8) { continue; }
 		query_font_geometry (dpy, _fib_gc, _btns[i]->text, &_btns[i]->tw, NULL, NULL, NULL);
 		if (_btns[i]->flags & 4) {
 			_btn_span += _btns[i]->tw + _fib_font_ascent + TEXTSEP;
@@ -1486,9 +1665,10 @@ int show_x_fib (Display *dpy, Window parent, int x, int y) {
 	}
 
 	_btn_w += BTNPADDING + BTNPADDING + TEXTSEP + TEXTSEP + TEXTSEP;
-	_btn_span += _btn_w  * btncnt + DSEP * (i - 1) + BTNLRMARGIN + BTNLRMARGIN;
+	_btn_span += _btn_w  * btncnt + DSEP * (i - 1) + FAREAMRGR + FAREAMRGB;
 
 	for (i = 0; i < sizeof(_btns) / sizeof(FibButton*); ++i) {
+		if (_btns[i]->flags & 8) { continue; }
 		if (_btns[i]->flags & 4) {
 			_btns[i]->xw = _btns[i]->tw + _fib_font_ascent + TEXTSEP;
 		} else {
@@ -1506,21 +1686,17 @@ int show_x_fib (Display *dpy, Window parent, int x, int y) {
 	XTextProperty x_wname, x_iname;
 	XSizeHints hints;
 	XWMHints wmhints;
-	char *w_name ="xjadeo - Open Video File"; // TODO API
-	char *i_name ="xjadeo - Open Video File";
 
-	/* default settings which allow arbitraray resizing of the window */
-	hints.flags = PSize | PMaxSize | PMinSize;
+	hints.flags = PSize | PMinSize;
 	hints.min_width = _btn_span;
 	hints.min_height = 8 * _fib_font_vsep;
-	hints.max_width = 1024;
-	hints.max_height = 1024;
 
-	// TODO Icon..
+	char *w_name = & _fib_cfg_title[0];
+
 	wmhints.input = True;
 	wmhints.flags = InputHint;
 	if (XStringListToTextProperty (&w_name, 1, &x_wname) &&
-			XStringListToTextProperty (&i_name, 1, &x_iname))
+			XStringListToTextProperty (&w_name, 1, &x_iname))
 	{
 		XSetWMProperties (dpy, _fib_win, &x_wname, &x_iname, NULL, 0, &hints, &wmhints, NULL);
 		XFree (x_wname.value);
@@ -1546,7 +1722,12 @@ int show_x_fib (Display *dpy, Window parent, int x, int y) {
 	return 0;
 }
 
-void close_x_fib (Display *dpy) {
+/** force close the dialog.
+ * This is normally not needed, the dialog closes itself
+ * when a file is selected or the user cancels selection.
+ * @param dpy X Display connection
+ */
+void x_fib_close (Display *dpy) {
 	if (!_fib_win) return;
 	XFreeGC (dpy, _fib_gc);
 	XDestroyWindow (dpy, _fib_win);
@@ -1569,9 +1750,22 @@ void close_x_fib (Display *dpy) {
 	XFreeColors (dpy, colormap, &_c_gray3.pixel, 1, 0);
 	XFreeColors (dpy, colormap, &_c_gray4.pixel, 1, 0);
 	XFreeColors (dpy, colormap, &_c_gray5.pixel, 1, 0);
+	XFreeColors (dpy, colormap, &_c_gray6.pixel, 1, 0);
 }
 
-int handle_xfib_event (Display *dpy, XEvent *event) {
+/** non-blocking X11 event handler.
+ * It is safe to run this function even if the dialog is
+ * closed or was not initialized.
+ *
+ * @param dpy X Display connection
+ * @param event the XEvent to process
+ * @return status
+ *   0:  the event was not for this window, or file-dialog still
+ *       active, or the dialog window is not displayed.
+ *   >0: file was selected, dialog closed
+ *   <0: file selection was cancelled.
+ */
+int x_fib_handle_events (Display *dpy, XEvent *event) {
 	if (!_fib_win) return 0;
 	if (_status) return 0;
 	if (event->xany.window != _fib_win) {
@@ -1584,6 +1778,9 @@ int handle_xfib_event (Display *dpy, XEvent *event) {
 			break;
 		case UnmapNotify:
 			_fib_mapped = 0;
+			break;
+		case LeaveNotify:
+			fib_update_hover (dpy, 1, 0, 0);
 			break;
 		case ClientMessage:
 			if (!strcmp (XGetAtomName (dpy, event->xclient.message_type), "WM_PROTOCOLS")) {
@@ -1661,7 +1858,7 @@ int handle_xfib_event (Display *dpy, XEvent *event) {
 							}
 							char *sel = strdup (_pathbtn[_pathparts-1].name);
 							fib_opendir (dpy, path, sel);
-							free(sel);
+							free (sel);
 						}
 						break;
 					case XK_Right:
@@ -1694,17 +1891,122 @@ int handle_xfib_event (Display *dpy, XEvent *event) {
 	}
 
 	if (_status) {
-		close_x_fib (dpy);
+		x_fib_close (dpy);
 	}
 	return _status;
 }
 
-int status_x_fib () {
+/** last status of the dialog
+ * @return >0: file was selected, <0: canceled or inactive. 0: active
+ */
+int x_fib_status () {
 	return _status;
 }
 
-char *filename_x_fib () {
-	if (_status > 0)
+/** customize/configure the dialog before calling \ref x_fib_show
+ * changes only have any effect if the dialog is not visible.
+ * @return 0 on success.
+ */
+int x_fib_configure (int k, const char *v) {
+	if (_fib_win) { return -1; }
+	switch (k) {
+		case 0:
+			if (strlen (v) >= sizeof(_cur_path) -1) return -2;
+			if (strlen (v) < 1) return -2;
+			if (v[0] != '/') return -2;
+			if (strstr (v, "//")) return -2;
+			strncpy (_cur_path, v, sizeof(_cur_path));
+			break;
+		case 1:
+			if (strlen (v) >= sizeof(_fib_cfg_title) -1) return -2;
+			strncpy (_fib_cfg_title, v, sizeof(_fib_cfg_title));
+			break;
+		case 2:
+			if (strlen (v) >= sizeof(_fib_cfg_custom_font) -1) return -2;
+			strncpy (_fib_cfg_custom_font, v, sizeof(_fib_cfg_custom_font));
+			break;
+		case 3:
+			if (strlen (v) >= sizeof(_fib_cfg_custom_places) -1) return -2;
+			strncpy (_fib_cfg_custom_places, v, sizeof(_fib_cfg_custom_places));
+			break;
+		default:
+			return -2;
+	}
+	return 0;
+}
+
+/** customize/configure the dialog before calling \ref x_fib_show
+ * changes only have any effect if the dialog is not visible.
+ * @return 0 on success.
+ */
+int x_fib_cfg_buttons (int k, int v) {
+	if (_fib_win) { return -1; }
+	switch (k) {
+		case 1:
+			if (v < 0) {
+				_btn_hidden.flags |= 8;
+			} else {
+				_btn_hidden.flags &= ~8;
+			}
+			if (v == 1) {
+				_btn_hidden.flags |= 2;
+				_fib_hidden_fn = 1;
+			} else if (v == 0) {
+				_btn_hidden.flags &= 2;
+				_fib_hidden_fn = 0;
+			}
+			break;
+		case 2:
+			if (v < 0) {
+				_btn_places.flags |= 8;
+			} else {
+				_btn_places.flags &= ~8;
+			}
+			if (v == 1) {
+				_btn_places.flags |= 2;
+				_fib_show_places = 1;
+			} else if (v == 0) {
+				_btn_places.flags &= ~2;
+				_fib_show_places = 0;
+			}
+			break;
+		case 3:
+			// NB. filter button is automatically hidden
+			// IFF the filter-function is NULL.
+			if (v < 0) {
+				_btn_filter.flags |= 8;
+			} else {
+				_btn_filter.flags &= ~8;
+			}
+			if (v == 1) {
+				_btn_filter.flags &= ~2; // inverse - 'show all' = !filter
+				_fib_filter_fn = 1;
+			} else if (v == 0) {
+				_btn_filter.flags |= 2;
+				_fib_filter_fn = 0;
+			}
+		default:
+			return -2;
+	}
+	return 0;
+}
+
+/** set custom callback to filter file-names.
+ * NULL will disable the filter and hide the 'show all' button.
+ * changes only have any effect if the dialog is not visible.
+ * @return 0 on success.
+ */
+int x_fib_cfg_filter_callback (int (*cb)(const char*)) {
+	if (_fib_win) { return -1; }
+	_fib_filter_function = cb;
+	return 0;
+}
+
+/** query the selected filename
+ * @return NULL if none set, or allocated string to be free()ed by the called
+ */
+char *x_fib_filename () {
+	if (_status > 0 && !_fib_win)
 		return strdup (_rv_open);
 	else
 		return NULL;
@@ -1718,26 +2020,27 @@ int main (int argc, char **argv) {
 	Display* dpy = XOpenDisplay (0);
 	if (!dpy) return -1;
 
-	show_x_fib (dpy, 0, 300, 300);
+	x_fib_cfg_filter_callback (fib_filter_movie_filename);
+	x_fib_show (dpy, 0, 300, 300);
 
 	while (1) {
 		XEvent event;
 		while (XPending (dpy) > 0) {
 			XNextEvent (dpy, &event);
-			if (handle_xfib_event (dpy, &event)) {
-				if (status_x_fib () > 0) {
-					char *fn = filename_x_fib ();
+			if (x_fib_handle_events (dpy, &event)) {
+				if (x_fib_status () > 0) {
+					char *fn = x_fib_filename ();
 					printf ("OPEN '%s'\n", fn);
 					free (fn);
 				}
 			}
 		}
-		if (status_x_fib ()) {
+		if (x_fib_status ()) {
 			break;
 		}
 		usleep (80000);
 	}
-	close_x_fib (dpy);
+	x_fib_close (dpy);
 	XCloseDisplay (dpy);
 	return 0;
 }

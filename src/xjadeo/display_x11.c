@@ -274,9 +274,9 @@ static void xj_handle_X_events (void) {
 		if (handle_xdlg_event(xj_dpy, &event)) continue;
 #endif
 #ifdef XFIB
-		if (handle_xfib_event (xj_dpy, &event)) {
-			if (status_x_fib () > 0) {
-				char *fn = filename_x_fib ();
+		if (x_fib_handle_events (xj_dpy, &event)) {
+			if (x_fib_status () > 0) {
+				char *fn = x_fib_filename ();
 				xapi_open (fn);
 				free (fn);
 			}
@@ -367,8 +367,12 @@ static void xj_handle_X_events (void) {
 
 					int n = XLookupString(&event.xkey, buf, sizeof(buf), &key, &stat);
 					if (event.xkey.state & ControlMask && n == 1 && key == XK_o) {
-						if (!(interaction_override & OVR_LOADFILE))
-							show_x_fib (xj_dpy, xj_win, 0, 0);
+#ifdef XFIB
+						if (!(interaction_override & OVR_LOADFILE)) {
+							x_fib_cfg_filter_callback(fib_filter_movie_filename);
+							x_fib_show (xj_dpy, xj_win, 0, 0);
+						}
+#endif
 					}
 					else if (event.xkey.state & ControlMask && n == 1 && key == XK_w) {
 						if (!(interaction_override & OVR_LOADFILE))
@@ -1000,7 +1004,7 @@ void close_window_xv(void) {
 	close_x_dialog(xj_dpy);
 #endif
 #ifdef XFIB
-	close_x_fib(xj_dpy);
+	x_fib_close (xj_dpy);
 #endif
 	XvStopVideo(xj_dpy, xv_port, xj_win);
 	if(xv_shminfo.shmaddr) {
