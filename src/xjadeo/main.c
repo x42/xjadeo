@@ -821,6 +821,9 @@ static void clean_up (int status) {
 	if (load_rc) free(load_rc);
 	if (load_movie) free(load_movie);
 
+	x_fib_save_recent (x_fib_recent_file ("xjadeo"));
+	x_fib_free_recent ();
+
 	if (!want_quiet)
 		fprintf(stdout, "\nBye!\n");
 	exit(status);
@@ -1013,6 +1016,8 @@ int main (int argc, char **argv)
 	}
 
 	if (videomode < 0) vidoutmode(videomode); // dump modes and exit.
+
+	x_fib_load_recent (x_fib_recent_file ("xjadeo"));
 
 	if ((i+1)== argc) movie = argv[i];
 	else movie = "";

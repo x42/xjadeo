@@ -1543,6 +1543,7 @@ int open_movie (char* file_name) {
 	OSD_nfo_geo[0][sizeof(OSD_nfo_tme[0]) - 1] = '\0';
 
 	current_file = strdup (file_name);
+	x_fib_add_recent (current_file, time (NULL));
 
 	start_index_thread();
 

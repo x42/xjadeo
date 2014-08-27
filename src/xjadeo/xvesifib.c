@@ -25,26 +25,263 @@
 #define HAVE_LIBXV
 #endif
 
-#ifdef XFIB
-#if (defined HAVE_LIBXV || defined HAVE_IMLIB2 || (defined HAVE_GL && !defined PLATFORM_WINDOWS && !defined PLATFORM_OSX))
-
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <mntent.h>
-
-#include <dirent.h>
+#include <libgen.h>
+#include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <assert.h>
+
+// shared 'recently used' implementation
+
+#define MAX_RECENT_ENTRIES 24
+
+typedef struct {
+	char path[1024];
+	time_t atime;
+} FibRecentFile;
+
+static FibRecentFile *_recentlist = NULL;
+static int            _recentcnt = 0;
+static uint8_t        _recentlock = 0;
+
+static int fib_isxdigit (const char x) {
+	if (
+			(x >= '0' && x <= '9')
+			||
+			(x >= 'a' && x <= 'f')
+			||
+			(x >= 'A' && x <= 'F')
+		 ) return 1;
+	return 0;
+}
+
+static void decode_3986 (char *str) {
+	int len = strlen (str);
+	int idx = 0;
+	while (idx + 2 < len) {
+		char *in = &str[idx];
+		if (('%' == *in) && fib_isxdigit (in[1]) && fib_isxdigit (in[2])) {
+			char hexstr[3];
+			hexstr[0] = in[1];
+			hexstr[1] = in[2];
+			hexstr[2] = 0;
+			long hex = strtol (hexstr, NULL, 16);
+			*in = hex;
+			memmove (&str[idx+1], &str[idx + 3], len - idx - 2);
+			len -= 2;
+		}
+		++idx;
+	}
+}
+
+static char *encode_3986 (const char *str) {
+	size_t alloc, newlen;
+	char *ns = NULL;
+	unsigned char in;
+	size_t i = 0;
+	size_t length;
+
+	if (!str) return strdup ("");
+
+	alloc = strlen (str) + 1;
+	newlen = alloc;
+
+	ns = (char*) malloc (alloc);
+
+	length = alloc;
+	while (--length) {
+		in = *str;
+
+		switch (in) {
+			case '0': case '1': case '2': case '3': case '4':
+			case '5': case '6': case '7': case '8': case '9':
+			case 'a': case 'b': case 'c': case 'd': case 'e':
+			case 'f': case 'g': case 'h': case 'i': case 'j':
+			case 'k': case 'l': case 'm': case 'n': case 'o':
+			case 'p': case 'q': case 'r': case 's': case 't':
+			case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
+			case 'A': case 'B': case 'C': case 'D': case 'E':
+			case 'F': case 'G': case 'H': case 'I': case 'J':
+			case 'K': case 'L': case 'M': case 'N': case 'O':
+			case 'P': case 'Q': case 'R': case 'S': case 'T':
+			case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
+			case '_': case '~': case '.': case '-':
+			case '/': case ',': // XXX not in RFC3986
+				ns[i++] = in;
+				break;
+			default:
+				newlen += 2; /* this'll become a %XX */
+				if (newlen > alloc) {
+					alloc *= 2;
+					ns = (char*) realloc (ns, alloc);
+				}
+				snprintf (&ns[i], 4, "%%%02X", in);
+				i += 3;
+				break;
+		}
+		++str;
+	}
+	ns[i] = 0;
+	return ns;
+}
+
+void x_fib_free_recent () {
+	free (_recentlist);
+	_recentlist = NULL;
+	_recentcnt = 0;
+}
+
+static int cmp_recent (const void *p1, const void *p2) {
+	FibRecentFile *a = (FibRecentFile*) p1;
+	FibRecentFile *b = (FibRecentFile*) p2;
+	if (a->atime == b->atime) return 0;
+	return a->atime < b->atime;
+}
+
+int x_fib_add_recent (const char *path, time_t atime) {
+	int i;
+	struct stat fs;
+	if (_recentlock) { return -1; }
+	if (access (path, R_OK)) {
+		return 0;
+	}
+	if (stat (path, &fs)) {
+		return 0;
+	}
+	if (!S_ISREG (fs.st_mode)) {
+		return 0;
+	}
+	for (i = 0; i < _recentcnt; ++i) {
+		if (!strcmp (_recentlist[i].path, path)) {
+			if (_recentlist[i].atime < atime) {
+				_recentlist[i].atime = atime;
+			}
+			qsort (_recentlist, _recentcnt, sizeof(FibRecentFile), cmp_recent);
+			return _recentcnt;
+		}
+	}
+	_recentlist = realloc (_recentlist, (_recentcnt + 1) * sizeof(FibRecentFile));
+	_recentlist[_recentcnt].atime = atime;
+	strcpy (_recentlist[_recentcnt].path, path);
+	qsort (_recentlist, _recentcnt + 1, sizeof(FibRecentFile), cmp_recent);
+
+	if (_recentcnt >= MAX_RECENT_ENTRIES) {
+		return (_recentcnt);
+	}
+	return (++_recentcnt);
+}
+
+int x_fib_save_recent (const char *fn) {
+	if (_recentlock) { return -1; }
+	if (_recentcnt < 1 || !_recentlist) { return -1; }
+	int i;
+	char *dn = strdup (fn);
+	mkdir (dirname (dn), 0755);
+	free (dn);
+
+	FILE *rf = fopen (fn, "w");
+	if (!rf) return -1;
+
+	qsort (_recentlist, _recentcnt, sizeof(FibRecentFile), cmp_recent);
+	for (i = 0; i < _recentcnt; ++i) {
+		char *n = encode_3986 (_recentlist[i].path);
+		fprintf (rf, "%s %lu\n", n, _recentlist[i].atime);
+		free (n);
+	}
+	fclose (rf);
+	return 0;
+}
+
+int x_fib_load_recent (const char *fn) {
+	char tmp[1024];
+	if (_recentlock) { return -1; }
+	x_fib_free_recent ();
+	if (access (fn, R_OK)) {
+		return -1;
+	}
+	FILE *rf = fopen (fn, "r");
+	if (!rf) return -1;
+	while (fgets (tmp, sizeof(tmp), rf)
+			&& strlen (tmp) > 1
+			&& strlen (tmp) < sizeof(tmp))
+	{
+		char *s;
+		tmp[strlen (tmp) - 1] = '\0'; // strip newline
+		if (!(s = strchr (tmp, ' '))) { // find name <> atime sep
+			continue;
+		}
+		*s = '\0';
+		time_t t = atol (++s);
+		decode_3986 (tmp);
+		x_fib_add_recent (tmp, t);
+	}
+	fclose (rf);
+	return 0;
+}
+
+const int x_fib_recent_count () {
+	return _recentcnt;
+}
+
+const char *x_fib_recent_at (int i) {
+	if (i < 0 || i >= _recentcnt)
+		return NULL;
+	return _recentlist[i].path;
+}
+
+#ifdef PLATFORM_WINDOWS
+#define PATHSEP "\\"
+#else
+#define PATHSEP "/"
+#endif
+
+const char *x_fib_recent_file(const char *appname) {
+	static char recent_file[1024];
+	assert(!strchr(appname, '/'));
+	const char *xdg = getenv("XDG_DATA_HOME");
+	if (xdg && (strlen(xdg) + strlen(appname) + 10) < sizeof(recent_file)) {
+		sprintf(recent_file, "%s" PATHSEP "%s" PATHSEP "recent", xdg, appname);
+		return recent_file;
+	}
+#ifdef PLATFORM_WINDOWS
+	const char * homedrive = getenv("HOMEDRIVE");
+	const char * homepath = getenv("HOMEPATH");
+	if (homedrive && homepath && (strlen(homedrive) + strlen(homepath) + strlen(appname) + 29) < PATH_MAX) {
+		sprintf(filename, "%s%s" PATHSEP "Application Data" PATHSEP "%s" PATHSEP "recent.txt", homedrive, homepath, appname);
+		return recent_file;
+	}
+#elif defined PLATFORM_OSX
+	const char *home = getenv("HOME");
+	if (home && (strlen(home) + strlen(appname) + 29) < sizeof(recent_file)) {
+		sprintf(recent_file, "%s/Library/Preferences/%s/recent", home, appname);
+		return recent_file;
+	}
+#else
+	const char *home = getenv("HOME");
+	if (home && (strlen(home) + strlen(appname) + 22) < sizeof(recent_file)) {
+		sprintf(recent_file, "%s/.local/share/%s/recent", home, appname);
+		return recent_file;
+	}
+#endif
+	return NULL;
+}
+
+
+#ifdef XFIB
+#if (defined HAVE_LIBXV || defined HAVE_IMLIB2 || (defined HAVE_GL && !defined PLATFORM_WINDOWS && !defined PLATFORM_OSX))
+#include <mntent.h>
+#include <dirent.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <X11/Xos.h>
-
-#include <assert.h>
 
 #ifndef MIN
 #define MIN(A,B) ( (A) < (B) ? (A) : (B) )
@@ -117,7 +354,8 @@ typedef struct {
 	int ssizew;
 	off_t size;
 	time_t mtime;
-	uint8_t flags; // 2: selected, 4: isdir
+	uint8_t flags; // 2: selected, 4: isdir 8: recent-entry
+	FibRecentFile *rfp;
 } FibFileEntry;
 
 typedef struct {
@@ -221,7 +459,6 @@ static void fib_expose (Display *dpy, Window win) {
 	}
 
 	// Top Row: dirs and up navigation
-	assert (_pathparts > 0);
 
 	int ppw = 0;
 	int ppx = FAREAMRGB;
@@ -391,7 +628,10 @@ static void fib_expose (Display *dpy, Window win) {
 				t_s - TEXTSEP, ltop - _fib_font_vsep + 3,
 				t_s - TEXTSEP, ltop - 3);
 		XSetForeground (dpy, _fib_gc, blackColor);
-		XDrawString (dpy, win, _fib_gc, t_s, ttop, "Last Modified", 13);
+		if (_pathparts > 0)
+			XDrawString (dpy, win, _fib_gc, t_s, ttop, "Last Modified", 13);
+		else
+			XDrawString (dpy, win, _fib_gc, t_s, ttop, "Last Used", 9);
 	}
 
 	// scrollbar sep
@@ -473,7 +713,7 @@ static void fib_expose (Display *dpy, Window win) {
 		}
 		XFillRectangle (dpy, win, _fib_gc, sx0 + 1, stop + SCROLLBOXH + sy0, SCROLLBARW - 2, sy1);
 
-		int scrw = (SCROLLBARW -3)/2;
+		int scrw = (SCROLLBARW -3) / 2;
 		// arrows top and bottom
 		if (_hov_s == 1) {
 			XSetForeground (dpy, _fib_gc, _c_gray0.pixel);
@@ -554,7 +794,7 @@ static void fib_expose (Display *dpy, Window win) {
 	int xtra = _fib_width - _btn_span;
 	const int cbox = _fib_font_ascent - 2;
 	const int bbase = _fib_height - BTNBTMMARGIN * _fib_font_vsep - BTNPADDING;
-	const int cblw = cbox > 20 ? 5 : 3;
+	const int cblw = cbox > 20 ? 5 : ( cbox > 9 ? 3 : 1);
 
 	int bx = FAREAMRGB;
 	for (i = 0; i < numb; ++i) {
@@ -562,14 +802,24 @@ static void fib_expose (Display *dpy, Window win) {
 		if (_btns[i]->flags & 4) {
 			// checkbutton
 			const int cby0 = bbase - cbox + 1 + BTNPADDING;
-			XSetForeground (dpy, _fib_gc, blackColor);
+			if (i == _hov_b) {
+				XSetForeground (dpy, _fib_gc, _c_gray4.pixel);
+			} else {
+				XSetForeground (dpy, _fib_gc, blackColor);
+			}
 			XDrawRectangle (dpy, win, _fib_gc,
 					bx, cby0 - 1, cbox + 1, cbox + 1);
+			XDrawString (dpy, win, _fib_gc, BTNPADDING + bx + _fib_font_ascent, 1 + bbase + BTNPADDING,
+					_btns[i]->text, strlen (_btns[i]->text));
 
 			if (i == _hov_b) {
 				XSetForeground (dpy, _fib_gc, _c_gray0.pixel);
 			} else {
-				XSetForeground (dpy, _fib_gc, _c_gray2.pixel);
+				if (_btns[i]->flags & 2) {
+					XSetForeground (dpy, _fib_gc, _c_gray1.pixel);
+				} else {
+					XSetForeground (dpy, _fib_gc, _c_gray2.pixel);
+				}
 			}
 			XFillRectangle (dpy, win, _fib_gc,
 					bx+1, cby0, cbox, cbox);
@@ -585,15 +835,6 @@ static void fib_expose (Display *dpy, Window win) {
 						bx + 2, cby0 + cbox - 2);
 				XSetLineAttributes (dpy, _fib_gc, 1, LineSolid, CapButt, JoinMiter);
 			}
-
-			if (i == _hov_b) {
-				XSetForeground (dpy, _fib_gc, _c_gray4.pixel);
-			} else {
-				XSetForeground (dpy, _fib_gc, blackColor);
-			}
-			XDrawString (dpy, win, _fib_gc, BTNPADDING + bx + _fib_font_ascent, 1 + bbase + BTNPADDING,
-					_btns[i]->text, strlen (_btns[i]->text));
-
 		} else {
 			if (xtra > 0) {
 				bx += xtra;
@@ -830,15 +1071,7 @@ static inline int fib_filter (const char *name) {
 	}
 }
 
-static int fib_opendir (Display *dpy, const char* path, const char *sel) {
-	char *t0, *t1;
-	int i;
-
-	assert (strlen (path) < sizeof(_cur_path) -1);
-	assert (strlen (path) > 0);
-	assert (strstr (path, "//") == NULL);
-	assert (path[0] == '/');
-
+static void fib_pre_opendir (Display *dpy) {
 	if (_dirlist) free (_dirlist);
 	if (_pathbtn) free (_pathbtn);
 	_dirlist = NULL;
@@ -846,16 +1079,112 @@ static int fib_opendir (Display *dpy, const char* path, const char *sel) {
 	_dircount = 0;
 	_pathparts = 0;
 	query_font_geometry (dpy, _fib_gc, "Size  ", &_fib_font_size_width, NULL, NULL, NULL);
-	query_font_geometry (dpy, _fib_gc, "Last Modified", &_fib_font_time_width, NULL, NULL, NULL);
 	fib_reset ();
 	_fsel = -1;
+}
 
+static void fib_post_opendir (Display *dpy, const char *sel) {
+	if (_dircount > 0)
+		_fsel = 0; // select first
+	else
+		_fsel = -1;
+	fib_resort (sel);
+
+	if (_dircount > 0 && _fsel >= 0) {
+		fib_select (dpy, _fsel);
+	} else {
+		fib_expose (dpy, _fib_win);
+	}
+}
+
+static int fib_dirlistadd (Display *dpy, const int i, const char* path, const char *name, time_t mtime) {
+	char tp[1024];
+	struct stat fs;
+	if (!_fib_hidden_fn && name[0] == '.') return -1;
+	if (!strcmp (name, ".")) return -1;
+	if (!strcmp (name, "..")) return -1;
+	strcpy (tp, path);
+	strcat (tp, name);
+	if (access (tp, R_OK)) {
+		return -1;
+	}
+	if (stat (tp, &fs)) {
+		return -1;
+	}
+	assert (i < _dircount); // could happen if dir changes while we're reading.
+	if (i >= _dircount) return -1;
+	if (S_ISDIR (fs.st_mode)) {
+		_dirlist[i].flags |= 4;
+	}
+	else if (S_ISREG (fs.st_mode)) {
+		if (!fib_filter (name)) return -1;
+	}
+#if 0 // only needed with lstat()
+	else if (S_ISLNK (fs.st_mode)) {
+		if (!fib_filter (name)) return -1;
+	}
+#endif
+	else {
+		return -1;
+	}
+	strcpy (_dirlist[i].name, name);
+	_dirlist[i].mtime = mtime > 0 ? mtime : fs.st_mtime;
+	_dirlist[i].size = fs.st_size;
+	if (!(_dirlist[i].flags & 4))
+		fmt_size (dpy, &_dirlist[i]);
+	fmt_time (dpy, &_dirlist[i]);
+	return 0;
+}
+
+static int fib_openrecent (Display *dpy, const char *sel) {
+	int i, j;
+	assert (_recentcnt > 0);
+	fib_pre_opendir (dpy);
+	query_font_geometry (dpy, _fib_gc, "Last Used", &_fib_font_time_width, NULL, NULL, NULL);
+	_dirlist = calloc (_recentcnt, sizeof(FibFileEntry));
+	_dircount = _recentcnt;
+	for (j = 0, i = 0; j < _recentcnt; ++j) {
+		char base[1024];
+		char *s = strrchr (_recentlist[j].path, '/');
+		if (!s || !*++s) continue;
+		size_t len = (s - _recentlist[j].path);
+		strncpy (base, _recentlist[j].path, len);
+		base[len] = '\0';
+		if (!fib_dirlistadd (dpy, i, base, s, _recentlist[j].atime)) {
+			_dirlist[i].rfp = &_recentlist[j];
+			_dirlist[i].flags |= 8;
+			++i;
+		}
+	}
+	_dircount = i;
+	fib_post_opendir (dpy, sel);
+	return _dircount;
+}
+
+static int fib_opendir (Display *dpy, const char* path, const char *sel) {
+	char *t0, *t1;
+	int i;
+
+	assert (path);
+
+	if (strlen (path) == 0 && _recentcnt > 0) { // XXX
+		strcpy (_cur_path, "");
+		return fib_openrecent (dpy, sel);
+	}
+
+	assert (strlen (path) < sizeof(_cur_path) -1);
+	assert (strlen (path) > 0);
+	assert (strstr (path, "//") == NULL);
+	assert (path[0] == '/');
+
+	fib_pre_opendir (dpy);
+
+	query_font_geometry (dpy, _fib_gc, "Last Modified", &_fib_font_time_width, NULL, NULL, NULL);
 	DIR *dir = opendir (path);
 	if (!dir) {
 		strcpy (_cur_path, "/");
 	} else {
 		int i;
-		char tp[1024];
 		struct dirent *de;
 		strcpy (_cur_path, path);
 
@@ -874,46 +1203,11 @@ static int fib_opendir (Display *dpy, const char* path, const char *sel) {
 
 		i = 0;
 		while ((de = readdir (dir))) {
-			struct stat fs;
-			if (!_fib_hidden_fn && de->d_name[0] == '.') continue;
-			if (!strcmp (de->d_name, ".")) continue;
-			if (!strcmp (de->d_name, "..")) continue;
-			strcpy (tp, _cur_path);
-			strcat (tp, de->d_name);
-			if (access (tp, R_OK)) {
-				continue;
-			}
-			if (stat (tp, &fs)) {
-				continue;
-			}
-			assert (i < _dircount); // could happen if dir changes while we're reading.
-			if (S_ISDIR (fs.st_mode)) {
-				_dirlist[i].flags |= 4;
-			}
-			else if (S_ISREG (fs.st_mode)) {
-				if (!fib_filter (de->d_name)) continue;
-			}
-			else if (S_ISLNK (fs.st_mode)) {
-				if (!fib_filter (de->d_name)) continue;
-			}
-			else {
-				continue;
-			}
-			strcpy (_dirlist[i].name, de->d_name);
-			_dirlist[i].mtime = fs.st_mtime;
-			_dirlist[i].size = fs.st_size;
-			if (!(_dirlist[i].flags & 4))
-				fmt_size (dpy, &_dirlist[i]);
-			fmt_time (dpy, &_dirlist[i]);
-			++i;
+			if (!fib_dirlistadd (dpy, i, _cur_path, de->d_name, 0))
+				++i;
 		}
 		_dircount = i;
 		closedir (dir);
-		if (_dircount > 0)
-			_fsel = 0; // select first
-		else
-			_fsel = -1;
-		fib_resort (sel);
 	}
 
 	t0 = _cur_path;
@@ -939,16 +1233,18 @@ static int fib_opendir (Display *dpy, const char* path, const char *sel) {
 		t1 = t0 + 1;
 		++i;
 	}
-	if (_dircount > 0 && _fsel >= 0) {
-		fib_select (dpy, _fsel);
-	} else {
-		fib_expose (dpy, _fib_win);
-	}
+	fib_post_opendir (dpy, sel);
 	return _dircount;
 }
 
 static int fib_open (Display *dpy, int item) {
 	char tp[1024];
+	if (_dirlist[item].flags & 8) {
+		assert (_dirlist[item].rfp);
+		strcpy (_rv_open, _dirlist[item].rfp->path);
+		_status = 1;
+		return 0;
+	}
 	strcpy (tp, _cur_path);
 	strcat (tp, _dirlist[item].name);
 	if (_dirlist[item].flags & 4) {
@@ -1021,7 +1317,7 @@ static int fib_widget_at_pos (Display *dpy, int x, int y, int *it) {
 	assert (it);
 
 	// paths at top
-	if (y > ptop && y < ptop + _fib_font_height && _view_p >= 0) {
+	if (y > ptop && y < ptop + _fib_font_height && _view_p >= 0 && _pathparts > 0) {
 		int i = _view_p;
 		*it = -1;
 		if (i > 0) { // special case '<'
@@ -1037,7 +1333,7 @@ static int fib_widget_at_pos (Display *dpy, int x, int y, int *it) {
 			}
 			++i;
 		}
-		assert(*it < _pathparts);
+		assert (*it < _pathparts);
 		if (*it >= 0) return 1;
 		else return 0;
 	}
@@ -1280,6 +1576,20 @@ static void fib_mouseup (Display *dpy, int x, int y, int btn, unsigned long time
 	_scrl_my = -1;
 }
 
+static void add_place_raw (Display *dpy, const char *name, const char *path) {
+	_placelist = realloc (_placelist, (_placecnt + 1) * sizeof(FibPlace));
+	strcpy (_placelist[_placecnt].path, path);
+	strcpy (_placelist[_placecnt].name, name);
+	_placelist[_placecnt].flags = 0;
+
+	int sw;
+	query_font_geometry (dpy, _fib_gc, name, &sw, NULL, NULL, NULL);
+	if (sw > _fib_place_width) {
+		_fib_place_width = sw;
+	}
+	++_placecnt;
+}
+
 static int add_place_places (Display *dpy, const char *name, const char *url) {
 	char const * path;
 	struct stat fs;
@@ -1311,49 +1621,8 @@ static int add_place_places (Display *dpy, const char *name, const char *url) {
 			return -1;
 		}
 	}
-
-	_placelist = realloc (_placelist, (_placecnt + 1) * sizeof(FibPlace));
-	strcpy (_placelist[_placecnt].path, path);
-	strcpy (_placelist[_placecnt].name, name);
-	_placelist[_placecnt].flags = 0;
-
-	int sw;
-	query_font_geometry (dpy, _fib_gc, name, &sw, NULL, NULL, NULL);
-	if (sw > _fib_place_width) {
-		_fib_place_width = sw;
-	}
-	++_placecnt;
+	add_place_raw (dpy, name, path);
 	return 0;
-}
-
-static int fib_isxdigit (const char x) {
-	if (
-			(x >= '0' && x <= '9')
-			||
-			(x >= 'a' && x <= 'f')
-			||
-			(x >= 'A' && x <= 'F')
-		 ) return 1;
-	return 0;
-}
-
-static void decode_3986 (char *str) {
-	int len = strlen (str);
-	int idx = 0;
-	while (idx + 2 < len) {
-		char *in = &str[idx];
-		if (('%' == *in) && fib_isxdigit (in[1]) && fib_isxdigit (in[2])) {
-			char hexstr[3];
-			hexstr[0] = in[1];
-			hexstr[1] = in[2];
-			hexstr[2] = 0;
-			long hex = strtol (hexstr, NULL, 16);
-			*in = hex;
-			memmove (&str[idx+1], &str[idx + 3], len - idx - 2);
-			len -= 2;
-		}
-		++idx;
-	}
 }
 
 static int parse_gtk_bookmarks (Display *dpy, const char *fn) {
@@ -1369,7 +1638,7 @@ static int parse_gtk_bookmarks (Display *dpy, const char *fn) {
 			&& strlen (tmp) < sizeof(tmp))
 	{
 		char *s, *n;
-		tmp[strlen (tmp)-1] = '\0'; // strip newline
+		tmp[strlen (tmp) - 1] = '\0'; // strip newline
 		if ((s = strchr (tmp, ' '))) {
 			*s = '\0';
 			n = strdup (++s);
@@ -1471,6 +1740,11 @@ static void populate_places (Display *dpy) {
 	int spacer = -1;
 	if (_placecnt > 0) return;
 	_fib_place_width = 0;
+
+	if (_recentcnt > 0) {
+		add_place_raw (dpy, "Recently Used", "");
+		_placelist[0].flags |= 4;
+	}
 
 	add_place_places (dpy, "Home", getenv ("HOME"));
 
@@ -1719,6 +1993,7 @@ int x_fib_show (Display *dpy, Window parent, int x, int y) {
 	XGrabKeyboard (dpy, _fib_win, True, GrabModeAsync, GrabModeAsync, CurrentTime);
 	//XSetInputFocus (dpy, parent, RevertToNone, CurrentTime);
 #endif
+	_recentlock = 1;
 	return 0;
 }
 
@@ -1751,6 +2026,7 @@ void x_fib_close (Display *dpy) {
 	XFreeColors (dpy, colormap, &_c_gray4.pixel, 1, 0);
 	XFreeColors (dpy, colormap, &_c_gray5.pixel, 1, 0);
 	XFreeColors (dpy, colormap, &_c_gray6.pixel, 1, 0);
+	_recentlock = 0;
 }
 
 /** non-blocking X11 event handler.
@@ -2021,6 +2297,7 @@ int main (int argc, char **argv) {
 	if (!dpy) return -1;
 
 	x_fib_cfg_filter_callback (fib_filter_movie_filename);
+	x_fib_load_recent ("/tmp/xjrecent.dat");
 	x_fib_show (dpy, 0, 300, 300);
 
 	while (1) {
@@ -2031,6 +2308,7 @@ int main (int argc, char **argv) {
 				if (x_fib_status () > 0) {
 					char *fn = x_fib_filename ();
 					printf ("OPEN '%s'\n", fn);
+					x_fib_add_recent (fn, time (NULL));
 					free (fn);
 				}
 			}
@@ -2041,6 +2319,10 @@ int main (int argc, char **argv) {
 		usleep (80000);
 	}
 	x_fib_close (dpy);
+
+	x_fib_save_recent ("/tmp/xjrecent.dat");
+
+	x_fib_free_recent ();
 	XCloseDisplay (dpy);
 	return 0;
 }

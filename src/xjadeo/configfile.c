@@ -355,6 +355,10 @@ void xjadeorc (void) {
 	// out of luck with CSIDL_LOCAL_APPDATA
 	const char * homedrive = getenv("HOMEDRIVE");
 	const char * homepath = getenv("HOMEPATH");
+	if (homedrive && homepath && (strlen(homedrive) + strlen(homepath) + strlen(XJADEORC) + 25) < PATH_MAX) {
+		sprintf(filename, "%s%s" PATHSEP "Local Settings" PATHSEP "xjadeo" PATHSEP "%s", homedrive, homepath, XJADEORC);
+		if (testfile(filename)) readconfig(filename);
+	}
 	if (homedrive && homepath && (strlen(homedrive) + strlen(homepath) + strlen(XJADEORC) + 16) < PATH_MAX) {
 		sprintf(filename, "%s%s" PATHSEP "Local Settings" PATHSEP "%s", homedrive, homepath, XJADEORC);
 		if (testfile(filename)) readconfig(filename);
@@ -372,8 +376,8 @@ void xjadeorc (void) {
 	}
 	// fall back if XDG_CONFIG_HOME is unset
 #ifdef PLATFORM_OSX
-	if (!xdg && home && (strlen(home) + strlen(XJADEORC) + 21) < PATH_MAX) {
-		sprintf(filename, "%s" PATHSEP "Library/Preferences/%s", home, XJADEORC);
+	if (!xdg && home && (strlen(home) + strlen(XJADEORC) + 28) < PATH_MAX) {
+		sprintf(filename, "%s" PATHSEP "Library/Preferences/xjadeo/%s", home, XJADEORC);
 		if (testfile(filename)) readconfig(filename);
 	}
 #else

@@ -288,4 +288,12 @@ int readconfig (char *fn);
 int render_font (char *fontfile, char *text, int px, int dx);
 void free_freetype ();
 
+/* xvesifib.c - shared */
+void x_fib_free_recent ();
+int x_fib_add_recent (const char *path, time_t atime);
+int x_fib_save_recent (const char *fn);
+int x_fib_load_recent (const char *fn);
+const int x_fib_recent_count ();
+const char *x_fib_recent_at (int i);
+const char *x_fib_recent_file(const char *appname);
 #endif
