@@ -13,7 +13,7 @@ xjadeo_SOURCES=main.c ../../aclocal.m4 ../../config.h \
 	jack.c ltc-jack.c \
 	midi.c freetype.c smpte.c \
 	display.c display.h \
-	display_x_dnd.c display_x_dialog.c xvesifib.c \
+	display_x_dnd.c display_x_dialog.c libsofd.c \
 	display_mac.c display_x11.c display_sdl.c \
 	display_gl_common.h \
 	weak_libjack.c weak_libjack.h \

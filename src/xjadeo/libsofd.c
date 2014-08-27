@@ -1,5 +1,4 @@
-/* xjadeo - very simple X11 file browser
- *        - oh dear, why do this in 2014?
+/* libSOFD - Simple Open File Dialog [for X11 without toolkit]
  *
  * Copyright (C) 2014 Robin Gareus <robin@gareus.org>
  *
@@ -16,6 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+
+/* Test and example:
+ *   gcc -Wall -D XFIB_TEST -g -o xvesifib xvesifib.c -lX11
+ * public API documentation and example code at the bottom of this file
+ *
+ * This small lib may one day include openGL rendering and
+ * wayland window support, but not today. Today we celebrate
+ * 30 years of X11.
  */
 
 #ifndef XFIB_TEST
@@ -37,8 +45,12 @@
 #include <assert.h>
 
 // shared 'recently used' implementation
+// sadly, xbel does not qualify as simple.
+// hence we use a simple format alike the
+// gtk-bookmark list (one file per line)
 
 #define MAX_RECENT_ENTRIES 24
+#define MAX_RECENT_AGE (15552000) // 180 days (in sec)
 
 typedef struct {
 	char path[1024];
@@ -46,7 +58,7 @@ typedef struct {
 } FibRecentFile;
 
 static FibRecentFile *_recentlist = NULL;
-static int            _recentcnt = 0;
+static unsigned int   _recentcnt = 0;
 static uint8_t        _recentlock = 0;
 
 static int fib_isxdigit (const char x) {
@@ -148,14 +160,19 @@ int x_fib_add_recent (const char *path, time_t atime) {
 	struct stat fs;
 	if (_recentlock) { return -1; }
 	if (access (path, R_OK)) {
-		return 0;
+		return -1;
 	}
 	if (stat (path, &fs)) {
-		return 0;
+		return -1;
 	}
 	if (!S_ISREG (fs.st_mode)) {
-		return 0;
+		return -1;
 	}
+	if (atime == 0) atime = time (NULL);
+	if (MAX_RECENT_AGE > 0 && atime + MAX_RECENT_AGE < time (NULL)) {
+		return -1;
+	}
+
 	for (i = 0; i < _recentcnt; ++i) {
 		if (!strcmp (_recentlist[i].path, path)) {
 			if (_recentlist[i].atime < atime) {
@@ -176,12 +193,49 @@ int x_fib_add_recent (const char *path, time_t atime) {
 	return (++_recentcnt);
 }
 
+#ifdef PATHSEP
+#undef PATHSEP
+#endif
+
+#ifdef PLATFORM_WINDOWS
+#define DIRSEP '\\'
+#else
+#define DIRSEP '/'
+#endif
+
+static void mkpath(const char *dir) {
+	char tmp[1024];
+	char *p;
+	size_t len;
+
+	snprintf (tmp, sizeof(tmp), "%s", dir);
+	len = strlen(tmp);
+	if (tmp[len - 1] == '/')
+		tmp[len - 1] = 0;
+	for (p = tmp + 1; *p; ++p)
+		if(*p == DIRSEP) {
+			*p = 0;
+#ifdef PLATFORM_WINDOWS
+			mkdir(tmp);
+#else
+			mkdir(tmp, 0755);
+#endif
+			*p = DIRSEP;
+		}
+#ifdef PLATFORM_WINDOWS
+	mkdir(tmp);
+#else
+	mkdir(tmp, 0755);
+#endif
+}
+
 int x_fib_save_recent (const char *fn) {
 	if (_recentlock) { return -1; }
+	if (!fn) { return -1; }
 	if (_recentcnt < 1 || !_recentlist) { return -1; }
 	int i;
 	char *dn = strdup (fn);
-	mkdir (dirname (dn), 0755);
+	mkpath (dirname (dn));
 	free (dn);
 
 	FILE *rf = fopen (fn, "w");
@@ -200,6 +254,7 @@ int x_fib_save_recent (const char *fn) {
 int x_fib_load_recent (const char *fn) {
 	char tmp[1024];
 	if (_recentlock) { return -1; }
+	if (!fn) { return -1; }
 	x_fib_free_recent ();
 	if (access (fn, R_OK)) {
 		return -1;
@@ -224,12 +279,12 @@ int x_fib_load_recent (const char *fn) {
 	return 0;
 }
 
-const int x_fib_recent_count () {
+unsigned int x_fib_recent_count () {
 	return _recentcnt;
 }
 
-const char *x_fib_recent_at (int i) {
-	if (i < 0 || i >= _recentcnt)
+const char *x_fib_recent_at (unsigned int i) {
+	if (i >= _recentcnt)
 		return NULL;
 	return _recentlist[i].path;
 }
@@ -252,7 +307,7 @@ const char *x_fib_recent_file(const char *appname) {
 	const char * homedrive = getenv("HOMEDRIVE");
 	const char * homepath = getenv("HOMEPATH");
 	if (homedrive && homepath && (strlen(homedrive) + strlen(homepath) + strlen(appname) + 29) < PATH_MAX) {
-		sprintf(filename, "%s%s" PATHSEP "Application Data" PATHSEP "%s" PATHSEP "recent.txt", homedrive, homepath, appname);
+		sprintf(recent_file, "%s%s" PATHSEP "Application Data" PATHSEP "%s" PATHSEP "recent.txt", homedrive, homepath, appname);
 		return recent_file;
 	}
 #elif defined PLATFORM_OSX
@@ -465,7 +520,7 @@ static void fib_expose (Display *dpy, Window win) {
 
 	for (i = _pathparts - 1; i >= 0; --i) {
 		ppw += _pathbtn[i].xw + PSEP;
-		if (ppw >= _fib_width - PSEP - _pathbtn[0].xw - FAREAMRGB) break; // XXX, first change is from "/" to  "<", NOOP
+		if (ppw >= _fib_width - PSEP - _pathbtn[0].xw - FAREAMRGB) break; // XXX, first change is from "/" to "<", NOOP
 	}
 	++i;
 	// border-less "<" parent/up, IFF space is limited
@@ -560,7 +615,7 @@ static void fib_expose (Display *dpy, Window win) {
 	}
 
 	// column headings and sort order
-	int arp = MAX (2, _fib_font_height / 5);  // arrow scale
+	int arp = MAX (2, _fib_font_height / 5); // arrow scale
 	const int trioff = _fib_font_height - _fib_font_ascent - arp + 1;
 	XPoint ptri[4] = { {0, ttop - trioff }, {arp, -arp - arp - 1}, {-arp - arp, 0}, {arp, arp + arp + 1}};
 	if (_sort & 1) {
@@ -677,7 +732,7 @@ static void fib_expose (Display *dpy, Window win) {
 				_dirlist[j].name, strlen (_dirlist[j].name));
 		XSetClipMask (dpy, _fib_gc, None);
 
-		if (_columns & 1)  // right-aligned 'size'
+		if (_columns & 1) // right-aligned 'size'
 			XDrawString (dpy, win, _fib_gc,
 					t_s - TEXTSEP - 2 - _dirlist[j].ssizew, t_y,
 					_dirlist[j].strsize, strlen (_dirlist[j].strsize));
@@ -1027,39 +1082,46 @@ static void fib_select (Display *dpy, int item) {
 
 int fib_filter_movie_filename (const char *name) {
 	if (!_fib_filter_fn) return 1;
-  const int l3 = strlen (name) - 3;
-  const int l4 = l3 - 1;
-  const int l5 = l4 - 1;
-  const int l6 = l5 - 1;
-  const int l9 = l6 - 3;
-  if ((l4 > 0 && ( !strcasecmp (&name[l4], ".avi")
-                || !strcasecmp (&name[l4], ".mov")
-                || !strcasecmp (&name[l4], ".ogg")
-                || !strcasecmp (&name[l4], ".ogv")
-                || !strcasecmp (&name[l4], ".mpg")
-                || !strcasecmp (&name[l4], ".mov")
-                || !strcasecmp (&name[l4], ".mp4")
-                || !strcasecmp (&name[l4], ".mkv")
-                || !strcasecmp (&name[l4], ".vob")
-                || !strcasecmp (&name[l4], ".asf")
-                || !strcasecmp (&name[l4], ".avs")
-                || !strcasecmp (&name[l4], ".dts")
-                || !strcasecmp (&name[l4], ".flv")
-                || !strcasecmp (&name[l4], ".m4v")
-        )) ||
-      (l5 > 0 && ( !strcasecmp (&name[l5], ".h264")
-                || !strcasecmp (&name[l5], ".webm")
-        )) ||
-      (l6 > 0 && ( !strcasecmp (&name[l6], ".dirac")
-        )) ||
-      (l9 > 0 && ( !strcasecmp (&name[l9], ".matroska")
-        )) ||
-      (l3 > 0 && ( !strcasecmp (&name[l3], ".dv")
-                || !strcasecmp (&name[l3], ".ts")
-        ))
-     ) {
-			 return 1;
-		 }
+	const int l3 = strlen (name) - 3;
+	const int l4 = l3 - 1;
+	const int l5 = l4 - 1;
+	const int l6 = l5 - 1;
+	const int l9 = l6 - 3;
+	if (
+			(l4 > 0 && (
+				   !strcasecmp (&name[l4], ".avi")
+				|| !strcasecmp (&name[l4], ".mov")
+				|| !strcasecmp (&name[l4], ".ogg")
+				|| !strcasecmp (&name[l4], ".ogv")
+				|| !strcasecmp (&name[l4], ".mpg")
+				|| !strcasecmp (&name[l4], ".mov")
+				|| !strcasecmp (&name[l4], ".mp4")
+				|| !strcasecmp (&name[l4], ".mkv")
+				|| !strcasecmp (&name[l4], ".vob")
+				|| !strcasecmp (&name[l4], ".asf")
+				|| !strcasecmp (&name[l4], ".avs")
+				|| !strcasecmp (&name[l4], ".dts")
+				|| !strcasecmp (&name[l4], ".flv")
+				|| !strcasecmp (&name[l4], ".m4v")
+				)) ||
+			(l5 > 0 && (
+				   !strcasecmp (&name[l5], ".h264")
+				|| !strcasecmp (&name[l5], ".webm")
+				)) ||
+			(l6 > 0 && (
+				   !strcasecmp (&name[l6], ".dirac")
+				)) ||
+			(l9 > 0 && (
+				   !strcasecmp (&name[l9], ".matroska")
+				)) ||
+			(l3 > 0 && (
+				   !strcasecmp (&name[l3], ".dv")
+				|| !strcasecmp (&name[l3], ".ts")
+				))
+			)
+			{
+				return 1;
+			}
 	return 0;
 }
 
@@ -1167,7 +1229,7 @@ static int fib_opendir (Display *dpy, const char* path, const char *sel) {
 
 	assert (path);
 
-	if (strlen (path) == 0 && _recentcnt > 0) { // XXX
+	if (strlen (path) == 0 && _recentcnt > 0) { // XXX we should use a better indication for this
 		strcpy (_cur_path, "");
 		return fib_openrecent (dpy, sel);
 	}
@@ -1309,7 +1371,7 @@ static void cb_hidden (Display *dpy) {
 
 static int fib_widget_at_pos (Display *dpy, int x, int y, int *it) {
 	const int btop = _fib_height - BTNBTMMARGIN * _fib_font_vsep - _fib_font_ascent - BTNPADDING;
-	const int bbot = btop +  _fib_font_height + BTNPADDING + BTNPADDING;
+	const int bbot = btop + _fib_font_height + BTNPADDING + BTNPADDING;
 	const int llen = (_fib_height - LISTBOT * _fib_font_vsep) / _fib_font_vsep;
 	const int ltop = LISTTOP * _fib_font_vsep;
 	const int fbot = ltop + 4 + llen * _fib_font_vsep;
@@ -1457,7 +1519,6 @@ static void fib_motion (Display *dpy, int x, int y) {
 	const int type = fib_widget_at_pos (dpy, x, y, &it);
 	fib_update_hover (dpy, 0, type, it);
 }
-
 
 static void fib_mousedown (Display *dpy, int x, int y, int btn, unsigned long time) {
 	int it;
@@ -1802,13 +1863,6 @@ static int x_error_handler (Display *d, XErrorEvent *e) {
 	return 0;
 }
 
-/** open a file select dialog
- * @param dpy X Display connection
- * @param parent (optional) if not NULL, become transient for given window
- * @param x if >0 set explict initial width of the window
- * @param y if >0 set explict initial height of the window
- * @return 0 on success
- */
 int x_fib_show (Display *dpy, Window parent, int x, int y) {
 	if (_fib_win) {
 		XSetInputFocus (dpy, _fib_win, RevertToParent, CurrentTime);
@@ -1997,11 +2051,6 @@ int x_fib_show (Display *dpy, Window parent, int x, int y) {
 	return 0;
 }
 
-/** force close the dialog.
- * This is normally not needed, the dialog closes itself
- * when a file is selected or the user cancels selection.
- * @param dpy X Display connection
- */
 void x_fib_close (Display *dpy) {
 	if (!_fib_win) return;
 	XFreeGC (dpy, _fib_gc);
@@ -2029,18 +2078,6 @@ void x_fib_close (Display *dpy) {
 	_recentlock = 0;
 }
 
-/** non-blocking X11 event handler.
- * It is safe to run this function even if the dialog is
- * closed or was not initialized.
- *
- * @param dpy X Display connection
- * @param event the XEvent to process
- * @return status
- *   0:  the event was not for this window, or file-dialog still
- *       active, or the dialog window is not displayed.
- *   >0: file was selected, dialog closed
- *   <0: file selection was cancelled.
- */
 int x_fib_handle_events (Display *dpy, XEvent *event) {
 	if (!_fib_win) return 0;
 	if (_status) return 0;
@@ -2172,17 +2209,10 @@ int x_fib_handle_events (Display *dpy, XEvent *event) {
 	return _status;
 }
 
-/** last status of the dialog
- * @return >0: file was selected, <0: canceled or inactive. 0: active
- */
 int x_fib_status () {
 	return _status;
 }
 
-/** customize/configure the dialog before calling \ref x_fib_show
- * changes only have any effect if the dialog is not visible.
- * @return 0 on success.
- */
 int x_fib_configure (int k, const char *v) {
 	if (_fib_win) { return -1; }
 	switch (k) {
@@ -2211,10 +2241,6 @@ int x_fib_configure (int k, const char *v) {
 	return 0;
 }
 
-/** customize/configure the dialog before calling \ref x_fib_show
- * changes only have any effect if the dialog is not visible.
- * @return 0 on success.
- */
 int x_fib_cfg_buttons (int k, int v) {
 	if (_fib_win) { return -1; }
 	switch (k) {
@@ -2267,20 +2293,12 @@ int x_fib_cfg_buttons (int k, int v) {
 	return 0;
 }
 
-/** set custom callback to filter file-names.
- * NULL will disable the filter and hide the 'show all' button.
- * changes only have any effect if the dialog is not visible.
- * @return 0 on success.
- */
 int x_fib_cfg_filter_callback (int (*cb)(const char*)) {
 	if (_fib_win) { return -1; }
 	_fib_filter_function = cb;
 	return 0;
 }
 
-/** query the selected filename
- * @return NULL if none set, or allocated string to be free()ed by the called
- */
 char *x_fib_filename () {
 	if (_status > 0 && !_fib_win)
 		return strdup (_rv_open);
@@ -2290,14 +2308,171 @@ char *x_fib_filename () {
 #endif // platform
 #endif // XDLG
 
+///////////////////////////////////////////////////////////////////////////////
+/* public API */
 
-#ifdef XFIB_TEST // gcc -Wall -D XFIB_TEST -g -o xvesifib xvesifib.c -lX11
+#ifdef HAVE_X11
+/** open a file select dialog
+ * @param dpy X Display connection
+ * @param parent (optional) if not NULL, become transient for given window
+ * @param x if >0 set explict initial width of the window
+ * @param y if >0 set explict initial height of the window
+ * @return 0 on success
+ */
+int x_fib_show (Display *dpy, Window parent, int x, int y);
+
+/** force close the dialog.
+ * This is normally not needed, the dialog closes itself
+ * when a file is selected or the user cancels selection.
+ * @param dpy X Display connection
+ */
+void x_fib_close (Display *dpy);
+
+/** non-blocking X11 event handler.
+ * It is safe to run this function even if the dialog is
+ * closed or was not initialized.
+ *
+ * @param dpy X Display connection
+ * @param event the XEvent to process
+ * @return status
+ *   0:  the event was not for this window, or file-dialog still
+ *       active, or the dialog window is not displayed.
+ *   >0: file was selected, dialog closed
+ *   <0: file selection was cancelled.
+ */
+int x_fib_handle_events (Display *dpy, XEvent *event);
+
+/** last status of the dialog
+ * @return >0: file was selected, <0: canceled or inactive. 0: active
+ */
+int x_fib_status ();
+
+/** query the selected filename
+ * @return NULL if none set, or allocated string to be free()ed by the called
+ */
+char *x_fib_filename ();
+
+/** customize/configure the dialog before calling \ref x_fib_show
+ * changes only have any effect if the dialog is not visible.
+ * @param k key to change
+ *  0: set current dir to display (must end with slash)
+ *  1: set title of dialog window
+ *  2: specify a custom X11 font to use
+ *  3: specify a custom 'places' file to include
+ *     (following gtk-bookmark convention)
+ * @param v value
+ * @return 0 on success.
+ */
+int x_fib_configure (int k, const char *v);
+
+/** customize/configure the dialog before calling \ref x_fib_show
+ * changes only have any effect if the dialog is not visible.
+ *
+ * @param k button to change:
+ *  1: show hidden files
+ *  2: show places
+ *  3: show filter/list all (automatically hidden if there is no
+ *     filter function)
+ * @param v <0 to hide the button >=0 show button,
+ *  0: set button-state to not-checked
+ *  1: set button-state to checked
+ *  >1: retain current state
+ * @return 0 on success.
+ */
+int x_fib_cfg_buttons (int k, int v);
+
+/** set custom callback to filter file-names.
+ * NULL will disable the filter and hide the 'show all' button.
+ * changes only have any effect if the dialog is not visible.
+ *
+ * @param cb callback function to check file
+ *  the callback function is called with the file name (basename only)
+ *  and is expected to return 1 if the file passes the filter
+ *  and 0 if the file should not be listed by default.
+ * @return 0 on success.
+ */
+int x_fib_cfg_filter_callback (int (*cb)(const char*));
+#endif
+
+/* 'recently used' API. x-platform
+ * NOTE: all functions use a static cache and are not reentrant.
+ * It is expected that none of these functions are called in
+ * parallel from different threads.
+ */
+
+/** release static resources of 'recently used files'
+ */
+void x_fib_free_recent ();
+
+/** add an entry to the recently used list
+ *
+ * The dialog does not add files automatically on open,
+ * if the application succeeds to open a selected file,
+ * this function should be called.
+ *
+ * @param path complete path to file
+ * @param atime time of last use, 0: NOW
+ * @return -1 on error, number of current entries otherwise
+ */
+int x_fib_add_recent (const char *path, time_t atime);
+
+/** get a platform specific path to a good location for
+ * saving the recently used file list.
+ * (follows XDG_DATA_HOME on Unix, and CSIDL_LOCAL_APPDATA spec)
+ *
+ * @param application-name to use to include in file
+ * @return pointer to static path or NULL
+ */
+const char *x_fib_recent_file(const char *appname);
+
+/** save the current list of recently used files to the given filename
+ * (the format is one file per line, filename URL encoded and space separated
+ * with last-used timestamp)
+ *
+ * This function tries to creates the containing directory if it does
+ * not exist.
+ *
+ * @param fn file to save the list to
+ * @return 0: on success
+ */
+int x_fib_save_recent (const char *fn);
+
+/** load a recently used file list.
+ *
+ * @param fn file to load the list from
+ * @return 0: on success
+ */
+int x_fib_load_recent (const char *fn);
+
+/** get number of entries in the current list
+ * @return number of entries in the recently used list
+ */
+unsigned int x_fib_recent_count ();
+
+/** get recently used entry at given position
+ *
+ * @param i entry to query
+ * @return pointer to static string
+ */
+const char *x_fib_recent_at (unsigned int i);
+
+/* end public API */
+///////////////////////////////////////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////////////////////////
+/* example usage
+ * gcc -Wall -D XFIB_TEST -g -o xvesifib xvesifib.c -lX11
+ */
+
+#ifdef XFIB_TEST
 int main (int argc, char **argv) {
 	Display* dpy = XOpenDisplay (0);
 	if (!dpy) return -1;
 
 	x_fib_cfg_filter_callback (fib_filter_movie_filename);
-	x_fib_load_recent ("/tmp/xjrecent.dat");
+	x_fib_configure (1, "Open File");
+	x_fib_load_recent ("/tmp/sofd.recent");
 	x_fib_show (dpy, 0, 300, 300);
 
 	while (1) {
@@ -2320,7 +2495,7 @@ int main (int argc, char **argv) {
 	}
 	x_fib_close (dpy);
 
-	x_fib_save_recent ("/tmp/xjrecent.dat");
+	x_fib_save_recent ("/tmp/sofd.recent");
 
 	x_fib_free_recent ();
 	XCloseDisplay (dpy);

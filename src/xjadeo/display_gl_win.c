@@ -134,7 +134,18 @@ enum wMenuId {
 	mJackPlay,
 	mJackStop,
 	mJackRewind,
+
+	mRecent,
 };
+
+static const char *win_basename(const char *fn) {
+	if (!fn) return NULL;
+	size_t l = strlen(fn);
+	if (l < 1) return fn;
+	if (fn[l] == '/' || fn[l] == '\\') --l;
+	while (l > 0 && fn[l] != '/' && fn[l] != '\\') --l;
+	return &fn[++l];
+}
 
 static void open_context_menu(HWND hwnd, int x, int y) {
 	HMENU hMenu = CreatePopupMenu();
@@ -144,6 +155,7 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 	HMENU hSubMenuOSD  = CreatePopupMenu();
 	HMENU hSubMenuOffs = CreatePopupMenu();
 	HMENU hSubMenuJack = CreatePopupMenu();
+	HMENU hSubRecent   = CreatePopupMenu();
 
 	AppendMenu(hSubMenuSync, MF_STRING, mSyncJack, "Jack");
 	AppendMenu(hSubMenuSync, MF_STRING, mSyncLTC, "LTC");
@@ -271,6 +283,8 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 	unsigned int flags_sync = 0;
 	unsigned int flags_offs = 0;
 	unsigned int flags_jack = 0;
+	unsigned int flags_recent = 0;
+	unsigned int recent_cnt = x_fib_recent_count ();
 	if (!have_open_file()) {
 		flags_close = MF_DISABLED | MF_GRAYED;
 	}
@@ -283,6 +297,7 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 	if (interaction_override & OVR_LOADFILE) {
 		flags_open = MF_DISABLED | MF_GRAYED;
 		flags_close = MF_DISABLED | MF_GRAYED;
+		flags_recent = MF_DISABLED | MF_GRAYED;
 	}
 	if ((interaction_override&OVR_AVOFFSET) != 0 ) {
 		flags_offs = MF_DISABLED | MF_GRAYED;
@@ -290,9 +305,14 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 	if ((interaction_override&OVR_QUIT_KEY) != 0 ) {
 		flags_quit = MF_DISABLED | MF_GRAYED;
 	}
+	if (recent_cnt == 0) {
+		flags_recent = MF_DISABLED | MF_GRAYED;
+	}
 
 	AppendMenu(hSubMenuFile, MF_STRING | flags_open, mLoad, "Open\t Ctrl+O");
 	AppendMenu(hSubMenuFile, MF_STRING | flags_close, mClose, "Close\t Ctrl+W");
+	AppendMenu(hSubMenuFile, MF_SEPARATOR, 0, NULL);
+	AppendMenu(hSubMenuFile, MF_STRING | MF_POPUP | flags_recent, (UINT_PTR)hSubRecent, "Recent");
 	AppendMenu(hSubMenuFile, MF_SEPARATOR, 0, NULL);
 	AppendMenu(hSubMenuFile, MF_STRING | flags_quit, mQuit,  "Quit\t Ctrl+Q");
 
@@ -305,6 +325,15 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 	AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hSubMenuOSD, "OSD");
 	AppendMenu(hMenu, MF_STRING | MF_POPUP | flags_offs, (UINT_PTR)hSubMenuOffs, "Offset");
 	AppendMenu(hMenu, MF_STRING | MF_POPUP | flags_jack, (UINT_PTR)hSubMenuJack, "Transport");
+
+	/* recently used*/
+	int i;
+	for (i = 0; i < recent_cnt && i < 8; ++i) {
+		if (!x_fib_recent_at (i)) break;
+		char *tmp = strdup (x_fib_recent_at (i));
+		AppendMenu(hSubRecent, MF_STRING , mRecent + i, win_basename (tmp));
+		free(tmp);
+	}
 
 	/* and go */
 	context_menu_visible = 1;
@@ -403,6 +432,13 @@ static void win_handle_menu(HWND hwnd, enum wMenuId id) {
 		case mJackPlay:        jackt_start(); break;
 		case mJackStop:        jackt_stop(); break;
 		case mJackRewind:      jackt_rewind(); break;
+		default:
+			if (id >= mRecent && !(interaction_override & OVR_LOADFILE)) {
+				const char *fn = x_fib_recent_at (id - mRecent);
+				if (fn) {
+					PTLL; xapi_open((void*) fn); PTUL;
+				}
+			}
 	}
 }
 #endif

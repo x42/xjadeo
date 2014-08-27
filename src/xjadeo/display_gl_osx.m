@@ -25,6 +25,7 @@ void xapi_close (void *d);
 extern double framerate;
 
 #import <Cocoa/Cocoa.h>
+#include <libgen.h>
 #include <pthread.h>
 
 static pthread_mutex_t osx_vbuf_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -330,6 +331,7 @@ static id osx_window;
 // Menus
 static NSMenuItem *mFileOpen;
 static NSMenuItem *mFileClose;
+static NSMenuItem *mFileRecent;
 static NSMenuItem *mJackTransport;
 static NSMenuItem *mSyncJACK;
 #ifdef HAVE_LTC
@@ -494,9 +496,27 @@ static void update_dpy_menu () {
 			if (interaction_override&OVR_LOADFILE) {
 				[mFileOpen setEnabled:NO];
 				[mFileClose setEnabled:NO];
+				[mFileRecent setEnabled:NO];
 			} else {
+				unsigned int i, recent = x_fib_recent_count();
 				[mFileOpen setEnabled:YES];
 				[mFileClose setEnabled:  have_open_file() ? YES : NO];
+				[mFileRecent setEnabled: recent > 0 ? YES : NO];
+
+				NSMenu *recentMenu = [[NSMenu alloc] initWithTitle:@"Recently Used"];
+				for (i = 0; i < recent && i < 8; ++i) {
+					if (!x_fib_recent_at (i)) break;
+					char *tmp = strdup (x_fib_recent_at (i));
+					char *base = basename(tmp);
+					if (base) {
+						NSString *name = [NSString stringWithUTF8String:base];
+						NSMenuItem *mi = [recentMenu addItemWithTitle:name action:@selector(openRecent:) keyEquivalent:@""];
+						[mi setRepresentedObject: [NSNumber numberWithInt:i]];
+					}
+					free(tmp);
+				}
+				[mFileRecent setSubmenu:recentMenu];
+				[recentMenu release];
 			}
 			break;
 		case 2:
@@ -573,6 +593,16 @@ static void update_dpy_menu () {
 {
 	if (interaction_override&OVR_LOADFILE) return;
 	PTLL; xapi_close (NULL); PTUL;
+}
+
+- (void) openRecent: (id)sender
+{
+	if (interaction_override&OVR_LOADFILE) return;
+	int selectedItem = [[sender representedObject] intValue];
+	const char *fn = x_fib_recent_at (selectedItem);
+	if (fn) {
+		PTLL; xapi_open ((void*)fn); PTUL;
+	}
 }
 
 - (void) syncJack: (id)sender { PTLL; ui_sync_to_jack(); PTUL; }
@@ -685,6 +715,10 @@ static void makeAppMenu (void) {
 
 	mFileOpen  = [fileMenu addItemWithTitle:@"Open" action:@selector(openVideo:) keyEquivalent:@"o"];
 	mFileClose = [fileMenu addItemWithTitle:@"Close" action:@selector(closeVideo:) keyEquivalent:@"w"];
+
+	mFileRecent = [[NSMenuItem alloc] initWithTitle:@"Recent" action:nil keyEquivalent:@""];
+	[fileMenu addItem:[NSMenuItem separatorItem]];
+	[fileMenu addItem:mFileRecent];
 
 	fileMenuItem = [[NSMenuItem alloc] initWithTitle:@"File" action:nil keyEquivalent:@""];
 	[fileMenuItem setSubmenu:fileMenu];
