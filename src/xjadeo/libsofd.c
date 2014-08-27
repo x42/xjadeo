@@ -350,6 +350,7 @@ static Window   _fib_win = 0;
 static GC       _fib_gc = 0;
 static XColor   _c_gray0, _c_gray1, _c_gray2, _c_gray3, _c_gray4, _c_gray5, _c_gray6;
 static Font     _fibfont = 0;
+static Pixmap   _pixbuffer = None;
 
 static int      _fib_width  = 100;
 static int      _fib_height = 100;
@@ -467,6 +468,7 @@ static int (*_fib_filter_function)(const char *filename);
 
 #define DBLCLKTME 200 //msec; double click time
 #define DRAW_OUTLINE
+#define DOUBLE_BUFFER
 
 static int query_font_geometry (Display *dpy, GC gc, const char *txt, int *w, int *h, int *a, int *d) {
 	XCharStruct text_structure;
@@ -499,18 +501,51 @@ static void VDrawRectangle (Display *dpy, Drawable d, GC gc, int x, int y, unsig
 #endif
 }
 
-static void fib_expose (Display *dpy, Window win) {
+static void fib_expose (Display *dpy, Window realwin) {
 	int i;
+	XID win;
 	const unsigned long whiteColor = WhitePixel (dpy, DefaultScreen (dpy));
 	const unsigned long blackColor = BlackPixel (dpy, DefaultScreen (dpy));
 	if (!_fib_mapped) return;
 
-	XSync (dpy, False);
-
-	if (_fib_resized) {
-		XSetForeground (dpy, _fib_gc, _c_gray1.pixel);
-		XFillRectangle (dpy, win, _fib_gc, 0, 0, _fib_width, _fib_height);
+	if (_fib_resized
+#ifdef DOUBLE_BUFFER
+			|| !_pixbuffer
+#endif
+			)
+	{
+#ifdef DOUBLE_BUFFER
+		unsigned int w = 0, h = 0;
+		if (_pixbuffer != None) {
+			Window ignored_w;
+			int ignored_i;
+			unsigned int ignored_u;
+			XGetGeometry(dpy, _pixbuffer, &ignored_w, &ignored_i, &ignored_i, &w, &h, &ignored_u, &ignored_u);
+			if (w != _fib_width || h != _fib_height) {
+				XFreePixmap (dpy, _pixbuffer);
+				_pixbuffer = None;
+			}
+		}
+		if (_pixbuffer == None) {
+			XWindowAttributes wa;
+			XGetWindowAttributes (dpy, realwin, &wa);
+			_pixbuffer = XCreatePixmap (dpy, realwin, _fib_width, _fib_height, wa.depth);
+		}
+#endif
+		if (_pixbuffer != None) {
+			XSetForeground (dpy, _fib_gc, _c_gray1.pixel);
+			XFillRectangle (dpy, _pixbuffer, _fib_gc, 0, 0, _fib_width, _fib_height);
+		} else {
+			XSetForeground (dpy, _fib_gc, _c_gray1.pixel);
+			XFillRectangle (dpy, realwin, _fib_gc, 0, 0, _fib_width, _fib_height);
+		}
 		_fib_resized = 0;
+	}
+
+	if (_pixbuffer == None) {
+		win = realwin;
+	} else {
+		win = _pixbuffer;
 	}
 
 	// Top Row: dirs and up navigation
@@ -922,6 +957,9 @@ static void fib_expose (Display *dpy, Window win) {
 		bx += _btns[i]->xw + DSEP;
 	}
 
+	if (_pixbuffer != None) {
+		XCopyArea(dpy, _pixbuffer, realwin, _fib_gc, 0, 0, _fib_width, _fib_height, 0, 0);
+	}
 	XFlush (dpy);
 }
 
@@ -2067,6 +2105,8 @@ void x_fib_close (Display *dpy) {
 	_dircount = 0;
 	_pathparts = 0;
 	_placecnt = 0;
+	if (_pixbuffer != None) XFreePixmap (dpy, _pixbuffer);
+	_pixbuffer = None;
 	Colormap colormap = DefaultColormap (dpy, DefaultScreen (dpy));
 	XFreeColors (dpy, colormap, &_c_gray0.pixel, 1, 0);
 	XFreeColors (dpy, colormap, &_c_gray1.pixel, 1, 0);
