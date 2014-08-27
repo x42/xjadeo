@@ -899,6 +899,11 @@ static void fib_expose (Display *dpy, Window realwin) {
 			}
 			XDrawRectangle (dpy, win, _fib_gc,
 					bx, cby0 - 1, cbox + 1, cbox + 1);
+			if (i == _hov_b) {
+				XSetForeground (dpy, _fib_gc, _c_gray5.pixel);
+			} else {
+				XSetForeground (dpy, _fib_gc, blackColor);
+			}
 			XDrawString (dpy, win, _fib_gc, BTNPADDING + bx + _fib_font_ascent, 1 + bbase + BTNPADDING,
 					_btns[i]->text, strlen (_btns[i]->text));
 
@@ -1506,28 +1511,32 @@ static int fib_widget_at_pos (Display *dpy, int x, int y, int *it) {
 
 static void fib_update_hover (Display *dpy, int need_expose, const int type, const int item) {
 	int hov_p = -1;
-	int hov_f = -1;
 	int hov_b = -1;
 	int hov_h = -1;
-	int hov_l = -1;
 	int hov_s = -1;
+#ifdef LIST_ENTRY_HOVER
+	int hov_f = -1;
+	int hov_l = -1;
+#endif
 
 	switch (type) {
 		case 1: hov_p = item; break;
-		case 2: hov_f = item; break;
 		case 3: hov_b = item; break;
 		case 4: hov_s = item; break;
 		case 5: hov_h = item; break;
+#ifdef LIST_ENTRY_HOVER
 		case 6: hov_l = item; break;
+		case 2: hov_f = item; break;
+#endif
 		default: break;
 	}
-#if 1 // FILE HOVER
+#ifdef LIST_ENTRY_HOVER
 	if (hov_f != _hov_f) { _hov_f = hov_f; need_expose = 1; }
+	if (hov_l != _hov_l) { _hov_l = hov_l; need_expose = 1; }
 #endif
 	if (hov_b != _hov_b) { _hov_b = hov_b; need_expose = 1; }
 	if (hov_p != _hov_p) { _hov_p = hov_p; need_expose = 1; }
 	if (hov_h != _hov_h) { _hov_h = hov_h; need_expose = 1; }
-	if (hov_l != _hov_l) { _hov_l = hov_l; need_expose = 1; }
 	if (hov_s != _hov_s) { _hov_s = hov_s; need_expose = 1; }
 
 	if (need_expose) {

@@ -379,7 +379,7 @@ static int open_x_dialog_win (
 	attr.event_mask = ExposureMask | KeyPressMask
 		| ButtonPressMask | ButtonReleaseMask
 		| ConfigureNotify | StructureNotifyMask
-		| PointerMotionMask ;
+		| PointerMotionMask | LeaveWindowMask;
 
 	int dlg_width  = 100;
 	int dlg_height = 100;
@@ -694,6 +694,19 @@ int handle_xdlg_event (Display *dpy, XEvent *event) {
 	switch (event->type) {
 		case ConfigureNotify:
 			//printf("DLG ConfigureNotify %dx%d\n", event->xconfigure.width, event->xconfigure.height);
+			break;
+		case LeaveNotify:
+			{
+				struct XJDialog *dlg = NULL;
+				XFindContext (dpy, event->xany.window, _dlg_ctx, (XPointer*)&dlg);
+				if (dlg
+						&& dlg->menu_hover >= 0 && dlg->menu_hover < dlg->menu_count
+						&& !dlg->menu_items[dlg->menu_hover].submenu)
+				{
+					dlg->menu_hover = -1;
+					dialog_expose (dpy, event->xany.window);
+				}
+			}
 			break;
 		case Expose:
 			if (event->xexpose.count == 0) {
