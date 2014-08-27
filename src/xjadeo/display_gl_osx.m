@@ -303,11 +303,9 @@ __attribute__ ((visibility ("hidden")))
 
 - (void) keyDown:(NSEvent*)event
 {
-	if (!([event isARepeat])) {
-		NSString* chars = [event characters];
-		char buf[2] = {[chars characterAtIndex:0], 0};
-		xjglKeyPress([chars characterAtIndex:0], buf);
-	}
+	NSString* chars = [event characters];
+	char buf[2] = {[chars characterAtIndex:0], 0};
+	xjglKeyPress([chars characterAtIndex:0], buf);
 }
 
 - (void) setFullScreen:(int)onoff
