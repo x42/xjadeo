@@ -899,6 +899,7 @@ static void fib_expose (Display *dpy, Window realwin) {
 			}
 			XDrawRectangle (dpy, win, _fib_gc,
 					bx, cby0 - 1, cbox + 1, cbox + 1);
+
 			if (i == _hov_b) {
 				XSetForeground (dpy, _fib_gc, _c_gray5.pixel);
 			} else {
@@ -2149,7 +2150,12 @@ int x_fib_handle_events (Display *dpy, XEvent *event) {
 				_status = -1;
 			}
 		case ConfigureNotify:
-			if (event->xconfigure.width != _fib_width || event->xconfigure.height != _fib_height) {
+			if (
+					(event->xconfigure.width > 1 && event->xconfigure.height > 1)
+					&&
+					(event->xconfigure.width != _fib_width || event->xconfigure.height != _fib_height)
+				 )
+			{
 				_fib_width = event->xconfigure.width;
 				_fib_height = event->xconfigure.height;
 				_fib_resized = 1;

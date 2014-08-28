@@ -310,8 +310,12 @@ void gl_handle_events () {
 				break;
 
 			case ConfigureNotify:
-				if ((event.xconfigure.width != _gl_width) ||
-						(event.xconfigure.height != _gl_height)) {
+				if (
+						(event.xconfigure.width > 1 && event.xconfigure.height > 1)
+						&&
+						(event.xconfigure.width != _gl_width || event.xconfigure.height != _gl_height)
+					 )
+				{
 					gl_reshape(event.xconfigure.width, event.xconfigure.height);
 				}
 				break;

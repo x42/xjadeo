@@ -298,6 +298,7 @@ static void xj_handle_X_events (void) {
 				}
 				break;
 			case ConfigureNotify:
+				if (event.xconfigure.width > 1 && event.xconfigure.height > 1)
 				{
 					unsigned int my_Width,my_Height;
 					xj_get_window_size(&my_Width,&my_Height);
