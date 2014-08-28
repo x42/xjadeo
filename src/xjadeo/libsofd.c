@@ -22,7 +22,8 @@
  */
 
 /* Test and example:
- *   gcc -Wall -D XFIB_TEST -g -o xvesifib xvesifib.c -lX11
+ *   gcc -Wall -D XFIB_TEST -g -o sofd libsofd.c -lX11
+ *
  * public API documentation and example code at the bottom of this file
  *
  * This small lib may one day include openGL rendering and
@@ -1000,7 +1001,7 @@ static int cmp_t_up (const void *p1, const void *p2) {
 	FibFileEntry *b = (FibFileEntry*) p2;
 	if ((a->flags & 4) && !(b->flags & 4)) return -1;
 	if (!(a->flags & 4) && (b->flags & 4)) return 1;
-	if (a->size == b->size) return 0;
+	if (a->mtime == b->mtime) return 0;
 	return a->mtime > b->mtime ? -1 : 1;
 }
 
@@ -1009,7 +1010,7 @@ static int cmp_t_down (const void *p1, const void *p2) {
 	FibFileEntry *b = (FibFileEntry*) p2;
 	if ((a->flags & 4) && !(b->flags & 4)) return -1;
 	if (!(a->flags & 4) && (b->flags & 4)) return 1;
-	if (a->size == b->size) return 0;
+	if (a->mtime == b->mtime) return 0;
 	return a->mtime > b->mtime ? 1 : -1;
 }
 
@@ -2521,7 +2522,7 @@ const char *x_fib_recent_at (unsigned int i);
 
 ///////////////////////////////////////////////////////////////////////////////
 /* example usage
- * gcc -Wall -D XFIB_TEST -g -o xvesifib xvesifib.c -lX11
+ * gcc -Wall -D XFIB_TEST -g -o sofd libsofd.c -lX11
  */
 
 #ifdef XFIB_TEST
