@@ -367,7 +367,7 @@ static void mac_CreateWindow(uint32_t d_width, uint32_t d_height, WindowAttribut
   SetMenuTitleWithCFString(syncMenu, syncMenuTitle);
 
   AppendMenuItemTextWithCFString(syncMenu, CFSTR("JACK"), 0, mSyncJack, &index);
-  AppendMenuItemTextWithCFString(syncMenu, CFSTR("Jack Transport"), 0, 0, &index);
+  AppendMenuItemTextWithCFString(syncMenu, CFSTR("JACK Transport"), 0, 0, &index);
   AppendMenuItemTextWithCFString(syncMenu, NULL, kMenuItemAttrSeparator, 0, &index);
   AppendMenuItemTextWithCFString(syncMenu, CFSTR("LTC (jack)"), 0, mSyncLTC, &index);
   AppendMenuItemTextWithCFString(syncMenu, CFSTR("MTC (portmidi)"), 0, mSyncPortMidi, &index);
@@ -376,7 +376,7 @@ static void mac_CreateWindow(uint32_t d_width, uint32_t d_height, WindowAttribut
 
   //Create Jack Menu
   CreateNewMenu (0, 0, &jackMenu);
-  jackMenuTitle = CFSTR("Jack Transport");
+  jackMenuTitle = CFSTR("JACK Transport");
   SetMenuTitleWithCFString(jackMenu, jackMenuTitle);
   SetMenuItemHierarchicalMenu(syncMenu, 2, jackMenu);
 

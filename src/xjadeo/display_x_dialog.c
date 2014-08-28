@@ -104,7 +104,7 @@ static void ui_close_file() {
  * - [, ] (pan/crop -- ifdef'ed)
  */
 static struct XjxMenuItem submenu_sync[] = {
-	{"Jack",           "", NULL, &ui_sync_to_jack, 0, 1},
+	{"JACK",           "", NULL, &ui_sync_to_jack, 0, 1},
 	{"LTC",            "", NULL, &ui_sync_to_ltc, 0, 1},
 	{"MTC (JACK)",     "", NULL, &ui_sync_to_mtc_jack, 0, 1},
 	{"MTC (PortMidi)", "", NULL, &ui_sync_to_mtc_portmidi, 0, 1},
@@ -165,10 +165,10 @@ static struct XjxMenuItem submenu_offs[] = {
 };
 
 static struct XjxMenuItem submenu_jack[] = {
-	{"Play/Pause", "<space>",     NULL, &jackt_toggle, 0, 1},
-	{"Play", "",                  NULL, &jackt_start, 0, 1},
-	{"Stop", "",                  NULL, &jackt_stop, 0, 1},
-	{"Rewind",     "<backspace>", NULL, &jackt_rewind, 0, 1},
+	{"Play/Pause", "Space",     NULL, &jackt_toggle, 0, 1},
+	{"Play", "",                NULL, &jackt_start, 0, 1},
+	{"Stop", "",                NULL, &jackt_stop, 0, 1},
+	{"Rewind",     "Backspace", NULL, &jackt_rewind, 0, 1},
 	{NULL, NULL, NULL, NULL, 0, 0},
 };
 

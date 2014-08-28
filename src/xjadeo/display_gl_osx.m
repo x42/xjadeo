@@ -750,7 +750,7 @@ static void makeAppMenu (void) {
 	[syncMenu addItem:[NSMenuItem separatorItem]];
 
 	NSMenu     *jackMenu;
-	jackMenu = [[NSMenu alloc] initWithTitle:@"Jack Transport"];
+	jackMenu = [[NSMenu alloc] initWithTitle:@"JACK Transport"];
 
 	menuItem = [jackMenu addItemWithTitle:@"Play/Pause" action:@selector(jackPlayPause:) keyEquivalent:@" "];
 	[menuItem setKeyEquivalentModifierMask:0];
@@ -759,7 +759,7 @@ static void makeAppMenu (void) {
 	menuItem = [jackMenu addItemWithTitle:@"Rewind" action:@selector(jackRewind:) keyEquivalent:@"\010"];
 	[menuItem setKeyEquivalentModifierMask:0];
 
-	mJackTransport = [[NSMenuItem alloc] initWithTitle:@"Jack Transport" action:nil keyEquivalent:@""];
+	mJackTransport = [[NSMenuItem alloc] initWithTitle:@"JACK Transport" action:nil keyEquivalent:@""];
 	[mJackTransport setSubmenu:jackMenu];
 	[syncMenu addItem:mJackTransport];
 	[jackMenu release];

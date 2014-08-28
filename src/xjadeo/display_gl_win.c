@@ -157,7 +157,7 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 	HMENU hSubMenuJack = CreatePopupMenu();
 	HMENU hSubRecent   = CreatePopupMenu();
 
-	AppendMenu(hSubMenuSync, MF_STRING, mSyncJack, "Jack");
+	AppendMenu(hSubMenuSync, MF_STRING, mSyncJack, "JACK");
 	AppendMenu(hSubMenuSync, MF_STRING, mSyncLTC, "LTC");
 	AppendMenu(hSubMenuSync, MF_STRING, mSyncMTCJACK, "MTC (JACK)");
 	AppendMenu(hSubMenuSync, MF_STRING, mSyncMTCPort, "MTC (PortMidi)");
@@ -208,10 +208,10 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetPH,   "+1 Hour");
 	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetMH,   "-1 Hour");
 
-	AppendMenu(hSubMenuJack, MF_STRING, mJackPlayPause, "Play/Pause\t <space>");
+	AppendMenu(hSubMenuJack, MF_STRING, mJackPlayPause, "Play/Pause\t Space");
 	AppendMenu(hSubMenuJack, MF_STRING, mJackPlay, "Play");
 	AppendMenu(hSubMenuJack, MF_STRING, mJackStop, "Stop");
-	AppendMenu(hSubMenuJack, MF_STRING, mJackRewind, "Rewind\t <backspace>");
+	AppendMenu(hSubMenuJack, MF_STRING, mJackRewind, "Rewind\t Backspace");
 
 	/* update menu items */
 	switch (ui_syncsource()) {
