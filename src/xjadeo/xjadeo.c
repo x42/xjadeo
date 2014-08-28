@@ -1824,5 +1824,6 @@ int close_movie () {
 	osd_smpte_ts = -1;
 	osd_vtc_oob  = -1;
 	clear_info();
+	Xletterbox (Xgetletterbox());
 	return (0);
 }
