@@ -349,9 +349,11 @@ void gl_handle_events () {
 				} else
 #ifdef XDLG
 				if (event.xbutton.button == 3) {
-					show_x_dialog(_gl_display, _gl_win,
-							event.xbutton.x_root, event.xbutton.y_root
-							);
+					if (event.xbutton.x >= 0 && event.xbutton.x < _gl_width
+							&& event.xbutton.y >= 0 && event.xbutton.y < _gl_height)
+						show_x_dialog(_gl_display, _gl_win,
+								event.xbutton.x_root, event.xbutton.y_root
+								);
 				} else
 #endif
 				xjglButton(event.xbutton.button);

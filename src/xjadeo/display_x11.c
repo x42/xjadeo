@@ -339,9 +339,11 @@ static void xj_handle_X_events (void) {
 				} else
 #ifdef XDLG
 				if (event.xbutton.button == 3) {
-					show_x_dialog(xj_dpy, xj_win,
-							event.xbutton.x_root, event.xbutton.y_root
-							);
+					if (event.xbutton.x >= 0 && event.xbutton.x < xj_dwidth
+							&& event.xbutton.y >= 0 && event.xbutton.y < xj_dheight)
+						show_x_dialog(xj_dpy, xj_win,
+								event.xbutton.x_root, event.xbutton.y_root
+								);
 				} else
 #endif
 				{
