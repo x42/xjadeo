@@ -6,6 +6,8 @@ set -e
 : ${XJARCH=-arch i386 -arch ppc -arch x86_64}
 : ${OSXCOMPAT="-isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -headerpad_max_install_names"}
 
+test -f "$HOME/.xjbuildcfg.sh" && . "$HOME/.xjbuildcfg.sh"
+
 if test -z "$NOREBUILD"; then
 #############################################################################
 # BUILD ./configure
@@ -20,7 +22,7 @@ automake --gnu --add-missing --copy
 
 PKG_CONFIG_PATH=$XJSTACK/lib/pkgconfig:/usr/local/lib/pkgconfig \
 CPPFLAGS="-I${XJSTACK}/include" \
-CFLAGS="${XJARCH} ${OSXCOMPAT}" \
+CFLAGS="${XJARCH} ${OSXCOMPAT} ${CFLAGS:$CFLAGS}" \
 OBJCFLAGS="${XJARCH} ${OSXCOMPAT}" \
 LDFLAGS="${XJARCH} ${OSXCOMPAT} -headerpad_max_install_names -L${XJSTACK}/lib" \
 ./configure --disable-xv --disable-qtgui --disable-sdl --with-fontfile=../Resources/ArdourMono.ttf --disable-dependency-tracking $@ || exit 1

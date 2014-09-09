@@ -6,6 +6,8 @@
 : ${WINLIB="$WINPREFIX/bin/"}
 : ${NSISEXE="$HOME/.wine/drive_c/Program Files/NSIS/makensis.exe"}
 
+test -f "$HOME/.xjbuildcfg.sh" && . "$HOME/.xjbuildcfg.sh"
+
 set -e
 
 if test -z "$NSIDIR"; then

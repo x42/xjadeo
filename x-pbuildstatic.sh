@@ -15,6 +15,8 @@
 : ${SRC=/usr/src}
 : ${PFX=$HOME/local}
 
+test -f "$HOME/.xjbuildcfg.sh" && . "$HOME/.xjbuildcfg.sh"
+
 if [ "$(id -u)" != "0" -a -z "$SUDO" ]; then
 	echo "This script must be run as root in pbuilder" 1>&2
   echo "e.g sudo cowbuilder --architecture amd64 --distribution wheezy --bindmounts /tmp --execute $0"
