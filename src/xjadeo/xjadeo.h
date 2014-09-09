@@ -296,4 +296,11 @@ int x_fib_load_recent (const char *fn);
 unsigned int x_fib_recent_count ();
 const char  *x_fib_recent_at (unsigned int i);
 const char  *x_fib_recent_file(const char *appname);
+
+// configuration
+extern char const * const cfg_features;
+extern char const * const cfg_displays;
+extern char const * const cfg_midi;
+extern char cfg_compat[];
+
 #endif

@@ -135,6 +135,22 @@ void xapi_printversion(void *d) {
 	remote_printf(220, "version=%s", VERSION);
 }
 
+void xapi_versiondetails(void *d) {
+	remote_printf(290, "version=%s", VERSION);
+#ifdef SUBVERSION
+	if (strlen(SUBVERSION) > 0 && strcmp(SUBVERSION, "exported")) {
+		remote_printf (291, "scm=%s", SUBVERSION);
+	} else
+#endif
+		remote_printf (291, "scm=unknown");
+	remote_printf(292, "av=0x%x 0x%x 0x%x",
+			LIBAVFORMAT_VERSION_INT, LIBAVCODEC_VERSION_INT, LIBAVUTIL_VERSION_INT);
+	remote_printf (293, "configuration=%s", cfg_features);
+	remote_printf (294, "MTC/MIDI=%s", cfg_midi);
+	remote_printf (295, "display=%s", cfg_displays);
+	remote_printf (296, "compat=%s", cfg_compat);
+}
+
 void xapi_open(void *d) {
 	char *fn= (char*)d;
 	//printf("open file: '%s'\n",fn);
@@ -926,6 +942,7 @@ static Dcommand cmd_get[] = {
 	{"ontop" , ": query window on top mode", NULL, xapi_pontop, 0 },
 	{"override", ": query disabled window events", NULL, xapi_poverride , 0 },
 	{"version", ": query xjadeo version", NULL, xapi_printversion , 0 },
+	{"appinfo", ": query version details", NULL, xapi_versiondetails , 0 },
 	{NULL, NULL, NULL , NULL, 0}
 };
 

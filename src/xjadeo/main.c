@@ -39,6 +39,73 @@ void osx_main ();
 void osx_shutdown();
 #endif
 
+// configuration strings
+char const * const cfg_features = ""
+#define CFG_STRING ""
+#ifdef HAVE_LTC
+"LTC "
+#endif
+#ifdef JACK_SESSION
+	"JACK-SESSION "
+#endif
+#ifdef HAVE_MQ
+	"POSIX-MQueue "
+#elif defined HAVE_IPCMSG
+	"IPC-MSG "
+#endif
+#ifdef HAVE_LIBLO
+	"OSC "
+#endif
+	;
+
+char const * const cfg_midi = ""
+#ifndef HAVE_MIDI
+	"*disabled*"
+#else /* have Midi */
+# ifdef HAVE_JACKMIDI
+	"jack-midi "
+# endif
+# ifdef ALSA_SEQ_MIDI
+	"alsa-sequencer "
+# endif
+# ifdef HAVE_PORTMIDI
+	"portmidi "
+# endif
+# ifdef ALSA_RAW_MIDI
+	"alsa-raw "
+# endif
+#endif /* HAVE_MIDI */
+	;
+
+char const * const cfg_displays = ""
+#if HAVE_GL
+	"openGL "
+#endif
+#if HAVE_LIBXV
+	"Xv "
+#endif
+#ifdef HAVE_SDL
+	"SDL "
+#endif
+#if HAVE_IMLIB2
+	"X11/imlib2"
+# ifdef IMLIB2RGBA
+	"(RGBA32) "
+# else
+	"(RGB24) "
+# endif
+#endif
+#ifdef PLATFORM_OSX
+	"OSX/quartz "
+#endif
+	;
+
+#ifndef CFG_COMPAT
+#define CFG_COMPAT "xjadeo1"
+#endif
+
+char cfg_compat[1024] = CFG_COMPAT;
+
 //------------------------------------------------
 // Globals
 //------------------------------------------------
@@ -694,72 +761,14 @@ static void printversion (void) {
 
 #ifdef SUBVERSION
 	if (strlen(SUBVERSION)>0 && strcmp(SUBVERSION, "exported")) {
-		printf (" built from:     scm-%s\n", SUBVERSION);
+		printf (" built from:    scm-%s\n", SUBVERSION);
 	}
 #endif
-	printf(" compiled with:  AVFORMAT=0x%x AVCODEC=0x%x AVUTIL:0x%x\n",
+	printf (" compiled with: AVFORMAT=0x%x AVCODEC=0x%x AVUTIL:0x%x\n",
 			LIBAVFORMAT_VERSION_INT, LIBAVCODEC_VERSION_INT, LIBAVUTIL_VERSION_INT);
-	printf (" configuration:  ");
-	printf ("[ ");
-#ifdef HAVE_LTC
-	printf("LTC ");
-#endif
-#ifdef JACK_SESSION
-	printf("JACK-SESSION ");
-#endif
-#ifdef HAVE_MQ
-	printf("POSIX-MQueue ");
-#elif defined HAVE_IPCMSG
-	printf("IPC-MSG ");
-#endif
-#ifdef HAVE_LIBLO
-	printf("OSC ");
-#endif
-	printf("]\n");
-
-	printf(" MTC/MIDI:       ");
-#ifndef HAVE_MIDI
-	printf("*disabled*\n");
-#else /* have Midi */
-	printf("[ ");
-# ifdef HAVE_JACKMIDI
-	printf("jack-midi ");
-# endif
-# ifdef ALSA_SEQ_MIDI
-	printf("alsa-sequencer ");
-# endif
-# ifdef HAVE_PORTMIDI
-	printf("portmidi ");
-# endif
-# ifdef ALSA_RAW_MIDI
-	printf("alsa-raw ");
-# endif
-	printf("]\n");
-#endif /* HAVE_MIDI */
-
-	printf(" Display(s):     [ "
-#if HAVE_GL
-			"openGL "
-#endif
-#if HAVE_LIBXV
-			"Xv "
-#endif
-#ifdef HAVE_SDL
-			"SDL "
-#endif
-#if HAVE_IMLIB2
-			"X11/imlib2"
-# ifdef IMLIB2RGBA
-			"(RGBA32) "
-# else
-			"(RGB24) "
-# endif
-#endif
-#ifdef PLATFORM_OSX
-			"OSX/quartz "
-#endif
-			"]\n"
-			);
+	printf (" configuration: [ %s]\n", cfg_features);
+	printf (" MTC/MIDI:      [ %s]\n", cfg_midi);
+	printf (" Display(s):    [ %s]\n", cfg_displays);
 	printf ("\n"
 			"Copyright (C) GPL 2006-2014 Robin Gareus <robin@gareus.org>\n"
 			"Copyright (C) GPL 2006-2011 Luis Garrido <luisgarrido@users.sourceforge.net>\n"
