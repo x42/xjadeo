@@ -621,6 +621,7 @@ usage (int status)
 "                           Note that this may requires parsing future frames\n"
 "                           and impact performance\n"
 #endif
+" --osc-doc                 Print available OSC commands and exit.\n"
 " -Q, --mq                  Enable POSIX realtime message queues.\n"
 "                           This sets up a communication channel for remote,\n"
 "                           intended to be used with `xjremote`.\n"
