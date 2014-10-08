@@ -173,7 +173,7 @@ EXTRA_SPACE_MB=5
 DMGMEGABYTES=$[ `du -sk "${TARGET_BUILD_DIR}" | cut -f 1` * 1024 / 1048576 + $EXTRA_SPACE_MB ]
 echo "DMG MB = " $DMGMEGABYTES
 
-MNTPATH=`mktemp -d -t /xjadeoimg`
+MNTPATH=`mktemp -d -t xjadeoimg`
 TMPDMG=`mktemp -t xjadeo`
 ICNSTMP=`mktemp -t appicon`
 
@@ -196,9 +196,17 @@ cp -vi ${DMGBACKGROUND} "${MNTPATH}/.background/dmgbg.png"
 
 echo "setting DMG background ..."
 
+if test $(sw_vers -productVersion | cut -d '.' -f 2) -lt 9; then
+	# OSX ..10.8.X
+	DISKNAME=${VOLNAME}
+else
+	# OSX 10.9.X and later
+	DISKNAME=`basename "${MNTPATH}"`
+fi
+
 echo '
    tell application "Finder"
-     tell disk "'${VOLNAME}'"
+     tell disk "'${DISKNAME}'"
 	   open
 	   set current view of container window to icon view
 	   set toolbar visible of container window to false
