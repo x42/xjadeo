@@ -12,7 +12,7 @@ if test -z "$NOREBUILD"; then
 #############################################################################
 # BUILD ./configure
 
-aclocal -I /usr/local/share/aclocal/
+aclocal
 autoheader
 autoconf
 automake --gnu --add-missing --copy
@@ -252,10 +252,10 @@ rm -rf "$MNTPATH"
 echo "setting file icon ..."
 
 cp ${TARGET_CONTENTS}Resources/Jadeo.icns ${ICNSTMP}.icns
-/usr/bin/sips -i ${ICNSTMP}.icns
-/Developer/Tools/DeRez -only icns ${ICNSTMP}.icns > ${ICNSTMP}.rsrc
-/Developer/Tools/Rez -append ${ICNSTMP}.rsrc -o "$UC_DMG"
-/Developer/Tools/SetFile -a C "$UC_DMG"
+sips -i ${ICNSTMP}.icns
+DeRez -only icns ${ICNSTMP}.icns > ${ICNSTMP}.rsrc
+Rez -append ${ICNSTMP}.rsrc -o "$UC_DMG"
+SetFile -a C "$UC_DMG"
 
 rm ${ICNSTMP}.icns ${ICNSTMP}.rsrc
 rm -rf $BUNDLEDIR

@@ -1,13 +1,13 @@
 #!/bin/sh
 
 # we keep a copy of the sources here:
-: ${SRCDIR=$HOME/xjsrc}
+: ${SRCDIR=$HOME/src/stack}
 # actual build location
-: ${BUILDD=$HOME/xjbuildd}
+: ${BUILDD=$HOME/src/xj_build}
 # target install dir:
-: ${PREFIX=$HOME/xjstack}
+: ${PREFIX=$HOME/src/xj_stack}
 # concurrency
-: ${MAKEFLAGS="-j2"}
+: ${MAKEFLAGS="-j4"}
 
 case `sw_vers -productVersion | cut -d'.' -f1,2` in
 	"10.4")
@@ -29,7 +29,7 @@ case `sw_vers -productVersion | cut -d'.' -f1,2` in
 		echo "**UNTESTED OSX VERSION**"
 		echo "if it works, please report back :)"
 		XJARCH="-arch i386 -arch x86_64"
-		OSXCOMPAT=""
+		OSXCOMPAT="-mmacosx-version-min=10.5"
 		;;
 	esac
 
@@ -103,6 +103,11 @@ download portmidi-src-217.zip http://sourceforge.net/projects/portmedia/files/po
 cd ${BUILDD}
 unzip ${SRCDIR}/portmidi-src-217.zip
 cd portmidi
+if ! echo "$XJARCH" | grep -q "ppc"; then
+sed -i '' 's/ ppc//g' CMakeLists.txt
+#XXX better pass though cmake args somehow
+# -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=10.5 -DCMAKE_OSX_ARCHITECTURES="i386;x86_64"
+fi
 CFLAGS="${XJARCH} ${OSXCOMPAT}" \
 CXXFLAGS="${XJARCH} ${OSXCOMPAT}" \
 LDFLAGS="${XJARCH} ${OSXCOMPAT} -headerpad_max_install_names" \
@@ -113,6 +118,15 @@ install_name_tool -id ${PREFIX}/lib/libportmidi.dylib ${PREFIX}/lib/libportmidi.
 cp pm_common/portmidi.h ${PREFIX}/include
 cp porttime/porttime.h ${PREFIX}/include
 
+
+################################################################################
+download yasm-1.2.0.tar.gz http://www.tortall.net/projects/yasm/releases/yasm-1.2.0.tar.gz
+cd ${BUILDD}
+tar xzf ${SRCDIR}/yasm-1.2.0.tar.gz
+cd yasm-1.2.0
+autoconfbuild
+
+export PATH=${PREFIX}/bin:$PATH
 ################################################################################
 download libvpx-v1.3.0.tar.bz2 https://webm.googlecode.com/files/libvpx-v1.3.0.tar.bz2
 cd ${BUILDD}
@@ -147,12 +161,13 @@ buildvpx x86-darwin9-gcc
 cd ${BUILDD}/ffmpeg-${FFVERSION}/
 
 ./configure --prefix=${PREFIX} \
-	--enable-libvpx \
+	--enable-libvpx --disable-iconv \
 	--enable-shared --enable-gpl --disable-static --disable-programs --disable-debug \
 	--arch=x86_32 --target-os=darwin --cpu=i686 --enable-cross-compile \
 	--extra-cflags="-arch i386 ${OSXCOMPAT}  -I${PREFIX}/include" \
 	--extra-ldflags="-arch i386 ${OSXCOMPAT} -L${PREFIX}/lib -headerpad_max_install_names"
-make $MAKEFLAGS && make install
+make $MAKEFLAGS
+make install
 
 find . -iname "*dylib" -type f -exec echo cp -v {} ${PREFIX}/fflipo/\`basename {}\`-i386 \; | bash -
 make clean
@@ -160,7 +175,7 @@ make clean
 buildvpx x86_64-darwin9-gcc
 cd ${BUILDD}/ffmpeg-${FFVERSION}/
 ./configure --prefix=${PREFIX} \
-	--enable-libvpx \
+	--enable-libvpx --disable-iconv \
 	--enable-shared --enable-gpl --disable-static --disable-programs --disable-debug \
 	--arch=x86_64 \
 	--extra-cflags="-arch x86_64 ${OSXCOMPAT}  -I${PREFIX}/include" \
@@ -169,7 +184,7 @@ make $MAKEFLAGS
 find . -iname "*dylib" -type f -exec echo cp -v {} ${PREFIX}/fflipo/\`basename {}\`-x86_64 \; | bash -
 make clean
 
-if test -z "$NOPPC"; then
+if echo "$XJARCH" | grep -q "ppc"; then
 buildvpx ppc32-darwin9-gcc
 cd ${BUILDD}/ffmpeg-${FFVERSION}/
 ./configure --prefix=${PREFIX} \
@@ -202,5 +217,6 @@ git clone -b master git://github.com/x42/xjadeo.git
 cd xjadeo
 
 export XJARCH
+export XJSTACK="$PREFIX"
 export OSXCOMPAT
 ./x-osx-bundle.sh
