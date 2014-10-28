@@ -55,7 +55,7 @@ case $target_os in
 		dnl 2006/11/13 : 32 bit RGBA is known not to work on OSX ffmpeg+imlib2
 		dnl IMLIB2RGBA
 		;;
-	*linux*)
+	*linux*|gnu*|k*bsd*-gnu)
 		AC_DEFINE([PLATFORM_LINUX], [], [GNU/Linux version])
 		PLATFORM_LINUX=1
 		AC_MSG_NOTICE([TARGET: LINUX])
@@ -533,7 +533,7 @@ fi
 
 if test -n "$PLATFORM_LINUX" -a -n "$HAVE_PORTMIDI"; then
 AC_MSG_NOTICE([
- PortMidi is intended for non Linux Platforms only.
+ PortMidi is intended for non Un*x Platforms only.
  On Linux, please use JACK, ALSA-seq or ALSA-raw.
 ])
 fi
