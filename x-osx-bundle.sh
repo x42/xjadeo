@@ -227,7 +227,8 @@ echo '
      end tell
    end tell
 ' | osascript || {
-	umount "${DiskDevice}"
+	echo "Failed to set background/arrange icons"
+	umount "${DiskDevice}" || true
 	hdiutil eject "${DiskDevice}"
 	exit 1
 }
@@ -238,12 +239,13 @@ chmod -Rf go-w "${MNTPATH}"
 set -e
 sync
 
-echo "compressing Image ..."
+echo "unmounting the disk image ..."
+# Umount the image ('eject' above may already have done that)
+umount "${DiskDevice}" || true
+hdiutil eject "${DiskDevice}" || true
 
-# Umount the image
-umount "${DiskDevice}"
-hdiutil eject "${DiskDevice}"
 # Create a read-only version, use zlib compression
+echo "compressing Image ..."
 hdiutil convert -format UDZO "${TMPDMG}" -imagekey zlib-level=9 -o "${UC_DMG}"
 # Delete the temporary files
 rm "$TMPDMG"
