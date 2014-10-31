@@ -351,7 +351,8 @@ static NSMenuItem *mOsdOffOff;
 static NSMenuItem *mOsdOffTc;
 static NSMenuItem *mOsdOffFn;
 static NSMenuItem *mOsdBox;
-static NSMenuItem *mOsdNfo;
+static NSMenuItem *mOsdTNfo;
+static NSMenuItem *mOsdGNfo;
 static NSMenuItem *mOsdGeo;
 
 static NSMenuItem *mDpyLetterbox;
@@ -469,8 +470,10 @@ static void update_osd_menu () {
 	[mOsdOffTc  setState:(OSD_mode & OSD_OFFS)  ? NSOnState : NSOffState];
 	[mOsdOffFn  setState:(OSD_mode & OSD_OFFF)  ? NSOnState : NSOffState];
 	[mOsdBox    setState:(OSD_mode & OSD_BOX)   ? NSOnState : NSOffState];
-	[mOsdNfo    setState:(OSD_mode & OSD_NFO)   ? NSOnState : NSOffState];
-	[mOsdNfo    setEnabled:(movie_height < OSD_MIN_NFO_HEIGHT) ? NO : YES];
+	[mOsdTNfo   setState:(OSD_mode & OSD_NFO)   ? NSOnState : NSOffState];
+	[mOsdGNfo   setState:(OSD_mode & OSD_GEO)   ? NSOnState : NSOffState];
+	[mOsdTNfo   setEnabled:(movie_height < OSD_MIN_NFO_HEIGHT) ? NO : YES];
+	[mOsdGNfo   setEnabled:(movie_height < OSD_MIN_NFO_HEIGHT) ? NO : YES];
 	[mOsdGeo    setState:(OSD_mode & OSD_GEO)   ? NSOnState : NSOffState];
 	[mOsdGeo    setEnabled:(movie_height < OSD_MIN_NFO_HEIGHT) ? NO : YES];
 }
@@ -790,20 +793,21 @@ static void makeAppMenu (void) {
 	mOsdOffTc  = [osdMenu addItemWithTitle:@"Offset Timecode" action:@selector(osdOffTc:) keyEquivalent:@""];
 	mOsdOffFn  = [osdMenu addItemWithTitle:@"Offset Frame Number" action:@selector(osdOffFn:) keyEquivalent:@""];
 	[osdMenu addItem:[NSMenuItem separatorItem]];
-	mOsdNfo   = [osdMenu addItemWithTitle:@"Time Info" action:@selector(osdNfo:) keyEquivalent:@"i"];
-	mOsdNfo   = [osdMenu addItemWithTitle:@"Geometry" action:@selector(osdGeo:) keyEquivalent:@"g"];
+	mOsdTNfo   = [osdMenu addItemWithTitle:@"Time Info" action:@selector(osdNfo:) keyEquivalent:@"i"];
+	mOsdGNfo   = [osdMenu addItemWithTitle:@"Geometry" action:@selector(osdGeo:) keyEquivalent:@"g"];
 	[osdMenu addItem:[NSMenuItem separatorItem]];
-	mOsdBox   = [osdMenu addItemWithTitle:@"Background" action:@selector(osdBox:) keyEquivalent:@"b"];
-	menuItem  = [osdMenu addItemWithTitle:@"Swap Position" action:@selector(osdPos:) keyEquivalent:@"p"];
+	mOsdBox    = [osdMenu addItemWithTitle:@"Background" action:@selector(osdBox:) keyEquivalent:@"b"];
+	menuItem   = [osdMenu addItemWithTitle:@"Swap Position" action:@selector(osdPos:) keyEquivalent:@"p"];
 	[menuItem   setKeyEquivalentModifierMask:0];
 	[osdMenu addItem:[NSMenuItem separatorItem]];
-	menuItem  = [osdMenu addItemWithTitle:@"Clear All" action:@selector(osdClear:) keyEquivalent:@"C"];
+	menuItem   = [osdMenu addItemWithTitle:@"Clear All" action:@selector(osdClear:) keyEquivalent:@"C"];
 	[menuItem   setKeyEquivalentModifierMask:NSShiftKeyMask];
 
 	[menuItem   setKeyEquivalentModifierMask:0];
 	[mOsdVtcOff setKeyEquivalentModifierMask:0];
 	[mOsdOffOff setKeyEquivalentModifierMask:0];
-	[mOsdNfo    setKeyEquivalentModifierMask:0];
+	[mOsdGNfo   setKeyEquivalentModifierMask:0];
+	[mOsdTNfo   setKeyEquivalentModifierMask:0];
 	[mOsdGeo    setKeyEquivalentModifierMask:0];
 	[mOsdBox    setKeyEquivalentModifierMask:0];
 	[mOsdTC     setKeyEquivalentModifierMask:0];
