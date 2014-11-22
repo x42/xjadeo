@@ -40,6 +40,9 @@ static volatile uint8_t sync_sem;
 static void gl_sync_lock ()   { if (osxgui_status > 0) { sync_sem = 1; pthread_mutex_lock (&osxgui_sync); }}
 static void gl_sync_unlock () { if (osxgui_status > 0) { sync_sem = 0; pthread_mutex_unlock (&osxgui_sync); }}
 
+static void gl_newsrc_sync () ;
+static bool _newsrc = false;
+
 #define PTLL gl_sync_lock()
 #define PTUL gl_sync_unlock()
 
@@ -191,6 +194,7 @@ __attribute__ ((visibility ("hidden")))
 - (void) drawRect:(NSRect)rect
 {
 	pthread_mutex_lock(&osx_vbuf_lock);
+	if (_newsrc) { gl_newsrc_sync(); }
 	xjglExpose(osx_vbuf);
 	pthread_mutex_unlock(&osx_vbuf_lock);
 }
@@ -661,13 +665,18 @@ static void gl_swap_buffers () {
 
 void gl_newsrc () {
 	pthread_mutex_lock (&osx_vbuf_lock);
+	_newsrc = true;
+	pthread_mutex_unlock (&osx_vbuf_lock);
+}
+
+static void gl_newsrc_sync () {
 	free (osx_vbuf);
 	osx_vbuf_size = video_buffer_size ();
 	if (osx_vbuf_size > 0) {
 		osx_vbuf = (uint8_t*)malloc (osx_vbuf_size * sizeof(uint8_t));
 		gl_reallocate_texture (movie_width, movie_height);
 	}
-	pthread_mutex_unlock (&osx_vbuf_lock);
+	_newsrc = false;
 }
 
 static void makeAppMenu (void) {
@@ -951,7 +960,10 @@ static int osx_open_window () {
 		osx_close_window ();
 		return -1;
 	}
-	gl_newsrc ();
+
+	pthread_mutex_lock (&osx_vbuf_lock);
+	gl_newsrc_sync ();
+	pthread_mutex_unlock (&osx_vbuf_lock);
 
 	[window setIsVisible:YES];
 
@@ -1051,6 +1063,8 @@ void osx_main () {
 						break;
 					case 3:
 						pthread_mutex_lock (&osx_vbuf_lock);
+						if (_newsrc) { gl_newsrc_sync(); }
+						force_redraw = 1;
 						xjglExpose (osx_vbuf);
 						pthread_mutex_unlock (&osx_vbuf_lock);
 						[osx_glview setNeedsDisplay:YES];
@@ -1087,7 +1101,11 @@ void osx_main () {
 void gl_render (uint8_t *buffer) {
 	if (!osx_vbuf) return;
 	pthread_mutex_lock (&osx_vbuf_lock);
-	memcpy (osx_vbuf, buffer, osx_vbuf_size * sizeof(uint8_t));
+	if (_newsrc) {
+		osx_post_event (1);
+	} else {
+		memcpy (osx_vbuf, buffer, osx_vbuf_size * sizeof(uint8_t));
+	}
 	pthread_mutex_unlock (&osx_vbuf_lock);
 	[osx_glview setNeedsDisplay:YES];
 }
