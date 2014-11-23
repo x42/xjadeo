@@ -3,6 +3,7 @@
 # update version in
 # - configure.ac
 # - ChangeLog
+# - doc/pages/whatsnew.html
 
 : ${SFUSER:=}
 : ${OSXUSER:=}

@@ -1,4 +1,4 @@
-2014-11-23 (unreleased)  Robin Gareus <robin@gareus.org>
+2014-11-23 (0.8.1)  Robin Gareus <robin@gareus.org>
 * fix OSX remote-control threading
 * X11 file open dialog
 * add recently-used files list
