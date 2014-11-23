@@ -1,3 +1,10 @@
+2014-11-23 (unreleased)  Robin Gareus <robin@gareus.org>
+* fix OSX remote-control threading
+* X11 file open dialog
+* add recently-used files list
+* show splash screen when no file is open
+* various typo fixes
+
 2014-08-22 (0.8.0)  Robin Gareus <robin@gareus.org>
 * fix various typos
 * prepare build-stack for binary releases
