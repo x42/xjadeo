@@ -208,6 +208,7 @@ echo '
    tell application "Finder"
      tell disk "'${DISKNAME}'"
 	   open
+	   delay 1
 	   set current view of container window to icon view
 	   set toolbar visible of container window to false
 	   set statusbar visible of container window to false

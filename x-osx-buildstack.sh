@@ -51,9 +51,10 @@ export PKG_CONFIG_PATH=${PREFIX}/lib/pkgconfig
 export PREFIX
 export SRCDIR
 
+export PATH=${PREFIX}/bin:${HOME}/bin:/usr/local/git/bin/:/usr/bin:/bin:/usr/sbin:/sbin
+
 function autoconfbuild {
 echo "======= $(pwd) ======="
-PATH=${PREFIX}/bin:/usr/bin:/bin:/usr/sbin:/sbin \
 CFLAGS="${XJARCH}${OSXCOMPAT:+ $OSXCOMPAT}" \
 CXXFLAGS="${XJARCH}${OSXCOMPAT:+ $OSXCOMPAT}" \
 LDFLAGS="${XJARCH}${OSXCOMPAT:+ $OSXCOMPAT} -headerpad_max_install_names" \
@@ -66,35 +67,74 @@ echo "--- Downloading.. $2"
 test -f ${SRCDIR}/$1 || curl -L -o ${SRCDIR}/$1 $2
 }
 
-################################################################################
-download libiconv-1.14.tar.gz ftp://ftp.gnu.org/gnu/libiconv/libiconv-1.14.tar.gz
+function src {
+download ${1}.${2} $3
 cd ${BUILDD}
-tar xzf ${SRCDIR}/libiconv-1.14.tar.gz
-cd libiconv-1.14
+rm -rf $1
+tar xf ${SRCDIR}/${1}.${2}
+cd $1
+}
+
+################################################################################
+
+src m4-1.4.17 tar.gz http://ftp.gnu.org/gnu/m4/m4-1.4.17.tar.gz
+autoconfbuild
+
+################################################################################
+src pkg-config-0.28 tar.gz http://pkgconfig.freedesktop.org/releases/pkg-config-0.28.tar.gz
+./configure --prefix=$PREFIX --with-internal-glib
+make $MAKEFLAGS
+make install
+
+#
+src autoconf-2.69 tar.xz http://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz
+autoconfbuild
+hash autoconf
+hash autoreconf
+
+src automake-1.14 tar.gz http://ftp.gnu.org/gnu/automake/automake-1.14.tar.gz
+autoconfbuild
+hash automake
+
+src libtool-2.4 tar.gz http://ftp.gnu.org/gnu/libtool/libtool-2.4.tar.gz
+autoconfbuild
+hash libtoolize
+
+src make-4.1 tar.gz http://ftp.gnu.org/gnu/make/make-4.1.tar.gz
+autoconfbuild
+hash make
+
+###############################################################################
+
+
+src cmake-2.8.12.2 tar.gz http://www.cmake.org/files/v2.8/cmake-2.8.12.2.tar.gz
+./bootstrap --prefix=$PREFIX
+make $MAKEFLAGS
+make install
+
+################################################################################
+
+download jack_headers.tar.gz http://robin.linuxaudio.org/jack_headers.tar.gz
+cd "$PREFIX"
+tar xzf ${SRCDIR}/jack_headers.tar.gz
+"$PREFIX"/update_pc_prefix.sh
+
+################################################################################
+src libiconv-1.14 tar.gz ftp://ftp.gnu.org/gnu/libiconv/libiconv-1.14.tar.gz
 autoconfbuild --with-included-gettext --with-libiconv-prefix=$PREFIX
 
 ################################################################################
 #git://liblo.git.sourceforge.net/gitroot/liblo/liblo
-download liblo-0.28.tar.gz http://downloads.sourceforge.net/liblo/liblo-0.28.tar.gz
-cd ${BUILDD}
-tar xzf ${SRCDIR}/liblo-0.28.tar.gz
-cd liblo-0.28
+src liblo-0.28 tar.gz http://downloads.sourceforge.net/liblo/liblo-0.28.tar.gz
 autoconfbuild
 
 ################################################################################
 #git://github.com/x42/libltc.git
-download libltc-1.1.4.tar.gz https://github.com/x42/libltc/releases/download/v1.1.4/libltc-1.1.4.tar.gz
-cd ${BUILDD}
-tar zxf ${SRCDIR}/libltc-1.1.4.tar.gz
-cd libltc-1.1.4
+src libltc-1.1.4 tar.gz https://github.com/x42/libltc/releases/download/v1.1.4/libltc-1.1.4.tar.gz
 autoconfbuild
 
 ################################################################################
-#git clone -b VER-2-5-3 --depth 1  git://git.sv.gnu.org/freetype/freetype2.git
-download freetype-2.5.3.tar.gz http://download.savannah.gnu.org/releases/freetype/freetype-2.5.3.tar.gz
-cd ${BUILDD}
-tar xzf ${SRCDIR}/freetype-2.5.3.tar.gz
-cd freetype-2.5.3
+src freetype-2.5.3 tar.gz http://download.savannah.gnu.org/releases/freetype/freetype-2.5.3.tar.gz
 autoconfbuild -with-harfbuzz=no --with-png=no
 
 ################################################################################
@@ -120,17 +160,12 @@ cp porttime/porttime.h ${PREFIX}/include
 
 
 ################################################################################
-download yasm-1.2.0.tar.gz http://www.tortall.net/projects/yasm/releases/yasm-1.2.0.tar.gz
-cd ${BUILDD}
-tar xzf ${SRCDIR}/yasm-1.2.0.tar.gz
-cd yasm-1.2.0
+src yasm-1.2.0 tar.gz http://www.tortall.net/projects/yasm/releases/yasm-1.2.0.tar.gz
 autoconfbuild
 
 export PATH=${PREFIX}/bin:$PATH
 ################################################################################
-download libvpx-v1.3.0.tar.bz2 https://webm.googlecode.com/files/libvpx-v1.3.0.tar.bz2
-cd ${BUILDD}
-tar xjf ${SRCDIR}/libvpx-v1.3.0.tar.bz2
+src libvpx-v1.3.0 tar.bz2 https://webm.googlecode.com/files/libvpx-v1.3.0.tar.bz2
 
 function buildvpx {
 cd ${BUILDD}/libvpx-v1.3.0
