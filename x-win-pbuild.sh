@@ -22,7 +22,7 @@ apt-get -y install build-essential \
 	gcc-mingw-w64-i686 g++-mingw-w64-i686 mingw-w64-tools mingw32 \
 	wget git autoconf automake libtool pkg-config \
 	curl unzip ed yasm \
-	wine libwine-gl xauth xvfb
+	nsis
 
 cd "$SRC"
 git clone -b master --single-branch git://github.com/x42/xjadeo.git

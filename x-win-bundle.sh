@@ -4,7 +4,6 @@
 
 : ${WINPREFIX="$HOME/.wine/drive_c/x-prefix"}
 : ${WINLIB="$WINPREFIX/bin/"}
-: ${NSISEXE="$HOME/.wine/drive_c/Program Files/NSIS/makensis.exe"}
 
 test -f "$HOME/.xjbuildcfg.sh" && . "$HOME/.xjbuildcfg.sh"
 
@@ -56,11 +55,8 @@ sed 's/VERSION/'$VERSION'/' \
 	contrib/pkg-win/xjadeo.nsi.tpl \
 	> "$NSIDIR"/xjadeo.nsi
 
-#XXX winepath should probably be moved into a wrapper script "$NSISEXE"
-WP=`winepath -w "$NSIDIR/xjadeo.nsi"`
-echo
-echo "$NSISEXE" "$WP"
-"$NSISEXE" "$WP"
+echo "makensis $NSIDIR/xjadeo.nsi"
+makensis "$NSIDIR/xjadeo.nsi"
 
 cp -v "$NSIDIR/xjadeo_installer_v$VERSION.exe" /tmp/
 ls -lt "/tmp/xjadeo_installer_v$VERSION.exe" | head -n 1
