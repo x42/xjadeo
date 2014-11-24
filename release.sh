@@ -119,7 +119,7 @@ else
   ssh ${OSXUSER}${OSXMACHINE} << EOF
 exec /bin/bash -l
 rm -rf xjadeo
-git clone -b master git://github.com/x42/xjadeo.git
+git clone -b master --single-branch git://github.com/x42/xjadeo.git
 cd xjadeo
 ./x-osx-bundle.sh
 cd ..

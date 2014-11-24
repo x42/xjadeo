@@ -25,7 +25,7 @@ apt-get -y install build-essential \
 	wine libwine-gl xauth xvfb
 
 cd "$SRC"
-git clone -b master git://github.com/x42/xjadeo.git
+git clone -b master --single-branch git://github.com/x42/xjadeo.git
 
 set -e
 

@@ -38,7 +38,7 @@ $SUDO apt-get -y install git build-essential yasm \
 
 
 cd $SRC
-git clone -b master git://github.com/x42/xjadeo.git
+git clone -b master --single-branch git://github.com/x42/xjadeo.git
 
 FFVERSION=2.2.5
 #git clone -b release/${FFVERSION} --depth 1 git://source.ffmpeg.org/ffmpeg-${FFVERSION}

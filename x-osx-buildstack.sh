@@ -248,7 +248,7 @@ fi
 ################################################################################
 cd ${BUILDD}
 rm -rf xjadeo
-git clone -b master git://github.com/x42/xjadeo.git
+git clone -b master --single-branch git://github.com/x42/xjadeo.git
 cd xjadeo
 
 export XJARCH
