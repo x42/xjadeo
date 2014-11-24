@@ -234,7 +234,6 @@ echo '
 	exit 1
 }
 
-
 set +e
 chmod -Rf go-w "${MNTPATH}"
 set -e
@@ -260,7 +259,7 @@ DeRez -only icns ${ICNSTMP}.icns > ${ICNSTMP}.rsrc
 Rez -append ${ICNSTMP}.rsrc -o "$UC_DMG"
 SetFile -a C "$UC_DMG"
 
-rm ${ICNSTMP}.icns ${ICNSTMP}.rsrc
+rm -f ${ICNSTMP}.icns ${ICNSTMP}.rsrc
 rm -rf $BUNDLEDIR
 
 echo
