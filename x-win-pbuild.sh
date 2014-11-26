@@ -29,17 +29,6 @@ git clone -b master --single-branch git://github.com/x42/xjadeo.git
 
 set -e
 
-# running .exe binary installers is not feasible here
-# we get jack-headers and NSIS from a prepared .zip
-if test -f /tmp/x_win32_stack.tar.xz; then
-	tar xJf /tmp/x_win32_stack.tar.xz
-else
-	wget http://robin.linuxaudio.org/x_win32_stack.tar.xz
-	tar xJf x_win32_stack.tar.xz
-fi
-
-"$SRC"/win-stack/update_pc_prefix.sh
-
 ###############################################################################
 
 mkdir -p ${SRCDIR}
@@ -66,6 +55,12 @@ PATH=${PREFIX}/bin:/usr/bin:/bin:/usr/sbin:/sbin \
 	./configure --host=i686-w64-mingw32 --build=i386-linux --prefix=$PREFIX --enable-shared $@
   make $MAKEFLAGS && make install
 }
+
+################################################################################
+download jack_headers.tar.gz http://robin.linuxaudio.org/jack_headers.tar.gz
+cd "$PREFIX"
+tar xzf ${SRCDIR}/jack_headers.tar.gz
+"$PREFIX"/update_pc_prefix.sh
 
 ################################################################################
 download pthreads-w32-2-9-1-release.tar.gz ftp://sourceware.org/pub/pthreads-win32/pthreads-w32-2-9-1-release.tar.gz
