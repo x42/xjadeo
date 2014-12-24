@@ -48,8 +48,16 @@ cp -v $WINLIB/zlib1.dll "$NSIDIR"
 
 cp -v src/xjadeo/fonts/ArdourMono.ttf "$NSIDIR"
 
+GITVERSION=$(git describe --tags HEAD)
 VERSION=$(grep " VERSION " config.h | cut -d ' ' -f3 | sed 's/"//g'| sed 's/\./_/g')
 echo $VERSION
+
+TARDIR=$(mktemp -d)
+cd $TARDIR
+ln -s $NSIDIR xjadeo
+tar cJhf /tmp/xjadeo_win-$GITVERSION.tar.xz xjadeo
+rm -rf $TARDIR
+cd -
 
 sed 's/VERSION/'$VERSION'/' \
 	contrib/pkg-win/xjadeo.nsi.tpl \
@@ -60,3 +68,4 @@ makensis "$NSIDIR/xjadeo.nsi"
 
 cp -v "$NSIDIR/xjadeo_installer_v$VERSION.exe" /tmp/
 ls -lt "/tmp/xjadeo_installer_v$VERSION.exe" | head -n 1
+ls -lt "/tmp/xjadeo_win-$GITVERSION.tar.xz" | head -n 1

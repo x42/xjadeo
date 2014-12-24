@@ -242,6 +242,5 @@ autoconf
 autoreconf -i
 
 export WINPREFIX="$PREFIX"
-export NSISEXE="$WINPREFIX/NSIS/makensis"
 
 ./x-win-bundle.sh

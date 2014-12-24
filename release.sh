@@ -98,6 +98,7 @@ fi
 
 echo "building linux static and windows versions"
 rm -f /tmp/xjadeo-*.tgz
+rm -f /tmp/xjadeo_win-*.tar.xz
 ssh $COWBUILDER ~/bin/build-xjadeo.sh
 
 ok=$?
@@ -137,6 +138,7 @@ fi
 rsync -Pa $COWBUILDER:/tmp/xjadeo-i386-linux-gnu-v${VERSION}.tgz /tmp/ || exit
 rsync -Pa $COWBUILDER:/tmp/xjadeo-x86_64-linux-gnu-v${VERSION}.tgz /tmp/ || exit
 rsync -Pa $COWBUILDER:/tmp/xjadeo_installer_v${WINVERS}.exe /tmp/ || exit
+rsync -Pa $COWBUILDER:/tmp/xjadeo_win-${WINVERS}.tar.xz /tmp/ || exit
 rsync -Pa ${OSXUSER}${OSXMACHINE}:/tmp/jadeo-${VERSION}.dmg /tmp/ || exit
 
 #upload files to sourceforge
