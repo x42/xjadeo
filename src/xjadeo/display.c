@@ -65,7 +65,7 @@ static void letterbox_change_null () { ; }
 /*******************************************************************************
  * strided memcopy - convert pitches of video buffer
  */
-inline void stride_memcpy(void * dst, const void * src, int width, int height, int dstStride, int srcStride) {
+void stride_memcpy(void * dst, const void * src, int width, int height, int dstStride, int srcStride) {
 	int i;
 	if(dstStride == srcStride)
 		memcpy(dst, src, srcStride*height);

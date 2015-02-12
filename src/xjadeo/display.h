@@ -38,7 +38,7 @@ extern uint8_t osd_seeking;
 #define OSD_MIN_NFO_HEIGHT (160)
 
 /* prototypes in display.c */
-inline void stride_memcpy(void * dst, const void * src, int width, int height, int dstStride, int srcStride);
+void stride_memcpy(void * dst, const void * src, int width, int height, int dstStride, int srcStride);
 void rgb2argb (uint8_t *rgbabuffer, uint8_t *rgbbuffer, int width, int height);
 void rgb2abgr (uint8_t *rgbabuffer, uint8_t *rgbbuffer, int width, int height);
 
