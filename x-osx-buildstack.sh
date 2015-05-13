@@ -225,7 +225,7 @@ buildvpx x86-darwin9-gcc
 cd ${BUILDD}/ffmpeg-${FFVERSION}/
 
 ./configure --prefix=${PREFIX} \
-	--enable-libx264 --enable-libvpx \
+	--enable-libvpx \
 	--enable-shared --enable-gpl --disable-static --disable-debug \
 	--disable-programs --disable-iconv \
 	--arch=x86_32 --target-os=darwin --cpu=i686 --enable-cross-compile \
@@ -240,7 +240,7 @@ make clean
 buildvpx x86_64-darwin9-gcc
 cd ${BUILDD}/ffmpeg-${FFVERSION}/
 ./configure --prefix=${PREFIX} \
-	--enable-libx264 --enable-libvpx \
+	--enable-libvpx \
 	--enable-shared --enable-gpl --disable-static --disable-debug \
 	--disable-programs --disable-iconv \
 	--arch=x86_64 \
@@ -254,7 +254,7 @@ if echo "$XJARCH" | grep -q "ppc"; then
 buildvpx ppc32-darwin9-gcc
 cd ${BUILDD}/ffmpeg-${FFVERSION}/
 ./configure --prefix=${PREFIX} \
-	--enable-libx264 --enable-libvpx \
+	--enable-libvpx \
 	--enable-shared --enable-gpl --disable-static --disable-debug \
 	--disable-programs --disable-iconv \
 	--arch=ppc \
