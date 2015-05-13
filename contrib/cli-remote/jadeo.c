@@ -136,7 +136,7 @@ int main (int argc, char **argv) {
 			}
 		}
 
-		if (jack) frame= jack_poll_frame();
+		if (jack) frame= jack_poll_frame(NULL);
 #ifdef HAVE_MIDI
 		else frame= midi_poll_frame();
 #else
