@@ -1,3 +1,9 @@
+2015-06-24 (0.8.2)  Robin Gareus <robin@gareus.org>
+* fix CPU-hog after end of video
+* fix compilation with gcc5
+* fix typos in manaul
+* various build-system updates (OSX, win)
+
 2014-11-23 (0.8.1)  Robin Gareus <robin@gareus.org>
 * fix OSX remote-control threading
 * X11 file open dialog
