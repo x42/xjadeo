@@ -1700,7 +1700,9 @@ void display_frame (int64_t timestamp, int force_update) {
 			frame_to_smptestring (&OSD_frame[3], oob, 1);
 			strcat(OSD_frame, " EOF");
 		}
-		render_empty_frame (need_redisplay, 0);
+		if (need_redisplay) {
+			render_empty_frame (1, 0);
+		}
 		displaying_valid_frame = 0;
 		return;
 	}
