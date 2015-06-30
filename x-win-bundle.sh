@@ -20,6 +20,7 @@ unset CC
 if test -z "$NORECONF"; then
 	PKG_CONFIG_PATH=$WINPREFIX/lib/pkgconfig/ \
 	CPPFLAGS="-I$WINPREFIX/include" \
+	CFLAGS="-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64" \
 	LDFLAGS="-L$WINPREFIX/lib/ -L$WINLIB" \
 	./configure --host=i686-w64-mingw32 --build=i386-linux --prefix="" \
 		--disable-xv --disable-imlib2 --disable-mq --disable-ipc \

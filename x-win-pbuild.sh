@@ -49,8 +49,8 @@ function autoconfbuild {
 echo "======= $(pwd) ======="
 PATH=${PREFIX}/bin:/usr/bin:/bin:/usr/sbin:/sbin \
 	CPPFLAGS="-I${PREFIX}/include" \
-	CFLAGS="-I${PREFIX}/include" \
-	CXXFLAGS="-I${PREFIX}/include" \
+	CFLAGS="-I${PREFIX}/include -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64" \
+	CXXFLAGS="-I${PREFIX}/include -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64" \
 	LDFLAGS="-L${PREFIX}/lib" \
 	./configure --host=i686-w64-mingw32 --build=i386-linux --prefix=$PREFIX --enable-shared $@
   make $MAKEFLAGS && make install
@@ -202,8 +202,8 @@ wq
 EOF
 CC=i686-w64-mingw32-gcc\
 	CPPFLAGS="-I${PREFIX}/include" \
-	CFLAGS="-I${PREFIX}/include" \
-	CXXFLAGS="-I${PREFIX}/include" \
+	CFLAGS="-I${PREFIX}/include -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64" \
+	CXXFLAGS="-I${PREFIX}/include -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64" \
 	LDFLAGS="-L${PREFIX}/lib" \
 	CROSS=i686-w64-mingw32- ./configure --target=x86-win32-gcc --prefix=$PREFIX \
 	--disable-examples --disable-docs --disable-install-bins
@@ -229,7 +229,7 @@ EOF
 	--enable-gpl --enable-shared --disable-static --disable-debug \
 	--enable-libvpx \
 	--arch=i686 --target-os=mingw32 --cpu=i686 --enable-cross-compile --cross-prefix=i686-w64-mingw32- \
-	--extra-cflags="-I${PREFIX}/include" \
+	--extra-cflags="-I${PREFIX}/include -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64" \
 	--extra-ldflags="-L${PREFIX}/lib"
 make $MAKEFLAGS && make install
 
