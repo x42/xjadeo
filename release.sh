@@ -138,8 +138,8 @@ fi
 rsync -Pa $COWBUILDER:/tmp/xjadeo-i386-linux-gnu-v${VERSION}.tgz /tmp/ || exit
 rsync -Pa $COWBUILDER:/tmp/xjadeo-x86_64-linux-gnu-v${VERSION}.tgz /tmp/ || exit
 rsync -Pa $COWBUILDER:/tmp/xjadeo_installer_v${WINVERS}.exe /tmp/ || exit
-rsync -Pa $COWBUILDER:/tmp/xjadeo_win-${WINVERS}.tar.xz /tmp/ || exit
-rsync -Pa ${OSXUSER}${OSXMACHINE}:/tmp/jadeo-${VERSION}.dmg /tmp/ || exit
+rsync -Pa $COWBUILDER:/tmp/xjadeo_win-v${VERSION}.tar.xz /tmp/ || exit
+rsync -Pa ${OSXUSER}${OSXMACHINE}:/tmp/Jadeo-${VERSION}.dmg /tmp/jadeo-${VERSION}.dmg || exit
 
 #upload files to sourceforge
 sftp $SFUSER,xjadeo@frs.sourceforge.net << EOF
