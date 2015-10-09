@@ -1,3 +1,6 @@
+2015-09-09 (0.8.4)  Robin Gareus <robin@gareus.org>
+* drop jack requirement for OSX
+
 2015-09-09 (0.8.3)  Robin Gareus <robin@gareus.org>
 * defined LARGEFILE64 for huge videos
 * fix OSX openGL init (El Capitan support)
