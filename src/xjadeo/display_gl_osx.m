@@ -954,6 +954,7 @@ static int osx_open_window () {
 
 	[window makeKeyAndOrderFront:window];
 
+	gl_make_current();
 	gl_init ();
 	gl_resize (ffctv_width, ffctv_height);
 	if (gl_reallocate_texture (movie_width, movie_height)) {
