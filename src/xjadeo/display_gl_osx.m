@@ -1,6 +1,6 @@
 /* xjadeo - jack video monitor
  *
- * Copyright (C) 2014 Robin Gareus <robin@gareus.org>
+ * Copyright (C) 2014,2015 Robin Gareus <robin@gareus.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -556,7 +556,7 @@ static void update_dpy_menu () {
 - (void) showAbout: (id)sender
 {
 	NSAttributedString *credits = [[NSAttributedString alloc]
-		initWithString:@"(C) 2006-2014\nRobin Gareus & Luis Garrido"
+		initWithString:@"(C) 2006-2015\nRobin Gareus & Luis Garrido"
 		];
 
 	NSDictionary *aboutDict = [NSDictionary dictionaryWithObjectsAndKeys:
