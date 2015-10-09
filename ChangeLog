@@ -1,3 +1,7 @@
+2015-09-09 (0.8.3)  Robin Gareus <robin@gareus.org>
+* defined LARGEFILE64 for huge videos
+* fix OSX openGL init (El Capitan support)
+
 2015-06-24 (0.8.2)  Robin Gareus <robin@gareus.org>
 * fix CPU-hog after end of video
 * fix compilation with gcc5
