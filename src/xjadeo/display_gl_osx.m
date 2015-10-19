@@ -659,6 +659,10 @@ static void gl_make_current () {
 	[context makeCurrentContext];
 }
 
+static void gl_clear_current () {
+	[NSOpenGLContext clearCurrentContext];
+}
+
 static void gl_swap_buffers () {
 	glSwapAPPLE ();
 }

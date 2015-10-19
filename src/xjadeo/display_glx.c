@@ -44,6 +44,10 @@ static void gl_make_current() {
 	glXMakeCurrent(_gl_display, _gl_win, _gl_ctx);
 }
 
+static void gl_clear_current() {
+	glXMakeCurrent(_gl_display, None, NULL);
+}
+
 static void gl_swap_buffers() {
 	glXSwapBuffers(_gl_display, _gl_win);
 }

@@ -55,6 +55,7 @@ static int          _gl_vblank_sync = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 static void gl_make_current();
+static void gl_clear_current();
 static void gl_swap_buffers();
 
 static void gl_sync_lock();
@@ -76,6 +77,7 @@ static void gl_reshape(int width, int height) {
 	_gl_height = height;
 
 	gl_letterbox_change();
+	gl_clear_current();
 }
 
 static int gl_reallocate_texture(int width, int height) {
@@ -156,6 +158,7 @@ static void xjglExpose(uint8_t *buf) {
 	if (_gl_vblank_sync) {
 		glFinish();
 	}
+	gl_clear_current();
 }
 
 static void xjglButton(int btn) {

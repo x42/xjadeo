@@ -61,6 +61,10 @@ static void gl_make_current() {
 	; //wglMakeCurrent(_gl_hdc, _gl_hglrc);
 }
 
+static void gl_clear_current () {
+	; //wglMakeCurrent(NULL, NULL);
+}
+
 static void gl_swap_buffers() {
 	SwapBuffers(_gl_hdc);
 }
