@@ -25,6 +25,14 @@ case `sw_vers -productVersion | cut -d'.' -f1,2` in
 		XJARCH="-arch i386 -arch ppc -arch x86_64"
 		OSXCOMPAT="-isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5"
 		;;
+	"10.10")
+		XJARCH="-arch x86_64"
+		OSXCOMPAT="-mmacosx-version-min=10.9"
+		;;
+	"10.11")
+		XJARCH="-arch x86_64"
+		OSXCOMPAT="-mmacosx-version-min=10.10"
+		;;
 	*)
 		echo "**UNTESTED OSX VERSION**"
 		echo "if it works, please report back :)"
