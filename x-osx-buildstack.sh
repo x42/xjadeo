@@ -204,10 +204,10 @@ autoconfbuild
 #
 
 ################################################################################
-src libvpx-v1.5.0 tar.bz2 http://downloads.webmproject.org/releases/webm/libvpx-1.5.0.tar.bz2
+src libvpx-1.5.0 tar.bz2 http://downloads.webmproject.org/releases/webm/libvpx-1.5.0.tar.bz2
 
 function buildvpx {
-cd ${BUILDD}/libvpx-v1.5.0
+cd ${BUILDD}/libvpx-1.5.0
 ./configure --prefix=$PREFIX --target=$1
 make clean
 make $MAKEFLAGS && make install
