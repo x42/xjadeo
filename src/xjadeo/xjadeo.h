@@ -27,11 +27,11 @@
 #include <libavutil/mathematics.h>
 #include <libavutil/mem.h>
 
-#ifndef PIX_FMT_BGRA32
-#define PIX_FMT_BGRA32 PIX_FMT_BGRA
+#ifndef AV_PIX_FMT_BGRA32
+#define AV_PIX_FMT_BGRA32 AV_PIX_FMT_BGRA
 #endif
-#ifndef PIX_FMT_RGBA32
-#define PIX_FMT_RGBA32 PIX_FMT_RGBA
+#ifndef AV_PIX_FMT_RGBA32
+#define AV_PIX_FMT_RGBA32 AV_PIX_FMT_RGBA
 #endif
 
 /* xjadeo seek modes */

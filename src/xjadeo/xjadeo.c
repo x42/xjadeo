@@ -1433,7 +1433,7 @@ int open_movie (char* file_name) {
 		ffctv_height = ((int)rint (pCodecCtx->width / movie_aspect));
 	}
 
-	if (render_fmt == PIX_FMT_RGB24 || render_fmt == PIX_FMT_BGRA32) {
+	if (render_fmt == AV_PIX_FMT_RGB24 || render_fmt == AV_PIX_FMT_BGRA32) {
 		;
 	} else {
 		// YV12 needs 2x2 area for color
@@ -1553,18 +1553,18 @@ int open_movie (char* file_name) {
 static void render_empty_frame (int blit, int splashagain) {
 	if (!buffer) return;
 	// clear image (black / or YUV green)
-	if (render_fmt == PIX_FMT_UYVY422) {
+	if (render_fmt == AV_PIX_FMT_UYVY422) {
 		int i;
 		for (i=0;i<movie_width*movie_height*2;i+=2) {
 			buffer[i]=0x80;
 			buffer[i+1]=0x00;
 		}
 	}
-	else if (render_fmt == PIX_FMT_YUV420P) {
+	else if (render_fmt == AV_PIX_FMT_YUV420P) {
 		size_t Ylen  = movie_width * movie_height;
 		memset (buffer, 0, Ylen);
 		memset (buffer + Ylen, 0x80, Ylen / 2);
-	} else if (render_fmt == PIX_FMT_RGBA32) {
+	} else if (render_fmt == AV_PIX_FMT_RGBA32) {
 		int i;
 		for (i=0; i < movie_width * movie_height * 4; i+=4) {
 			buffer[i]   = 0x00;
@@ -1572,7 +1572,7 @@ static void render_empty_frame (int blit, int splashagain) {
 			buffer[i+2] = 0x00;
 			buffer[i+3] = 0xff;
 		}
-	} else if (render_fmt == PIX_FMT_BGRA32) {
+	} else if (render_fmt == AV_PIX_FMT_BGRA32) {
 		int i;
 		for (i = 0; i < movie_width * movie_height * 4; i += 4) {
 			buffer[i]   = 0x00;
@@ -1585,7 +1585,7 @@ static void render_empty_frame (int blit, int splashagain) {
 	}
 #ifdef DRAW_CROSS
 	int x,y;
-	if (render_fmt == PIX_FMT_UYVY422)
+	if (render_fmt == AV_PIX_FMT_UYVY422)
 		for (x = 0, y = 0;x < movie_width - 1; ++x, y = movie_height * x / movie_width) {
 			int off = (2 * x + 2 * movie_width * y);
 			buffer[off]=127; buffer[off+1]=127;
@@ -1593,7 +1593,7 @@ static void render_empty_frame (int blit, int splashagain) {
 			off = (2 * x + 2 * movie_width * (movie_height - y - 1));
 			buffer[off]=127; buffer[off+1]=127;
 		}
-	if (render_fmt == PIX_FMT_YUV420P)
+	if (render_fmt == AV_PIX_FMT_YUV420P)
 		for (x = 0, y = 0; x < movie_width - 1; ++x, y = movie_height * x / movie_width) {
 			int yoff = (x + movie_width * y);
 			buffer[yoff]=127; buffer[yoff+1]=127;
@@ -1601,7 +1601,7 @@ static void render_empty_frame (int blit, int splashagain) {
 			yoff = (x + movie_width * (movie_height - y - 1));
 			buffer[yoff]=127; buffer[yoff+1]=127;
 		}
-	if (render_fmt == PIX_FMT_RGB24)
+	if (render_fmt == AV_PIX_FMT_RGB24)
 		for (x = 0, y = 0; x < movie_width - 1; ++x, y = movie_height * x / movie_width) {
 			int yoff = 3 * (x + movie_width * y);
 			buffer[yoff]=127;
@@ -1612,7 +1612,7 @@ static void render_empty_frame (int blit, int splashagain) {
 			buffer[yoff+1]=127;
 			buffer[yoff+2]=127;
 		}
-	if (render_fmt == PIX_FMT_RGBA32 || render_fmt == PIX_FMT_BGRA32)
+	if (render_fmt == AV_PIX_FMT_RGBA32 || render_fmt == AV_PIX_FMT_BGRA32)
 		for (x = 0, y = 0; x < movie_width - 1; ++x, y = movie_height * x / movie_width) {
 			int yoff = 4 * (x + movie_width * y);
 			buffer[yoff]=127;
@@ -1749,17 +1749,17 @@ void display_frame (int64_t timestamp, int force_update) {
 		// TODO: this can be done once per Video output.
 		int dstStride[8] = {0,0,0,0,0,0,0,0};
 		switch (render_fmt) {
-			case PIX_FMT_RGBA32:
-			case PIX_FMT_BGRA32:
+			case AV_PIX_FMT_RGBA32:
+			case AV_PIX_FMT_BGRA32:
 				dstStride[0] = movie_width*4;
 				break;
-			case PIX_FMT_BGR24:
+			case AV_PIX_FMT_BGR24:
 				dstStride[0] = movie_width*3;
 				break;
-			case PIX_FMT_UYVY422:
+			case AV_PIX_FMT_UYVY422:
 				dstStride[0] = movie_width*2;
 				break;
-			case PIX_FMT_YUV420P:
+			case AV_PIX_FMT_YUV420P:
 			default:
 				dstStride[0] = movie_width;
 				dstStride[1] = movie_width/2;

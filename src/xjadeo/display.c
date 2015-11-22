@@ -194,8 +194,8 @@ void rgb2abgr (uint8_t *rgbabuffer, uint8_t *rgbbuffer, int width, int height) {
 
 // see xjadeo.h VideoModes
 const vidout VO[] = {
-	{ PIX_FMT_RGB24,   1, 		"NULL", NULLOUTPUT}, // NULL is --vo 0 -> autodetect
-	{ PIX_FMT_BGRA32,   SUP_OPENGL,   "OpenGL",
+	{ AV_PIX_FMT_RGB24,   1, 		"NULL", NULLOUTPUT}, // NULL is --vo 0 -> autodetect
+	{ AV_PIX_FMT_BGRA32,   SUP_OPENGL,   "OpenGL",
 #ifdef HAVE_GL
 		&gl_render, &gl_open_window, & gl_close_window,
 		&gl_handle_events, &gl_newsrc,
@@ -209,7 +209,7 @@ const vidout VO[] = {
 			NULLOUTPUT
 #endif
 	},
-	{ PIX_FMT_YUV420P, SUP_LIBXV, "XV - X11 video extension",
+	{ AV_PIX_FMT_YUV420P, SUP_LIBXV, "XV - X11 video extension",
 #if HAVE_LIBXV
 		&render_xv, &open_window_xv, &close_window_xv,
 		&handle_X_events_xv, &newsrc_xv, &resize_xv,
@@ -220,7 +220,7 @@ const vidout VO[] = {
 			NULLOUTPUT
 #endif
 	},
-	{ PIX_FMT_YUV420P, SUP_SDL, "SDL",
+	{ AV_PIX_FMT_YUV420P, SUP_SDL, "SDL",
 #ifdef HAVE_SDL
 		&render_sdl, &open_window_sdl, &close_window_sdl,
 		&handle_X_events_sdl, &newsrc_sdl, &resize_sdl,
@@ -233,9 +233,9 @@ const vidout VO[] = {
 	},
 	{
 #ifdef IMLIB2RGBA
-		PIX_FMT_BGRA32,   SUP_IMLIB2,   "ImLib2/x11 (RGBA32)",
+		AV_PIX_FMT_BGRA32,   SUP_IMLIB2,   "ImLib2/x11 (RGBA32)",
 #else
-		PIX_FMT_RGB24,   SUP_IMLIB2,   "ImLib2/x11 (RGB24)",
+		AV_PIX_FMT_RGB24,   SUP_IMLIB2,   "ImLib2/x11 (RGB24)",
 #endif
 #if HAVE_IMLIB2
 		&render_imlib2, &open_window_imlib2, &close_window_imlib2,
@@ -247,7 +247,7 @@ const vidout VO[] = {
 			NULLOUTPUT
 #endif
 	},
-	{ PIX_FMT_UYVY422,   SUP_MACOSX,   "Mac OSX - quartz",
+	{ AV_PIX_FMT_UYVY422,   SUP_MACOSX,   "Mac OSX - quartz",
 #if defined PLATFORM_OSX && (defined __i386 || defined __ppc__)
 		&render_mac, &open_window_mac, &close_window_mac,
 		&handle_X_events_mac, &newsrc_mac, &resize_mac,
@@ -342,17 +342,17 @@ extern int ST_top;
 #define PB_W (movie_width - 2 * PB_X)
 
 #define SET_RFMT(FORMAT, POINTER, VARS, FUNC) \
-	if ((FORMAT) == PIX_FMT_YUV420P) \
+	if ((FORMAT) == AV_PIX_FMT_YUV420P) \
 		(POINTER) = &_##FUNC##_YUV; \
-	else if ((FORMAT) == PIX_FMT_UYVY422) \
+	else if ((FORMAT) == AV_PIX_FMT_UYVY422) \
 		(POINTER) = &_##FUNC##_YUV422; \
-	else if ((FORMAT) == PIX_FMT_RGB24) { \
+	else if ((FORMAT) == AV_PIX_FMT_RGB24) { \
 		 (POINTER) = &_##FUNC##_RGB; \
 		VARS.bpp = 3; \
-	} else if ((FORMAT) == PIX_FMT_RGBA32) { \
+	} else if ((FORMAT) == AV_PIX_FMT_RGBA32) { \
 		(POINTER) = &_##FUNC##_RGB; \
 		VARS.bpp = 4; \
-	} else if ((FORMAT) == PIX_FMT_BGRA32) { \
+	} else if ((FORMAT) == AV_PIX_FMT_BGRA32) { \
 		(POINTER) = &_##FUNC##_RGB; \
 		VARS.bpp = 4; \
 	} else return ;

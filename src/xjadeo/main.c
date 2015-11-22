@@ -137,7 +137,7 @@ AVFrame           *pFrame = NULL;
 AVFrame           *pFrameFMT = NULL;
 uint8_t           *buffer = NULL;
 
-int               render_fmt = PIX_FMT_YUV420P; ///< needs to be set before calling movie_open
+int               render_fmt = AV_PIX_FMT_YUV420P; ///< needs to be set before calling movie_open
 
 /* Video File Info */
 double  duration = 1;

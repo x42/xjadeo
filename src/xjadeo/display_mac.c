@@ -553,16 +553,16 @@ void window_resized_mac() {
   }
 
   switch (image_format) {
-    case PIX_FMT_RGB24:
-    case PIX_FMT_RGBA32:
+    case AV_PIX_FMT_RGB24:
+    case AV_PIX_FMT_RGBA32:
     {
       bounds = CGRectMake(dstRect.left, dstRect.top, dstRect.right-dstRect.left, dstRect.bottom-dstRect.top);
       CreateCGContextForPort (GetWindowPort (theWindow), &context);
       break;
     }
-    case PIX_FMT_YUV420P:
-    case PIX_FMT_YUYV422:
-    case PIX_FMT_UYVY422:
+    case AV_PIX_FMT_YUV420P:
+    case AV_PIX_FMT_YUYV422:
+    case AV_PIX_FMT_UYVY422:
     {
       long scale_X = FixDiv(Long2Fix(dstRect.right - dstRect.left),Long2Fix(imgRect.right));
       long scale_Y = FixDiv(Long2Fix(dstRect.bottom - dstRect.top),Long2Fix(imgRect.bottom));
@@ -849,16 +849,16 @@ static void flip_page(void) {
 
 
   switch (image_format) {
-    case PIX_FMT_RGB24:
-    case PIX_FMT_RGBA32:
+    case AV_PIX_FMT_RGB24:
+    case AV_PIX_FMT_RGBA32:
     {
       CGContextDrawImage (context, bounds, image);
     }
     break;
 
-    case PIX_FMT_YUV420P:
-    case PIX_FMT_YUYV422:
-    case PIX_FMT_UYVY422:
+    case AV_PIX_FMT_YUV420P:
+    case AV_PIX_FMT_YUYV422:
+    case AV_PIX_FMT_UYVY422:
     {
       OSErr qterr;
       CodecFlags flags = 0;
@@ -919,14 +919,14 @@ static void flip_page(void) {
 static int draw_frame(uint8_t *src) {
   //printf("draw_frame\n");
   switch (image_format) {
-    case PIX_FMT_RGB24:
-    case PIX_FMT_RGBA32:
+    case AV_PIX_FMT_RGB24:
+    case AV_PIX_FMT_RGBA32:
       memcpy(image_data,src,image_size);
       return 0;
 
-    case PIX_FMT_YUV420P:
-    case PIX_FMT_YUYV422:
-    case PIX_FMT_UYVY422:
+    case AV_PIX_FMT_YUV420P:
+    case AV_PIX_FMT_YUYV422:
+    case AV_PIX_FMT_UYVY422:
 #ifdef CROPIMG
 {
       stride_memcpy(yuvbuf, src+(xoffset*2),
@@ -954,8 +954,8 @@ int open_window_mac (void) {
   uint32_t d_width = ffctv_width;
 
   device_id = 0;
-  image_format = PIX_FMT_YUV420P;
-  //image_format = PIX_FMT_RGBA32;
+  image_format = AV_PIX_FMT_YUV420P;
+  //image_format = AV_PIX_FMT_RGBA32;
 
   WindowAttributes windowAttrs;
   OSErr qterr = 0;
@@ -982,15 +982,15 @@ int open_window_mac (void) {
 
   switch (image_format)
   {
-    case PIX_FMT_RGBA32:
+    case AV_PIX_FMT_RGBA32:
       image_depth = 32;
       break;
-    case PIX_FMT_RGB24:
+    case AV_PIX_FMT_RGB24:
       image_depth = 24;
       break;
-  case PIX_FMT_YUV420P:
-  case PIX_FMT_YUYV422:
-  case PIX_FMT_UYVY422:
+  case AV_PIX_FMT_YUV420P:
+  case AV_PIX_FMT_YUYV422:
+  case AV_PIX_FMT_UYVY422:
       image_depth = 16;
       break;
   }
@@ -1037,8 +1037,8 @@ int open_window_mac (void) {
   }
 
   switch (image_format) {
-    case PIX_FMT_RGB24:
-    case PIX_FMT_RGBA32:
+    case AV_PIX_FMT_RGB24:
+    case AV_PIX_FMT_RGBA32:
     {
       CreateCGContextForPort (GetWindowPort (theWindow), &context);
 
@@ -1054,9 +1054,9 @@ int open_window_mac (void) {
                                dataProviderRef, 0, 1, kCGRenderingIntentDefault);
         break;
     }
-    case PIX_FMT_YUYV422:
-    case PIX_FMT_UYVY422:
-    case PIX_FMT_YUV420P:
+    case AV_PIX_FMT_YUYV422:
+    case AV_PIX_FMT_UYVY422:
+    case AV_PIX_FMT_YUV420P:
     {
       SetIdentityMatrix(&matrix);
       if ((d_width != width) || (d_height != height)) {
@@ -1144,7 +1144,7 @@ int open_window_mac (void) {
         case IMGFMT_IYUV:
         case IMGFMT_I420:
       */
-        case PIX_FMT_YUV420P: //XXX
+        case AV_PIX_FMT_YUV420P: //XXX
           P->componentInfoY.offset  = be2me_32(sizeof(PlanarPixmapInfoYUV420));
           P->componentInfoCb.offset = be2me_32(be2me_32(P->componentInfoY.offset) + image_size / 2);
           P->componentInfoCr.offset = be2me_32(be2me_32(P->componentInfoCb.offset) + image_size / 4);
@@ -1157,8 +1157,8 @@ int open_window_mac (void) {
         case IMGFMT_UYVY:
         case IMGFMT_YUY2:
         */
-        case PIX_FMT_YUYV422 : //XXX
-        case PIX_FMT_UYVY422:
+        case AV_PIX_FMT_YUYV422 : //XXX
+        case AV_PIX_FMT_UYVY422:
           image_buffer_size = image_size;
           break;
       }

@@ -43,6 +43,21 @@
 #define AVMEDIA_TYPE_AUDIO CODEC_TYPE_AUDIO
 #endif
 
+#if LIBAVUTIL_VERSION_INT < AV_VERSION_INT(55, 7, 0)
+# ifndef AVUTIL_OLD_PIX_FMTS_H
+#  define AV_PIX_FMT_ARGB    PIX_FMT_ARGB
+#  define AV_PIX_FMT_BGR24   PIX_FMT_BGR24
+#  define AV_PIX_FMT_BGRA    PIX_FMT_BGRA
+#  define AV_PIX_FMT_NONE    PIX_FMT_NONE
+#  define AV_PIX_FMT_RGB24   PIX_FMT_RGB24
+#  define AV_PIX_FMT_RGBA    PIX_FMT_RGBA
+#  define AV_PIX_FMT_UYVY422 PIX_FMT_UYVY422
+#  define AV_PIX_FMT_YUV420P PIX_FMT_YUV420P
+#  define AV_PIX_FMT_YUV440P PIX_FMT_YUV440P
+#  define AV_PIX_FMT_YUYV422 PIX_FMT_YUYV422
+# endif
+#endif
+
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(53, 2, 0)
 static inline int avformat_open_input(AVFormatContext **ps, const char *filename, void *fmt, void **options)
 {
