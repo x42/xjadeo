@@ -40,10 +40,10 @@ $SUDO apt-get -y install git build-essential yasm \
 cd $SRC
 git clone -b master --single-branch git://github.com/x42/xjadeo.git
 
-FFVERSION=2.2.5
+FFVERSION=2.8.2
 #git clone -b release/${FFVERSION} --depth 1 git://source.ffmpeg.org/ffmpeg-${FFVERSION}
-if test -f /tmp/ffmpeg-2.2.5.tar.bz2; then
-	tar xjf /tmp/ffmpeg-2.2.5.tar.bz2
+if test -f /tmp/ffmpeg-${FFVERSION}.tar.bz2; then
+	tar xjf /tmp/ffmpeg-${FFVERSION}.tar.bz2
 else
 	wget http://www.ffmpeg.org/releases/ffmpeg-${FFVERSION}.tar.bz2
 	tar xjf ffmpeg-${FFVERSION}.tar.bz2

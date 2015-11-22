@@ -91,6 +91,7 @@ gcc -Wall -O3 \
 	${LIBF}/libavcodec.a \
 	${LIBF}/libswscale.a \
 	${LIBF}/libavdevice.a \
+	${LIBF}/libswresample.a \
 	${LIBF}/libavutil.a \
 	\
 	$SLIBS \

@@ -36,20 +36,7 @@ Section "Xjadeo (required)"
   File "xjadeo.exe"
   File "ArdourMono.ttf"
   File "xjadeo.nsi"
-
-  File "avcodec-55.dll"
-  File "avformat-55.dll"
-  File "avutil-52.dll"
-  File "libfreetype-6.dll"
-  File "libiconv-2.dll"
-  File "liblo-7.dll"
-  File "libltc-11.dll"
-  File "libportmidi-0.dll"
-  File "libporttime-0.dll"
-  File "pthreadGC2.dll"
-  File "swscale-2.dll"
-  File "zlib1.dll"
-
+  File /r "*.dll"
   ClearErrors
   FileOpen $0 $INSTDIR\xjremote.bat w
   IfErrors done
@@ -103,18 +90,7 @@ Section "Uninstall"
   Delete $INSTDIR\xjremote.bat
   Delete $INSTDIR\uninstall.exe
 
-  Delete $INSTDIR\avcodec-55.dll
-  Delete $INSTDIR\avformat-55.dll
-  Delete $INSTDIR\avutil-52.dll
-  Delete $INSTDIR\libfreetype-6.dll
-  Delete $INSTDIR\libiconv-2.dll
-  Delete $INSTDIR\liblo-7.dll
-  Delete $INSTDIR\libltc-11.dll
-  Delete $INSTDIR\libportmidi-0.dll
-  Delete $INSTDIR\libporttime-0.dll
-  Delete $INSTDIR\pthreadGC2.dll
-  Delete $INSTDIR\swscale-2.dll
-  Delete $INSTDIR\zlib1.dll
+  Delete "$INSTDIR\*.dll"
 
   ; Remove shortcuts, if any
   Delete "$SMPROGRAMS\xjadeo\*.*"
