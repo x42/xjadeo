@@ -34,7 +34,11 @@ make -C src/xjadeo xjadeo.exe
 cp -v src/xjadeo/xjadeo.exe "$NSIDIR"
 cp -v src/xjadeo/icons/xjadeo_win.ico "$NSIDIR"/xjadeo.ico
 
-cp -v $WINLIB/*.dll "$NSIDIR"
+ffdlls="avcodec- avformat- avutil- libfreetype- libiconv- liblo- libltc- libportmidi- libporttime- pthreadGC2 swscale- swresample- zlib1"
+for fname in $ffdlls; do
+	cp -v ${WINPREFIX}/bin/${fname}*.dll $NSIDIR
+done
+
 cp -v src/xjadeo/fonts/ArdourMono.ttf "$NSIDIR"
 
 GITVERSION=$(git describe --tags HEAD)

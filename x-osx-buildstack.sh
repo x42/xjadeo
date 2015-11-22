@@ -204,10 +204,10 @@ autoconfbuild
 #
 
 ################################################################################
-src libvpx-v1.3.0 tar.bz2 https://webm.googlecode.com/files/libvpx-v1.3.0.tar.bz2
+src libvpx-v1.5.0 tar.bz2 http://downloads.webmproject.org/releases/webm/libvpx-1.5.0.tar.bz2
 
 function buildvpx {
-cd ${BUILDD}/libvpx-v1.3.0
+cd ${BUILDD}/libvpx-v1.5.0
 ./configure --prefix=$PREFIX --target=$1
 make clean
 make $MAKEFLAGS && make install
@@ -236,7 +236,7 @@ cd ${BUILDD}/ffmpeg-${FFVERSION}/
 
 ./configure --prefix=${PREFIX} \
 	--enable-libvpx \
-	--enable-shared --enable-gpl --disable-static --disable-debug \
+	--enable-shared --enable-gpl --disable-static --disable-debug --disable-doc \
 	--disable-programs --disable-iconv \
 	--arch=x86_32 --target-os=darwin --cpu=i686 --enable-cross-compile \
 	--extra-cflags="-arch i386 ${OSXCOMPAT}  -I${PREFIX}/include" \
@@ -251,7 +251,7 @@ buildvpx x86_64-darwin9-gcc
 cd ${BUILDD}/ffmpeg-${FFVERSION}/
 ./configure --prefix=${PREFIX} \
 	--enable-libvpx \
-	--enable-shared --enable-gpl --disable-static --disable-debug \
+	--enable-shared --enable-gpl --disable-static --disable-debug --disable-doc \
 	--disable-programs --disable-iconv \
 	--arch=x86_64 \
 	--extra-cflags="-arch x86_64 ${OSXCOMPAT}  -I${PREFIX}/include" \
@@ -265,7 +265,7 @@ buildvpx ppc32-darwin9-gcc
 cd ${BUILDD}/ffmpeg-${FFVERSION}/
 ./configure --prefix=${PREFIX} \
 	--enable-libvpx \
-	--enable-shared --enable-gpl --disable-static --disable-debug \
+	--enable-shared --enable-gpl --disable-static --disable-debug --disable-doc \
 	--disable-programs --disable-iconv \
 	--arch=ppc \
 	--extra-cflags="-arch ppc ${OSXCOMPAT}  -I${PREFIX}/include" \
