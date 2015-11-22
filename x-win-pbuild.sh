@@ -192,10 +192,10 @@ autoreconf -i
 autoconfbuild
 
 ################################################################################
-download libvpx-1.5.0.tar.bz2 http://downloads.webmproject.org/releases/webm/libvpx-1.5.0.tar.bz2
+download libvpx-1.4.0.tar.bz2 http://downloads.webmproject.org/releases/webm/libvpx-1.4.0.tar.bz2
 cd ${BUILDD}
-tar xjf ${SRCDIR}/libvpx-1.5.0.tar.bz2
-cd libvpx-1.5.0
+tar xjf ${SRCDIR}/libvpx-1.4.0.tar.bz2
+cd libvpx-1.4.0
 ed vpx/src/svc_encodeframe.c << EOF
 %s/MINGW_HAS_SECURE_API/MINGW_HAS_SECURE_APIXXX/
 wq
