@@ -12,8 +12,8 @@ html: xjadeo.1 xjremote.1
 	cp -a static/* html/static/
 	groff -m man -T xhtml -P -l xjadeo.1 | sed 's/cellspacing="0" cellpadding="0"//g;s/width="100%" border="0" rules="none" frame="void"//g;s/valign="top" align="left"//g;s/width="/style="width:/g;s/><\/col>/\/>/g' > pages/xjadeo.html
 	groff -m man -T xhtml -P -l xjremote.1 | sed 's/cellspacing="0" cellpadding="0"//g' > pages/xjremote.html
-	echo -e "/<body>\n1,.d\n/<hr\\>\n.d\n/<hr\\>\n.d\n/<\\/body>\n.,\$$d\nw\nq" | ed -s pages/xjadeo.html
-	echo -e "/<body>\n1,.d\n/<hr\\>\n.d\n/<hr\\>\n.d\n/<\\/body>\n.,\$$d\nw\nq" | ed -s pages/xjremote.html
+	`which echo` -e "/<body>\n1,.d\n/<hr\\>\n.d\n/<hr\\>\n.d\n/<\\/body>\n.,\$$d\nw\nq" | ed -s pages/xjadeo.html
+	`which echo` -e "/<body>\n1,.d\n/<hr\\>\n.d\n/<hr\\>\n.d\n/<\\/body>\n.,\$$d\nw\nq" | ed -s pages/xjremote.html
 	for file in pages/*; do echo $$file; cat tpl/head tpl/page $$file tpl/epage tpl/foot > html/`basename $$file`; done
 	cat tpl/head tpl/front tpl/foot > html/index.html
 	sed -i 's/@VERSION@/$(VERSION)/g;s/@WINVERSION@/$(WINVERS)/g;s/@DATE@/$(RELDATE)/g' html/download.html
