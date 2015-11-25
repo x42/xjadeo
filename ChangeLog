@@ -1,3 +1,8 @@
+2015-11-26 (0.8.5)  Robin Gareus <robin@gareus.org>
+* release openGL context
+* add compatibility for ffmpeg-2.9
+* allow to compile on OSX/10.11
+
 2015-09-09 (0.8.4)  Robin Gareus <robin@gareus.org>
 * drop jack requirement for OSX
 
