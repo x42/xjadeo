@@ -320,7 +320,8 @@ __attribute__ ((visibility ("hidden")))
 	}
 	else if (![self isInFullScreenMode] && onoff)
 	{
-		[self enterFullScreenMode:[NSScreen mainScreen] withOptions:nil];
+		NSDictionary *opts = [NSDictionary dictionaryWithObjectsAndKeys: [NSNumber numberWithBool:NO], NSFullScreenModeAllScreens, nil];
+		[self enterFullScreenMode:[NSScreen mainScreen] withOptions:opts];
 	}
 }
 
