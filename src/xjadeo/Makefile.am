@@ -30,6 +30,10 @@ if TARGET_LINUX
 xjadeo_SOURCES+=display_glx.c
 xjadeo_LDADD+=@JACK_LIBS@
 endif
+if TARGET_NETBSD
+xjadeo_SOURCES+=display_glx.c
+xjadeo_LDADD+=@JACK_LIBS@
+endif
 if TARGET_WIN32
 xjadeo_SOURCES+=display_gl_win.c windows.rc
 xjadeo_CFLAGS+=-DUSE_WEAK_JACK
