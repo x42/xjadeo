@@ -34,6 +34,7 @@ AC_ARG_WITH(qmakeargs,     AS_HELP_STRING([--with-qmakeargs], [specify custom qm
 AC_ARG_ENABLE(contrib,     AC_HELP_STRING([--enable-contrib], [Compile and install code in contrib folder (default:off)]))
 AC_ARG_ENABLE(timescale,   AC_HELP_STRING([--enable-timescale], [enable time-mapping/loop-playback support - experimental - DO NOT USE]))
 AC_ARG_ENABLE(framecrop,   AC_HELP_STRING([--enable-framecrop], [hardcoded frame cropping - experimental - DO NOT USE]))
+AC_ARG_ENABLE(weakjack,    AC_HELP_STRING([--enable-weakjack], [load libjack at runtime (weak linking -- always enabled on OSX and Windows)]))
 
 
 LIBPREF=lib
@@ -340,6 +341,16 @@ fi
 
 AC_SUBST(MIDI_LIBS)
 AC_SUBST(MIDI_CFLAGS)
+
+
+dnl ---------------------------------------------------------------------------
+dnl weak-jack
+if test "x$enable_weakjack" = "xyes"; then
+	JACK_CFLAGS+=" -DUSE_WEAK_JACK"
+	JACK_LIBS=-ldl
+	AC_SUBST(JACK_CFLAGS)
+	AC_SUBST(JACK_LIBS)
+fi
 
 dnl ---------------------------------------------------------------------------
 dnl Check for freetype (On Screen Display)
