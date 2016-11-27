@@ -13,7 +13,7 @@ export PKG_CONFIG_PATH=${LIBF}/pkgconfig
 if test -z "$NORECONF"; then
 	CFLAGS="-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64" \
 	./configure \
-		--disable-mq --disable-ipc --enable-embed-font \
+		--disable-mq --disable-ipc --enable-embed-font --enable-weakjack \
 		--disable-qtgui --disable-jacksession --disable-portmidi --disable-alsamidi \
 	  --with-fontfile=/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf \
 	|| exit
