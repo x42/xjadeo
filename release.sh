@@ -1,4 +1,4 @@
-#/bin/sh
+#/bin/bash
 
 # update version in
 # - configure.ac
@@ -31,19 +31,19 @@ if test -z "$BINARYONLY"; then
 	echo -n "git push? [Y/n] "
 	read -n1 a
 	echo
-	if test "$a" == "n" -o "$a" == "N"; then
+	if test "$a" = "n" -o "$a" = "N"; then
 		exit 1
 	fi
 
 	# upload to rg42.org git
-	git push origin
-	git push --tags
+	git push rg42
+	git push rg42 --tags
 	# upload to github git
 	git push github
 	git push --tags github
 
 	#upload doc to sourceforge
-	sftp $SFUSER,xjadeo@web.sourceforge.net << EOF
+	sftp $SFUSER,xjadeo@frs.sourceforge.net << EOF
 cd htdocs/
 rm *
 lcd doc/html
