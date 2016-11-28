@@ -92,7 +92,7 @@ case $target_os in
 		HAVE_GL=1
 		AM_CONDITIONAL([TARGET_OSX], false)
 		AM_CONDITIONAL([TARGET_LINUX], false)
-		AM_CONDITIONAL([TARGET_NETBSD], true)
+		AM_CONDITIONAL([TARGET_NETBSD], false)
 		AM_CONDITIONAL([TARGET_WIN32], true)
 		AC_CHECK_TOOL(WINDRES, windres, false)
 		if test "$WINDRES" = "false"; then
