@@ -15,7 +15,7 @@ test -f "$HOME/.buildcfg.sh" && . "$HOME/.buildcfg.sh"
 if test -z "$BINARYONLY"; then
 	make clean
 	sh autogen.sh
-	./configure --enable-contrib --enable-qtgui
+	./configure --enable-contrib --enable-qtgui --enable-weakjack
 
 	VERSION=$(awk '/define VERSION /{print $3;}' config.h | sed 's/"//g')
 	WINVERS=$(grep " VERSION " config.h | cut -d ' ' -f3 | sed 's/"//g'| sed 's/\./_/g')

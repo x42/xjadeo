@@ -1,3 +1,8 @@
+2016-11-28 (0.8.6)  Robin Gareus <robin@gareus.org>
+* explicitly request single-screen fullscreen on OSX
+* weak-link against libjack (binaries)
+* add NetBSD support
+
 2015-11-26 (0.8.5)  Robin Gareus <robin@gareus.org>
 * release openGL context
 * add compatibility for ffmpeg-2.9
