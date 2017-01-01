@@ -1062,7 +1062,7 @@ int main (int argc, char **argv)
 			strcpy(OSD_fontfile, path);
 			strcat(OSD_fontfile, "\\" FONT_FILE);
 		} else {
-			GetModuleFileNameW(NULL, (LPWCH)path, MAX_PATH);
+			GetModuleFileName(NULL, (LPWCH)path, MAX_PATH);
 			char *tmp;
 			if ((tmp = strrchr(path, '\\'))) *tmp = 0;
 			strcpy(OSD_fontfile, path);
