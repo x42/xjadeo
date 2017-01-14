@@ -5,11 +5,11 @@
     <name>ImportDialog</name>
     <message>
         <source>Import - Convert Video File</source>
-        <translation>Importer - Convertir Fichier Video</translation>
+        <translation>Importer - convertir un fichier vidéo</translation>
     </message>
     <message>
         <source>Video File</source>
-        <translation>Fichier Video</translation>
+        <translation>Fichier vidéo</translation>
     </message>
     <message>
         <source>Source:</source>
@@ -17,7 +17,7 @@
     </message>
     <message>
         <source>File Info:</source>
-        <translation>Info Fichier :</translation>
+        <translation>Info sur le fichier :</translation>
     </message>
     <message>
         <source>Destination:</source>
@@ -25,7 +25,7 @@
     </message>
     <message>
         <source>Encoder Settings</source>
-        <translation>Paramètres de l&apos;Encodeur</translation>
+        <translation>Paramètres de l&apos;encodeur</translation>
     </message>
     <message>
         <source>Width:</source>
@@ -33,7 +33,7 @@
     </message>
     <message>
         <source>Scale</source>
-        <translation>Echelle</translation>
+        <translation>Échelle</translation>
     </message>
     <message>
         <source>Height:</source>
@@ -41,7 +41,7 @@
     </message>
     <message>
         <source>Break Aspect Ratio</source>
-        <translation>Casser le Ratio d&apos;Aspect</translation>
+        <translation>Casser le ratio d&apos;aspect</translation>
     </message>
     <message>
         <source>FPS:</source>
@@ -65,7 +65,7 @@
     </message>
     <message>
         <source>Resample</source>
-        <translation>Rééchantillonner</translation>
+        <translation>Ré-échantillonner</translation>
     </message>
     <message>
         <source>extra mencoder options</source>
@@ -92,7 +92,7 @@
     <name>ImportProgress</name>
     <message>
         <source>Transcoding Video File</source>
-        <translation>Transcodage du Fichier Video</translation>
+        <translation>Transcodage du fichier vidéo</translation>
     </message>
     <message>
         <source>Cancel</source>
@@ -155,7 +155,7 @@
     </message>
     <message>
         <source>&amp;Close xjadeo and Exit</source>
-        <translation>&amp;Fermer xjadeo et Quitter</translation>
+        <translation>&amp;Fermer xjadeo et quitter</translation>
     </message>
     <message>
         <source>About</source>
@@ -203,7 +203,7 @@
     </message>
     <message>
         <source>Frame number</source>
-        <translation>Numéro de Trame</translation>
+        <translation>Numéro de trame</translation>
     </message>
     <message>
         <source>Box</source>
@@ -243,7 +243,7 @@
     </message>
     <message>
         <source>Disconnect and &amp;Exit</source>
-        <translation>Déconnecter et &amp;Quitter</translation>
+        <translation>Déconnecter et &amp;quitter</translation>
     </message>
     <message>
         <source>to any frame</source>
@@ -271,7 +271,7 @@
     </message>
     <message>
         <source>Letterbox</source>
-        <translation>Letterbox</translation>
+        <translation>Boîte aux lettres</translation>
     </message>
     <message>
         <source>Resize to aspect-ratio</source>
@@ -294,11 +294,11 @@
     </message>
     <message>
         <source>Autoconnect ALSA Midi port (MTC):</source>
-        <translation>Se connecter automatiquement ce port ALSA Midi (MTC) :</translation>
+        <translation>Se connecter automatiquement au port ALSA Midi (MTC) :</translation>
     </message>
     <message>
         <source>Autoconnect JACK Midi port (MTC):</source>
-        <translation>Se connecter automatiquement ce port JACK Midi (MTC) :</translation>
+        <translation>Se connecter automatiquement au port JACK Midi (MTC) :</translation>
     </message>
     <message>
         <source>xjadeo/xjremote executable:</source>
@@ -314,11 +314,11 @@
     </message>
     <message>
         <source>Import Settings</source>
-        <translation>Paramètres d&apos;Importation</translation>
+        <translation>Paramètres d&apos;importation</translation>
     </message>
     <message>
         <source>Import to Codec:</source>
-        <translation>Importer vers le Codec :</translation>
+        <translation>Importer vers le codec :</translation>
     </message>
     <message>
         <source>mpeg4</source>
