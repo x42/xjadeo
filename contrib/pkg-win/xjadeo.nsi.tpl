@@ -67,7 +67,6 @@ SectionEnd
 ; Optional section (can be disabled by the user)
 Section "Start Menu Shortcuts"
   CreateDirectory "$SMPROGRAMS\xjadeo"
-  CreateShortCut "$SMPROGRAMS\xjadeo\qjadeo.lnk" "$INSTDIR\qjadeo.exe" "" "$INSTDIR\qjadeo.exe" 0
   CreateShortCut "$SMPROGRAMS\xjadeo\xjadeo.lnk" "$INSTDIR\xjadeo.exe" "" "$INSTDIR\xjadeo.exe" 0
   CreateShortCut "$SMPROGRAMS\xjadeo\uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
 SectionEnd
