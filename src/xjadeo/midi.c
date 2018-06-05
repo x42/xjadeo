@@ -232,24 +232,22 @@ PmStream * pm_midi = NULL;
 #define INPUT_BUFFER_SIZE 0
 
 static int pm_midi_detectdevices (int print) {
-	int midiid=-1;
 	int i;
-
-	// id = Pm_GetDefaultInputDeviceID(); <- use this as default ??
+	int midiid = Pm_GetDefaultInputDeviceID();
 
 	/* list device information */
 	for (i = 0; i < Pm_CountDevices(); i++) {
 		const PmDeviceInfo *info = Pm_GetDeviceInfo(i);
 
 		if (info->input) {
-			if(midiid==-1) { midiid=i; }
+			if(midiid == pmNoDevice) { midiid=i; }
 		}
 
 		if (print) {
 			printf("%d: %s, %s", i, info->interf, info->name);
 			if (info->input) printf(" (input)");
 			if (info->output) printf(" (output)");
-			if(midiid==i)  printf(" (*)");
+			if(midiid == i)  printf(" (*)");
 			printf("\n");
 		}
 	}
