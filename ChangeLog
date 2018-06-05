@@ -1,3 +1,8 @@
+2018-06-06 (0.8.8)  Robin Gareus <robin@gareus.org>
+* use PortMidi default device (allow using portmidisetup)
+* fix loading fonts with non ASCII paths on Windows
+* allow verbose/debug logging on windows
+
 2016-11-28 (0.8.7)  Robin Gareus <robin@gareus.org>
 * fix release builds (mistake in 0.8.6)
 
