@@ -1008,10 +1008,10 @@ void gl_mousepointer (int action) {
 	if (action==2) hide_mouse ^= 1;
 	else hide_mouse = action ? 1 : 0;
 	if (hide_mouse) {
-		SetClassLong(_gl_hwnd, GCL_HCURSOR, (LONG)hCurs_none);
+		SetClassLong(_gl_hwnd, GCLP_HCURSOR, (LONG)hCurs_none);
 		SetCursor(hCurs_none);
 	} else {
-		SetClassLong(_gl_hwnd, GCL_HCURSOR, (LONG)hCurs_dflt);
+		SetClassLong(_gl_hwnd, GCLP_HCURSOR, (LONG)hCurs_dflt);
 		SetCursor(hCurs_dflt);
 	}
 }
