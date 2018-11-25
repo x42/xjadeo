@@ -18,5 +18,5 @@ execname="${progbase}-bin"
 
 if test -x "${curdir}/$execname"; then
  cd "${curdir}"
- exec "./${execname}" $@
+ exec "./${execname}" "$@"
 fi
