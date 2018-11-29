@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # we keep a copy of the sources here:
 : ${SRCDIR=$HOME/src/stack}
@@ -14,30 +14,35 @@ case `sw_vers -productVersion | cut -d'.' -f1,2` in
 		echo "Tiger"
 		XJARCH="-arch i386 -arch ppc"
 		OSXCOMPAT=""
+		VPXVER=v1.3.0
 		;;
 	"10.5")
 		echo "Leopard"
 		XJARCH="-arch i386 -arch ppc"
 		OSXCOMPAT=""
+		VPXVER=v1.3.0
 		;;
 	"10.6")
 		echo "Snow Leopard"
 		XJARCH="-arch i386 -arch ppc -arch x86_64"
 		OSXCOMPAT="-isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5"
+		VPXVER=v1.3.0
 		;;
 	"10.10")
-		XJARCH="-arch x86_64"
+		echo "Yosemite"
+		XJARCH="-arch i386 -arch x86_64"
 		OSXCOMPAT="-mmacosx-version-min=10.9"
 		;;
 	"10.11")
+		echo "El Capitan"
 		XJARCH="-arch x86_64"
 		OSXCOMPAT="-mmacosx-version-min=10.10"
 		;;
 	*)
-		echo "**UNTESTED OSX VERSION**"
+		echo "**UNTESTED MacOS/X VERSION**"
 		echo "if it works, please report back :)"
-		XJARCH="-arch i386 -arch x86_64"
-		OSXCOMPAT="-mmacosx-version-min=10.5"
+		XJARCH="-arch x86_64"
+		OSXCOMPAT="-mmacosx-version-min=10.11"
 		;;
 	esac
 
@@ -158,6 +163,27 @@ sed -i '' 's/ ppc//g' CMakeLists.txt
 #XXX better pass though cmake args somehow
 # -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=10.5 -DCMAKE_OSX_ARCHITECTURES="i386;x86_64"
 fi
+if ! echo "$XJARCH" | grep -q "i386"; then
+sed -i '' 's/ i386//g' CMakeLists.txt
+patch -p1 << EOF
+--- a/pm_common/CMakeLists.txt	2010-09-20 21:57:48.000000000 +0200
++++ b/pm_common/CMakeLists.txt	2018-11-29 19:35:19.000000000 +0100
+@@ -21,13 +21,6 @@
+   set(LINUX_FLAGS "-DPMALSA")
+ endif(APPLE OR WIN32)
+ 
+-if(APPLE)
+-  set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.5.sdk CACHE 
+-      PATH "-isysroot parameter for compiler" FORCE)
+-  set(CMAKE_C_FLAGS "-mmacosx-version-min=10.5" CACHE 
+-      STRING "needed in conjunction with CMAKE_OSX_SYSROOT" FORCE)
+-endif(APPLE)
+-
+ macro(prepend_path RESULT PATH)
+   set(${RESULT})
+   foreach(FILE ${ARGN})
+EOF
+fi
 CFLAGS="${XJARCH} ${OSXCOMPAT}" \
 CXXFLAGS="${XJARCH} ${OSXCOMPAT}" \
 LDFLAGS="${XJARCH} ${OSXCOMPAT} -headerpad_max_install_names" \
@@ -174,40 +200,16 @@ src yasm-1.2.0 tar.gz http://www.tortall.net/projects/yasm/releases/yasm-1.2.0.t
 autoconfbuild
 
 ################################################################################
-#function x264build {
-#CFLAGS="-arch $1 ${OSXCOMPAT}" \
-#LDFLAGS="-arch $1 ${OSXCOMPAT} -headerpad_max_install_names" \
-#./configure --host=$1-macosx-darwin --enable-shared --disable-cli
-#make $MAKEFLAGS
-#DYL=`ls libx264.*.dylib`
-#cp ${DYL} ${DYL}-$1
-#}
-#
-#### ftp://ftp.videolan.org/pub/x264/snapshots/last_x264.tar.bz2
-#### ftp://ftp.videolan.org/pub/x264/snapshots/last_stable_x264.tar.bz2
-#download x264.tar.bz2 ftp://ftp.videolan.org/pub/x264/snapshots/last_stable_x264.tar.bz2 # XXX
-#cd ${BUILDD}
-#tar xjf  ${SRCDIR}/x264.tar.bz2
-#cd x264*
-#x264build i386
-#make install prefix=${PREFIX}
-#make clean
-#x264build x86_64
-#if echo "$XJARCH" | grep -q "ppc"; then
-#	make clean
-#	x264build ppc
-#fi
-#
-#DYL=`ls libx264.*.dylib`
-#lipo -create -output ${PREFIX}/lib/${DYL} ${DYL}-*
-#install_name_tool -id ${PREFIX}/lib/${DYL} ${PREFIX}/lib/${DYL}
-#
 
-################################################################################
-src libvpx-v1.3.0 tar.bz2 http://downloads.webmproject.org/releases/webm/libvpx-v1.3.0.tar.bz2
+if test -n "$VPXVER"; then
+	src libvpx-${VPXVER} tar.bz2 http://downloads.webmproject.org/releases/webm/libvpx-${VPXVER}.tar.bz2
+	export VPXVER
+	FFFLAGS=--enable-libvpx
+fi
 
 function buildvpx {
-cd ${BUILDD}/libvpxv-1.3.0
+if test -z "${VPXVER}"; then return; fi
+cd ${BUILDD}/libvpx-${VPXVER}
 ./configure --prefix=$PREFIX --target=$1
 make clean
 make $MAKEFLAGS && make install
@@ -231,40 +233,41 @@ EOF
 rm -rf ${PREFIX}/fflipo
 mkdir ${PREFIX}/fflipo
 
-buildvpx x86-darwin9-gcc
-cd ${BUILDD}/ffmpeg-${FFVERSION}/
-
-./configure --prefix=${PREFIX} \
-	--enable-libvpx \
-	--enable-shared --enable-gpl --disable-static --disable-debug --disable-doc \
-	--disable-programs --disable-iconv \
-	--arch=x86_32 --target-os=darwin --cpu=i686 --enable-cross-compile \
-	--extra-cflags="-arch i386 ${OSXCOMPAT}  -I${PREFIX}/include" \
-	--extra-ldflags="-arch i386 ${OSXCOMPAT} -L${PREFIX}/lib -headerpad_max_install_names"
-make $MAKEFLAGS
-make install
-
-find . -iname "*dylib" -type f -exec echo cp -v {} ${PREFIX}/fflipo/\`basename {}\`-i386 \; | bash -
-make clean
+# -disable-jack --disable-sdl2 --disable-avfoundation --disable-coreimage
 
 buildvpx x86_64-darwin9-gcc
 cd ${BUILDD}/ffmpeg-${FFVERSION}/
-./configure --prefix=${PREFIX} \
-	--enable-libvpx \
+./configure --prefix=${PREFIX} ${FFFLAGS} \
 	--enable-shared --enable-gpl --disable-static --disable-debug --disable-doc \
 	--disable-programs --disable-iconv \
 	--arch=x86_64 \
 	--extra-cflags="-arch x86_64 ${OSXCOMPAT}  -I${PREFIX}/include" \
 	--extra-ldflags="-arch x86_64 ${OSXCOMPAT} -L${PREFIX}/lib -headerpad_max_install_names"
 make $MAKEFLAGS
+make install
 find . -iname "*dylib" -type f -exec echo cp -v {} ${PREFIX}/fflipo/\`basename {}\`-x86_64 \; | bash -
 make clean
+
+if echo "$XJARCH" | grep -q "i386"; then
+buildvpx x86-darwin9-gcc
+cd ${BUILDD}/ffmpeg-${FFVERSION}/
+
+./configure --prefix=${PREFIX} ${FFFLAGS} \
+	--enable-shared --enable-gpl --disable-static --disable-debug --disable-doc \
+	--disable-programs --disable-iconv \
+	--arch=x86_32 --target-os=darwin --cpu=i686 --enable-cross-compile \
+	--extra-cflags="-arch i386 ${OSXCOMPAT}  -I${PREFIX}/include" \
+	--extra-ldflags="-arch i386 ${OSXCOMPAT} -L${PREFIX}/lib -headerpad_max_install_names"
+make $MAKEFLAGS
+
+find . -iname "*dylib" -type f -exec echo cp -v {} ${PREFIX}/fflipo/\`basename {}\`-i386 \; | bash -
+make clean
+fi
 
 if echo "$XJARCH" | grep -q "ppc"; then
 buildvpx ppc32-darwin9-gcc
 cd ${BUILDD}/ffmpeg-${FFVERSION}/
-./configure --prefix=${PREFIX} \
-	--enable-libvpx \
+./configure --prefix=${PREFIX} ${FFFLAGS} \
 	--enable-shared --enable-gpl --disable-static --disable-debug --disable-doc \
 	--disable-programs --disable-iconv \
 	--arch=ppc \
@@ -274,8 +277,8 @@ make $MAKEFLAGS
 find . -iname "*dylib" -type f -exec echo cp -v {} ${PREFIX}/fflipo/\`basename {}\`-ppc \; | bash -
 fi
 
-for file in ${PREFIX}/fflipo/*.dylib-i386; do
-  BN=$(basename $file -i386)
+for file in ${PREFIX}/fflipo/*.dylib-x86_64; do
+  BN=$(basename $file -x86_64)
   TN=$(readlink ${PREFIX}/lib/${BN})
   lipo -create -output ${PREFIX}/lib/${TN} ${PREFIX}/fflipo/${BN}-*
 done
