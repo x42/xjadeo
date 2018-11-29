@@ -229,7 +229,7 @@ dnl ---------------------------------------------------------------------------
 dnl remote control..
 MQ_LIBS=""
 if test "x$enable_mq" != "xno"; then
-	AC_CHECK_LIB(rt, mq_open, [AC_DEFINE(HAVE_MQ) MQ_LIBS="-lrt -lpthread" HAVE_MQ=1])
+	AC_CHECK_LIB(rt, mq_open, [AC_DEFINE(HAVE_MQ) MQ_LIBS="-lrt" HAVE_MQ=1])
 fi
 AC_SUBST(MQ_LIBS)
 AC_DEFINE(MQLEN, 512, [ max length of a remote control line. ])
@@ -321,7 +321,7 @@ dnl TODO check if porttime is needed for threading
 		HAVE_MIDI=1
 		ALSA_SEQ_MIDI=1
 		ALSA_RAW_MIDI=1
-		MIDI_LIBS="$MIDI_LIBS -lasound -lpthread"
+		MIDI_LIBS="$MIDI_LIBS -lasound"
 	fi
 	if test "x$FOUND_H_PORTMIDI$FOUND_L_PORTMIDI" = "xyesyes"; then
 		AC_DEFINE(HAVE_MIDI)

@@ -21,9 +21,9 @@ xjadeo_SOURCES=main.c ../../aclocal.m4 ../../config.h \
 
 xjadeo_LDADD = @MQ_LIBS@ @FFMPEG_LIBS@ @XV_LIBS@ @MIDI_LIBS@ @FREETYPE_LIBS@ @IMLIB2_LIBS@ @XPM_LIBS@ @LIBLO_LIBS@ @SDL_LIBS@ @LTC_LIBS@ @GL_LIBS@ -lm
 
-xjadeo_CFLAGS = -Wall -g -O3 \
+xjadeo_CFLAGS = -Wall -g -O3 -pthread \
 	@FFMPEG_CFLAGS@ @XV_CFLAGS@ @MIDI_CFLAGS@ @FREETYPE_CFLAGS@ @IMLIB2_CFLAGS@ @XPM_CFLAGS@ @LIBLO_CFLAGS@ @SDL_CFLAGS@ @LTC_CFLAGS@ @GL_CFLAGS@ @JACK_CFLAGS@ "-DSUBVERSION=\"$(REV)\"" "-DSHAREDIR=\"$(datadir)\""
-xjadeo_OBJCFLAGS = -Wall -g -O3 \
+xjadeo_OBJCFLAGS = -Wall -g -O3 -pthread \
 	@FFMPEG_CFLAGS@ @XV_CFLAGS@ @MIDI_CFLAGS@ @FREETYPE_CFLAGS@ @IMLIB2_CFLAGS@ @XPM_CFLAGS@ @LIBLO_CFLAGS@ @SDL_CFLAGS@ @LTC_CFLAGS@ @GL_CFLAGS@ @JACK_CFLAGS@ "-DSUBVERSION=\"$(REV)\""
 
 if TARGET_LINUX
@@ -48,7 +48,7 @@ endif
 
 xjremote_SOURCES = xjremote.c
 
-xjremote_CFLAGS = "-DSUBVERSION=\"$(REV)\""
+xjremote_CFLAGS = -pthread "-DSUBVERSION=\"$(REV)\""
 
 xjremote_LDADD = @MQ_LIBS@
 
