@@ -19,7 +19,8 @@ if test -z "$NORECONF"; then
 	|| exit
 fi
 
-#make -C src/xjadeo xjadeo
+# build obj files (fails to link but o matter)
+make -C src/xjadeo xjadeo || true
 
 SRCVERSION=$(grep " VERSION " config.h | cut -d ' ' -f3 | sed 's/"//g')
 VERSION=$(git describe --tags HEAD)
