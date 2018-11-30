@@ -26,8 +26,8 @@ fi
 $SUDO apt-get -y install git build-essential yasm \
 	libass-dev libbluray-dev libgmp3-dev \
 	libbz2-dev libfreetype6-dev libgsm1-dev liblzo2-dev \
-	libmp3lame-dev libopenjpeg-dev libopus-dev librtmp-dev \
-	libschroedinger-dev libspeex-dev libtheora-dev \
+	libmp3lame-dev libopenjpeg-dev librtmp-dev \
+	libspeex-dev libtheora-dev \
 	libvorbis-dev libvpx-dev libx264-dev \
 	libxvidcore-dev zlib1g-dev zlib1g-dev \
 	libpng12-dev libjpeg8-dev \
@@ -64,9 +64,9 @@ cd $SRC/ffmpeg-${FFVERSION}/
 
 ./configure --enable-gpl \
 	--enable-libmp3lame --enable-libx264 --enable-libxvid --enable-libtheora  --enable-libvorbis \
-	--enable-libvpx --enable-libopenjpeg --enable-libopus --enable-libschroedinger \
+	--enable-libvpx --enable-libopenjpeg \
 	--enable-libspeex --enable-libbluray --enable-libgsm \
-	--disable-vaapi --disable-x11grab \
+	--disable-vaapi \
 	--disable-devices \
 	--extra-cflags="-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64" \
 	--enable-shared --enable-static --prefix=$PFX $@

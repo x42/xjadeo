@@ -2,7 +2,7 @@
 Name "Xjadeo"
 
 ; The file to write
-OutFile "xjadeo_installer_vVERSION.exe"
+OutFile "xjadeo_installer_@WARCH@_v@VERSION@.exe"
 
 ; The default installation directory
 InstallDir $PROGRAMFILES\xjadeo

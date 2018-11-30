@@ -10,21 +10,9 @@
 : ${MAKEFLAGS="-j4"}
 
 case `sw_vers -productVersion | cut -d'.' -f1,2` in
-	"10.4")
-		echo "Tiger"
-		XJARCH="-arch i386 -arch ppc"
-		OSXCOMPAT=""
-		VPXVER=v1.3.0
-		;;
-	"10.5")
-		echo "Leopard"
-		XJARCH="-arch i386 -arch ppc"
-		OSXCOMPAT=""
-		VPXVER=v1.3.0
-		;;
 	"10.6")
 		echo "Snow Leopard"
-		XJARCH="-arch i386 -arch ppc -arch x86_64"
+		XJARCH="-arch i386 -arch x86_64"
 		OSXCOMPAT="-isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5"
 		VPXVER=v1.3.0
 		;;
@@ -217,29 +205,21 @@ make clean
 }
 
 ################################################################################
-FFVERSION=2.8.2
+FFVERSION=3.4.5
 download ffmpeg-${FFVERSION}.tar.bz2 http://www.ffmpeg.org/releases/ffmpeg-${FFVERSION}.tar.bz2
 cd ${BUILDD}
 tar xjf ${SRCDIR}/ffmpeg-${FFVERSION}.tar.bz2
 cd ffmpeg-${FFVERSION}/
-ed configure << EOF
-%s/jack_jack_h/xxjack_jack_h/
-%s/enabled jack_indev/enabled xxjack_indev/
-%s/sdl_outdev_deps="sdl"/sdl_outdev_deps="xxxsdl"/
-%s/enabled sdl/enabled xxsdl/
-wq
-EOF
 
 rm -rf ${PREFIX}/fflipo
 mkdir ${PREFIX}/fflipo
-
-# -disable-jack --disable-sdl2 --disable-avfoundation --disable-coreimage
 
 buildvpx x86_64-darwin9-gcc
 cd ${BUILDD}/ffmpeg-${FFVERSION}/
 ./configure --prefix=${PREFIX} ${FFFLAGS} \
 	--enable-shared --enable-gpl --disable-static --disable-debug --disable-doc \
 	--disable-programs --disable-iconv \
+	--disable-jack --disable-sdl2 --disable-avfoundation --disable-coreimage \
 	--arch=x86_64 \
 	--extra-cflags="-arch x86_64 ${OSXCOMPAT}  -I${PREFIX}/include" \
 	--extra-ldflags="-arch x86_64 ${OSXCOMPAT} -L${PREFIX}/lib -headerpad_max_install_names"
@@ -255,6 +235,7 @@ cd ${BUILDD}/ffmpeg-${FFVERSION}/
 ./configure --prefix=${PREFIX} ${FFFLAGS} \
 	--enable-shared --enable-gpl --disable-static --disable-debug --disable-doc \
 	--disable-programs --disable-iconv \
+	--disable-jack --disable-sdl2 --disable-avfoundation --disable-coreimage \
 	--arch=x86_32 --target-os=darwin --cpu=i686 --enable-cross-compile \
 	--extra-cflags="-arch i386 ${OSXCOMPAT}  -I${PREFIX}/include" \
 	--extra-ldflags="-arch i386 ${OSXCOMPAT} -L${PREFIX}/lib -headerpad_max_install_names"
@@ -270,6 +251,7 @@ cd ${BUILDD}/ffmpeg-${FFVERSION}/
 ./configure --prefix=${PREFIX} ${FFFLAGS} \
 	--enable-shared --enable-gpl --disable-static --disable-debug --disable-doc \
 	--disable-programs --disable-iconv \
+	--disable-jack --disable-sdl2 --disable-avfoundation --disable-coreimage \
 	--arch=ppc \
 	--extra-cflags="-arch ppc ${OSXCOMPAT}  -I${PREFIX}/include" \
 	--extra-ldflags="-arch ppc ${OSXCOMPAT} -L${PREFIX}/lib -headerpad_max_install_names"

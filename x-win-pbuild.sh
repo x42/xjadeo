@@ -18,11 +18,38 @@ if [ "$(id -u)" != "0" -a -z "$SUDO" ]; then
 	exit 1
 fi
 
+if test "$XARCH" = "x86_64" -o "$XARCH" = "amd64"; then
+	echo "Target: 64bit Windows (x86_64)"
+	XPREFIX=x86_64-w64-mingw32
+	HPREFIX=x86_64
+	WARCH=w64
+	FFFLAGS="--arch=x86_64 --target-os=mingw64 --cpu=x86_64"
+	VPXARCH="x86_64-win64-gcc"
+	DEBIANPKGS="mingw-w64"
+else
+	echo "Target: 32 Windows (i686)"
+	XPREFIX=i686-w64-mingw32
+	HPREFIX=i386
+	WARCH=w32
+	VPXARCH="x86-win32-gcc"
+	FFFLAGS="--arch=i686 --target-os=mingw32 --cpu=i686"
+	DEBIANPKGS="gcc-mingw-w64-i686 g++-mingw-w64-i686 mingw-w64-tools mingw32"
+fi
+
 apt-get -y install build-essential \
-	gcc-mingw-w64-i686 g++-mingw-w64-i686 mingw-w64-tools mingw32 \
+	${DEBIANPKGS} \
 	wget git autoconf automake libtool pkg-config \
 	curl unzip ed yasm \
 	nsis
+
+#fixup mingw64 ccache for now
+if test -d /usr/lib/ccache -a -f /usr/bin/ccache; then
+	export PATH="/usr/lib/ccache:${PATH}"
+	cd /usr/lib/ccache
+	test -L ${XPREFIX}-gcc || ln -s ../../bin/ccache ${XPREFIX}-gcc
+	test -L ${XPREFIX}-g++ || ln -s ../../bin/ccache ${XPREFIX}-g++
+fi
+
 
 cd "$SRC"
 git clone -b master --single-branch git://github.com/x42/xjadeo.git
@@ -45,29 +72,36 @@ echo "--- Downloading.. $2"
 test -f ${SRCDIR}/$1 || curl -k -L -o ${SRCDIR}/$1 $2
 }
 
-function autoconfbuild {
+function autoconfconf {
+	set -e
 echo "======= $(pwd) ======="
 PATH=${PREFIX}/bin:/usr/bin:/bin:/usr/sbin:/sbin \
 	CPPFLAGS="-I${PREFIX}/include" \
-	CFLAGS="-I${PREFIX}/include -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64" \
-	CXXFLAGS="-I${PREFIX}/include -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64" \
+	CFLAGS="-I${PREFIX}/include -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -mstackrealign" \
+	CXXFLAGS="-I${PREFIX}/include -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -mstackrealign" \
 	LDFLAGS="-L${PREFIX}/lib" \
-	./configure --host=i686-w64-mingw32 --build=i386-linux --prefix=$PREFIX --enable-shared $@
-  make $MAKEFLAGS && make install
+	./configure --host=${XPREFIX} --build=${HPREFIX}-linux \
+	--prefix=$PREFIX "$@"
+}
+
+function autoconfbuild {
+	set -e
+	autoconfconf "$@"
+	make $MAKEFLAGS && make install
 }
 
 ################################################################################
-download jack_headers.tar.gz http://robin.linuxaudio.org/jack_headers.tar.gz
+download jack_win3264.tar.xz http://robin.linuxaudio.org/jack_win3264.tar.xz
 cd "$PREFIX"
-tar xzf ${SRCDIR}/jack_headers.tar.gz
-"$PREFIX"/update_pc_prefix.sh
+tar xf ${SRCDIR}/jack_win3264.tar.xz
+"$PREFIX"/update_pc_prefix.sh ${WARCH}
 
 ################################################################################
 download pthreads-w32-2-9-1-release.tar.gz ftp://sourceware.org/pub/pthreads-win32/pthreads-w32-2-9-1-release.tar.gz
 cd ${BUILDD}
 tar xzf ${SRCDIR}/pthreads-w32-2-9-1-release.tar.gz
 cd pthreads-w32-2-9-1-release
-make clean GC CROSS=i686-w64-mingw32-
+make clean GC CROSS=${XPREFIX}-
 mkdir -p ${PREFIX}/bin
 mkdir -p ${PREFIX}/lib
 mkdir -p ${PREFIX}/include
@@ -80,7 +114,7 @@ download zlib-1.2.7.tar.gz ftp://ftp.simplesystems.org/pub/libpng/png/src/histor
 cd ${BUILDD}
 tar xzf ${SRCDIR}/zlib-1.2.7.tar.gz
 cd zlib-1.2.7
-make -fwin32/Makefile.gcc PREFIX=i686-w64-mingw32-
+make -fwin32/Makefile.gcc PREFIX=${XPREFIX}-
 make install -fwin32/Makefile.gcc SHARED_MODE=1 \
 	INCLUDE_PATH=${PREFIX}/include \
 	LIBRARY_PATH=${PREFIX}/lib \
@@ -99,12 +133,7 @@ download liblo-0.28.tar.gz http://downloads.sourceforge.net/liblo/liblo-0.28.tar
 cd ${BUILDD}
 tar xzf ${SRCDIR}/liblo-0.28.tar.gz
 cd liblo-0.28
-PATH=${PREFIX}/bin:/usr/bin:/bin:/usr/sbin:/sbin \
-	CPPFLAGS="-I${PREFIX}/include" \
-	CFLAGS="-I${PREFIX}/include" \
-	CXXFLAGS="-I${PREFIX}/include" \
-	LDFLAGS="-L${PREFIX}/lib" \
-	./configure --host=i686-w64-mingw32 --build=i386-linux --prefix=$PREFIX --enable-shared $@
+autoconfconf --enable-shared
 ed src/Makefile << EOF
 /noinst_PROGRAMS
 .,+3d
@@ -192,34 +221,28 @@ autoreconf -i
 autoconfbuild
 
 ################################################################################
-download libvpx-1.4.0.tar.bz2 http://downloads.webmproject.org/releases/webm/libvpx-1.4.0.tar.bz2
+download libvpx-1.5.0.tar.bz2 http://downloads.webmproject.org/releases/webm/libvpx-1.5.0.tar.bz2
 cd ${BUILDD}
-tar xjf ${SRCDIR}/libvpx-1.4.0.tar.bz2
-cd libvpx-1.4.0
-ed vpx/src/svc_encodeframe.c << EOF
-%s/MINGW_HAS_SECURE_API/MINGW_HAS_SECURE_APIXXX/
-wq
-EOF
-CC=i686-w64-mingw32-gcc\
+tar xjf ${SRCDIR}/libvpx-1.5.0.tar.bz2
+cd libvpx-1.5.0
+CC=${XPREFIX}-gcc CROSS=${XPREFIX}- \
 	CPPFLAGS="-I${PREFIX}/include" \
-	CFLAGS="-I${PREFIX}/include -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64" \
-	CXXFLAGS="-I${PREFIX}/include -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64" \
+	CFLAGS="-I${PREFIX}/include -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -mstackrealign" \
+	CXXFLAGS="-I${PREFIX}/include -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -mstackrealign" \
 	LDFLAGS="-L${PREFIX}/lib" \
-	CROSS=i686-w64-mingw32- ./configure --target=x86-win32-gcc --prefix=$PREFIX \
-	--disable-examples --disable-docs --disable-install-bins
-make -j4 && make install
+	./configure --target=$VPXARCH \
+	--disable-examples --disable-docs --disable-install-bins \
+	--prefix=$PREFIX
+make $MAKEFLAGS && make install
+
 
 ################################################################################
-FFVERSION=2.8.2
+FFVERSION=3.4.5
 download ffmpeg-${FFVERSION}.tar.bz2 http://www.ffmpeg.org/releases/ffmpeg-${FFVERSION}.tar.bz2
 cd ${BUILDD}
 tar xjf ${SRCDIR}/ffmpeg-${FFVERSION}.tar.bz2
 cd ffmpeg-${FFVERSION}/
 ed configure << EOF
-%s/jack_jack_h/xxjack_jack_h/
-%s/enabled jack_indev/enabled xxjack_indev/
-%s/sdl_outdev_deps="sdl"/sdl_outdev_deps="xxxsdl"/
-%s/enabled sdl/enabled xxsdl/
 %s/pkg_config_default="\${cross_prefix}\${pkg_config_default}"/pkg_config_default="\${pkg_config_default}"/
 wq
 EOF
@@ -228,8 +251,10 @@ EOF
 	--disable-programs \
 	--enable-gpl --enable-shared --disable-static --disable-debug \
 	--enable-libvpx \
-	--arch=i686 --target-os=mingw32 --cpu=i686 --enable-cross-compile --cross-prefix=i686-w64-mingw32- \
-	--extra-cflags="-I${PREFIX}/include -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64" \
+	--disable-jack --disable-sdl2 \
+	--enable-cross-compile --cross-prefix=${XPREFIX}- \
+	$FFFLAGS \
+	--extra-cflags="-I${PREFIX}/include -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -mstackrealign" \
 	--extra-ldflags="-L${PREFIX}/lib"
 make $MAKEFLAGS && make install
 
@@ -242,5 +267,8 @@ autoconf
 autoreconf -i
 
 export WINPREFIX="$PREFIX"
+export XPREFIX
+export HPREFIX
+export WARCH
 
 ./x-win-bundle.sh

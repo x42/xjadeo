@@ -19,7 +19,7 @@ if test -z "$NORECONF"; then
 	|| exit
 fi
 
-make -C src/xjadeo xjadeo
+#make -C src/xjadeo xjadeo
 
 SRCVERSION=$(grep " VERSION " config.h | cut -d ' ' -f3 | sed 's/"//g')
 VERSION=$(git describe --tags HEAD)
@@ -39,12 +39,9 @@ LIBDEPS=" \
  libvorbis.a \
  libvorbisenc.a \
  libvorbisfile.a \
- libschroedinger-1.0.a \
- liborc-0.4.a \
  libgsm.a \
  libbluray.a \
  libxvidcore.a \
- libopus.a \
  libbz2.a \
  libvpx.a \
  libopenjpeg.a \
@@ -84,6 +81,7 @@ rm -f $OUTFN
 gcc -Wall -O3 \
  -o $OUTFN \
  -DHAVE_CONFIG_H \
+ -DUSE_WEAK_JACK \
 	"-DSUBVERSION=\"$SRCVERSION\"" \
 	`pkg-config --cflags freetype2 jack` \
 	xjadeo-*.o osdfont.o \
@@ -95,7 +93,7 @@ gcc -Wall -O3 \
 	${LIBF}/libavutil.a \
 	\
 	$SLIBS \
-	`pkg-config --libs jack` -lpthread -lm -lX11 -lGLU -lGL \
+	-pthread -lm -lX11 -lGLU -lGL \
 || exit 1
 
 strip $OUTFN
