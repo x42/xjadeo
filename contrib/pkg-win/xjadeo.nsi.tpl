@@ -1,35 +1,31 @@
-; The name of the installer
-Name "Xjadeo"
+SetCompressor /SOLID lzma
+SetCompressorDictSize 32
+RequestExecutionLevel admin
 
-; The file to write
+Name "Xjadeo"
 OutFile "xjadeo_installer_@WARCH@_v@VERSION@.exe"
 
-; The default installation directory
 InstallDir $@PROGRAMFILES@\xjadeo
-
-; Registry key to check for directory (so if you install again, it will 
-; overwrite the old one automatically)
 InstallDirRegKey HKLM "Software\RSS\xjadeo\@WARCH@" "Install_Dir"
 
 ;--------------------------------
 
-; Pages
+!include MUI2.nsh
 
-Page components
-Page directory
-Page instfiles
-
-UninstPage uninstConfirm
-UninstPage instfiles
+!define MUI_ABORTWARNING
+!insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_COMPONENTS
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
+!insertmacro MUI_LANGUAGE "English"
 
 ;--------------------------------
 
-; The stuff to install
-Section "Xjadeo (required)"
-
+Section "Xjadeo (required)" SecMainProg
   SectionIn RO
   
-  ; Set output path to the installation directory.
   SetOutPath $INSTDIR
   
   ; Put file there
@@ -60,12 +56,11 @@ Section "Xjadeo (required)"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\xjadeo-@WARCH@" "UninstallString" '"$INSTDIR\uninstall.exe"'
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\xjadeo-@WARCH@" "NoModify" 1
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\xjadeo-@WARCH@" "NoRepair" 1
-  WriteUninstaller "uninstall.exe"
-  
+  WriteUninstaller "$INSTDIR\uninstall.exe"
 SectionEnd
 
-; Optional section (can be disabled by the user)
-Section "Start Menu Shortcuts"
+Section "Start Menu Shortcuts" SecMenu
+  SetShellVarContext all
   CreateDirectory "$SMPROGRAMS\xjadeo@SFX@"
   CreateShortCut "$SMPROGRAMS\xjadeo@SFX@\xjadeo.lnk" "$INSTDIR\xjadeo.exe" "" "$INSTDIR\xjadeo.exe" 0
   CreateShortCut "$SMPROGRAMS\xjadeo@SFX@\uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
@@ -73,10 +68,21 @@ SectionEnd
 
 ;--------------------------------
 
+LangString DESC_SecMainProg ${LANG_ENGLISH} "X-JACK-Video Monitor"
+LangString DESC_SecMenu ${LANG_ENGLISH} "Create Start-Menu Shortcuts (recommended)."
+
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+!insertmacro MUI_DESCRIPTION_TEXT ${SecMainProg} $(DESC_SecMainProg)
+!insertmacro MUI_DESCRIPTION_TEXT ${SecMenu} $(DESC_SecMenu)
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
+
+;--------------------------------
+
 ; Uninstaller
 
 Section "Uninstall"
-  
+  SetShellVarContext all
+
   ; Remove registry keys
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\xjadeo-@WARCH@"
   DeleteRegKey HKLM SOFTWARE\RSSxjadeo
@@ -98,5 +104,4 @@ Section "Uninstall"
   ; Remove directories used
   RMDir "$SMPROGRAMS\xjadeo@SFX@"
   RMDir "$INSTDIR"
-
 SectionEnd
