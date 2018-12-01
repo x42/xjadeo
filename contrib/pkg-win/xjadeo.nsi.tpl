@@ -5,11 +5,11 @@ Name "Xjadeo"
 OutFile "xjadeo_installer_@WARCH@_v@VERSION@.exe"
 
 ; The default installation directory
-InstallDir $PROGRAMFILES\xjadeo
+InstallDir $@PROGRAMFILES@\xjadeo
 
 ; Registry key to check for directory (so if you install again, it will 
 ; overwrite the old one automatically)
-InstallDirRegKey HKLM "Software\RSS\xjadeo" "Install_Dir"
+InstallDirRegKey HKLM "Software\RSS\xjadeo\@WARCH@" "Install_Dir"
 
 ;--------------------------------
 
@@ -53,22 +53,22 @@ Section "Xjadeo (required)"
   done:
   
   ; Write the installation path into the registry
-  WriteRegStr HKLM SOFTWARE\RSS\xjadeo "Install_Dir" "$INSTDIR"
+  WriteRegStr HKLM SOFTWARE\RSS\xjadeo\@WARCH@ "Install_Dir" "$INSTDIR"
   
   ; Write the uninstall keys for Windows
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\xjadeo" "DisplayName" "Xjadeo"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\xjadeo" "UninstallString" '"$INSTDIR\uninstall.exe"'
-  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\xjadeo" "NoModify" 1
-  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\xjadeo" "NoRepair" 1
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\xjadeo-@WARCH@" "DisplayName" "Xjadeo@SFX@"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\xjadeo-@WARCH@" "UninstallString" '"$INSTDIR\uninstall.exe"'
+  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\xjadeo-@WARCH@" "NoModify" 1
+  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\xjadeo-@WARCH@" "NoRepair" 1
   WriteUninstaller "uninstall.exe"
   
 SectionEnd
 
 ; Optional section (can be disabled by the user)
 Section "Start Menu Shortcuts"
-  CreateDirectory "$SMPROGRAMS\xjadeo"
-  CreateShortCut "$SMPROGRAMS\xjadeo\xjadeo.lnk" "$INSTDIR\xjadeo.exe" "" "$INSTDIR\xjadeo.exe" 0
-  CreateShortCut "$SMPROGRAMS\xjadeo\uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
+  CreateDirectory "$SMPROGRAMS\xjadeo@SFX@"
+  CreateShortCut "$SMPROGRAMS\xjadeo@SFX@\xjadeo.lnk" "$INSTDIR\xjadeo.exe" "" "$INSTDIR\xjadeo.exe" 0
+  CreateShortCut "$SMPROGRAMS\xjadeo@SFX@\uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
 SectionEnd
 
 ;--------------------------------
@@ -78,9 +78,10 @@ SectionEnd
 Section "Uninstall"
   
   ; Remove registry keys
-  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\xjadeo"
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\xjadeo-@WARCH@"
   DeleteRegKey HKLM SOFTWARE\RSSxjadeo
   DeleteRegKey HKLM SOFTWARE\RSS\xjadeo
+  DeleteRegKey HKLM SOFTWARE\RSS\xjadeo\@WARCH@
 
   ; Remove files and uninstaller
   Delete $INSTDIR\xjadeo.exe
@@ -92,10 +93,10 @@ Section "Uninstall"
   Delete "$INSTDIR\*.dll"
 
   ; Remove shortcuts, if any
-  Delete "$SMPROGRAMS\xjadeo\*.*"
+  Delete "$SMPROGRAMS\xjadeo@SFX@\*.*"
 
   ; Remove directories used
-  RMDir "$SMPROGRAMS\xjadeo"
+  RMDir "$SMPROGRAMS\xjadeo@SFX@"
   RMDir "$INSTDIR"
 
 SectionEnd
