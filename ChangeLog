@@ -1,3 +1,7 @@
+2018-11-30 (0.8.9)  Robin Gareus <robin@gareus.org>
+* prefer -pthread over -lpthread, fixes #18
+* mainly a build-system, binary only update
+
 2018-06-06 (0.8.8)  Robin Gareus <robin@gareus.org>
 * use PortMidi default device (allow using portmidisetup)
 * fix loading fonts with non ASCII paths on Windows
