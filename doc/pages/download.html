@@ -10,15 +10,16 @@ Latest Release: version <code>@VERSION@</code> from @DATE@: <a href="whatsnew.ht
 		<tr>
 			<td rowspan="2"><img src="static/os_mac.png" alt="Mac OSX"/></td>
 			<td rowspan="2">
-				<a href="http://sourceforge.net/projects/xjadeo/files/xjadeo/v@VERSION@/jadeo-@VERSION@.dmg/download">Mac OSX</a></td>
+				<a href="http://sourceforge.net/projects/xjadeo/files/xjadeo/v@VERSION@/jadeo-@VERSION@.dmg/download">MacOS/X</a></td>
 			<td rowspan="2"><img src="static/os_win.png" alt="Windows"/></td>
-			<td rowspan="2">
-				<a href="http://sourceforge.net/projects/xjadeo/files/xjadeo/v@VERSION@/xjadeo_installer_v@WINVERSION@.exe/download">Windows</a></td>
+			<td>
+				<a href="http://sourceforge.net/projects/xjadeo/files/xjadeo/v@VERSION@/xjadeo_installer_w64_v@WINVERSION@.exe/download">Windows 64bit</a></td>
 			<td rowspan="2"><img src="static/os_lin.png" alt="GNU/Linux"/></td>
 			<td>
 				<a href="http://sourceforge.net/projects/xjadeo/files/xjadeo/v@VERSION@/xjadeo-x86_64-linux-gnu-v@VERSION@.tgz/download">Linux 64bit</a></td>
 		</tr>
 		<tr>
+			<td><a href="http://sourceforge.net/projects/xjadeo/files/xjadeo/v@VERSION@/xjadeo_installer_w32_v@WINVERSION@.exe/download">Windows 32bit</a></td>
 			<td><a href="http://sourceforge.net/projects/xjadeo/files/xjadeo/v@VERSION@/xjadeo-i386-linux-gnu-v@VERSION@.tgz/download">Linux 32bit</a></td>
 		</tr>
 	</table>
@@ -35,13 +36,11 @@ Latest Release: version <code>@VERSION@</code> from @DATE@: <a href="whatsnew.ht
 
 <h3>OSX</h3>
 
-<p>Xjadeo is a universal binary.
-This version of Xjadeo runs on OSX &ge; 10.5.0. 64-bit Intel (x86_64), 32-bit Intel (i386) and 32-bit PowerPC (PPC).
-However the PPC variant does not support openGL and falls back to use quartz/graphics.
-</p>
+<p>Xjadeo is a universal binary. This current version of Xjadeo runs on MacOS/OSX &ge; 10.6.0 64-bit Intel (x86_64) and 32-bit Intel (i386).
+(the last OSX 10.5, PPC compatible version was 0.8.8)</p>
 
 <h3>Win</h3>
-<p>Xjadeo is a 32bit windows application. It should run on all versions of Microsoft Windows, starting with Windows XP.</p>
+<p>Since version 0.8.9 both 32bit (x86) and 64bit (x86_64) Intel binary builds are available. The 32bit xjadeo should run on all versions of Microsoft Windows, starting with Windows XP. The 64bit binary was should be compatible with Window 7 and later.</p>
 
 <h3>GNU/Linux</h3>
 <p>Xjadeo is a statically linked binary compatible with all versions of GNU/Linux on the Intel/AMD architecture that have a X-windows system and libc &ge; 2.16 (pretty much all systems since 2008). However it requires libjack (either jack1, or jack2) to be present.
