@@ -73,7 +73,7 @@ else
 	SFX=" (x86)"
 fi
 
-sed 's/@VERSION@/'$VERSION'/;s/@WARCH@/'$WARCH'/;s/@PROGRAMFILES@/'$PGF'/;s/@SFX@/'$SFX'/' \
+sed "s/@VERSION@/$VERSION/;s/@WARCH@/$WARCH/;s/@PROGRAMFILES@/$PGF/;s/@SFX@/$SFX/" \
 	contrib/pkg-win/xjadeo.nsi.tpl \
 	> "$NSIDIR"/xjadeo.nsi
 
