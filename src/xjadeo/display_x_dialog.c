@@ -26,6 +26,7 @@
 
 void xapi_close (void *d);
 
+#include <X11/Xutil.h>
 #include <X11/Xresource.h>
 
 static XContext _dlg_ctx = 0;
