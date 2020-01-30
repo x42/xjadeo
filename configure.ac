@@ -32,6 +32,7 @@ AC_ARG_ENABLE(qtgui,       AC_HELP_STRING([--enable-qtgui],[Build the Qt GUI con
 AC_ARG_WITH(qt4prefix,     AS_HELP_STRING([--with-qt4prefix], [prefix for Qt4 installation, e.g. "/usr/lib/qt4"]), qt4prefix="$withval", qt4prefix="")
 AC_ARG_WITH(qmakeargs,     AS_HELP_STRING([--with-qmakeargs], [specify custom qmake arguments]), qmakeargs="$withval", qmakeargs="")
 AC_ARG_ENABLE(contrib,     AC_HELP_STRING([--enable-contrib], [Compile and install code in contrib folder (default:off)]))
+AC_ARG_ENABLE(warp,        AC_HELP_STRING([--enable-warp], [enable scale and projection warping (opengl only) - experimental - DO NOT USE]))
 AC_ARG_ENABLE(timescale,   AC_HELP_STRING([--enable-timescale], [enable time-mapping/loop-playback support - experimental - DO NOT USE]))
 AC_ARG_ENABLE(framecrop,   AC_HELP_STRING([--enable-framecrop], [hardcoded frame cropping - experimental - DO NOT USE]))
 AC_ARG_ENABLE(weakjack,    AC_HELP_STRING([--enable-weakjack], [load libjack at runtime (weak linking -- always enabled on OSX and Windows)]))
@@ -167,6 +168,7 @@ AH_TEMPLATE([DND], [enable xjadeo x11/glx drag and drop])
 AH_TEMPLATE([XDLG], [enable xjadeo x11/glx context menu])
 AH_TEMPLATE([XFIB], [enable xjadeo x11 file browser])
 AH_TEMPLATE([COLOREQ], [enable XV and imlib2 color equalizer])
+AH_TEMPLATE([WARP], [enable dynamic projection warping, only opengl supported])
 AH_TEMPLATE([TIMEMAP], [enable dynamic time scaling])
 AH_TEMPLATE([CROPIMG], [enable frame cropping])
 AH_TEMPLATE([DRAW_CROSS], [paint a X on screen when unable to decode or display a frame.])
@@ -180,6 +182,10 @@ AC_DEFINE(XDLG)
 AC_DEFINE(XFIB)
 AC_DEFINE(DRAW_CROSS)
 AC_DEFINE(COLOREQ)
+
+if test "x$enable_warp" = "xyes"; then
+	AC_DEFINE(WARP)
+fi
 
 if test "x$enable_timescale" != "xyes"; then
 	AC_DEFINE(TIMEMAP)

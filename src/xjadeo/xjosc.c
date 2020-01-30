@@ -55,6 +55,13 @@ extern int midi_clkadj;
 extern char midiid[32];
 #endif
 
+#ifdef WARP
+extern double display_scale_x_modifier;
+extern double display_scale_y_modifier;
+extern double display_deform_corners[8];
+extern int recalculate_homography;
+#endif
+
 #ifdef TIMEMAP
 extern int64_t timeoffset;
 extern double  timescale;
@@ -137,6 +144,87 @@ static int oscb_midiconnect (const char *path, const char *types, lo_arg **argv,
 static int oscb_mididisconnect (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
 #ifdef HAVE_MIDI
   midi_close();
+#endif
+  return(0);
+}
+#endif
+
+#if defined WARP || defined OSC_DOC_ALL
+static int oscb_xscale (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+#ifdef WARP
+  if (want_verbose) fprintf(stderr, "OSC: %s <- f:%f\n", path, argv[0]->f);
+  display_scale_x_modifier=argv[0]->f;
+  force_redraw=1;
+#endif
+  return(0);
+}
+
+static int oscb_yscale (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+#ifdef WARP
+  if (want_verbose) fprintf(stderr, "OSC: %s <- f:%f\n", path, argv[0]->f);
+  display_scale_y_modifier=argv[0]->f;
+  force_redraw=1;
+#endif
+  return(0);
+}
+
+static int oscb_corners (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+#ifdef WARP
+  if (want_verbose) fprintf(stderr, "OSC: %s <- vec8:%f,%f,%f,%f,%f,%f,%f,%f \n", path, argv[0]->f, argv[1]->f, argv[2]->f, argv[3]->f, argv[4]->f, argv[5]->f, argv[6]->f, argv[7]->f);
+  for (size_t i = 0; i < 8; i++)
+  {
+   display_deform_corners[i]=argv[i]->f;
+  }
+  force_redraw=1;
+  recalculate_homography=1;
+#endif
+  return(0);
+}
+
+static int oscb_corner1 (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+#ifdef WARP
+  if (want_verbose) fprintf(stderr, "OSC: %s <- vec2:%f,%f \n", path, argv[0]->f, argv[1]->f);
+  
+   display_deform_corners[0]=argv[0]->f;
+   display_deform_corners[1]=argv[1]->f;
+  force_redraw=1;
+  recalculate_homography=1;
+#endif
+  return(0);
+}
+
+static int oscb_corner2 (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+#ifdef WARP
+  if (want_verbose) fprintf(stderr, "OSC: %s <- vec2:%f,%f \n", path, argv[0]->f, argv[1]->f);
+  
+   display_deform_corners[2]=-argv[0]->f;
+   display_deform_corners[3]=argv[1]->f;
+  force_redraw=1;
+  recalculate_homography=1;
+#endif
+  return(0);
+}
+
+static int oscb_corner3 (const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+#ifdef WARP
+  if (want_verbose) fprintf(stderr, "OSC: %s <- vec2:%f,%f \n", path, argv[0]->f, argv[1]->f);
+  
+   display_deform_corners[4]=argv[0]->f;
+   display_deform_corners[5]=argv[1]->f;
+  force_redraw=1;
+  recalculate_homography=1;
+#endif
+  return(0);
+}
+
+static int oscb_corner4(const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data){
+#ifdef WARP
+  if (want_verbose) fprintf(stderr, "OSC: %s <- vec2:%f,%f \n", path, argv[0]->f, argv[1]->f);
+  
+   display_deform_corners[6]=argv[0]->f;
+   display_deform_corners[7]=argv[1]->f;
+  force_redraw=1;
+  recalculate_homography=1;
 #endif
   return(0);
 }
@@ -318,6 +406,16 @@ static struct osc_command OSCC[] = {
   // HAVE_MIDI
   {"/jadeo/midi/connect", "s", &oscb_midiconnect, "Get sync from MTC (MIDI Time Code). The parameter specifies the midi-port to connect to. (-m, -d, midi connect)"},
   {"/jadeo/midi/disconnect", "", &oscb_mididisconnect, "Close the MIDI device (midi disconnect)"},
+#endif
+
+#if defined WARP || defined OSC_DOC_ALL
+  {"/jadeo/art/xscale", "f", &oscb_xscale, "Modify x scale of the video"},
+  {"/jadeo/art/yscale", "f", &oscb_yscale, "Modify y scale of the video"},
+  {"/jadeo/art/corners", "ffffffff", &oscb_corners, "Modify corner deformation, all corners at one"},
+  {"/jadeo/art/corner1", "ff", &oscb_corner1, "Modify corner deformation by corner number"},
+  {"/jadeo/art/corner2", "ff", &oscb_corner2, "Modify corner deformation by corner number"},
+  {"/jadeo/art/corner3", "ff", &oscb_corner3, "Modify corner deformation by corner number"},
+  {"/jadeo/art/corner4", "ff", &oscb_corner4, "Modify corner deformation by corner number"},
 #endif
 
 #if defined CROPIMG || defined OSC_DOC_ALL
