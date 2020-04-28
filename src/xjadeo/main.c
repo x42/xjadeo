@@ -172,6 +172,9 @@ int want_nosplash =0;	/* --nosplash */
 int want_noindex =0;	/* --noindex */
 int start_ontop =0;	/* --ontop // -a */
 int start_fullscreen =0;/* --fullscreen // -s */
+#ifdef HAVE_LIBXINERAMA
+int start_screen = -1; /* --start-screen // -X  # -1 auto*/
+#endif
 int want_letterbox =1;  /* --letterbox -b */
 int want_dropframes =0; /* --dropframes -N  -- force using drop-frame timecode */
 int want_autodrop =1;   /* --nodropframes -n (hidden option) -- allow using drop-frame timecode */
@@ -277,6 +280,9 @@ static struct option const long_options[] =
 #endif
 	{"no-splash",           no_argument, 0,       'S'},
 	{"fullscreen",          no_argument, 0,       's'},
+#ifdef HAVE_LIBXINERAMA
+	{"start-screen",        required_argument, 0, 'X'},
+#endif
 	{"ttf-font",            required_argument, 0, 'T'},
 #ifdef JACK_SESSION
 	{"uuid",                required_argument, 0, 'U'},
@@ -329,6 +335,9 @@ decode_switches (int argc, char **argv)
 		"r:" /* --rc */
 		"S"  /* nosplash */
 		"s"  /* start in full-screen mode */
+#ifdef HAVE_LIBXINERAMA
+		"X:"  /* --start-screen */
+#endif
 		"T:" /* ttf-font */
 #ifdef JACK_SESSION
 		"U:" /* --uuid */
@@ -435,6 +444,11 @@ decode_switches (int argc, char **argv)
 			case 's':
 				start_fullscreen = 1;
 				break;
+#ifdef HAVE_LIBXINERAMA
+			case 'X':
+				start_screen = atoi(optarg);
+				break;
+#endif
 			case 'T':
 				strcpy(OSD_fontfile, optarg);
 				break;
@@ -632,6 +646,10 @@ usage (int status)
 " -r <file>, --rc <file>    Specify a custom configuration file to load.\n"
 " -S, --no-splash           Skip the on screen display startup sequence.\n"
 " -s, --fullscreen          Start xjadeo in full screen mode.\n"
+#ifdef HAVE_LIBXINERAMA
+" -X <int>, --start-screen <int>"
+"                           Choose scren to start xjadeo in\n"
+#endif
 " -T <file>, --ttf-file <file>\n"
 "                           path to .ttf font for on screen display\n"
 " -U, --uuid                specify JACK SESSION UUID.\n"

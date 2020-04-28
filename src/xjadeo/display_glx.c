@@ -25,12 +25,24 @@
 #include <X11/Xlib.h>
 #include <X11/xpm.h>
 
+#ifdef HAVE_LIBXINERAMA
+#include <X11/extensions/Xinerama.h>
+#endif
+
 #include "icons/xjadeo8.xpm"
 
 void xapi_open (void *d);
 void xapi_close (void *d);
 
 static Display*   _gl_display;
+
+#ifdef HAVE_LIBXINERAMA
+static XineramaScreenInfo* _gl_displays_info;
+int _wm_xposition;
+int _wm_yposition;
+extern int start_screen; // --start-screen
+#endif
+
 static int        _gl_screen;
 static Window     _gl_win;
 static GLXContext _gl_ctx;
@@ -88,8 +100,20 @@ static void setup_window_hints_and_icon(Display* dpy, Window win, Window parent,
 	char *w_name ="xjadeo";
 	char *i_name ="xjadeo";
 
+#ifdef HAVE_LIBXINERAMA
+
 	/* default settings which allow arbitraray resizing of the window */
+	if (start_screen > -1 ){  // TODO: better way of enabling custom locatio and make it optional with ifdef
+		hints.flags = USPosition | PSize | PMaxSize | PMinSize; 
+		hints.x = _wm_xposition;
+		hints.y = _wm_yposition;
+	} else {
+		hints.flags = PSize | PMaxSize | PMinSize;
+	}
+#else
+
 	hints.flags = PSize | PMaxSize | PMinSize;
+#endif
 	hints.min_width = 32;
 	hints.min_height = 18;
 	hints.max_width = maxsize;
@@ -136,6 +160,33 @@ int gl_open_window () {
 		fprintf( stderr, "Cannot connect to X server\n");
 		return 1;
 	}
+
+	#ifdef HAVE_LIBXINERAMA
+	int nr_xinerama_screens = 0;
+
+	_wm_xposition = 0;
+	_wm_yposition = 0;
+    int event_base = 0, error_base = 0;
+    if (XineramaQueryExtension(_gl_display, &event_base, &error_base) &&
+        XineramaIsActive(_gl_display))
+    {
+		_gl_displays_info=XineramaQueryScreens(_gl_display, &nr_xinerama_screens);
+		fprintf(stderr, "Xinerama is active\n", nr_xinerama_screens);
+		fprintf(stderr, "Xinerama reports %d screens\n", nr_xinerama_screens);
+		if (nr_xinerama_screens>0) {
+			if (start_screen > -1 && start_screen <= nr_xinerama_screens){
+				_wm_xposition = _gl_displays_info[start_screen].x_org;
+				_wm_yposition = _gl_displays_info[start_screen].y_org;
+			}
+                for (int x=0; x<nr_xinerama_screens; ++x) {
+					fprintf(stderr, "Head %d of %d :", x+1, nr_xinerama_screens);
+					fprintf(stderr, " %dx%d at %d, %d\n", _gl_displays_info[x].width, _gl_displays_info[x].height, _gl_displays_info[x].x_org, _gl_displays_info[x].y_org);
+				}
+		} else fprintf(stderr, "Xinerama reports none");
+		XFree(_gl_displays_info);
+    }
+	#endif
+
 	_gl_screen = DefaultScreen(_gl_display);
 
 	int attrList[] = {
@@ -180,11 +231,18 @@ int gl_open_window () {
 		| ButtonPressMask | ButtonReleaseMask
 		| StructureNotifyMask;
 
+#ifdef HAVE_LIBXINERAMA
+	_gl_win = XCreateWindow(
+		_gl_display, xParent,
+		_wm_xposition, _wm_yposition, _gl_width, _gl_height, 0, vi->depth, InputOutput, vi->visual,
+		CWBorderPixel | CWColormap | CWEventMask, &attr);
+#else
 	_gl_win = XCreateWindow(
 		_gl_display, xParent,
 		0, 0, _gl_width, _gl_height, 0, vi->depth, InputOutput, vi->visual,
 		CWBorderPixel | CWColormap | CWEventMask, &attr);
 
+#endif
 	if (!_gl_win) {
 		XCloseDisplay(_gl_display);
 		return 1;
