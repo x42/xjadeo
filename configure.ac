@@ -35,6 +35,7 @@ AC_ARG_ENABLE(contrib,     AC_HELP_STRING([--enable-contrib], [Compile and insta
 AC_ARG_ENABLE(timescale,   AC_HELP_STRING([--enable-timescale], [enable time-mapping/loop-playback support - experimental - DO NOT USE]))
 AC_ARG_ENABLE(framecrop,   AC_HELP_STRING([--enable-framecrop], [hardcoded frame cropping - experimental - DO NOT USE]))
 AC_ARG_ENABLE(weakjack,    AC_HELP_STRING([--enable-weakjack], [load libjack at runtime (weak linking -- always enabled on OSX and Windows)]))
+AC_ARG_ENABLE(xinerama,    AC_HELP_STRING([--enable-xinerama],[Enable xinerama support.]))
 
 
 LIBPREF=lib
@@ -142,6 +143,7 @@ AH_TEMPLATE([HAVE_SDL], [Define as 1 if  you have the SDL toolkit (linux,netbsd,
 AH_TEMPLATE([HAVE_LIBXV], [Video Output: XVideo support (linux,netbsd)])
 AH_TEMPLATE([HAVE_IMLIB2], [Video Output: plain old imlib2 (linux,netbsd)])
 AH_TEMPLATE([IMLIB2RGBA], [Define for RGBA32 imlib2 (not RGB24)])
+AH_TEMPLATE([HAVE_LIBXINERAMA], [Define for Xinerama support])
 
 dnl MTC sync
 AH_TEMPLATE([HAVE_MIDI], [general MIDI (MTC) support])
@@ -261,6 +263,10 @@ AS_IF([test -z "$PLATFORM_OSX$PLATFORM_WINDOWS"], [
 	PKG_CHECK_MODULES(XPM, xpm, ,
 		AC_MSG_ERROR([Xpm support is mandatory on this platform - install libxpm development package.]))
 ])
+
+if test "x$enable_xinerama" = "xyes" ; then
+    PKG_CHECK_MODULES(DPY_XINERAMA, xinerama, [AC_DEFINE(HAVE_LIBXINERAMA) XV_LIBS="$XV_LIBS -lXinerama" HAVE_LIBXINERAMA=1 ], [])
+fi
 
 if test "x$enable_xv" != "xno"; then
 	AC_CHECK_LIB(Xv, XvQueryAdaptors, [AC_DEFINE(HAVE_LIBXV) XV_LIBS="$XV_LIBS -lXv" HAVE_LIBXV=1 ], [], $X_LIBS)
@@ -506,6 +512,7 @@ fi
 
 if test -n "$HAVE_GL"; then RPT_OPENGL="yes"; else RPT_OPENGL="not avail."; fi
 if test -n "$HAVE_LIBXV"; then RPT_LIBXV="yes"; else RPT_LIBXV="not avail."; fi
+if test -n "$HAVE_LIBXINERAMA"; then RPT_LIBXINERAMA="yes"; else RPT_LIBXINERAMA="no."; fi
 if test -n "$HAVE_IMLIB2"; then RPT_IMLIB2="yes"; else RPT_IMLIB2="not avail."; fi
 if test -n "$PLATFORM_OSX"; then RPT_MACOSX="yes"; else RPT_MACOSX="not avail."; fi
 if test -n "$HAVE_SDL"; then RPT_SDL="yes"; else RPT_SDL="not avail."; fi
@@ -529,6 +536,7 @@ AC_MSG_NOTICE([
 
  Video Displays
    - openGL:         $RPT_OPENGL
+   - libxinerama:    $RPT_LIBXINERAMA
    - libxv:          $RPT_LIBXV
    - libx11/imlib2:  $RPT_IMLIB2
    - mac/quartz:     $RPT_MACOSX
