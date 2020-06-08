@@ -52,7 +52,7 @@ extern int64_t  ts_offset;
 #ifdef HAVE_MIDI
 extern int midi_clkconvert;
 extern int midi_clkadj;
-extern char midiid[32];
+extern char midiid[128];
 #endif
 
 #ifdef TIMEMAP
