@@ -90,8 +90,8 @@ extern int    OSD_mode;
 extern char   OSD_text[128];
 extern int    OSD_fx, OSD_tx, OSD_sx, OSD_fy, OSD_sy, OSD_ty;
 
-int start_ontop;
-int start_fullscreen;
+extern int start_ontop;
+extern int start_fullscreen;
 
 extern char	*current_file;
 #ifdef JACK_SESSION
