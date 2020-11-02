@@ -129,6 +129,8 @@ enum wMenuId {
 	mOffsetZero,
 	mOffsetPF,
 	mOffsetMF,
+	mOffsetPS,
+	mOffsetMS,
 	mOffsetPM,
 	mOffsetMM,
 	mOffsetPH,
@@ -205,8 +207,10 @@ static void open_context_menu(HWND hwnd, int x, int y) {
 	AppendMenu(hSubMenuOSD, MF_STRING, mOsdClear, "CLear All\t Shift+C");
 
 	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetZero, "Reset\t \\");
-	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetPF,   "+1 Frame\t +");
+	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetPF,   "+1 Frame\t =");
 	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetMF,   "-1 Frame\t -");
+	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetPS,   "+1 Second\t +");
+	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetMS,   "-1 Second\t _");
 	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetPM,   "+1 Minute\t }");
 	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetMM,   "-1 Minute\t {");
 	AppendMenu(hSubMenuOffs, MF_STRING, mOffsetPH,   "+1 Hour");
@@ -428,6 +432,8 @@ static void win_handle_menu(HWND hwnd, enum wMenuId id) {
 		case mOffsetZero:      PTLL; XCtimeoffset( 0, 0); PTUL; break;
 		case mOffsetPF:        PTLL; XCtimeoffset( 1, 0); PTUL; break;
 		case mOffsetMF:        PTLL; XCtimeoffset(-1, 0); PTUL; break;
+		case mOffsetPS:        PTLL; XCtimeoffset( 4, 0); PTUL; break;
+		case mOffsetMS:        PTLL; XCtimeoffset(-4, 0); PTUL; break;
 		case mOffsetPM:        PTLL; XCtimeoffset( 2, 0); PTUL; break;
 		case mOffsetMM:        PTLL; XCtimeoffset(-2, 0); PTUL; break;
 		case mOffsetPH:        PTLL; XCtimeoffset( 3, 0); PTUL; break;

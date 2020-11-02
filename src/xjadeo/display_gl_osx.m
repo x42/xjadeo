@@ -648,6 +648,8 @@ static void update_dpy_menu () {
 - (void) offMM: (id)sender   { PTLL; XCtimeoffset(-2, 0); PTUL; }
 - (void) offPH: (id)sender   { PTLL; XCtimeoffset( 3, 0); PTUL; }
 - (void) offMH: (id)sender   { PTLL; XCtimeoffset(-3, 0); PTUL; }
+- (void) offPS: (id)sender   { PTLL; XCtimeoffset( 4, 0); PTUL; }
+- (void) offMS: (id)sender   { PTLL; XCtimeoffset(-4, 0); PTUL; }
 
 - (void) jackPlayPause: (id)sender  { jackt_toggle(); }
 - (void) jackPlay: (id)sender       { jackt_start(); }
@@ -883,10 +885,17 @@ static void makeAppMenu (void) {
 
 	menuItem = [offMenu addItemWithTitle:@"Reset" action:@selector(offZero:)   keyEquivalent:@"\\"];
 	[menuItem   setKeyEquivalentModifierMask:0];
-	menuItem = [offMenu addItemWithTitle:@"+1 Frame"  action:@selector(offPF:) keyEquivalent:@"+"];
+
+	menuItem = [offMenu addItemWithTitle:@"+1 Frame"  action:@selector(offPF:) keyEquivalent:@"="];
 	[menuItem   setKeyEquivalentModifierMask:0];
 	menuItem = [offMenu addItemWithTitle:@" \u20131 Frame"  action:@selector(offMF:) keyEquivalent:@"-"];
 	[menuItem   setKeyEquivalentModifierMask:0];
+
+	menuItem = [offMenu addItemWithTitle:@"+1 Second"  action:@selector(offPS:) keyEquivalent:@"+"];
+	[menuItem   setKeyEquivalentModifierMask:0];
+	menuItem = [offMenu addItemWithTitle:@" \u20131 Second"  action:@selector(offMS:) keyEquivalent:@"_"];
+	[menuItem   setKeyEquivalentModifierMask:0];
+
 	menuItem = [offMenu addItemWithTitle:@"+1 Minute" action:@selector(offPM:) keyEquivalent:@"{"];
 	[menuItem   setKeyEquivalentModifierMask:0];
 	menuItem = [offMenu addItemWithTitle:@" \u20131 Minute" action:@selector(offMM:) keyEquivalent:@"}"];

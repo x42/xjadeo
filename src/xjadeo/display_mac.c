@@ -1384,7 +1384,7 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
     case '\\':
       XCtimeoffset(0, (unsigned int) charcode);
       break;
-    case '+':
+    case '=':
       XCtimeoffset(1, (unsigned int) charcode);
       break;
     case '-':
@@ -1395,6 +1395,12 @@ void mac_put_key(UInt32 key, UInt32 charcode) {
       break;
     case '}':
       XCtimeoffset(2, (unsigned int) charcode);
+      break;
+    case '+':
+      XCtimeoffset(4, (unsigned int) charcode);
+      break;
+    case '_':
+      XCtimeoffset(-4, (unsigned int) charcode);
       break;
     case 'm': mousepointer_mac(2); break;
     case '.': //'.' // resize 100%
