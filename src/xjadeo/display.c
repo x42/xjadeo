@@ -814,6 +814,22 @@ void XCtimeoffset (int mode, unsigned int charcode) {
 		case 1:
 			++ts_offset;
 			break;
+		case -4:
+			if (framerate > 0) {
+				// TODO drop-frame ??
+				ts_offset -= framerate ;
+			} else {
+				ts_offset -= 25;
+			}
+			break;
+		case 4:
+			if (framerate > 0) {
+				// TODO drop-frame ??
+				ts_offset += framerate ;
+			} else {
+				ts_offset += 25;
+			}
+			break;
 		case -2:
 			if (framerate > 0) {
 				// TODO drop-frame ??

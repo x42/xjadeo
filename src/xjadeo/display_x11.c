@@ -487,10 +487,16 @@ static void xj_handle_X_events (void) {
 						XCresize_scale(1);
 					} else if (key == XK_backslash ) { // '\' // A/V offset
 						XCtimeoffset(0, (unsigned int) key);
-					} else if (key == XK_plus ) { //'+' // A/V offset
+					} else if (key == XK_equal ) { //'=' // A/V offset
 						XCtimeoffset(1, (unsigned int) key);
 					} else if (key == XK_minus ) { //'-'  A/V offset
 						XCtimeoffset(-1, (unsigned int) key);
+					} else if (key == XK_plus ) { //'+' // A/V offset
+						XCtimeoffset(4, (unsigned int) key);
+						puts("click +");
+					} else if (key == XK_underscore ) { //'_'  A/V offset
+						XCtimeoffset(-4, (unsigned int) key);
+						puts("click _");
 					} else if (key == XK_braceright ) { //'}' // A/V offset
 						XCtimeoffset(2, (unsigned int) key);
 					} else if (key == XK_braceleft) { //'{'  A/V offset

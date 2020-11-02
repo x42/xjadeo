@@ -85,6 +85,8 @@ static void ui_offset_pm()  { XCtimeoffset( 2, 0); }
 static void ui_offset_mm()  { XCtimeoffset(-2, 0); }
 static void ui_offset_ph()  { XCtimeoffset( 3, 0); }
 static void ui_offset_mh()  { XCtimeoffset(-3, 0); }
+static void ui_offset_ps()  { XCtimeoffset( 4, 0); }
+static void ui_offset_ms()  { XCtimeoffset(-4, 0); }
 
 static void ui_quit() {
 	loop_flag=0;
@@ -156,8 +158,10 @@ static struct XjxMenuItem submenu_osd[] = {
 
 static struct XjxMenuItem submenu_offs[] = {
 	{"Reset",     "\\", NULL, &ui_offset_rst, 0, 1},
-	{"+ 1 Frame",  "+", NULL, &ui_offset_pf, 0, 1},
+	{"+ 1 Frame",  "=", NULL, &ui_offset_pf, 0, 1},
 	{"- 1 Frame",  "-", NULL, &ui_offset_mf, 0, 1},
+	{"+ 1 Second",  "+", NULL, &ui_offset_ps, 0, 1},
+	{"- 1 Second",  "_", NULL, &ui_offset_ms, 0, 1},
 	{"+ 1 Minute", "{", NULL, &ui_offset_pm, 0, 1},
 	{"- 1 Minute", "}", NULL, &ui_offset_mm, 0, 1},
 	{"+ 1 Hour",   "",  NULL, &ui_offset_ph, 0, 1},

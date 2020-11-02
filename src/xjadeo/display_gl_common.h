@@ -266,7 +266,7 @@ static void xjglKeyPress(const unsigned int sym, const char *key) {
 		XCtimeoffset(0, sym);
 		gl_sync_unlock();
 	}
-	else if (!strcmp(key, "+")) {
+	else if (!strcmp(key, "=")) {
 		gl_sync_lock();
 		XCtimeoffset(1, sym);
 		gl_sync_unlock();
@@ -274,6 +274,16 @@ static void xjglKeyPress(const unsigned int sym, const char *key) {
 	else if (!strcmp(key, "-")) {
 		gl_sync_lock();
 		XCtimeoffset(-1, sym);
+		gl_sync_unlock();
+	}
+	else if (!strcmp(key, "+")) {
+		gl_sync_lock();
+		XCtimeoffset(4, sym);
+		gl_sync_unlock();
+	}
+	else if (!strcmp(key, "_")) {
+		gl_sync_lock();
+		XCtimeoffset(-4, sym);
 		gl_sync_unlock();
 	}
 	else if (!strcmp(key, "}")) {

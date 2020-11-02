@@ -421,10 +421,14 @@ void handle_X_events_sdl (void) {
 					ui_osd_permute();
 				} else if(ev.key.keysym.sym== SDLK_BACKSLASH) {
 					XCtimeoffset(0, (unsigned int) key);
-				} else if(ev.key.keysym.sym== SDLK_EQUALS && ev.key.keysym.mod&KMOD_SHIFT) { // '+' SDLK_PLUS does not work :/
+				} else if(ev.key.keysym.sym== SDLK_EQUALS ) { // '=' :/
 					XCtimeoffset(1, (unsigned int) key);
 				} else if(ev.key.keysym.sym==SDLK_MINUS) {
 					XCtimeoffset(-1, (unsigned int) key);
+				} else if(ev.key.keysym.sym== SDLK_EQUALS && ev.key.keysym.mod&KMOD_SHIFT) { // '+' SDLK_PLUS does not work :/
+					XCtimeoffset(4, (unsigned int) key);
+				} else if(ev.key.keysym.sym==SDLK_MINUS && ev.key.keysym.mod&KMOD_SHIFT) {
+					XCtimeoffset(-4, (unsigned int) key);
 				} else if(ev.key.keysym.sym== SDLK_LEFTBRACKET && ev.key.keysym.mod&KMOD_SHIFT) { // '{'
 					XCtimeoffset(-2, (unsigned int) key);
 				} else if(ev.key.keysym.sym== SDLK_RIGHTBRACKET&& ev.key.keysym.mod&KMOD_SHIFT) { // '}'
