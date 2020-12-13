@@ -26,6 +26,11 @@ case `sw_vers -productVersion | cut -d'.' -f1,2` in
 		XJARCH="-arch x86_64"
 		OSXCOMPAT="-mmacosx-version-min=10.10"
 		;;
+	"11.1")
+		echo "Big Sur"
+		XJARCH="-arch arm64"
+		OSXCOMPAT=""
+		;;
 	*)
 		echo "**UNTESTED MacOS/X VERSION**"
 		echo "if it works, please report back :)"

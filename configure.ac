@@ -46,7 +46,7 @@ case $target_os in
 		PM_OS=mac
 		AC_DEFINE([PLATFORM_OSX], [], [Mac OSX version])
 		PLATFORM_OSX=1
-		LDFLAGS="$LDFLAGS -lz -lbz2 -framework Carbon -framework Quicktime"
+		LDFLAGS="$LDFLAGS -lz -lbz2"
 		GL_LIBS="-framework Cocoa -framework OpenGL"
 		AC_DEFINE(HAVE_GL)
 		HAVE_GL=1
@@ -54,6 +54,9 @@ case $target_os in
 		AM_CONDITIONAL([TARGET_LINUX], false)
 		AM_CONDITIONAL([TARGET_NETBSD], false)
 		AM_CONDITIONAL([TARGET_WIN32], false)
+		if test $(sw_vers -productVersion | cut -d '.' -f 1) -lt 11 -a $(sw_vers -productVersion | cut -d '.' -f 2) -lt 15; then
+			LDFLAGS="$LDFLAGS -framework Carbon -framework Quicktime"
+		fi
 		dnl 2006/11/13 : 32 bit RGBA is known not to work on OSX ffmpeg+imlib2
 		dnl IMLIB2RGBA
 		;;

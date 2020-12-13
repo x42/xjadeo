@@ -185,9 +185,8 @@ mkdir -p "$MNTPATH"
 
 TMPDMG="${TMPDMG}.dmg"
 
-hdiutil create -megabytes $DMGMEGABYTES "$TMPDMG"
+hdiutil create -megabytes $DMGMEGABYTES -fs HFS+ -volname "${VOLNAME}" "$TMPDMG"
 DiskDevice=$(hdid -nomount "$TMPDMG" | grep Apple_HFS | cut -f 1 -d ' ')
-newfs_hfs -v "${VOLNAME}" "${DiskDevice}"
 mount -t hfs "${DiskDevice}" "${MNTPATH}"
 
 cp -a ${TARGET_BUILD_DIR} "${MNTPATH}/${APPNAME}"
@@ -196,7 +195,7 @@ cp -vi ${DMGBACKGROUND} "${MNTPATH}/.background/dmgbg.png"
 
 echo "setting DMG background ..."
 
-if test $(sw_vers -productVersion | cut -d '.' -f 2) -lt 9; then
+if test $(sw_vers -productVersion | cut -d '.' -f 1) -lt 11 -a $(sw_vers -productVersion | cut -d '.' -f 2) -lt 9; then
 	# OSX ..10.8.X
 	DISKNAME=${VOLNAME}
 else
