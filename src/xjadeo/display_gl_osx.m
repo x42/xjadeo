@@ -987,7 +987,7 @@ static int osx_open_window () {
 	return 0;
 }
 
-static void osx_post_event (int data1) {
+static void osx_post_event (int data1, int data2) {
 	NSEvent* event = [NSEvent otherEventWithType:NSApplicationDefined
 	                                    location:NSMakePoint (0,0)
 	                               modifierFlags:0
@@ -996,7 +996,7 @@ static void osx_post_event (int data1) {
 	                                     context:nil
 	                                     subtype:0
 	                                       data1:data1
-	                                       data2:0];
+	                                       data2:data2];
 	[NSApp postEvent:event atStart:NO];
 }
 
@@ -1007,7 +1007,7 @@ int gl_open_window () {
 	}
 	if (!pool) pool = [[NSAutoreleasePool alloc] init];
 	if (osxgui_status > 0) return 0; // already open
-	osx_post_event (1);
+	osx_post_event (1, 0);
 	while (osxgui_status == 0) {
 		usleep (10000);
 	}
@@ -1016,7 +1016,7 @@ int gl_open_window () {
 
 void osx_shutdown () {
 	if (pool && osxgui_status != -1000) {
-		osx_post_event (0);
+		osx_post_event (0, 0);
 	}
 	if (pool) {
 		[pool release]; pool = NULL;
@@ -1027,7 +1027,7 @@ void gl_close_window () {
 	if (osxgui_status <= 0) {
 		return;
 	}
-	osx_post_event (2);
+	osx_post_event (2, 0);
 	while (osxgui_status) {
 		usleep (10000);
 	}
@@ -1042,7 +1042,7 @@ void gl_handle_events () {
 		sched_yield ();
 	}
 	pthread_mutex_lock (&osxgui_sync);
-	osx_post_event (0); // TODO only on remote msg or similar event
+	osx_post_event (0, 0); // TODO only on remote msg or similar event
 }
 
 void osx_main () {
@@ -1084,6 +1084,41 @@ void osx_main () {
 						pthread_mutex_unlock (&osx_vbuf_lock);
 						[osx_glview setNeedsDisplay:YES];
 						break;
+					case 4:
+						[osx_glview setNeedsDisplay:YES];
+						break;
+					case 5:
+						if (_gl_ontop) {
+							[osx_window setLevel:NSFloatingWindowLevel + 1];
+						} else {
+							[osx_window setLevel:NSNormalWindowLevel];
+						}
+						break;
+					case 6:
+						if (_gl_fullscreen) {
+							[osx_glview setFullScreen:YES];
+						} else {
+							[osx_glview setFullScreen:NO];
+						}
+						if (osx_window) {
+							[osx_window makeKeyAndOrderFront:osx_window];
+							[osx_window makeFirstResponder:osx_glview];
+						}
+						break;
+					case 7:
+						{
+							[osx_window setContentSize:NSMakeSize (event.data2 & 0xffff, event.data2 >> 16) ];
+							[osx_glview reshape];
+						}
+						break;
+					case 8:
+						{
+							NSRect frame = [osx_window frame];
+							frame.origin.x = event.data2 & 0xffff;
+							frame.origin.y = event.data2 >> 16;
+							[osx_window setFrame:frame display:YES animate:YES];
+						}
+						break;
 					default:
 						break;
 				}
@@ -1117,18 +1152,18 @@ void gl_render (uint8_t *buffer) {
 	if (!osx_vbuf) return;
 	pthread_mutex_lock (&osx_vbuf_lock);
 	if (_newsrc) {
-		osx_post_event (1);
+		osx_post_event (1, 0);
 	} else {
 		memcpy (osx_vbuf, buffer, osx_vbuf_size * sizeof(uint8_t));
 	}
 	pthread_mutex_unlock (&osx_vbuf_lock);
-	[osx_glview setNeedsDisplay:YES];
+	osx_post_event (4, 0);
 }
 
 
 void gl_resize (unsigned int x, unsigned int y) {
-	[osx_window setContentSize:NSMakeSize (x, y) ];
-	[osx_glview reshape];
+	int xy = (y & 0xffff) << 16 | (x & 0xffff);
+	osx_post_event (7, xy);
 }
 
 void gl_get_window_size (unsigned int *w, unsigned int *h) {
@@ -1137,10 +1172,8 @@ void gl_get_window_size (unsigned int *w, unsigned int *h) {
 }
 
 void gl_position (int x, int y) {
-	NSRect frame = [osx_window frame];
-	frame.origin.x = x;
-	frame.origin.y = y;
-	[osx_window setFrame:frame display:YES animate:YES];
+	int xy = (y & 0xffff) << 16 | (x & 0xffff);
+	osx_post_event (8, xy);
 }
 
 void gl_get_window_pos (int *x, int *y) {
@@ -1152,26 +1185,14 @@ void gl_get_window_pos (int *x, int *y) {
 void gl_set_ontop (int action) {
 	if (action==2) _gl_ontop ^= 1;
 	else _gl_ontop = action ? 1 : 0;
-	if (_gl_ontop) {
-		[osx_window setLevel:NSFloatingWindowLevel + 1];
-	} else {
-		[osx_window setLevel:NSNormalWindowLevel];
-	}
+	osx_post_event (5, 0);
 }
 
 void gl_set_fullscreen (int action) {
 	// TODO check if we need performSelectorOnMainThread
 	if (action==2) _gl_fullscreen^=1;
 	else _gl_fullscreen = action ? 1 : 0;
-	if (_gl_fullscreen) {
-		[osx_glview setFullScreen:YES];
-	} else {
-		[osx_glview setFullScreen:NO];
-	}
-	if (osx_window) {
-		[osx_window makeKeyAndOrderFront:osx_window];
-		[osx_window makeFirstResponder:osx_glview];
-	}
+	osx_post_event (6, 0);
 }
 
 void gl_mousepointer (int action) {
