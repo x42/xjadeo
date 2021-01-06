@@ -1,3 +1,9 @@
+2021-01-06 (0.8.10)  Robin Gareus <robin@gareus.org>
+* add keyboard shortcuts for +/- 1 second offsets
+* tweak Windows installer 32/64bit reg-keys
+* fix Linux gcc10 builds
+* add support for macOS BigSur and Apple/ARM
+
 2018-11-30 (0.8.9)  Robin Gareus <robin@gareus.org>
 * prefer -pthread over -lpthread, fixes #18
 * mainly a build-system, binary only update
