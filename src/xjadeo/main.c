@@ -1,6 +1,6 @@
 /* xjadeo - jack video monitor main
  *
- * (C) 2006-2015 Robin Gareus <robin@gareus.org>
+ * (C) 2006-2021 Robin Gareus <robin@gareus.org>
  * (C) 2006-2011 Luis Garrido <luisgarrido@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -771,7 +771,7 @@ static void printversion (void) {
 	printf (" MTC/MIDI:      [ %s]\n", cfg_midi);
 	printf (" Display(s):    [ %s]\n", cfg_displays);
 	printf ("\n"
-			"Copyright (C) GPL 2006-2015 Robin Gareus <robin@gareus.org>\n"
+			"Copyright (C) GPL 2006-2021 Robin Gareus <robin@gareus.org>\n"
 			"Copyright (C) GPL 2006-2011 Luis Garrido <luisgarrido@users.sourceforge.net>\n"
 			"This is free software; see the source for copying conditions.  There is NO\n"
 			"warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n");

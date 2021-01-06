@@ -185,7 +185,7 @@ static void printversion (void) {
 	printf (" configuration:  [ stdio ]\n");
 #endif
 	printf (
-			"Copyright (C) GPL 2006,2014 Robin Gareus <robin@gareus.org>\n"
+			"Copyright (C) GPL 2006-2021 Robin Gareus <robin@gareus.org>\n"
 			"This is free software; see the source for copying conditions.  There is NO\n"
 			"warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n");
 }
