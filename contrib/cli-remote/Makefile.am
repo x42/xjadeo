@@ -5,7 +5,7 @@ jadeo_rcli_SOURCES = jadeo.c ../../aclocal.m4 ../../config.h \
                      ../../src/xjadeo/smpte.c ../../src/xjadeo/common_jack.c \
                      ../../src/xjadeo/weak_libjack.c
 
-jadeo_rcli_CFLAGS = -Wall -g -O3  -I../../src/xjadeo/ @MIDI_CFLAGS@ @JACK_CFLAGS@
+jadeo_rcli_CFLAGS = -Wall -g -O3 -pthread -I../../src/xjadeo/ @MIDI_CFLAGS@ @JACK_CFLAGS@
 jadeo_rcli_LDADD = @MIDI_LIBS@ -lm
 
 if TARGET_LINUX
