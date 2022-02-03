@@ -117,4 +117,16 @@ static inline AVFrame *av_frame_alloc()
 }
 #endif
 
+static inline void
+register_codecs_compat ()
+{
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58, 9, 100)
+  av_register_all();
+#endif
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58, 10, 100)
+  avcodec_register_all();
+#endif
+}
+
+
 #endif /* FFCOMPAT_H */

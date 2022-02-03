@@ -448,11 +448,10 @@ void init_moviebuffer (void) {
 }
 
 void avinit (void) {
-	av_register_all ();
+	register_codecs_compat();
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(53, 20, 0)
 	avcodec_init ();
 #endif
-	avcodec_register_all ();
 	if (!want_avverbose) av_log_set_level (AV_LOG_QUIET);
 }
 
