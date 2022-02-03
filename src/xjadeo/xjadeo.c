@@ -1303,7 +1303,11 @@ int open_movie (char* file_name) {
 
 	/* Find the first video stream */
 	for (i = 0; i < pFormatCtx->nb_streams; ++i)
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57, 33, 100)
 		if (pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
+#else
+		if (pFormatCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
+#endif
 			videoStream = i;
 			break;
 		}
@@ -1399,7 +1403,11 @@ int open_movie (char* file_name) {
 	}
 
 	// Get a pointer to the codec context for the video stream
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57, 33, 100)
 	pCodecCtx=pFormatCtx->streams[videoStream]->codec;
+#else
+	pCodecCtx=pFormatCtx->streams[videoStream]->codecpar;
+#endif
 
 	if (!want_quiet) {
 		fprintf(stdout, "frame rate: %g\n", framerate);
@@ -1421,8 +1429,13 @@ int open_movie (char* file_name) {
 	float sample_aspect = 1.0;
 	if (av_stream->sample_aspect_ratio.num)
 		sample_aspect = av_q2d (av_stream->sample_aspect_ratio);
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57, 33, 100)
 	else if (av_stream->codec->sample_aspect_ratio.num)
 		sample_aspect = av_q2d (av_stream->codec->sample_aspect_ratio);
+#else
+	else if (av_stream->codecpar->sample_aspect_ratio.num)
+		sample_aspect = av_q2d (av_stream->codecpar->sample_aspect_ratio);
+#endif
 	else
 		sample_aspect = 1.0;
 
@@ -1516,9 +1529,15 @@ int open_movie (char* file_name) {
 	if (av_stream->sample_aspect_ratio.num)
 		sprintf(OSD_nfo_geo[2], "SAR: %d : %d",
 				av_stream->sample_aspect_ratio.num, av_stream->sample_aspect_ratio.den);
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57, 33, 100)
 	else if (av_stream->codec->sample_aspect_ratio.num)
 		sprintf(OSD_nfo_geo[2], "SAR: %d : %d",
 				av_stream->codec->sample_aspect_ratio.num, av_stream->codec->sample_aspect_ratio.den);
+#else
+	else if (av_stream->codecpar->sample_aspect_ratio.num)
+		sprintf(OSD_nfo_geo[2], "SAR: %d : %d",
+				av_stream->codecpar->sample_aspect_ratio.num, av_stream->codecpar->sample_aspect_ratio.den);
+#endif
 	else
 		sprintf(OSD_nfo_geo[2], "SAR: unknown (1 : 1)");
 
