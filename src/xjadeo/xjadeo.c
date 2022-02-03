@@ -484,7 +484,11 @@ static uint64_t parse_pts_from_frame (AVFrame *f) {
 #endif
 
 	if (pts == AV_NOPTS_VALUE) {
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57, 61, 100)
 		pts = f->pkt_pts;
+#else
+		pts = f->pts;
+#endif
 		if (pts != AV_NOPTS_VALUE) {
 			if (!(pts_warn & 2) && !want_quiet)
 				fprintf(stderr, "Used PTS from packet instead frame's PTS.\n");
