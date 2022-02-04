@@ -441,7 +441,11 @@ void init_moviebuffer (void) {
 
 	// Assign appropriate parts of buffer to image planes in pFrameFMT
 	if (pFrameFMT) {
+#if LIBAVUTIL_VERSION_INT < AV_VERSION_INT(51, 63, 100)
 		avpicture_fill ((AVPicture *)pFrameFMT, buffer, render_fmt, movie_width, movie_height);
+#else
+		av_image_fill_arrays (pFrameFMT->data, pFrameFMT->linesize, buffer, render_fmt, movie_width, movie_height, 0);
+#endif
 		pSWSCtx = sws_getContext (pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, movie_width, movie_height, render_fmt, SWS_BICUBIC, NULL, NULL, NULL);
 	}
 	render_empty_frame (0, 0);
@@ -1406,7 +1410,8 @@ int open_movie (char* file_name) {
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57, 33, 100)
 	pCodecCtx=pFormatCtx->streams[videoStream]->codec;
 #else
-	pCodecCtx=pFormatCtx->streams[videoStream]->codecpar;
+	pCodecCtx = avcodec_alloc_context3(NULL);
+	avcodec_parameters_to_context (pCodecCtx, pFormatCtx->streams[videoStream]->codecpar);
 #endif
 
 	if (!want_quiet) {
@@ -1492,7 +1497,7 @@ int open_movie (char* file_name) {
 	if (pFrame == NULL) {
 		if (!want_quiet)
 			fprintf(stderr, "Cannot allocate video frame buffer\n");
-		avcodec_close (pCodecCtx);
+		avcodec_free_context (&pCodecCtx);
 		avformat_close_input (&pFormatCtx);
 		pFormatCtx = NULL;
 		pCodecCtx = NULL;
@@ -1504,7 +1509,7 @@ int open_movie (char* file_name) {
 		if (!want_quiet)
 			fprintf(stderr, "Cannot allocate display frame buffer\n");
 		av_free (pFrame);
-		avcodec_close (pCodecCtx);
+		avcodec_free_context (&pCodecCtx);
 		avformat_close_input (&pFormatCtx);
 		pFormatCtx = NULL;
 		pCodecCtx = NULL;
@@ -1832,7 +1837,7 @@ int close_movie () {
 	pFrame=NULL;
 
 	//Close the codec
-	avcodec_close (pCodecCtx);
+	avcodec_free_context (&pCodecCtx);
 
 	//Close the video file
 	avformat_close_input (&pFormatCtx);
