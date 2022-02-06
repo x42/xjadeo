@@ -428,23 +428,23 @@ size_t video_buffer_size() {
 }
 
 void init_moviebuffer (void) {
-	if (buffer) free (buffer);
+	if (buffer) av_free (buffer);
 	if (want_debug)
 		printf("DEBUG: init_moviebuffer - render_fmt: %i\n",render_fmt);
 	/* Determine required buffer size and allocate buffer */
 #ifdef CROPIMG
-	vbufsize = av_image_get_buffer_size (render_fmt, movie_width*2, movie_height, 1);
+	vbufsize = av_image_get_buffer_size (render_fmt, movie_width*2, movie_height, 64);
 #else
-	vbufsize = av_image_get_buffer_size (render_fmt, movie_width, movie_height, 1);
+	vbufsize = av_image_get_buffer_size (render_fmt, movie_width, movie_height, 64);
 #endif
-	buffer = (uint8_t *)calloc (1, vbufsize);
+	buffer = (uint8_t *)av_malloc (vbufsize);
 
 	// Assign appropriate parts of buffer to image planes in pFrameFMT
 	if (pFrameFMT) {
 #if LIBAVUTIL_VERSION_INT < AV_VERSION_INT(51, 63, 100)
 		avpicture_fill ((AVPicture *)pFrameFMT, buffer, render_fmt, movie_width, movie_height);
 #else
-		av_image_fill_arrays (pFrameFMT->data, pFrameFMT->linesize, buffer, render_fmt, movie_width, movie_height, 0);
+		av_image_fill_arrays (pFrameFMT->data, pFrameFMT->linesize, buffer, render_fmt, movie_width, movie_height, 64);
 #endif
 		pSWSCtx = sws_getContext (pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, movie_width, movie_height, render_fmt, SWS_BICUBIC, NULL, NULL, NULL);
 	}
@@ -1846,7 +1846,7 @@ int close_movie () {
 	sws_freeContext (pSWSCtx);
 
 	// Free the formatted image
-	if (buffer) free (buffer);
+	if (buffer) av_free (buffer);
 	buffer=NULL;
 	if (pFrameFMT)
 		av_free (pFrameFMT);
