@@ -237,7 +237,7 @@ make $MAKEFLAGS && make install
 
 
 ################################################################################
-FFVERSION=3.4.5
+FFVERSION=5.0
 download ffmpeg-${FFVERSION}.tar.bz2 http://www.ffmpeg.org/releases/ffmpeg-${FFVERSION}.tar.bz2
 cd ${BUILDD}
 tar xjf ${SRCDIR}/ffmpeg-${FFVERSION}.tar.bz2
@@ -251,7 +251,7 @@ EOF
 	--disable-programs \
 	--enable-gpl --enable-shared --disable-static --disable-debug \
 	--enable-libvpx \
-	--disable-jack --disable-sdl2 \
+	--disable-sdl2 \
 	--enable-cross-compile --cross-prefix=${XPREFIX}- \
 	$FFFLAGS \
 	--extra-cflags="-I${PREFIX}/include -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -mstackrealign" \

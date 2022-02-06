@@ -40,7 +40,7 @@ $SUDO apt-get -y install git build-essential yasm \
 cd $SRC
 git clone -b master --single-branch git://github.com/x42/xjadeo.git
 
-FFVERSION=2.8.2
+FFVERSION=5.0
 #git clone -b release/${FFVERSION} --depth 1 git://source.ffmpeg.org/ffmpeg-${FFVERSION}
 if test -f /tmp/ffmpeg-${FFVERSION}.tar.bz2; then
 	tar xjf /tmp/ffmpeg-${FFVERSION}.tar.bz2
@@ -64,7 +64,6 @@ cd $SRC/ffmpeg-${FFVERSION}/
 
 ./configure --enable-gpl \
 	--enable-libmp3lame --enable-libx264 --enable-libxvid --enable-libtheora  --enable-libvorbis \
-	--enable-libvpx --enable-libopenjpeg \
 	--enable-libspeex --enable-libbluray --enable-libgsm \
 	--disable-vaapi \
 	--disable-devices \
