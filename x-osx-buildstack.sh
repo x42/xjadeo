@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # we keep a copy of the sources here:
-: ${SRCDIR=$HOME/src/stack}
+: ${SRCDIR=/var/tmp/src_cache}
 # actual build location
 : ${BUILDD=$HOME/src/xj_build}
 # target install dir:
@@ -71,7 +71,7 @@ make $MAKEFLAGS && make install
 
 function download {
 echo "--- Downloading.. $2"
-test -f ${SRCDIR}/$1 || curl -L -o ${SRCDIR}/$1 $2
+test -f ${SRCDIR}/$1 || curl -kL -o ${SRCDIR}/$1 $2
 }
 
 function src {
