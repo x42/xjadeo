@@ -31,7 +31,7 @@ else
 	HPREFIX=i386
 	WARCH=w32
 	FFFLAGS="--arch=i686 --target-os=mingw32 --cpu=i686"
-	DEBIANPKGS="gcc-mingw-w64-i686 g++-mingw-w64-i686 mingw-w64-tools mingw32"
+	DEBIANPKGS="gcc-mingw-w64-i686 g++-mingw-w64-i686 mingw-w64-tools mingw-w64"
 fi
 
 apt-get -y install build-essential \
@@ -109,7 +109,7 @@ make install -fwin32/Makefile.gcc SHARED_MODE=1 \
 download libiconv-1.16.tar.gz http://ftpmirror.gnu.org/libiconv/libiconv-1.16.tar.gz
 cd ${BUILDD}
 tar xzf ${SRCDIR}/libiconv-1.16.tar.gz
-cd libiconv-1.14
+cd libiconv-1.16
 autoconfbuild --with-included-gettext --with-libiconv-prefix=$PREFIX
 
 ################################################################################

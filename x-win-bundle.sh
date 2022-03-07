@@ -21,6 +21,7 @@ fi
 
 unset CC
 if test -z "$NORECONF"; then
+	PKG_CONFIG=/usr/bin/pkg-config \
 	PKG_CONFIG_PATH=$WINPREFIX/lib/pkgconfig/ \
 	CPPFLAGS="-I$WINPREFIX/include" \
 	CFLAGS="-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -mstackrealign" \

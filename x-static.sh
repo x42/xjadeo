@@ -94,7 +94,7 @@ gcc -Wall -O3 \
 	${LIBF}/libavutil.a \
 	\
 	$SLIBS \
-	-pthread -lm -lX11 -lGLU -lGL \
+	-pthread -lm -lX11 -lGLU -lGL -ldl \
 || exit 1
 
 strip $OUTFN
