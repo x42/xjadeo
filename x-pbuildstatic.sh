@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # this script creates a statically linked version of xjadeo
 #
 # It is intended to run in a pristine chroot or VM of a minimal
@@ -39,6 +39,11 @@ $SUDO apt-get -y install git build-essential yasm \
 	libdirectfb-dev libice-dev nasm
 
 mkdir -p ${SRCDIR}
+
+function download {
+echo "--- Downloading.. $2"
+test -f ${SRCDIR}/$1 || curl -k -L -o ${SRCDIR}/$1 $2
+}
 
 cd $SRC
 git clone -b master --single-branch git://github.com/x42/xjadeo.git
