@@ -24,14 +24,12 @@ if test "$XARCH" = "x86_64" -o "$XARCH" = "amd64"; then
 	HPREFIX=x86_64
 	WARCH=w64
 	FFFLAGS="--arch=x86_64 --target-os=mingw64 --cpu=x86_64"
-	VPXARCH="x86_64-win64-gcc"
 	DEBIANPKGS="mingw-w64"
 else
 	echo "Target: 32 Windows (i686)"
 	XPREFIX=i686-w64-mingw32
 	HPREFIX=i386
 	WARCH=w32
-	VPXARCH="x86-win32-gcc"
 	FFFLAGS="--arch=i686 --target-os=mingw32 --cpu=i686"
 	DEBIANPKGS="gcc-mingw-w64-i686 g++-mingw-w64-i686 mingw-w64-tools mingw32"
 fi
@@ -97,19 +95,6 @@ tar xf ${SRCDIR}/jack_win3264.tar.xz
 "$PREFIX"/update_pc_prefix.sh ${WARCH}
 
 ################################################################################
-download pthreads-w32-2-9-1-release.tar.gz ftp://sourceware.org/pub/pthreads-win32/pthreads-w32-2-9-1-release.tar.gz
-cd ${BUILDD}
-tar xzf ${SRCDIR}/pthreads-w32-2-9-1-release.tar.gz
-cd pthreads-w32-2-9-1-release
-make clean GC CROSS=${XPREFIX}-
-mkdir -p ${PREFIX}/bin
-mkdir -p ${PREFIX}/lib
-mkdir -p ${PREFIX}/include
-cp -vf pthreadGC2.dll ${PREFIX}/bin/
-cp -vf libpthreadGC2.a ${PREFIX}/lib/libpthread.a
-cp -vf pthread.h sched.h ${PREFIX}/include
-
-################################################################################
 download zlib-1.2.7.tar.gz ftp://ftp.simplesystems.org/pub/libpng/png/src/history/zlib/zlib-1.2.7.tar.gz
 cd ${BUILDD}
 tar xzf ${SRCDIR}/zlib-1.2.7.tar.gz
@@ -121,9 +106,9 @@ make install -fwin32/Makefile.gcc SHARED_MODE=1 \
 	BINARY_PATH=${PREFIX}/bin
 
 ################################################################################
-download libiconv-1.14.tar.gz ftp://ftp.gnu.org/gnu/libiconv/libiconv-1.14.tar.gz
+download libiconv-1.16.tar.gz http://ftpmirror.gnu.org/libiconv/libiconv-1.16.tar.gz
 cd ${BUILDD}
-tar xzf ${SRCDIR}/libiconv-1.14.tar.gz
+tar xzf ${SRCDIR}/libiconv-1.16.tar.gz
 cd libiconv-1.14
 autoconfbuild --with-included-gettext --with-libiconv-prefix=$PREFIX
 
@@ -221,22 +206,6 @@ autoreconf -i
 autoconfbuild
 
 ################################################################################
-download libvpx-1.5.0.tar.bz2 http://downloads.webmproject.org/releases/webm/libvpx-1.5.0.tar.bz2
-cd ${BUILDD}
-tar xjf ${SRCDIR}/libvpx-1.5.0.tar.bz2
-cd libvpx-1.5.0
-CC=${XPREFIX}-gcc CROSS=${XPREFIX}- \
-	CPPFLAGS="-I${PREFIX}/include" \
-	CFLAGS="-I${PREFIX}/include -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -mstackrealign" \
-	CXXFLAGS="-I${PREFIX}/include -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -mstackrealign" \
-	LDFLAGS="-L${PREFIX}/lib" \
-	./configure --target=$VPXARCH \
-	--disable-examples --disable-docs --disable-install-bins \
-	--prefix=$PREFIX
-make $MAKEFLAGS && make install
-
-
-################################################################################
 FFVERSION=5.0
 download ffmpeg-${FFVERSION}.tar.bz2 http://www.ffmpeg.org/releases/ffmpeg-${FFVERSION}.tar.bz2
 cd ${BUILDD}
@@ -248,9 +217,8 @@ wq
 EOF
 
 ./configure --prefix=${PREFIX} \
-	--disable-programs \
+	--disable-programs --disable-doc \
 	--enable-gpl --enable-shared --disable-static --disable-debug \
-	--enable-libvpx \
 	--disable-sdl2 \
 	--enable-cross-compile --cross-prefix=${XPREFIX}- \
 	$FFFLAGS \

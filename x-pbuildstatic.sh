@@ -24,13 +24,13 @@ if [ "$(id -u)" != "0" -a -z "$SUDO" ]; then
 fi
 
 $SUDO apt-get -y install git build-essential yasm \
-	libass-dev libbluray-dev libgmp3-dev \
+	libass-dev libbluray-dev libgmp3-dev liblzma-dev\
 	libbz2-dev libfreetype6-dev libgsm1-dev liblzo2-dev \
-	libmp3lame-dev libopenjpeg-dev librtmp-dev \
+	libmp3lame-dev librtmp-dev libxml2-dev \
 	libspeex-dev libtheora-dev \
-	libvorbis-dev libvpx-dev libx264-dev \
-	libxvidcore-dev zlib1g-dev zlib1g-dev \
-	libpng12-dev libjpeg8-dev \
+	libvorbis-dev libx264-dev \
+	libxvidcore-dev zlib1g-dev \
+	libpng-dev libjpeg-dev \
 	libxv-dev libjack-jackd2-dev libx11-dev  libfreetype6-dev \
 	libltc-dev libxpm-dev liblo-dev autoconf automake \
 	wget libxrandr-dev libglu-dev libimlib2-dev \
@@ -62,11 +62,10 @@ git archive --format=tar --prefix=xjadeo-${VERSION}/ HEAD | gzip -9 > /tmp/xjade
 cd $SRC/ffmpeg-${FFVERSION}/
 #git archive --format=tar --prefix=ffmpeg-${FFVERSION}/ HEAD | gzip -9 > /tmp/ffmpeg-${FFVERSION}.tar.gz
 
-./configure --enable-gpl \
+./configure --enable-gpl --disable-programs --disable-debug --disable-doc \
 	--enable-libmp3lame --enable-libx264 --enable-libxvid --enable-libtheora  --enable-libvorbis \
 	--enable-libspeex --enable-libbluray --enable-libgsm \
-	--disable-vaapi \
-	--disable-devices \
+	--disable-vaapi --disable-devices \
 	--extra-cflags="-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64" \
 	--enable-shared --enable-static --prefix=$PFX $@
 

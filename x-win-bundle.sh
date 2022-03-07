@@ -46,7 +46,9 @@ else
 	cp -v /usr/lib/gcc/${XPREFIX}/*/libgcc_s_sjlj-1.dll $NSIDIR
 fi
 
-ffdlls="avcodec- avformat- avutil- libfreetype- libiconv- liblo- libltc- libportmidi- libporttime- pthreadGC2 swscale- swresample- zlib1"
+cp -v /usr/${XPREFIX}/lib/libwinpthread-*.dll $NSIDIR
+
+ffdlls="avcodec- avformat- avutil- libfreetype- libiconv- liblo- libltc- libportmidi- libporttime- swscale- swresample- zlib1"
 for fname in $ffdlls; do
 	cp -v ${WINPREFIX}/bin/${fname}*.dll $NSIDIR
 done
