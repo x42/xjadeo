@@ -46,10 +46,9 @@ test -f ${SRCDIR}/$1 || curl -k -L -o ${SRCDIR}/$1 $2
 }
 
 cd $SRC
-git clone -b master --single-branch git://github.com/x42/xjadeo.git
+git clone -b master --single-branch https://github.com/x42/xjadeo.git
 
 FFVERSION=5.0
-#git clone -b release/${FFVERSION} --depth 1 git://source.ffmpeg.org/ffmpeg-${FFVERSION}
 download http://www.ffmpeg.org/releases/ffmpeg-${FFVERSION}.tar.bz2
 download http://www.libsdl.org/release/SDL-1.2.15.tar.gz
 download https://github.com/x42/libltc/releases/download/v1.3.1/libltc-1.3.1.tar.gz

@@ -50,7 +50,7 @@ fi
 
 
 cd "$SRC"
-git clone -b master --single-branch git://github.com/x42/xjadeo.git
+git clone -b master --single-branch https://github.com/x42/xjadeo.git
 
 set -e
 
@@ -113,7 +113,6 @@ cd libiconv-1.16
 autoconfbuild --with-included-gettext --with-libiconv-prefix=$PREFIX
 
 ################################################################################
-#git://liblo.git.sourceforge.net/gitroot/liblo/liblo
 download liblo-0.28.tar.gz http://downloads.sourceforge.net/liblo/liblo-0.28.tar.gz
 cd ${BUILDD}
 tar xzf ${SRCDIR}/liblo-0.28.tar.gz
@@ -132,7 +131,6 @@ make $MAKEFLAGS && make install
 
 
 ################################################################################
-#git://github.com/x42/libltc.git
 download libltc-1.1.4.tar.gz https://github.com/x42/libltc/releases/download/v1.1.4/libltc-1.1.4.tar.gz
 cd ${BUILDD}
 tar zxf ${SRCDIR}/libltc-1.1.4.tar.gz
@@ -140,7 +138,6 @@ cd libltc-1.1.4
 autoconfbuild
 
 ################################################################################
-#git clone -b VER-2-5-3 --depth 1  git://git.sv.gnu.org/freetype/freetype2.git
 download freetype-2.5.3.tar.gz http://download.savannah.gnu.org/releases/freetype/freetype-2.5.3.tar.gz
 cd ${BUILDD}
 tar xzf ${SRCDIR}/freetype-2.5.3.tar.gz

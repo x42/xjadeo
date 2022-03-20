@@ -131,12 +131,10 @@ src libiconv-1.14 tar.gz ftp://ftp.gnu.org/gnu/libiconv/libiconv-1.14.tar.gz
 autoconfbuild --with-included-gettext --with-libiconv-prefix=$PREFIX
 
 ################################################################################
-#git://liblo.git.sourceforge.net/gitroot/liblo/liblo
 src liblo-0.28 tar.gz http://downloads.sourceforge.net/liblo/liblo-0.28.tar.gz
 autoconfbuild
 
 ################################################################################
-#git://github.com/x42/libltc.git
 src libltc-1.1.4 tar.gz https://github.com/x42/libltc/releases/download/v1.1.4/libltc-1.1.4.tar.gz
 autoconfbuild
 
@@ -260,7 +258,7 @@ fi
 ################################################################################
 cd ${BUILDD}
 rm -rf xjadeo
-git clone -b master --single-branch git://github.com/x42/xjadeo.git
+git clone -b master --single-branch https://github.com/x42/xjadeo.git
 cd xjadeo
 
 export XJARCH
