@@ -46,7 +46,7 @@ test -f ${SRCDIR}/$1 || curl -k -L -o ${SRCDIR}/$1 $2
 }
 
 cd $SRC
-git clone -b master --single-branch https://github.com/x42/xjadeo.git
+GIT_SSL_NO_VERIFY=true git clone -b master --single-branch https://github.com/x42/xjadeo.git
 
 FFVERSION=5.0
 download http://www.ffmpeg.org/releases/ffmpeg-${FFVERSION}.tar.bz2
