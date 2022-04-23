@@ -75,8 +75,10 @@ static inline void av_packet_unref (AVPacket *pkt)
 #if LIBAVUTIL_VERSION_INT < AV_VERSION_INT(51, 63, 100)
 static inline int av_image_get_buffer_size (enum AVPixelFormat pix_fmt, int width, int height, int align)
 {
-	return avpicture_get_size (pix_fmt, width, height)
+	return avpicture_get_size (pix_fmt, width, height);
 }
+#else
+#include <libavutil/imgutils.h>
 #endif
 
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(53, 2, 0)
