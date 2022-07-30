@@ -971,6 +971,9 @@ static int osx_open_window () {
 
 	[window makeKeyAndOrderFront:window];
 
+#if defined(MAC_OS_X_VERSION_10_15) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_15
+	[osx_glview setWantsBestResolutionOpenGLSurface:NO];
+#endif
 	gl_make_current();
 	gl_init ();
 	gl_resize (ffctv_width, ffctv_height);
