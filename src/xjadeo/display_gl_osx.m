@@ -174,6 +174,9 @@ __attribute__ ((visibility ("hidden")))
 		self = [super initWithFrame:frame pixelFormat:pixelFormat];
 		[pixelFormat release];
 		if (self) {
+#if defined(MAC_OS_X_VERSION_10_15) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_15
+			[self setWantsBestResolutionOpenGLSurface:NO];
+#endif
 			[[self openGLContext] makeCurrentContext];
 			[self reshape];
 		}
