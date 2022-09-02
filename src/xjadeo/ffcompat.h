@@ -151,5 +151,16 @@ register_codecs_compat ()
 #endif
 }
 
+static inline void
+maybe_avcodec_flush_buffers(AVCodecContext *avctx)
+{
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(59, 26, 100)
+	if (avctx->codec->flush) {
+		avcodec_flush_buffers(avctx);
+	}
+#else
+	avcodec_flush_buffers(avctx);
+#endif
+}
 
 #endif /* FFCOMPAT_H */

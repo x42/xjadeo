@@ -575,9 +575,7 @@ static int seek_frame (AVPacket *packet, int64_t framenumber) {
 			seek = av_seek_frame (pFormatCtx, videoStream, fidx[framenumber].seekpts, AVSEEK_FLAG_BACKWARD);
 		}
 
-		if (pCodecCtx->codec->flush) {
-			avcodec_flush_buffers (pCodecCtx);
-		}
+		maybe_avcodec_flush_buffers (pCodecCtx);
 
 		if (seek < 0) {
 			if (!want_quiet)
@@ -915,9 +913,7 @@ static int index_frames () {
 			error |= 16;
 			break;
 		}
-		if (pCodecCtx->codec->flush) {
-			avcodec_flush_buffers (pCodecCtx);
-		}
+		maybe_avcodec_flush_buffers (pCodecCtx);
 
 		int err = 0;
 		int bailout = 100;
@@ -1053,9 +1049,7 @@ static int index_frames () {
 			printf("NOBYTE 2\n");
 			break;
 		}
-		if (pCodecCtx->codec->flush) {
-			avcodec_flush_buffers (pCodecCtx);
-		}
+		maybe_avcodec_flush_buffers (pCodecCtx);
 
 		int64_t pts = AV_NOPTS_VALUE;
 		while (!got_pic) {
@@ -1118,9 +1112,7 @@ static int index_frames () {
 		} else {
 			av_seek_frame (pFormatCtx, videoStream, fidx[i].seekpts, AVSEEK_FLAG_BACKWARD);
 		}
-		if (pCodecCtx->codec->flush) {
-			avcodec_flush_buffers (pCodecCtx);
-		}
+		maybe_avcodec_flush_buffers (pCodecCtx);
 		while (!got_pic) {
 
 			if (av_read_frame (pFormatCtx, &packet) < 0) {
@@ -1192,9 +1184,7 @@ static int index_frames () {
 	}
 
 	av_seek_frame (pFormatCtx, videoStream, 0, AVSEEK_FLAG_BACKWARD);
-	if (pCodecCtx->codec->flush) {
-		avcodec_flush_buffers (pCodecCtx);
-	}
+	maybe_avcodec_flush_buffers (pCodecCtx);
 	if (!error) {
 		scan_complete = 1;
 	}
@@ -1271,8 +1261,12 @@ static void clear_info () {
 
 int open_movie (char* file_name) {
 	int i;
-	AVCodec		*pCodec;
-	AVStream	*av_stream;
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(59, 0, 100)
+	AVCodec* pCodec;
+#else
+	AVCodec const* pCodec;
+#endif
+	AVStream* av_stream;
 
 	if (pFrameFMT) {
 		close_movie ();
