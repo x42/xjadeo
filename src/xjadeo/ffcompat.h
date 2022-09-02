@@ -1,6 +1,6 @@
 /* ffmpeg compatibility wrappers
  *
- * Copyright 2012-2014 Robin Gareus <robin@gareus.org>
+ * Copyright 2012-2021 Robin Gareus <robin@gareus.org>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+// https://git.ffmpeg.org/gitweb/ffmpeg.git/blob/HEAD:/doc/APIchanges
+
 #ifndef FFCOMPAT_H
 #define FFCOMPAT_H
 
@@ -59,21 +62,24 @@
 #endif
 
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(53, 63, 100)
-static inline void avcodec_free_context (AVCodecContext ** avctx)
+static inline void
+avcodec_free_context (AVCodecContext** avctx)
 {
 	avcodec_close (*avctx);
 }
 #endif
 
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55, 25, 100)
-static inline void av_packet_unref (AVPacket *pkt)
+static inline void
+av_packet_unref (AVPacket* pkt)
 {
 	av_free_packet (pkt);
 }
 #endif
 
 #if LIBAVUTIL_VERSION_INT < AV_VERSION_INT(51, 63, 100)
-static inline int av_image_get_buffer_size (enum AVPixelFormat pix_fmt, int width, int height, int align)
+static inline int
+av_image_get_buffer_size (enum AVPixelFormat pix_fmt, int width, int height, int align)
 {
 	return avpicture_get_size (pix_fmt, width, height);
 }
@@ -82,28 +88,30 @@ static inline int av_image_get_buffer_size (enum AVPixelFormat pix_fmt, int widt
 #endif
 
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(53, 2, 0)
-static inline int avformat_open_input(AVFormatContext **ps, const char *filename, void *fmt, void **options)
+static inline int
+avformat_open_input (AVFormatContext** ps, const char* filename, void* fmt, void** options)
 {
-	return av_open_input_file(ps, filename, NULL, 0, NULL);
+	return av_open_input_file (ps, filename, NULL, 0, NULL);
 }
 #endif /* avformat < 53.2.0 */
 
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(53, 5, 0)
-static inline AVCodecContext *
-avcodec_alloc_context3(AVCodec *codec __attribute__((unused)))
+static inline AVCodecContext*
+avcodec_alloc_context3 (AVCodec* codec __attribute__ ((unused)))
 {
-	return avcodec_alloc_context();
+	return avcodec_alloc_context ();
 }
 
-static inline AVStream *
-avformat_new_stream(AVFormatContext *s, AVCodec *c) {
-	return av_new_stream(s,0);
+static inline AVStream*
+avformat_new_stream (AVFormatContext* s, AVCodec* c)
+{
+	return av_new_stream (s, 0);
 }
 
 static inline int
-avcodec_get_context_defaults3(AVCodecContext *s, AVCodec *codec)
+avcodec_get_context_defaults3 (AVCodecContext* s, AVCodec* codec)
 {
-	avcodec_get_context_defaults(s);
+	avcodec_get_context_defaults (s);
 	return 0;
 }
 
@@ -111,32 +119,33 @@ avcodec_get_context_defaults3(AVCodecContext *s, AVCodec *codec)
 
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(53, 7, 0)
 static inline int
-avcodec_open2(AVCodecContext *avctx, AVCodec *codec, void **options __attribute__((unused)))
+avcodec_open2 (AVCodecContext* avctx, AVCodec* codec, void** options __attribute__ ((unused)))
 {
-	return avcodec_open(avctx, codec);
+	return avcodec_open (avctx, codec);
 }
 #endif /* avcodec <= 53.7.0 */
 
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(53, 2, 0)
 static inline int
-avformat_find_stream_info(AVFormatContext *ic, void **options)
+avformat_find_stream_info (AVFormatContext* ic, void** options)
 {
-	return av_find_stream_info(ic);
+	return av_find_stream_info (ic);
 }
 #endif
 
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(53, 5, 0)
 static inline void
-avformat_close_input(AVFormatContext **s)
+avformat_close_input (AVFormatContext** s)
 {
-	av_close_input_file(*s);
+	av_close_input_file (*s);
 }
 #endif /* avformat < 53.5.0 */
 
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(54, 92, 100) // since 7ecc2d40
-static inline AVFrame *av_frame_alloc()
+static inline AVFrame*
+av_frame_alloc ()
 {
-	return avcodec_alloc_frame();
+	return avcodec_alloc_frame ();
 }
 #endif
 
@@ -144,22 +153,22 @@ static inline void
 register_codecs_compat ()
 {
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58, 9, 100)
-  av_register_all();
+	av_register_all ();
 #endif
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58, 10, 100)
-  avcodec_register_all();
+	avcodec_register_all ();
 #endif
 }
 
 static inline void
-maybe_avcodec_flush_buffers(AVCodecContext *avctx)
+maybe_avcodec_flush_buffers (AVCodecContext* avctx)
 {
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(59, 26, 100)
 	if (avctx->codec->flush) {
-		avcodec_flush_buffers(avctx);
+		avcodec_flush_buffers (avctx);
 	}
 #else
-	avcodec_flush_buffers(avctx);
+	avcodec_flush_buffers (avctx);
 #endif
 }
 
