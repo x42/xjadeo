@@ -7,8 +7,9 @@
 
 : ${SFUSER:=}
 : ${OSXUSER:=}
-: ${OSXMACHINE:=cowbuilder.local}
-: ${COWBUILDER:=osxbuilder.local}
+: ${COWBUILDER:=cowbuilder.local} # linux/windows (mingw)
+: ${OSXMACHINE:=oscbuilder.local} # 10.6 (i386/x86)
+: ${MACMACHINE:=macbuilder.local} # 11.0 (arm)
 
 test -f "$HOME/.buildcfg.sh" && . "$HOME/.buildcfg.sh"
 
@@ -134,6 +135,14 @@ if test "$ok" != 0; then
 	exit
 fi
 
+ssh $MACMACHINE ./bin/build-jadeo.sh
+
+ok=$?
+if test "$ok" != 0; then
+	echo "remote build failed"
+	exit
+fi
+
 # collect binaries from build-hosts
 rsync -Pa $COWBUILDER:/tmp/xjadeo-i386-linux-gnu-v${VERSION}.tgz /tmp/ || exit
 rsync -Pa $COWBUILDER:/tmp/xjadeo-x86_64-linux-gnu-v${VERSION}.tgz /tmp/ || exit
@@ -142,6 +151,7 @@ rsync -Pa $COWBUILDER:/tmp/xjadeo_installer_w64_v${WINVERS}.exe /tmp/ || exit
 rsync -Pa $COWBUILDER:/tmp/xjadeo_w32-v${VERSION}.tar.xz /tmp/ || exit
 rsync -Pa $COWBUILDER:/tmp/xjadeo_w64-v${VERSION}.tar.xz /tmp/ || exit
 rsync -Pa ${OSXUSER}${OSXMACHINE}:/tmp/Jadeo-${VERSION}.dmg /tmp/jadeo-${VERSION}.dmg || exit
+rsync -Pa ${MACMACHINE}:/tmp/Jadeo-arm64-${VERSION}.dmg /tmp/jadeo-arm64-${VERSION}.dmg || exit
 
 #upload files to sourceforge
 sftp $SFUSER,xjadeo@frs.sourceforge.net << EOF
@@ -153,6 +163,7 @@ put /tmp/xjadeo_installer_w64_v${WINVERS}.exe
 put /tmp/xjadeo-i386-linux-gnu-v${VERSION}.tgz
 put /tmp/xjadeo-x86_64-linux-gnu-v${VERSION}.tgz
 put /tmp/jadeo-${VERSION}.dmg
+put /tmp/jadeo-arm64-${VERSION}.dmg
 EOF
 
 # custom upload hook
