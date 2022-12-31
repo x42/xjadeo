@@ -1,3 +1,7 @@
+2023-01-01 (0.8.12)  Robin Gareus <robin@gareus.org>
+* add compatibility for ffmpeg-5.1
+* fix UI scale when building on 10.15 or later
+
 2022-04-01 (0.8.11)  Robin Gareus <robin@gareus.org>
 * add compatibility for ffmpeg-5.0
 * update static-builder to use ffmpeg-5.0
