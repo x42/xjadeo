@@ -327,11 +327,12 @@ void event_loop (void) {
 
 #ifdef TIMEMAP
 		newFrame = floor ((double)newFrame * timescale) + timeoffset;
-		// TODO: calc newFrames/frames instead of while-loop
-		while (newFrame >= frames && wraparound && frames != 0)
-			newFrame -= frames;
-		while (newFrame < 0 && wraparound && frames != 0)
-			newFrame += frames;
+		if(wraparound)
+		{
+			newFrame %= frames;
+			if(newFrame < 0)
+				newFrame += frames;
+		}
 #endif
 
 		offFrame = newFrame + ts_offset;
