@@ -25,6 +25,11 @@ if [ "$(id -u)" != "0" -a -z "$SUDO" ]; then
 fi
 
 $SUDO apt-get update
+$SUDO apt-get install -y --force-yes \
+	libbz2-1.0=1.0.6-7+b3 libexpat1=2.1.0-6+deb8u4 zlib1g=1:1.2.8.dfsg-2+b1 \
+	libdbus-1-3=1.8.22-0+deb8u1 libtasn1-6=4.2-3+deb8u3 libgnutls-deb0-28=3.3.8-6+deb8u7 \
+	libgnutls-deb0-28=3.3.8-6+deb8u7 libgnutls-deb0-28=3.3.8-6+deb8u7
+
 $SUDO apt-get -y install git build-essential yasm \
 	libass-dev libbluray-dev libgmp3-dev liblzma-dev\
 	libbz2-dev libfreetype6-dev libgsm1-dev liblzo2-dev \
@@ -49,9 +54,9 @@ cd $SRC
 GIT_SSL_NO_VERIFY=true git clone -b master --single-branch https://github.com/x42/xjadeo.git
 
 FFVERSION=5.0
-download http://www.ffmpeg.org/releases/ffmpeg-${FFVERSION}.tar.bz2
-download http://www.libsdl.org/release/SDL-1.2.15.tar.gz
-download https://github.com/x42/libltc/releases/download/v1.3.1/libltc-1.3.1.tar.gz
+download ffmpeg-${FFVERSION}.tar.bz2 http://www.ffmpeg.org/releases/ffmpeg-${FFVERSION}.tar.bz2
+download SDL-1.2.15.tar.gz http://www.libsdl.org/release/SDL-1.2.15.tar.gz
+download libltc-1.3.1.tar.gz https://github.com/x42/libltc/releases/download/v1.3.1/libltc-1.3.1.tar.gz
 
 tar xjf ${SRCDIR}/ffmpeg-${FFVERSION}.tar.bz2
 tar xzf ${SRCDIR}/SDL-1.2.15.tar.gz

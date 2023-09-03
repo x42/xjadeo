@@ -74,7 +74,11 @@ if [ -z "$VERSION" ]; then
   exit 1;
 fi
 
-echo -n "build and upload? [Y/n] "
+if test -n "$NOUPLOAD"; then
+	echo -n "build ? [Y/n] "
+else
+	echo -n "build and upload? [Y/n] "
+fi
 read -n1 a
 echo
 if test "$a" == "n" -o "$a" == "N"; then
@@ -152,6 +156,10 @@ rsync -Pa $COWBUILDER:/tmp/xjadeo_w32-v${VERSION}.tar.xz /tmp/ || exit
 rsync -Pa $COWBUILDER:/tmp/xjadeo_w64-v${VERSION}.tar.xz /tmp/ || exit
 rsync -Pa ${OSXUSER}${OSXMACHINE}:/tmp/Jadeo-${VERSION}.dmg /tmp/jadeo-${VERSION}.dmg || exit
 rsync -Pa ${MACMACHINE}:/tmp/Jadeo-arm64-${VERSION}.dmg /tmp/jadeo-arm64-${VERSION}.dmg || exit
+
+if test -n "$NOUPLOAD"; then
+	exit
+fi
 
 #upload files to sourceforge
 sftp $SFUSER,xjadeo@frs.sourceforge.net << EOF
