@@ -56,6 +56,10 @@ void open_jack(void ) {
 		return;
 	}
 	WJACK_on_shutdown (jack_client, jack_shutdown, 0);
+	if (WJACK_activate (jack_client)) {
+		close_jack();
+		return;
+	}
 }
 
 void jackt_rewind() {
