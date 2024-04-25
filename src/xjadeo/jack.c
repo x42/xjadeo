@@ -55,7 +55,9 @@ void open_jack(void ) {
 	if (xj_init_jack(&jack_client, "xjadeo")) {
 		return;
 	}
+#ifndef PLATFORM_WINDOWS
 	WJACK_on_shutdown (jack_client, jack_shutdown, 0);
+#endif
 	if (WJACK_activate (jack_client)) {
 		close_jack();
 		return;
