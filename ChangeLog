@@ -1,3 +1,7 @@
+2024-04-25 (0.8.14)  Robin Gareus <robin@gareus.org>
+* Fix JACK Transport when using pipewire
+* Update build-script (disable QT GUI)
+
 2023-09-03 (0.8.13)  Robin Gareus <robin@gareus.org>
 * wrap-around/loop: fix modulo calculation (by trinitou)
 * Add Xinerama support (linux, by Ion Reguera)
