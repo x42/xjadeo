@@ -33,6 +33,10 @@
 #include <GL/glu.h>
 #endif
 
+#ifdef WARP
+#include "homography.h"
+#endif
+
 #ifndef GL_BGRA
 #define GL_BGRA 0x80E1
 #endif
@@ -60,6 +64,20 @@ static void gl_swap_buffers();
 
 static void gl_sync_lock();
 static void gl_sync_unlock();
+
+/////////////
+#ifdef WARP
+extern double display_scale_x_modifier;
+extern double display_scale_y_modifier;
+extern double display_deform_corners[8];
+extern int recalculate_homography;
+
+GLfloat homograpy[16];
+Point src[4];
+Point dest[4];
+#endif
+
+
 
 static void gl_reshape(int width, int height) {
 	gl_make_current();
@@ -120,6 +138,36 @@ static void opengl_draw (int width, int height, unsigned char* surf_data) {
 	glLoadIdentity();
 	glClear(GL_COLOR_BUFFER_BIT);
 
+#ifdef WARP
+	if (recalculate_homography==1) {
+		src[0].x = -_gl_quad_x ;
+		src[0].y = -_gl_quad_y ;
+
+		src[1].x = _gl_quad_x;
+		src[1].y = -_gl_quad_y;
+
+		src[2].x = _gl_quad_x;
+		src[2].y = _gl_quad_y;
+
+		src[3].x = -_gl_quad_x;
+		src[3].y = _gl_quad_y;
+
+		dest[0].x = src[0].x + display_deform_corners[0];
+		dest[0].y = src[0].y + display_deform_corners[1];
+		dest[1].x = src[1].x + display_deform_corners[2];
+		dest[1].y = src[1].y + display_deform_corners[3];
+		dest[2].x = src[2].x + display_deform_corners[4];
+		dest[2].y = src[2].y + display_deform_corners[5];
+		dest[3].x = src[3].x + display_deform_corners[6];
+		dest[3].y = src[3].y + display_deform_corners[7];
+
+		findHomography(src, dest, homograpy);
+		
+		recalculate_homography = 0;
+	}
+	glMultMatrixf(homograpy);
+#endif
+
 	glPushMatrix ();
 
 	glEnable(GL_TEXTURE_2D);
@@ -129,6 +177,8 @@ static void opengl_draw (int width, int height, unsigned char* surf_data) {
 			GL_BGRA, GL_UNSIGNED_BYTE, surf_data);
 
 	glBegin(GL_QUADS);
+
+#ifndef WARP
 	glTexCoord2f(           0.0f, (GLfloat) height);
 	glVertex2f(-_gl_quad_x, -_gl_quad_y);
 
@@ -140,6 +190,21 @@ static void opengl_draw (int width, int height, unsigned char* surf_data) {
 
 	glTexCoord2f(            0.0f, 0.0f);
 	glVertex2f(-_gl_quad_x,  _gl_quad_y);
+
+	#else
+	glTexCoord2f(           0.0f, (GLfloat) height);
+	glVertex2f(-_gl_quad_x * (GLfloat)display_scale_x_modifier, -_gl_quad_y * (GLfloat)display_scale_y_modifier);
+
+	glTexCoord2f((GLfloat) width, (GLfloat) height);
+	glVertex2f( _gl_quad_x * (GLfloat)display_scale_x_modifier, -_gl_quad_y * (GLfloat)display_scale_y_modifier);
+
+	glTexCoord2f((GLfloat) width, 0.0f);
+	glVertex2f( _gl_quad_x * (GLfloat)display_scale_x_modifier,  _gl_quad_y * (GLfloat)display_scale_y_modifier);
+
+	glTexCoord2f(            0.0f, 0.0f);
+	glVertex2f(-_gl_quad_x * (GLfloat)display_scale_x_modifier,  _gl_quad_y * (GLfloat)display_scale_y_modifier);
+#endif
+
 	glEnd();
 
 	glDisable(GL_TEXTURE_2D);

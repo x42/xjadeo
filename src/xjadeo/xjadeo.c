@@ -104,6 +104,13 @@ uint64_t    osd_vtc_oob;
 //------------------------------------------------
 // globals
 //------------------------------------------------
+#ifdef WARP
+//osc scale modification
+double display_scale_x_modifier = 1;
+double display_scale_y_modifier = 1;
+double display_deform_corners[8]= {0};
+int recalculate_homography = 1; // we need to calculte it the first time, then only recalculate when corresponding osc messages arrive
+#endif
 
 #ifdef TIMEMAP
 int64_t timeoffset = 0;
