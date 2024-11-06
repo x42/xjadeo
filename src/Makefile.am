@@ -1,5 +1,5 @@
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS = xjadeo @ac_qtgui_dir@
+SUBDIRS = xjadeo
 
 MAINTAINERCLEANFILES = Makefile.in
