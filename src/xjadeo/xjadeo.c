@@ -113,7 +113,6 @@ int     wraparound = 0;
 
 struct FrameIndex {
 	int64_t pkt_pts;
-	int64_t pkt_pos;
 	int64_t frame_pts;
 	int64_t frame_pos;
 	int64_t timestamp; //< corresponds to array's [i]
@@ -724,7 +723,6 @@ static int add_idx (int64_t ts, int64_t pos, uint8_t key, int _duration, AVRatio
 	report_idx_progress ("Pass 1: Scanning File:", 100.f * fcnt / frames);
 
 	fidx[fcnt].pkt_pts = ts;
-	fidx[fcnt].pkt_pos = pos;
 	fidx[fcnt].timestamp = av_rescale_q (fcnt, fr_Q, tb);
 	fidx[fcnt].key = key;
 
@@ -985,7 +983,6 @@ static int index_frames () {
 		if (err < 0 || !bailout) continue;
 
 		fidx[i].frame_pts = pts;
-		fidx[i].frame_pos = pFrame->pkt_pos;
 		if (pts != AV_NOPTS_VALUE) {
 #if 0 // DEBUG
 			printf("FN %"PRId64", PKT-PTS %"PRId64" FRM-PTS: %"PRId64"\n", i, fidx[i].pkt_pts, fidx[i].frame_pts);
@@ -1413,7 +1410,6 @@ int open_movie (char* file_name) {
 	fidx = malloc (frames * sizeof(struct FrameIndex));
 	for (i = 0; i < frames; ++i) {
 		fidx[i].pkt_pts = -1;
-		fidx[i].pkt_pos = -1;
 		fidx[i].key = 0;
 	}
 
