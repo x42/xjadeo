@@ -14,7 +14,7 @@
 
 if [ "$(id -u)" != "0" -a -z "$SUDO" ]; then
 	echo "This script must be run as root in pbuilder" 1>&2
-  echo "e.g sudo cowbuilder --architecture amd64 --distribution wheezy --bindmounts /tmp --execute $0"
+  echo "e.g sudo cowbuilder --architecture amd64 --distribution buster --bindmounts /tmp --execute $0"
 	exit 1
 fi
 
@@ -23,7 +23,7 @@ if test "$XARCH" = "x86_64" -o "$XARCH" = "amd64"; then
 	XPREFIX=x86_64-w64-mingw32
 	HPREFIX=x86_64
 	WARCH=w64
-	FFFLAGS="--arch=x86_64 --target-os=mingw64 --cpu=x86_64"
+	FFFLAGS="--arch=x86_64 --target-os=mingw64 --cpu=x86-64"
 	DEBIANPKGS="mingw-w64"
 else
 	echo "Target: 32 Windows (i686)"
@@ -33,6 +33,8 @@ else
 	FFFLAGS="--arch=i686 --target-os=mingw32 --cpu=i686"
 	DEBIANPKGS="gcc-mingw-w64-i686 g++-mingw-w64-i686 mingw-w64-tools mingw-w64"
 fi
+
+apt-get update
 
 apt-get -y install build-essential \
 	${DEBIANPKGS} \
@@ -203,7 +205,7 @@ autoreconf -i
 autoconfbuild
 
 ################################################################################
-FFVERSION=5.0
+FFVERSION=7.1.2
 download ffmpeg-${FFVERSION}.tar.bz2 http://www.ffmpeg.org/releases/ffmpeg-${FFVERSION}.tar.bz2
 cd ${BUILDD}
 tar xjf ${SRCDIR}/ffmpeg-${FFVERSION}.tar.bz2

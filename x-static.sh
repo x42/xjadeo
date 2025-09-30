@@ -14,7 +14,7 @@ if test -z "$NORECONF"; then
 	CFLAGS="-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64" \
 	./configure \
 		--disable-mq --disable-ipc --enable-embed-font --enable-weakjack \
-		--disable-jacksession --disable-portmidi --disable-alsamidi \
+		--disable-jacksession --disable-portmidi --disable-alsamidi --disable-sdl \
 	  --with-fontfile=/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf \
 	|| exit
 fi
@@ -30,37 +30,25 @@ OUTFN=xjadeo-$TRIPLET-$VERSION
 
 # ffmpeg needs this libs
 LIBDEPS=" \
- libjpeg.a \
- libmp3lame.a \
- libspeex.a \
  libtheoraenc.a \
  libtheoradec.a \
  libogg.a \
- libvorbis.a \
- libvorbisenc.a \
- libvorbisfile.a \
  libgsm.a \
- libbluray.a \
- libxvidcore.a \
- libx264.a \
- libImlib2.a \
  libfreetype.a \
  libxml2.a \
  libpng.a \
+ libbrotlidec.a \
+ libbrotlicommon.a \
  libbz2.a \
  liblzma.a \
  libz.a \
  libltc.a \
  liblo.a \
- libSDL.a \
  libXpm.a \
  libXv.a \
  libXext.a \
  libXrandr.a \
  libXrender.a \
- libdirectfb.a \
- libfusion.a \
- libdirect.a \
  libICE.a \
  "
 
