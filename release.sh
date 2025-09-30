@@ -6,7 +6,6 @@
 # - doc/pages/whatsnew.html
 
 : ${SFUSER:=}
-: ${OSXUSER:=}
 : ${COWBUILDER:=cowbuilder.local} # linux/windows (mingw)
 : ${OSXMACHINE:=oscbuilder.local} # 10.6 (i386/x86)
 : ${MACMACHINE:=macbuilder.local} # 11.0 (arm)
@@ -85,14 +84,6 @@ if test "$a" == "n" -o "$a" == "N"; then
 	exit 1
 fi
 
-/bin/ping -q -c1 ${OSXMACHINE} &>/dev/null \
-	&& /usr/sbin/arp -n ${OSXMACHINE} &>/dev/null
-ok=$?
-if test "$ok" != 0; then
-	echo "OSX build host can not be reached."
-	exit
-fi
-
 /bin/ping -q -c1 ${COWBUILDER} &>/dev/null \
 	&& /usr/sbin/arp -n ${COWBUILDER} &>/dev/null
 ok=$?
@@ -102,8 +93,6 @@ if test "$ok" != 0; then
 fi
 
 echo "building linux static and windows versions"
-rm -f /tmp/xjadeo-*.tgz
-rm -f /tmp/xjadeo_win-*.tar.xz
 ssh $COWBUILDER ~/bin/build-xjadeo.sh
 
 ok=$?
@@ -112,24 +101,70 @@ if test "$ok" != 0; then
 	exit
 fi
 
+## macOS/ARM build
+
+echo "START ${MACMACHINE} then press enter"
+read FOO
+
 if test -n "$OSXFROMSCRATCH"; then
-  echo "building osx package from scratch"
-  ssh ${OSXUSER}${OSXMACHINE} << EOF
+  echo "building mac package mostly from scratch"
+	ssh ${MACMACHINE} << EOF
 exec /bin/bash -l
-curl -L -o /tmp/xjadeo-x-pbuildstatic.sh https://raw.github.com/x42/xjadeo/master/x-osx-buildstack.sh
-chmod +x /tmp/xjadeo-x-pbuildstatic.sh
-/tmp/xjadeo-x-pbuildstatic.sh
+~/bin/unlock-keychain.sh
+cd /tmp
+rm -rf xjadeo
+git clone -b master --single-branch https://github.com/x42/xjadeo.git
+cd xjadeo
+WITHBUILDSTACK=1 ./x-mac-arm-build.sh
 EOF
 else
   echo "building osx package with existing stack"
-  ssh ${OSXUSER}${OSXMACHINE} << EOF
+	ssh ${MACMACHINE} << EOF
 exec /bin/bash -l
+~/bin/unlock-keychain.sh
+cd /tmp
+rm -rf xjadeo
+git clone -b master --single-branch https://github.com/x42/xjadeo.git
+cd xjadeo
+./x-mac-arm-build.sh
+EOF
+fi
+
+ok=$?
+if test "$ok" != 0; then
+	echo "remote build failed"
+	exit
+else
+	rsync -Pa ${MACMACHINE}:/tmp/Jadeo-arm64-${VERSION}.dmg /tmp/jadeo-arm64-${VERSION}.dmg || exit
+fi
+	ssh ${MACMACHINE} << EOF
+sudo shutdown -h +1m
+EOF
+
+## OSX Intel build
+
+echo "START ${OSXMACHINE} then press enter"
+read FOO
+
+if test -n "$OSXFROMSCRATCH"; then
+  echo "building osx package from scratch"
+  ssh ${OSXMACHINE} << EOF
+exec /bin/bash -l
+cd /tmp
+rm -rf xjadeo
+git clone -b master --single-branch https://github.com/x42/xjadeo.git
+cd xjadeo
+./x-osx-buildstack.sh
+EOF
+else
+  echo "building osx package with existing stack"
+  ssh ${OSXMACHINE} << EOF
+exec /bin/bash -l
+cd /tmp
 rm -rf xjadeo
 git clone -b master --single-branch https://github.com/x42/xjadeo.git
 cd xjadeo
 ./x-osx-bundle.sh
-cd ..
-rm -rf xjadeo
 EOF
 fi
 
@@ -137,25 +172,20 @@ ok=$?
 if test "$ok" != 0; then
 	echo "remote build failed"
 	exit
+else
+	rsync -Pa ${OSXMACHINE}:/tmp/Jadeo-${VERSION}.dmg /tmp/jadeo-${VERSION}.dmg || exit
 fi
+  ssh ${OSXMACHINE} << EOF
+sudo shutdown -h +1m
+EOF
 
-ssh $MACMACHINE ./bin/build-jadeo.sh
-
-ok=$?
-if test "$ok" != 0; then
-	echo "remote build failed"
-	exit
-fi
-
-# collect binaries from build-hosts
+### collect binaries
 rsync -Pa $COWBUILDER:/tmp/xjadeo-i386-linux-gnu-v${VERSION}.tgz /tmp/ || exit
 rsync -Pa $COWBUILDER:/tmp/xjadeo-x86_64-linux-gnu-v${VERSION}.tgz /tmp/ || exit
 rsync -Pa $COWBUILDER:/tmp/xjadeo_installer_w32_v${WINVERS}.exe /tmp/ || exit
 rsync -Pa $COWBUILDER:/tmp/xjadeo_installer_w64_v${WINVERS}.exe /tmp/ || exit
 rsync -Pa $COWBUILDER:/tmp/xjadeo_w32-v${VERSION}.tar.xz /tmp/ || exit
 rsync -Pa $COWBUILDER:/tmp/xjadeo_w64-v${VERSION}.tar.xz /tmp/ || exit
-rsync -Pa ${OSXUSER}${OSXMACHINE}:/tmp/Jadeo-${VERSION}.dmg /tmp/jadeo-${VERSION}.dmg || exit
-rsync -Pa ${MACMACHINE}:/tmp/Jadeo-arm64-${VERSION}.dmg /tmp/jadeo-arm64-${VERSION}.dmg || exit
 
 if test -n "$NOUPLOAD"; then
 	exit
