@@ -161,6 +161,79 @@ done
 echo "all bundled up."
 
 ##############################################################################
+## Sign Jadeo
+
+if test -r "$HOME/.x42.cfg"; then
+	. $HOME/.x42.cfg
+fi
+
+if test -n "${APPLE_DEVELOPER_ID_FOR_APPLICATION}"; then
+	echo "signing the Jadeo app"
+
+	if test -n "${APPLE_DEVELOPER_ID_FOR_APPLICATION}"; then
+		if test -n "$ALTOOL_PASSWORD"; then
+			export ALTOOL_PASS_ARG="--password $ALTOOL_PASSWORD"
+		elif test -n "$NOTARYTOOL_PROFILE"; then
+			export ALTOOL_PASS_ARG="-p $NOTARYTOOL_PROFILE"
+		else
+			echo "either ALTOOL_PASSWORD or NOTARYTOOL_PROFILE needs to be set"
+			exit 1;
+		fi
+		if test -n "$ALTOOL_USERNAME" -a -z "$APPLE_ID"; then
+			export APPLE_ID=$ALTOOL_USERNAME
+		fi
+		if test -z "$APPLE_TEAM_ID"; then
+			export APPLE_TEAM_ID="$(echo $APPLE_DEVELOPER_ID_FOR_APPLICATION | sed 's/.*(\(.*\))/\1/')"
+		fi
+	fi
+
+	cat << EOF > /tmp/entitlements.plist
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+        <key>com.apple.security.cs.allow-dyld-environment-variables</key>
+        <true/>
+        <key>com.apple.security.cs.disable-library-validation</key>
+        <true/>
+        <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+        <true/>
+        <key>com.apple.security.automation.apple-events</key>
+        <true/>
+        <key>com.apple.security.get-task-allow</key>
+        <true/>
+</dict>
+</plist>
+EOF
+
+	HARDENED_OPTIONS="--options runtime --entitlements /tmp/entitlements.plist"
+
+	find ${TARGET_BUILD_DIR}/Contents/Resources -type f -print0 | xargs -0 -I {} -P 7 codesign --verbose --timestamp ${HARDENED_OPTIONS} --force --sign "${APPLE_DEVELOPER_ID_FOR_APPLICATION}" "{}"
+	find ${TARGET_BUILD_DIR}/Contents/Frameworks -type f -print0 | xargs -0 -I {} -P 7 codesign --verbose --timestamp ${HARDENED_OPTIONS} --force --sign "${APPLE_DEVELOPER_ID_FOR_APPLICATION}" "{}"
+
+	codesign --verbose --timestamp ${HARDENED_OPTIONS} --force --sign "${APPLE_DEVELOPER_ID_FOR_APPLICATION}" ${TARGET_BUILD_DIR}/Contents/MacOS/Jadeo-bin
+	codesign --verbose --timestamp ${HARDENED_OPTIONS} --force --sign "${APPLE_DEVELOPER_ID_FOR_APPLICATION}" ${TARGET_BUILD_DIR}/Contents/MacOS/xjremote
+	codesign --verbose --timestamp ${HARDENED_OPTIONS} --force --sign "${APPLE_DEVELOPER_ID_FOR_APPLICATION}" ${TARGET_BUILD_DIR}/Contents/MacOS/Jadeo
+	codesign --verbose --timestamp ${HARDENED_OPTIONS} --force --sign "${APPLE_DEVELOPER_ID_FOR_APPLICATION}" ${TARGET_BUILD_DIR}/
+
+	echo "notarizing Jadeo app"
+
+	ZIP_PATH=/tmp/Jadeo.zip
+	/usr/bin/ditto -c -k --keepParent ${TARGET_BUILD_DIR} $ZIP_PATH
+	xcrun notarytool submit $ZIP_PATH --apple-id ${APPLE_ID} --team-id ${APPLE_TEAM_ID} $ALTOOL_PASS_ARG --wait
+
+	if [ $? = 0 ]; then
+		echo "Jadeo notarize success"
+		xcrun stapler staple ${TARGET_BUILD_DIR}
+	else
+		echo "ERROR: Notarize upload failed"
+		exit 1;
+	fi
+
+	rm $ZIP_PATH
+fi
+
+##############################################################################
 #roll a DMG
 
 UC_DMG="/tmp/${PRODUCT_NAME}-${VERSION}.dmg"
@@ -264,4 +337,23 @@ rm -rf $BUNDLEDIR
 echo
 echo "packaging suceeded:"
 ls -l "$UC_DMG"
+
+if test -n "${APPLE_DEVELOPER_ID_FOR_APPLICATION}"; then
+	echo "dmg: signing"
+
+	codesign --verbose --timestamp --force --sign "${APPLE_DEVELOPER_ID_FOR_APPLICATION}" ${UC_DMG}
+
+	echo "dmg: notarizing"
+
+	xcrun notarytool submit ${UC_DMG} --apple-id ${APPLE_ID} --team-id ${APPLE_TEAM_ID} $ALTOOL_PASS_ARG --wait
+
+	if [ $? = 0 ]; then
+		echo "dmg: notarize success"
+		xcrun stapler staple ${UC_DMG}
+	else
+		echo "ERROR: Notarize upload failed"
+		exit 1;
+	fi
+fi
+
 echo "Done."
