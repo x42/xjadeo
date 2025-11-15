@@ -1,3 +1,9 @@
+2025-11-15 (0.8.15)  Robin Gareus <robin@gareus.org>
+* remove ancient qt-remote control for good
+* ffmpeg-8.0 compatibility (remove pkt_pos)
+* Update build scripts
+* update builders to use ffmpeg-7.1.2 (except OSX, which uses 6.1.3)
+
 2024-04-25 (0.8.14)  Robin Gareus <robin@gareus.org>
 * Fix JACK Transport when using pipewire
 * Update build-script (disable QT GUI)
